@@ -11,10 +11,11 @@ import { EntryScreen } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { STORAGE_KEYS, getJson, setJson, useStored, callGoogleScript, buildResponsePayload } from './journey-storage';
 import { StrategyIssueReview } from './journey-strategy-issue-review';
+import { SourceCheckSection } from './journey-source-check';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
-  screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview },
+  screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview, SourceCheckSection },
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
   output: { getMember, buildPayloadBase, buildContextRows },
