@@ -9,6 +9,7 @@ import { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSea
 import { getMember, buildPayloadBase, buildContextRows } from './journey-output';
 import { EntryScreen } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
+import { STORAGE_KEYS, getJson, setJson, useStored, callGoogleScript, buildResponsePayload } from './journey-storage';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
@@ -16,6 +17,7 @@ const modularSmokeCheck = {
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
   output: { getMember, buildPayloadBase, buildContextRows },
+  storage: { STORAGE_KEYS, getJson, setJson, useStored, callGoogleScript, buildResponsePayload },
 };
 
 void modularSmokeCheck;
