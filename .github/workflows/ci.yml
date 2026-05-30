@@ -1,0 +1,35 @@
+name: C1Bio MVP CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Content line-break audit
+        run: npm run audit:linebreaks
+
+      - name: AI parser smoke test
+        run: npm run smoke:parser
+
+      - name: Build
+        run: npm run build
