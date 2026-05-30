@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{font-family:Inter,system-ui,'Noto Sans KR',sans-serif;color:#0f172a;background:#f5f7fb}.preline{white-space:pre-line}textarea,input{font:inherit}.safe{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75}.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}
