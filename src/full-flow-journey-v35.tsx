@@ -8,10 +8,11 @@ import { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_
 import { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember } from './journey-utils';
 import { getMember, buildPayloadBase, buildContextRows } from './journey-output';
 import { EntryScreen } from './journey-entry';
+import { PromptPracticeScreen } from './journey-prompt-practice';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
-  screens: { EntryScreen },
+  screens: { EntryScreen, PromptPracticeScreen },
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
   output: { getMember, buildPayloadBase, buildContextRows },
