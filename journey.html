@@ -4,9 +4,98 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>C1바이오 Full Flow Journey</title>
+<style>
+  #v31-helper-toggle{position:fixed;right:18px;bottom:86px;z-index:9999;border:0;border-radius:14px;background:#0f172a;color:white;padding:12px 16px;font-weight:700;box-shadow:0 10px 30px rgba(15,23,42,.25);cursor:pointer}
+  #v31-helper{position:fixed;right:18px;top:18px;bottom:18px;width:min(560px,calc(100vw - 36px));z-index:9998;background:white;border:1px solid #cbd5e1;border-radius:22px;box-shadow:0 20px 55px rgba(15,23,42,.28);display:none;overflow:auto;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  #v31-helper.open{display:block}
+  #v31-helper .v31-head{position:sticky;top:0;background:#ecfeff;border-bottom:1px solid #cbd5e1;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;border-radius:22px 22px 0 0}
+  #v31-helper .v31-body{padding:16px;display:grid;gap:14px}
+  #v31-helper label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}
+  #v31-helper input,#v31-helper textarea,#v31-helper select{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px;font-size:13px;background:white}
+  #v31-helper textarea{min-height:78px;resize:vertical;white-space:pre-wrap}
+  #v31-helper .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #v31-helper .card{border:1px solid #e2e8f0;border-radius:16px;padding:12px;background:#f8fafc}
+  #v31-helper .btns{display:flex;gap:8px;flex-wrap:wrap}
+  #v31-helper button{border:0;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer}
+  #v31-helper .primary{background:#0891b2;color:white}.secondary{background:#0f172a;color:white}.light{background:#e2e8f0;color:#0f172a}.danger{background:#fee2e2;color:#991b1b}
+  #v31-helper .muted{font-size:12px;color:#64748b;line-height:1.45}
+</style>
 </head>
 <body>
 <div id="journey-root"></div>
+<button id="v31-helper-toggle" type="button">v31 Research 도우미</button>
+<div id="v31-helper" aria-label="v31 Research Helper">
+  <div class="v31-head"><strong>v31 Research 도우미</strong><button class="light" id="v31-close" type="button">닫기</button></div>
+  <div class="v31-body">
+    <div class="card"><div class="muted">기본 v30 화면은 유지하면서, 환경 변화 직접 입력·검색 프롬프트 수정·Perplexity 결과 자동 분리 기능을 보조 패널로 제공합니다. 저장하면 localStorage 상태에 반영됩니다.</div></div>
+    <div class="card">
+      <label>환경 변화 선택</label>
+      <select id="v31-scenario">
+        <option value="고객 접점 시간 감소|대면 접점이 짧아지고 사전 준비와 후속 자료의 중요성이 커진다.">고객 접점 시간 감소</option>
+        <option value="경쟁 환경 심화|유사 메시지가 많아져 정보 제공 품질과 차별적 고객 이해가 중요해진다.">경쟁 환경 심화</option>
+        <option value="CRM·데이터 관리 강화|기록 품질, 후속조치 이행, 실행 지연 관리가 중요해진다.">CRM·데이터 관리 강화</option>
+        <option value="신규 고객군 탐색 필요|기존 담당처 중심 활동의 효과가 낮아지고 성장 가능성이 있는 고객군 탐색이 필요하다.">신규 고객군 탐색 필요</option>
+        <option value="custom">직접 입력</option>
+      </select>
+      <div class="row" style="margin-top:10px">
+        <div><label>직접 입력 제목</label><input id="v31-custom-title" placeholder="예: 본사 캠페인 강화와 현장 실행 부담 증가" /></div>
+        <div><label>직접 입력 설명</label><input id="v31-custom-signal" placeholder="예: 본사 요청은 늘었지만 현장 수용성은 낮아지고 있다." /></div>
+      </div>
+      <label style="margin-top:10px">참여자 추가 전략 질문</label>
+      <textarea id="v31-extra-question" placeholder="예: 이 변화가 우리 팀의 고객 접점 품질과 후속조치 기준에 주는 영향은 무엇인가?"></textarea>
+    </div>
+    <div class="card">
+      <label>검색 초점</label>
+      <div id="v31-focus" class="btns"></div>
+    </div>
+    <div class="card">
+      <label>수정 가능한 Perplexity 프롬프트</label>
+      <textarea id="v31-prompt" style="min-height:260px"></textarea>
+      <div class="btns" style="margin-top:8px"><button class="primary" id="v31-build" type="button">프롬프트 생성/갱신</button><button class="secondary" id="v31-copy-prompt" type="button">프롬프트 복사</button></div>
+    </div>
+    <div class="card">
+      <label>Perplexity 생성 결과 원문 붙여넣기</label>
+      <textarea id="v31-raw" style="min-height:180px"></textarea>
+      <div class="btns" style="margin-top:8px"><button class="primary" id="v31-parse" type="button">전략 이슈 자동 분리</button><button class="light" id="v31-save" type="button">앱 상태에 저장</button></div>
+      <div class="muted" style="margin-top:8px">자동 분리 후, 출처와 발행 시점은 반드시 원문에서 다시 확인하세요.</div>
+    </div>
+    <div id="v31-notes"></div>
+    <div class="card">
+      <label>NotebookLM용 프롬프트</label>
+      <textarea id="v31-notebook" style="min-height:220px"></textarea>
+      <div class="btns" style="margin-top:8px"><button class="secondary" id="v31-copy-nb" type="button">NotebookLM 프롬프트 복사</button></div>
+    </div>
+  </div>
+</div>
 <script type="module" src="/src/full-flow-journey-v30.tsx"></script>
+<script>
+(function(){
+  const focusList=['규제/컴플라이언스','고객 접점 변화','디지털·CRM·데이터','경쟁 환경','영업조직 실행관리','팀원 역량/실행 리듬'];
+  let selectedFocus=focusList.slice(0,5);
+  let notes=[0,1,2].map(()=>({issue:'',change:'',source:'',date:'',reliability:'',why:'',check:'',question:'',compliance:''}));
+  const $=id=>document.getElementById(id);
+  function readState(){try{return JSON.parse(localStorage.getItem('c1bio_flow_state')||'{}')||{}}catch{return {}}}
+  function writeState(patch){const next={...readState(),...patch};localStorage.setItem('c1bio_flow_state',JSON.stringify(next));return next}
+  function chosen(){const v=$('v31-scenario').value;if(v==='custom'){return {title:$('v31-custom-title').value||'직접 입력한 환경 변화',signal:$('v31-custom-signal').value||'우리 팀이 직접 입력한 환경 변화'}}; const [title,signal]=v.split('|');return {title,signal};}
+  function buildPrompt(){const s=chosen();const extra=$('v31-extra-question').value||'우리 팀 실행전략으로 번역할 수 있는 변화 요인을 찾아주세요.';return `당신은 제약영업 환경 분석을 돕는 리서치 애널리스트입니다.\n\n목표: C1바이오 영업팀장이 다음 분기 팀 실행전략을 수립하기 위해 참고할 외부 환경 변화 이슈를 찾습니다.\n\n검색 범위:\n- 한국 제약산업 및 헬스케어 영업환경\n- 최근 12~24개월 자료 우선\n- 공식기관, 협회, 규제기관, 신뢰도 높은 언론, 산업 보고서 우선\n- 블로그, 홍보성 콘텐츠, 출처 불명 자료는 제외\n\n우선 탐색할 환경 변화:\n${s.title}: ${s.signal}\n\n참여자 추가 전략 질문:\n${extra}\n\n분석 관점:\n${selectedFocus.map((x,i)=>`${i+1}. ${x}`).join('\n')}\n\n출력 규칙: 아래 제목과 항목명을 반드시 그대로 사용하세요. 표를 사용하지 마세요. 전략 이슈는 최대 3개만 제시하세요.\n\n## 전략 이슈 1\n- 이슈명:\n- 핵심 변화:\n- 근거 출처:\n- 발행 시점:\n- 신뢰도 판단:\n- 영업팀장에게 주는 시사점:\n- 우리 팀 실행전략으로 번역할 질문:\n- 주의해야 할 컴플라이언스 표현:\n\n## 전략 이슈 2\n- 이슈명:\n- 핵심 변화:\n- 근거 출처:\n- 발행 시점:\n- 신뢰도 판단:\n- 영업팀장에게 주는 시사점:\n- 우리 팀 실행전략으로 번역할 질문:\n- 주의해야 할 컴플라이언스 표현:\n\n## 전략 이슈 3\n- 이슈명:\n- 핵심 변화:\n- 근거 출처:\n- 발행 시점:\n- 신뢰도 판단:\n- 영업팀장에게 주는 시사점:\n- 우리 팀 실행전략으로 번역할 질문:\n- 주의해야 할 컴플라이언스 표현:\n\n## 추가 확인이 필요한 자료\n1.\n2.\n3.\n\n주의: 실제 고객명, 병원명, 의료진명, 제품명, 내부 수치, 개인정보는 제외하세요. 민감한 영업 표현 대신 고객 가치 접점, 정보 제공 품질, 성과 신호, 실행 우선순위 표현을 사용하세요.`}
+  function line(sec,keys){const lines=sec.split('\n').map(x=>x.trim()).filter(Boolean);for(const key of keys){const f=lines.find(l=>l.includes(key));if(f)return f.replace(/^[-*\d.)\s]*/,'').replace(key,'').replace(/^[:：\s-]+/,'').trim()}return ''}
+  function first(sec){return (sec||'').split('\n').map(x=>x.trim()).filter(Boolean)[0]||''}
+  function parse(raw){let parts=(raw||'').replace(/\r/g,'').split(/##\s*전략\s*이슈\s*\d+|전략\s*이슈\s*\d+[:.\s-]*/g).map(x=>x.trim()).filter(x=>x.length>20);if(parts.length<2)parts=(raw||'').split(/\n\s*(?:\d+\.|이슈\s*\d+[:.\s-])/g).map(x=>x.trim()).filter(x=>x.length>30);notes=[0,1,2].map(()=>({issue:'',change:'',source:'',date:'',reliability:'',why:'',check:'',question:'',compliance:''}));parts.slice(0,3).forEach((sec,i)=>{notes[i]={issue:line(sec,['이슈명','이슈'])||first(sec),change:line(sec,['핵심 변화','핵심변화','변화']),source:line(sec,['근거 출처','출처']),date:line(sec,['발행 시점','발행시점','날짜']),reliability:line(sec,['신뢰도 판단','신뢰도']),why:line(sec,['영업팀장에게 주는 시사점','시사점','우리 팀에 주는 영향']),check:line(sec,['추가 확인','확인 필요']),question:line(sec,['우리 팀 실행전략으로 번역할 질문','전략 질문','우리 팀 전략 질문']),compliance:line(sec,['주의해야 할 컴플라이언스 표현','컴플라이언스','주의 표현'])};});renderNotes();updateNotebook();}
+  function setNote(i,k,v){notes[i][k]=v;updateNotebook();}
+  function renderFocus(){const root=$('v31-focus');root.innerHTML='';focusList.forEach(f=>{const b=document.createElement('button');b.type='button';b.className=selectedFocus.includes(f)?'primary':'light';b.textContent=f;b.onclick=()=>{selectedFocus=selectedFocus.includes(f)?selectedFocus.filter(x=>x!==f):selectedFocus.concat(f);renderFocus();$('v31-prompt').value=buildPrompt();};root.appendChild(b);});}
+  function renderNotes(){const root=$('v31-notes');root.innerHTML='';notes.forEach((n,i)=>{const card=document.createElement('div');card.className='card';card.innerHTML='<strong>전략 이슈 메모 '+(i+1)+'</strong><div class="row" style="margin-top:10px"></div>';const row=card.querySelector('.row');[['issue','핵심 이슈'],['change','핵심 변화'],['source','근거 출처'],['date','발행 시점'],['reliability','신뢰도 판단'],['why','우리 팀에 중요한 이유'],['check','추가 확인 필요'],['question','전략 질문'],['compliance','컴플라이언스 주의 표현']].forEach(([k,l])=>{const wrap=document.createElement('div');wrap.innerHTML='<label>'+l+'</label><textarea rows="2"></textarea>';const ta=wrap.querySelector('textarea');ta.value=n[k]||'';ta.oninput=e=>setNote(i,k,e.target.value);row.appendChild(wrap);});root.appendChild(card);});}
+  function updateNotebook(){const s=chosen();$('v31-notebook').value=`업로드한 자료와 검증된 검색 결과만 근거로, C1바이오 영업팀장이 전략회의에서 발표할 수 있는 우리 팀 실행전략 보고서 초안을 작성해주세요.\n\n자료에 없는 내용은 추정하지 말고, 근거가 약한 내용은 추가 확인 필요로 표시하세요.\n\n[선택한 환경 변화]\n${s.title}\n\n[검색 결과 구조화 메모]\n${JSON.stringify(notes,null,2)}\n\n출력 형식:\n1. Executive Summary\n2. 외부 환경 변화 요약\n3. 우리 팀 현재 상황 진단\n4. 전략 과제 도출\n5. 우리 팀 실행전략 문장\n6. 2주 실행 실험\n7. 팀원별 실행 번역\n8. 전략회의 발표용 슬라이드 구성안 8장`;}
+  function initFromState(){const st=readState();if(st.customScenarioTitle)$('v31-custom-title').value=st.customScenarioTitle;if(st.customScenarioSignal)$('v31-custom-signal').value=st.customScenarioSignal;if(st.customResearchQuestion)$('v31-extra-question').value=st.customResearchQuestion;if(st.searchFocus)selectedFocus=st.searchFocus;if(st.editableResearchPrompt)$('v31-prompt').value=st.editableResearchPrompt;else $('v31-prompt').value=buildPrompt();if(st.perplexityRaw)$('v31-raw').value=st.perplexityRaw;if(st.structuredResearchNotes)notes=st.structuredResearchNotes;renderFocus();renderNotes();updateNotebook();}
+  $('v31-helper-toggle').onclick=()=>{$('v31-helper').classList.add('open');};
+  $('v31-close').onclick=()=>{$('v31-helper').classList.remove('open');};
+  $('v31-build').onclick=()=>{$('v31-prompt').value=buildPrompt();};
+  $('v31-copy-prompt').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText($('v31-prompt').value);
+  $('v31-parse').onclick=()=>parse($('v31-raw').value);
+  $('v31-copy-nb').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText($('v31-notebook').value);
+  $('v31-save').onclick=()=>{const s=chosen();writeState({strategyScenarioTitle:s.title,strategySignal:s.signal,customScenarioTitle:$('v31-custom-title').value,customScenarioSignal:$('v31-custom-signal').value,customResearchQuestion:$('v31-extra-question').value,searchFocus:selectedFocus,editableResearchPrompt:$('v31-prompt').value,generatedPrompt:$('v31-prompt').value,perplexityRaw:$('v31-raw').value,structuredResearchNotes:notes,notebookPrompt:$('v31-notebook').value});alert('v31 Research 도우미 내용이 앱 상태에 저장되었습니다. 필요하면 페이지를 새로고침해 v30 입력 영역과 동기화하세요.');};
+  ['v31-scenario','v31-custom-title','v31-custom-signal','v31-extra-question'].forEach(id=>$(id).addEventListener('input',()=>{$('v31-prompt').value=buildPrompt();updateNotebook();}));
+  initFromState();
+})();
+</script>
 </body>
 </html>
