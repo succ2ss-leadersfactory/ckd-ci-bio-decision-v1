@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
 import { ActionMapLab } from './journey-v36-action-map-lab';
+import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { CustomerCallPlanLab } from './journey-v36-customer-call-plan-lab';
 import { DashboardAnalysisLab } from './journey-v36-dashboard-analysis-lab';
 import { HqTranslationLab } from './journey-v36-hq-translation-lab';
@@ -96,6 +97,7 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
   const current = V36_APP_STEPS[step];
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
+  if (current.id === 'ai-safety') return <AiSafetyLab />;
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
   if (current.id === 'source-check') return <SourceCheckLab />;
   if (current.id === 'dashboard-analysis') return <DashboardAnalysisLab />;
