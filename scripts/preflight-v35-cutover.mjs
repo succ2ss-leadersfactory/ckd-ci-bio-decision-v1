@@ -195,6 +195,7 @@ function assertStaticSmokeCoversPreflight() {
     'src/vite-env.d.ts',
     'docs/v35-browser-qa-result.md',
     'docs/v35-browser-qa-console-snippet.md',
+    'docs/v35-browser-qa-runbook.md',
     '.github/workflows/v35-readiness-audit.yml',
     'npm run audit:v35:readiness',
   ];
@@ -238,6 +239,27 @@ function assertBrowserQaDocs() {
     for (const phrase of requiredPhrases) {
       if (!snippet.includes(phrase)) {
         fail(`docs/v35-browser-qa-console-snippet.md must include ${phrase}.`);
+      }
+    }
+  }
+
+  const runbook = readText('docs/v35-browser-qa-runbook.md');
+  if (runbook !== null) {
+    const requiredPhrases = [
+      '/journey.html',
+      '/journey-v35-preview.html',
+      'Step 0~8',
+      'J01~J09',
+      'Console snippet',
+      'missingPreviewKeys: none',
+      'missingSavedStateKeys: none',
+      'pass: true',
+      'Actions → v35 Readiness Audit → Run workflow',
+    ];
+
+    for (const phrase of requiredPhrases) {
+      if (!runbook.includes(phrase)) {
+        fail(`docs/v35-browser-qa-runbook.md must include ${phrase}.`);
       }
     }
   }
@@ -299,6 +321,7 @@ function assertRequiredFiles() {
     'docs/v35-preview-smoke-result.md',
     'docs/v35-browser-qa-result.md',
     'docs/v35-browser-qa-console-snippet.md',
+    'docs/v35-browser-qa-runbook.md',
     'docs/v35-cutover-gates.md',
     'docs/v35-deployment-url-guide.md',
   ];
