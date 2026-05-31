@@ -2,6 +2,20 @@
 
 이 문서는 `v35` 독립 실행 전환 전, preview 경로에서 확인해야 할 항목을 정리한 체크리스트입니다.
 
+## 배포 전 build smoke check
+
+배포 전 아래 명령을 실행해 typecheck와 build가 모두 통과되는지 확인합니다.
+
+```bash
+npm run smoke:v35
+```
+
+이 명령은 다음을 순서대로 실행합니다.
+
+```bash
+npm run typecheck && npm run build
+```
+
 ## 확인 URL 기준
 
 최종 검증과 교육생 공유에는 production domain을 사용합니다.
