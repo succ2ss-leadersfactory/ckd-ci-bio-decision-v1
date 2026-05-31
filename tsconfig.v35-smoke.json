@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/index.css",
+    "src/journey-v35-app-preview.tsx",
+    "src/full-flow-journey-v35-app.tsx",
+    "src/journey-v35-preview-config.ts",
+    "src/journey-v35-preview-state.ts",
+    "src/journey-v35-preview-router.tsx",
+    "src/journey-v35-preview-steps.tsx",
+    "src/journey-v35-preview-panels.tsx",
+    "src/journey-v35-preview-types.ts",
+    "src/journey-shell.tsx",
+    "src/journey-components.tsx",
+    "src/journey-data.ts",
+    "src/journey-utils.ts",
+    "src/journey-output.ts",
+    "src/journey-storage.ts",
+    "src/journey-entry.tsx",
+    "src/journey-prompt-practice.tsx",
+    "src/journey-strategy-issue-review.tsx",
+    "src/journey-source-check.tsx",
+    "src/journey-notebook-source-prep.tsx",
+    "src/journey-notebook-readiness.tsx",
+    "src/journey-studio-report.tsx",
+    "src/journey-studio-slides.tsx",
+    "src/journey-presentation-checklist.tsx"
+  ]
+}
