@@ -13,9 +13,10 @@
 | 항목 | 결과 | 메모 |
 |---|---|---|
 | `npm install` | 미확인 | 의존성 설치 확인 |
+| `npm run smoke:v35:static` | 미확인 | v35 필수 파일·Vite input·root redirect·v34 위임 import 확인 |
 | `npm run typecheck` | 미확인 | TypeScript 검사 확인 |
 | `npm run build` | 미확인 | Vite build 확인 |
-| `npm run smoke:v35` | 미확인 | typecheck + build 통합 확인 |
+| `npm run smoke:v35` | 미확인 | static + typecheck + build 통합 확인 |
 
 ## 3. 운영 경로 확인
 
