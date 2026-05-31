@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 
 const RESULT_DOC = 'docs/v35-preview-smoke-result.md';
+const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
 const failures = [];
 const warnings = [];
 
@@ -25,24 +26,24 @@ function findLine(content, label) {
   return content.split('\n').find((line) => line.includes(label)) || '';
 }
 
-function assertNoPendingTableStatus(content) {
+function assertNoPendingTableStatus(content, docName) {
   const pendingTableRows = content
     .split('\n')
     .filter((line) => /^\|/.test(line))
-    .filter((line) => /\|\s*(미확인|대기|실행 대기|보류|실패)\s*\|/.test(line));
+    .filter((line) => /\|\s*(미확인|대기|실행 대기|보류|실패|아직 불가)\s*\|/.test(line));
 
   if (pendingTableRows.length > 0) {
-    fail(`Smoke result still contains pending or failed table rows (${pendingTableRows.length}).`);
+    fail(`${docName} still contains pending or failed table rows (${pendingTableRows.length}).`);
     for (const row of pendingTableRows.slice(0, 10)) {
-      warn(`Pending row: ${row}`);
+      warn(`${docName} pending row: ${row}`);
     }
     if (pendingTableRows.length > 10) {
-      warn(`...and ${pendingTableRows.length - 10} more pending rows.`);
+      warn(`${docName}: ...and ${pendingTableRows.length - 10} more pending rows.`);
     }
   }
 }
 
-function assertFinalJudgement(content) {
+function assertSmokeFinalJudgement(content) {
   const overall = findLine(content, '전체 판정:');
   if (!overall) {
     fail('Smoke result must include 전체 판정.');
@@ -62,49 +63,92 @@ function assertFinalJudgement(content) {
   }
 }
 
-function assertRequiredEvidence(content) {
-  const requiredEvidence = [
-    'npm run smoke:v35',
-    'npm run smoke:v35:dist',
-    'npm run smoke:v35:remote',
-    '/journey.html',
-    '/journey-v35-preview.html',
-    'J01-entry',
-    'J09-presentation-checklist',
-    'c1bio_v35_preview_*',
-    'c1bio_flow_*',
+function assertBrowserQaFinalJudgement(content) {
+  const requiredLines = [
+    ['브라우저 QA 전체 판정:', /(통과|PASS|pass)/],
+    ['v34 운영 영향 여부:', /(영향 없음|정상|통과)/],
+    ['v35 preview 독립 실행 여부:', /(정상|통과)/],
+    ['J01~J09 저장 여부:', /(정상|통과|모두 확인)/],
+    ['localStorage key 분리 여부:', /(정상|통과|분리 확인)/],
+    ['cutover 검토 가능 여부:', /(가능|검토 가능)/],
   ];
 
-  for (const evidence of requiredEvidence) {
-    if (!content.includes(evidence)) {
-      warn(`Smoke result should mention evidence: ${evidence}`);
+  for (const [label, readyPattern] of requiredLines) {
+    const line = findLine(content, label);
+    if (!line) {
+      fail(`Browser QA result must include ${label}.`);
+      continue;
+    }
+
+    if (/(미확인|대기|불가|보류|실패|아직 불가)/.test(line)) {
+      fail(`Browser QA result is not ready: ${line.trim()}`);
+      continue;
+    }
+
+    if (!readyPattern.test(line)) {
+      warn(`Browser QA result line does not clearly indicate readiness: ${line.trim()}`);
     }
   }
 }
 
-function assertNoKnownBlockingText(content) {
+function assertRequiredEvidence(content, docName, requiredEvidence) {
+  for (const evidence of requiredEvidence) {
+    if (!content.includes(evidence)) {
+      warn(`${docName} should mention evidence: ${evidence}`);
+    }
+  }
+}
+
+function assertNoKnownBlockingText(content, docName) {
   const blockingPatterns = [
     /전체 판정:\s*실행 검증 대기/,
+    /전체 판정:\s*부분 통과/,
     /v35 운영 전환 가능 여부:\s*아직 불가/,
     /remote smoke 검증:\s*실행 대기/,
     /build smoke 검증:\s*실행 대기/,
     /dist smoke 검증:\s*실행 대기/,
+    /브라우저 QA 전체 판정:\s*미확인/,
+    /cutover 검토 가능 여부:\s*아직 불가/,
   ];
 
   for (const pattern of blockingPatterns) {
     if (pattern.test(content)) {
-      fail(`Smoke result still contains blocking text matching ${pattern}.`);
+      fail(`${docName} still contains blocking text matching ${pattern}.`);
     }
   }
 }
 
 console.log('Running v35 readiness audit...');
 
-const content = readText(RESULT_DOC);
-assertNoPendingTableStatus(content);
-assertFinalJudgement(content);
-assertRequiredEvidence(content);
-assertNoKnownBlockingText(content);
+const smokeResult = readText(RESULT_DOC);
+const browserQaResult = readText(BROWSER_QA_DOC);
+
+assertNoPendingTableStatus(smokeResult, RESULT_DOC);
+assertSmokeFinalJudgement(smokeResult);
+assertRequiredEvidence(smokeResult, RESULT_DOC, [
+  'npm run smoke:v35',
+  'npm run smoke:v35:dist',
+  'npm run smoke:v35:remote',
+  '/journey.html',
+  '/journey-v35-preview.html',
+  'J01-entry',
+  'J09-presentation-checklist',
+  'c1bio_v35_preview_*',
+  'c1bio_flow_*',
+]);
+assertNoKnownBlockingText(smokeResult, RESULT_DOC);
+
+assertNoPendingTableStatus(browserQaResult, BROWSER_QA_DOC);
+assertBrowserQaFinalJudgement(browserQaResult);
+assertRequiredEvidence(browserQaResult, BROWSER_QA_DOC, [
+  '/journey.html',
+  '/journey-v35-preview.html',
+  'J01-entry',
+  'J09-presentation-checklist',
+  'c1bio_v35_preview_*',
+  'c1bio_flow_*',
+]);
+assertNoKnownBlockingText(browserQaResult, BROWSER_QA_DOC);
 
 if (warnings.length > 0) {
   console.warn('v35 readiness audit warnings:');
