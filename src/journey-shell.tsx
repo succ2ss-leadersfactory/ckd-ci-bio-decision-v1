@@ -56,11 +56,17 @@ export function JourneyShell({
           <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-5 md:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100">
               <span className="rounded-full bg-white/10 px-3 py-1">AI Leadership Lab Journey</span>
-              <span className="rounded-full bg-cyan-400/20 px-3 py-1 text-cyan-50">v36 Preview</span>
               <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-50">자동 저장</span>
             </div>
-            <h1 className="mt-3 text-2xl font-black leading-tight md:text-3xl">{title}</h1>
-            {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200 md:text-base">{subtitle}</p> : null}
+            <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="flex w-fit shrink-0 items-center rounded-2xl bg-white px-4 py-3 shadow-md">
+                <img src="/brand/ckd-ci.svg" alt="종근당 CKD CI" className="h-12 w-auto md:h-14" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-black leading-tight md:text-3xl">{title}</h1>
+                {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200 md:text-base">{subtitle}</p> : null}
+              </div>
+            </div>
           </div>
         </header>
 
