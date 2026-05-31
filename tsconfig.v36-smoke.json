@@ -8,6 +8,7 @@
     "src/journey-v36-app-preview.tsx",
     "src/full-flow-journey-v36-preview.tsx",
     "src/journey-v36-research-strategy-lab.tsx",
+    "src/journey-v36-source-check-lab.tsx",
     "src/journey-v36-dashboard-analysis-lab.tsx",
     "src/journey-v36-customer-call-plan-lab.tsx",
     "src/journey-v36-hq-translation-lab.tsx",
