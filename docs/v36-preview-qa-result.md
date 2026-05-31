@@ -18,6 +18,7 @@ Status: Pending browser QA
 | `npm run smoke:v36:static` | Pending | Run through v36 Smoke workflow |
 | `npm run typecheck:v36` | Pending | Run through v36 Smoke workflow |
 | `npm run build` | Pending | Run through v36 Smoke workflow |
+| `npm run smoke:v36:dist` | Pending | Confirms dist bundle includes v36 route and CustomerCallPlanLab markers |
 | `npm run smoke:v36` | Pending | Integrated v36 check |
 | `npm run smoke:v35` | Pending | Regression guard |
 
@@ -41,6 +42,7 @@ Status: Pending browser QA
 | Field revision area | Pending | Text input and restore |
 | Final 2-week call plan | Pending | 10 output fields |
 | Facilitator summary | Pending | Choice summary, review summary, discussion questions |
+| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md` |
 | Mobile/tablet layout | Pending | No major overflow or blocked controls |
 | Console errors | Pending | No blocking runtime errors |
 
@@ -66,6 +68,10 @@ Review checklist:
 Risk expression checklist:
 Final call plan fields:
 localStorage restore:
+Console snippet pass:
+missingTextMarkers:
+missingStorageKeys:
+storageKeysPresentAfterInput:
 Mobile/tablet layout:
 Console errors:
 
@@ -81,3 +87,4 @@ v36 PR should remain Draft until:
 3. Browser QA is recorded in this document.
 4. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
 5. CustomerCallPlanLab Step 7 checks pass on at least desktop and one mobile/tablet viewport.
+6. Console snippet evidence is recorded after Step 7 input.
