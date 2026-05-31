@@ -5,6 +5,7 @@ import { HqTranslationLab } from './journey-v36-hq-translation-lab';
 import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
 import { StakeholderMessageLab } from './journey-v36-stakeholder-message-lab';
+import { WrapUpLab } from './journey-v36-wrap-up-lab';
 import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
 import { useStored } from './journey-storage';
 
@@ -32,10 +33,7 @@ function ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
       <p className="font-bold">AI 안전선</p>
-      <p className="mt-1">
-        실제 고객명, 병원명, 의사명, 내부 매출·처방 수치, 개인정보, 미승인 효능이나 허가 외 표현은 입력하지 마세요.
-        AI 답변은 그대로 사용하지 말고 반드시 검토·수정하세요.
-      </p>
+      <p className="mt-1">민감정보를 입력하지 말고 AI 결과는 반드시 검토한 뒤 현장형으로 수정합니다.</p>
     </div>
   );
 }
@@ -54,36 +52,19 @@ function EntryStep({ participant, setParticipant }: { participant: V36Participan
     <div className="space-y-4">
       <ComplianceNotice />
       <ShellCard title="C1바이오 영업팀장 역할 부여">
-        <p>
-          당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 6명의 MR과 함께 외부 영업환경, 고객군 반응,
-          팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.
-        </p>
+        <p>당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 외부 환경, 고객군 반응, 팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.</p>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-1">
             <span className="text-xs font-semibold text-slate-500">이름</span>
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              value={participant.name}
-              onChange={(event) => setParticipant({ ...participant, name: event.target.value })}
-              placeholder="예: 김현태"
-            />
+            <input className="w-full rounded-xl border px-3 py-2" value={participant.name} onChange={(event) => setParticipant({ ...participant, name: event.target.value })} placeholder="예: 김현태" />
           </label>
           <label className="space-y-1">
             <span className="text-xs font-semibold text-slate-500">팀명</span>
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              value={participant.teamName}
-              onChange={(event) => setParticipant({ ...participant, teamName: event.target.value })}
-              placeholder="예: 3조"
-            />
+            <input className="w-full rounded-xl border px-3 py-2" value={participant.teamName} onChange={(event) => setParticipant({ ...participant, teamName: event.target.value })} placeholder="예: 3조" />
           </label>
         </div>
         <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3">
-          <input
-            type="checkbox"
-            checked={participant.roleAccepted}
-            onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })}
-          />
+          <input type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
           <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고 기록합니다.</span>
         </label>
       </ShellCard>
@@ -96,15 +77,11 @@ function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
     <div className="space-y-4">
       <ComplianceNotice />
       <ShellCard title={`${stepTitle} - v36 preview shell`}>
-        <p>
-          이 화면은 v36 preview shell에서 13단계 흐름을 먼저 고정하기 위한 자리표시자입니다.
-          다음 구현 단계에서 Lab Standard v1 컴포넌트와 실제 실습 데이터를 연결합니다.
-        </p>
+        <p>이 화면은 v36 preview shell의 자리표시자입니다. 다음 구현 단계에서 실제 실습 데이터를 연결합니다.</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>사람의 1차 판단을 먼저 입력합니다.</li>
           <li>AI 질문을 생성하고 외부 AI에 복사합니다.</li>
-          <li>AI 답변을 붙여넣고 감별합니다.</li>
-          <li>현장형으로 수정한 뒤 최종 산출물을 저장합니다.</li>
+          <li>AI 답변을 감별하고 현장형으로 수정합니다.</li>
         </ul>
       </ShellCard>
     </div>
@@ -114,29 +91,13 @@ function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
 function renderV36Step(step: number, participant: V36Participant, setParticipant: (next: V36Participant) => void) {
   const current = V36_APP_STEPS[step];
 
-  if (current.id === 'entry') {
-    return <EntryStep participant={participant} setParticipant={setParticipant} />;
-  }
-
-  if (current.id === 'customer-judgment') {
-    return <CustomerCallPlanLab />;
-  }
-
-  if (current.id === 'hq-translation') {
-    return <HqTranslationLab />;
-  }
-
-  if (current.id === 'stakeholder-message') {
-    return <StakeholderMessageLab />;
-  }
-
-  if (current.id === 'performance-dialogue') {
-    return <PerformanceDialogueLab />;
-  }
-
-  if (current.id === 'one-on-one-coaching') {
-    return <OneOnOneCoachingLab />;
-  }
+  if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
+  if (current.id === 'customer-judgment') return <CustomerCallPlanLab />;
+  if (current.id === 'hq-translation') return <HqTranslationLab />;
+  if (current.id === 'stakeholder-message') return <StakeholderMessageLab />;
+  if (current.id === 'performance-dialogue') return <PerformanceDialogueLab />;
+  if (current.id === 'one-on-one-coaching') return <OneOnOneCoachingLab />;
+  if (current.id === 'wrap-up') return <WrapUpLab />;
 
   return <PlaceholderStep stepTitle={current.title} />;
 }
