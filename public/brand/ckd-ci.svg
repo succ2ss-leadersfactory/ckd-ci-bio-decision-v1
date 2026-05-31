@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="176" viewBox="0 0 600 176" role="img" aria-labelledby="title desc">
+  <title id="title">종근당 CKD CI</title>
+  <desc id="desc">Chong Kun Dang CKD corporate identity mark for customer demo header.</desc>
+  <rect width="600" height="176" fill="#ffffff"/>
+  <rect width="176" height="176" fill="#0438ff"/>
+  <circle cx="88" cy="88" r="62" fill="none" stroke="#ffffff" stroke-width="9"/>
+  <text x="88" y="34" text-anchor="middle" transform="rotate(-23 88 88)" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff">BETTER LIFE THROUGH BETTER MEDICINE</text>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M88 48v83" stroke-width="11"/>
+    <path d="M55 102c18 14 48 14 66 0" stroke-width="11"/>
+    <path d="M64 57h48" stroke-width="11"/>
+    <path d="M68 57c-9 20-9 51 0 72" stroke-width="9"/>
+    <path d="M108 57c9 20 9 51 0 72" stroke-width="9"/>
+  </g>
+  <text x="88" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Chong Kun Dang</text>
+  <text x="220" y="126" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="400" letter-spacing="10" fill="#0438ff">CKD</text>
+</svg>
