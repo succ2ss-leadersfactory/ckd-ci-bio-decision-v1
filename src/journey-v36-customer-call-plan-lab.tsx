@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 import { V36_STORAGE_KEYS } from './journey-v36-preview-config';
 
@@ -220,7 +220,7 @@ function FieldLabel({ children }: { children: string }) {
   return <span className="text-xs font-bold text-slate-500">{children}</span>;
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-2xl border bg-white p-5 shadow-sm">
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
