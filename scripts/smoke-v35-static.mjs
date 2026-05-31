@@ -95,16 +95,23 @@ const requiredTextChecks = [
     text: 'FullFlowJourneyV35App',
     message: 'journey-v35-app-preview.tsx must render FullFlowJourneyV35App.',
   },
-  {
-    file: 'src/journey-v35-preview-config.ts',
-    text: 'c1bio_v35_preview_step',
-    message: 'v35 preview config must define preview-specific step storage key.',
-  },
-  {
-    file: 'src/journey-v35-preview-config.ts',
-    text: 'c1bio_v35_preview_state',
-    message: 'v35 preview config must define preview-specific state storage key.',
-  },
+];
+
+const requiredStorageKeys = [
+  'c1bio_v35_preview_step',
+  'c1bio_v35_preview_participant',
+  'c1bio_v35_preview_state',
+  'c1bio_v35_preview_strategy_notes',
+  'c1bio_v35_preview_source_checks',
+  'c1bio_v35_preview_source_risk',
+  'c1bio_v35_preview_readiness_result',
+  'c1bio_v35_preview_report_summary',
+  'c1bio_v35_preview_report_link_or_file_name',
+  'c1bio_v35_preview_slides_summary',
+  'c1bio_v35_preview_slides_link_or_file_name',
+  'c1bio_v35_preview_presentation_checks',
+  'c1bio_v35_preview_presentation_one_liner',
+  'c1bio_v35_preview_presentation_manager_request',
 ];
 
 const requiredStepIds = [
@@ -162,6 +169,13 @@ for (const check of requiredTextChecks) {
 
 if (existsSync('src/journey-v35-preview-config.ts')) {
   const configContent = readFileSync('src/journey-v35-preview-config.ts', 'utf8');
+
+  for (const storageKey of requiredStorageKeys) {
+    if (!configContent.includes(storageKey)) {
+      failures.push(`V35_STORAGE_KEYS must include storage key: ${storageKey}`);
+    }
+  }
+
   for (const stepId of requiredStepIds) {
     if (!configContent.includes(`id: '${stepId}'`)) {
       failures.push(`V35_APP_STEPS must include step id: ${stepId}`);
