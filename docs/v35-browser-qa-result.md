@@ -7,6 +7,7 @@
 - 이 문서는 실제 브라우저 확인 후에만 `통과`로 변경한다.
 - 자동 smoke, remote smoke가 통과해도 이 문서가 미완료이면 cutover는 불가하다.
 - v34 운영 화면 보호와 v35 preview 독립 실행 검증을 분리해서 기록한다.
+- localStorage와 J01~J09 저장 검증은 `docs/v35-browser-qa-console-snippet.md`의 콘솔 스니펫 결과를 근거로 남긴다.
 
 ---
 
@@ -126,18 +127,50 @@ https://ckd-ci-bio-decision-v1.vercel.app/journey-v35-preview.html
 
 ---
 
-## 7. QA 판정
+## 7. Console snippet 근거
+
+브라우저 Console에서 아래 문서의 스니펫을 실행한다.
+
+```txt
+docs/v35-browser-qa-console-snippet.md
+```
+
+| 항목 | 결과 | 메모 |
+|---|---|---|
+| Console snippet 실행 | 미확인 | 스니펫 실행 여부 |
+| `missingPreviewKeys` | 미확인 | `none`이면 통과 가능 |
+| `missingSavedStateKeys` | 미확인 | `none`이면 통과 가능 |
+| `savedStateKeysFound` | 미확인 | J01~J09 모두 포함되어야 함 |
+| `v34FlowKeysFound` | 미확인 | v35 preview 조작 중 새 생성·변경 없음 확인 |
+| `pass` | 미확인 | true이면 저장/key 1차 통과 가능 |
+
+기록 예시:
+
+```txt
+Console snippet 실행: 통과
+missingPreviewKeys: none
+missingSavedStateKeys: none
+savedStateKeysFound: J01-entry, J02-prompt, J03-strategy-issue-review, J04-source-check, J05-notebook-source-prep, J06-notebook-readiness-check, J07-studio-report, J08-studio-slides, J09-presentation-checklist
+v34FlowKeysFound: 기존 key 변화 없음
+pass: true
+```
+
+---
+
+## 8. QA 판정
 
 - 브라우저 QA 전체 판정: 미확인
 - v34 운영 영향 여부: 미확인
 - v35 preview 독립 실행 여부: 미확인
 - J01~J09 저장 여부: 미확인
 - localStorage key 분리 여부: 미확인
+- Console snippet 근거: 미확인
 - cutover 검토 가능 여부: 아직 불가
 
 다음 조치:
 
 1. 위 표의 모든 `미확인`을 실제 확인 결과로 변경한다.
 2. 실패 항목이 있으면 조치 방향을 기록한다.
-3. 모든 항목이 통과되면 `docs/v35-preview-smoke-result.md`에도 결과를 반영한다.
-4. 마지막으로 `npm run audit:v35:readiness`를 실행한다.
+3. Console snippet 결과의 `missingPreviewKeys`, `missingSavedStateKeys`, `pass` 값을 기록한다.
+4. 모든 항목이 통과되면 `docs/v35-preview-smoke-result.md`에도 결과를 반영한다.
+5. 마지막으로 `npm run audit:v35:readiness`를 실행한다.
