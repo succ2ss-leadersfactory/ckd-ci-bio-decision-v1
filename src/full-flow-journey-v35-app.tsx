@@ -1,8 +1,6 @@
-import { useCallback } from 'react';
-import { EntryScreen, type ParticipantInfo } from './journey-entry';
+import { EntryScreen } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { JourneyShell } from './journey-shell';
-import { getJson, useStored, type JsonRecord } from './journey-storage';
 import { V35PreviewDebugPanel, V35PreviewSmokePanel } from './journey-v35-preview-panels';
 import {
   NotebookReadinessCheckStep,
@@ -13,49 +11,42 @@ import {
   StudioReportStep,
   StudioSlidesStep,
 } from './journey-v35-preview-steps';
-import { clampStep, createEmptyIssueNotes, V35_APP_STEPS, V35_STORAGE_KEYS, V35_STRATEGY_SCENARIO_TITLE } from './journey-v35-preview-config';
-import type { IssueNote } from './journey-components';
-
-const DEFAULT_PARTICIPANT: ParticipantInfo = {
-  participantId: `v35-${Date.now()}`,
-  sessionCode: '',
-  name: '',
-  teamName: '',
-};
-
-function resetV35PreviewStorage() {
-  Object.values(V35_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
-  window.location.reload();
-}
+import { clampStep, V35_APP_STEPS, V35_STORAGE_KEYS, V35_STRATEGY_SCENARIO_TITLE } from './journey-v35-preview-config';
+import { resetV35PreviewStorage, useV35PreviewState } from './journey-v35-preview-state';
 
 export function FullFlowJourneyV35App() {
-  const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
-  const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
-  const [savedState, setSavedState] = useStored<JsonRecord>(V35_STORAGE_KEYS.state, {});
-  const [notes, setNotes] = useStored<IssueNote[]>(V35_STORAGE_KEYS.notes, createEmptyIssueNotes());
-  const [sourceChecks, setSourceChecks] = useStored<string[]>(V35_STORAGE_KEYS.sourceChecks, []);
-  const [sourceRisk, setSourceRisk] = useStored<string>(V35_STORAGE_KEYS.sourceRisk, '');
-  const [readinessResult, setReadinessResult] = useStored<string>(V35_STORAGE_KEYS.readinessResult, '');
-  const [reportSummary, setReportSummary] = useStored<string>(V35_STORAGE_KEYS.reportSummary, '');
-  const [reportLinkOrFileName, setReportLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.reportLinkOrFileName, '');
-  const [slidesSummary, setSlidesSummary] = useStored<string>(V35_STORAGE_KEYS.slidesSummary, '');
-  const [slidesLinkOrFileName, setSlidesLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.slidesLinkOrFileName, '');
-  const [presentationChecks, setPresentationChecks] = useStored<string[]>(V35_STORAGE_KEYS.presentationChecks, []);
-  const [presentationOneLiner, setPresentationOneLiner] = useStored<string>(V35_STORAGE_KEYS.presentationOneLiner, '');
-  const [presentationManagerRequest, setPresentationManagerRequest] = useStored<string>(V35_STORAGE_KEYS.presentationManagerRequest, '');
+  const {
+    step,
+    setStep,
+    participant,
+    setParticipant,
+    savedState,
+    notes,
+    setNotes,
+    sourceChecks,
+    setSourceChecks,
+    sourceRisk,
+    setSourceRisk,
+    readinessResult,
+    setReadinessResult,
+    reportSummary,
+    setReportSummary,
+    reportLinkOrFileName,
+    setReportLinkOrFileName,
+    slidesSummary,
+    setSlidesSummary,
+    slidesLinkOrFileName,
+    setSlidesLinkOrFileName,
+    presentationChecks,
+    setPresentationChecks,
+    presentationOneLiner,
+    setPresentationOneLiner,
+    presentationManagerRequest,
+    setPresentationManagerRequest,
+    save,
+  } = useV35PreviewState();
 
   const safeStep = clampStep(step);
-
-  const save = useCallback((key: string, payload: JsonRecord) => {
-    const currentState = getJson<JsonRecord>(V35_STORAGE_KEYS.state, {});
-    const nextState = {
-      ...currentState,
-      [key]: payload,
-      v35AppLastSavedAt: new Date().toISOString(),
-    };
-
-    setSavedState(nextState);
-  }, [setSavedState]);
 
   const renderCurrentStep = () => {
     switch (safeStep) {
