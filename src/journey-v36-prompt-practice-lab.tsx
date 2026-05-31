@@ -5,7 +5,7 @@ import { V36_STORAGE_KEYS } from './journey-v36-preview-config';
 type PromptCase = {
   id: string;
   title: string;
-  badPrompt: string;
+  initialPrompt: string;
   problem: string;
   improved: string;
 };
@@ -25,28 +25,28 @@ const PROMPT_CASES: PromptCase[] = [
   {
     id: 'research',
     title: '전략 리서치 질문',
-    badPrompt: '요즘 제약영업 트렌드 알려줘.',
+    initialPrompt: '요즘 제약영업 트렌드 알려줘.',
     problem: '범위가 넓고 출처·최근성·활용 목적이 빠져 있다.',
     improved: '제약영업팀장 관점에서 최근 1년 내 공개 자료를 기준으로 의료진 정보 탐색 방식 변화 3가지를 정리하고, 각 변화가 영업팀 실행 방식에 주는 시사점과 추가 확인 질문을 제안해줘.',
   },
   {
     id: 'dashboard',
     title: 'Dashboard 분석 질문',
-    badPrompt: '이 팀원 왜 성과가 낮은지 분석해줘.',
+    initialPrompt: '이 팀원 왜 성과가 낮은지 분석해줘.',
     problem: '근거 지표와 가설 검증 방식이 없어 사람 탓 분석으로 흐를 수 있다.',
     improved: '아래 지표를 선행변수, 과정변수, 결과변수로 구분해 분석하고, 이 해석이 틀렸을 가능성과 팀장이 확인해야 할 질문을 제안해줘.',
   },
   {
     id: 'callplan',
     title: '콜플랜 질문',
-    badPrompt: '고객을 설득할 콜 스크립트를 만들어줘.',
+    initialPrompt: '고객을 설득할 콜 스크립트를 만들어줘.',
     problem: '고객 압박·효과 단정·미승인 표현 위험이 있다.',
     improved: '고객을 설득하는 표현 대신, 고객의 정보 니즈와 후속 확인사항을 파악하는 중립적 콜 질문과 콜 후 24시간 내 후속조치 기준을 만들어줘.',
   },
   {
     id: 'coaching',
     title: '1on1 코칭 질문',
-    badPrompt: '실적 낮은 팀원을 압박하는 면담 스크립트 만들어줘.',
+    initialPrompt: '실적 낮은 팀원을 압박하는 면담 스크립트 만들어줘.',
     problem: '평가 낙인과 압박 표현이 강해 방어적 대화로 흐를 수 있다.',
     improved: '실적이 낮은 팀원과 최근 실행 데이터를 함께 보며 원인 가설을 확인하고, 2주 동안 실험할 행동을 합의하는 1on1 질문을 만들어줘.',
   },
@@ -74,7 +74,7 @@ const CONDITIONS = [
 ];
 
 const REVIEW_ITEMS = [
-  '나쁜 질문의 문제를 진단했는가?',
+  '일반 질문의 개선 포인트를 진단했는가?',
   '안전한 질문 조건을 선택했는가?',
   '민감정보와 위험 표현을 제거했는가?',
   '출력 형식을 지정했는가?',
@@ -145,27 +145,27 @@ export function PromptPracticeLab() {
     }
   };
 
-  const outputText = `[좋은 질문 만들기 결과]\n\n[선택 사례]\n${currentCase.title}\n\n[진단한 문제]\n${response.selectedProblems.join(', ') || '-'}\n\n[선택한 좋은 질문 조건]\n${response.selectedConditions.join(', ') || '-'}\n\n[최종 질문]\n${generatedPrompt}`;
+  const outputText = `[좋은 질문 만들기 결과]\n\n[선택 사례]\n${currentCase.title}\n\n[진단한 개선 포인트]\n${response.selectedProblems.join(', ') || '-'}\n\n[선택한 좋은 질문 조건]\n${response.selectedConditions.join(', ') || '-'}\n\n[최종 질문]\n${generatedPrompt}`;
 
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
         <p className="font-bold">좋은 질문 만들기 Lab</p>
-        <p className="mt-1">나쁜 질문을 안전하고 구체적인 질문으로 바꿉니다. 이후 모든 Lab에서 사용할 질문 습관을 만드는 짧은 실습입니다.</p>
+        <p className="mt-1">일반 질문을 안전하고 구체적인 질문으로 다듬습니다. 이후 모든 Lab에서 사용할 질문 습관을 만드는 짧은 실습입니다.</p>
       </div>
 
-      <SectionCard title="1단계: 나쁜 질문 선택">
+      <SectionCard title="1단계: 일반 질문 선택">
         <label className="block space-y-1"><FieldLabel>연습할 질문 사례</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedCaseId} onChange={(event) => update({ selectedCaseId: event.target.value, finalPrompt: '' })}>{PROMPT_CASES.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-900"><p className="font-bold">나쁜 질문</p><p className="mt-2">{currentCase.badPrompt}</p></div>
-        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700"><p className="font-bold text-slate-900">문제점 힌트</p><p className="mt-2">{currentCase.problem}</p></div>
+        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-800"><p className="font-bold">일반 질문</p><p className="mt-2">{currentCase.initialPrompt}</p></div>
+        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700"><p className="font-bold text-slate-900">개선 포인트 힌트</p><p className="mt-2">{currentCase.problem}</p></div>
       </SectionCard>
 
-      <SectionCard title="2단계: 질문의 문제 진단">
-        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">복수 선택 가능 · 이 질문이 왜 위험하거나 약한지 선택하세요.</div>
+      <SectionCard title="2단계: 질문 진단">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">복수 선택 가능 · 이 질문을 더 안전하고 구체적으로 만들기 위해 보완할 지점을 선택하세요.</div>
         <div className="grid gap-2 md:grid-cols-2">{PROBLEMS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProblems.includes(item)} onChange={() => update({ selectedProblems: toggle(response.selectedProblems, item) })} />{item}</label>)}</div>
       </SectionCard>
 
-      <SectionCard title="3단계: 좋은 질문 조건 선택">
+      <SectionCard title="3단계: 좋은 질문 조건">
         <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">복수 선택 가능 · 좋은 질문은 역할, 맥락, 데이터, 안전선, 출력 형식이 함께 있어야 합니다.</div>
         <div className="grid gap-2 md:grid-cols-2">{CONDITIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedConditions.includes(item)} onChange={() => update({ selectedConditions: toggle(response.selectedConditions, item) })} />{item}</label>)}</div>
         <label className="block space-y-1"><FieldLabel>추가 맥락 입력</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.contextInput} onChange={(event) => update({ contextInput: event.target.value, finalPrompt: '' })} placeholder="예: 팀원 Dashboard 분석에서 선행변수와 과정변수를 구분해 원인 가설을 점검하려고 한다." /></label>
