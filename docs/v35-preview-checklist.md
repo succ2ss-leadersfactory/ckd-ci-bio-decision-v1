@@ -22,6 +22,25 @@ npm run smoke:v35:static && npm run typecheck && npm run build
 npm run smoke:v35:static
 ```
 
+## 정적 smoke 자동 확인 범위
+
+`npm run smoke:v35:static`은 화면을 직접 열기 전에 아래 구조를 자동으로 확인합니다.
+
+- 필수 파일 존재 여부
+- `package.json` smoke script 연결
+- `journey.html`과 `journey-v35-preview.html` entry 연결
+- `vite.config.ts`의 `journeyV35Preview` build input 유지
+- `vercel.json`의 `/` → `/journey.html` redirect 유지
+- `full-flow-journey-v35.tsx`의 v34 위임 import 유지
+- v35 app의 Shell/router/state 조립 구조 유지
+- `V35_STORAGE_KEYS` 전체 key 유지
+- v35 preview config에서 v34 운영 key `c1bio_flow_` 미사용
+- `V35_APP_STEPS` 9개 step id 유지
+- router `case 0:`~`case 8:` 유지
+- `J01-entry`~`J09-presentation-checklist` 저장 key 유지
+- `V35PreviewSmokePanel`, `V35PreviewDebugPanel` 연결 유지
+- `v35-preview-smoke-panel`, `v35-preview-debug-panel` test id 유지
+
 ## 확인 URL 기준
 
 최종 검증과 교육생 공유에는 production domain을 사용합니다.
