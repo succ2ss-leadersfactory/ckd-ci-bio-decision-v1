@@ -4,6 +4,7 @@ const failures = [];
 const cache = new Map();
 
 const requiredFiles = [
+  'README.md',
   'journey.html',
   'journey-v35-preview.html',
   'package.json',
@@ -244,6 +245,12 @@ function assertBrowserQaDocs() {
   }
 }
 
+function assertReadmeV35Entry() {
+  for (const text of ['v35 검증 상태', 'docs/v35-validation-index.md', 'Actions → v35 Smoke → Run workflow', 'Actions → v35 Remote Smoke → Run workflow', 'Actions → v35 Readiness Audit → Run workflow', '/journey.html', '/journey-v35-preview.html', 'npm run smoke:v35', 'npm run audit:v35:readiness', 'cutover는 아직 진행하지 않습니다']) {
+    mustInclude('README.md', text, `README.md must include ${text}.`);
+  }
+}
+
 for (const file of requiredFiles) readText(file);
 assertPackageScripts();
 assertV35TsConfig();
@@ -253,6 +260,7 @@ assertV35ConfigAndRouter();
 assertSavedStateKeys();
 assertWorkflowCoverage();
 assertBrowserQaDocs();
+assertReadmeV35Entry();
 
 if (failures.length > 0) {
   console.error('v35 static smoke check failed.');
