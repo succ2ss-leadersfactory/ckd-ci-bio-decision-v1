@@ -6,6 +6,7 @@ const requiredFiles = [
   'package.json',
   'vercel.json',
   'vite.config.ts',
+  'scripts/smoke-v35-dist.mjs',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
   'src/full-flow-journey-v35.tsx',
@@ -205,12 +206,22 @@ function assertPackageScripts() {
     return;
   }
 
-  if (packageJson.scripts['smoke:v35:static'] !== 'node scripts/smoke-v35-static.mjs') {
+  const scripts = packageJson.scripts;
+
+  if (scripts['smoke:v35:static'] !== 'node scripts/smoke-v35-static.mjs') {
     fail('package.json smoke:v35:static must run node scripts/smoke-v35-static.mjs.');
   }
 
-  if (packageJson.scripts['smoke:v35'] !== 'npm run smoke:v35:static && npm run typecheck && npm run build') {
-    fail('package.json smoke:v35 must run static, typecheck, then build.');
+  if (scripts['smoke:v35:dist'] !== 'node scripts/smoke-v35-dist.mjs') {
+    fail('package.json smoke:v35:dist must run node scripts/smoke-v35-dist.mjs.');
+  }
+
+  const smokeV35 = scripts['smoke:v35'] ?? '';
+  const requiredCommands = ['npm run smoke:v35:static', 'npm run typecheck', 'npm run build', 'npm run smoke:v35:dist'];
+  for (const command of requiredCommands) {
+    if (!smokeV35.includes(command)) {
+      fail(`package.json smoke:v35 must include ${command}.`);
+    }
   }
 }
 
