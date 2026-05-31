@@ -95,6 +95,24 @@ const requiredTextChecks = [
     text: 'FullFlowJourneyV35App',
     message: 'journey-v35-app-preview.tsx must render FullFlowJourneyV35App.',
   },
+  {
+    file: 'src/journey-v35-preview-config.ts',
+    text: 'c1bio_v35_preview_step',
+    message: 'v35 preview config must define preview-specific step storage key.',
+  },
+  {
+    file: 'src/journey-v35-preview-config.ts',
+    text: 'c1bio_v35_preview_state',
+    message: 'v35 preview config must define preview-specific state storage key.',
+  },
+];
+
+const forbiddenTextChecks = [
+  {
+    file: 'src/journey-v35-preview-config.ts',
+    text: 'c1bio_flow_',
+    message: 'v35 preview config must not use v34 c1bio_flow_ storage keys.',
+  },
 ];
 
 const failures = [];
@@ -112,6 +130,17 @@ for (const check of requiredTextChecks) {
 
   const content = readFileSync(check.file, 'utf8');
   if (!content.includes(check.text)) {
+    failures.push(check.message);
+  }
+}
+
+for (const check of forbiddenTextChecks) {
+  if (!existsSync(check.file)) {
+    continue;
+  }
+
+  const content = readFileSync(check.file, 'utf8');
+  if (content.includes(check.text)) {
     failures.push(check.message);
   }
 }
