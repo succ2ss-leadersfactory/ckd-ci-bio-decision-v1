@@ -121,6 +121,18 @@ const requiredStepIds = [
 
 const requiredRouterCases = ['case 0:', 'case 1:', 'case 2:', 'case 3:', 'case 4:', 'case 5:', 'case 6:', 'case 7:', 'case 8:'];
 
+const requiredSaveKeyChecks = [
+  { file: 'src/journey-entry.tsx', key: 'J01-entry' },
+  { file: 'src/journey-prompt-practice.tsx', key: 'J02-prompt' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J03-strategy-issue-review' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J04-source-check' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J05-notebook-source-prep' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J06-notebook-readiness-check' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J07-studio-report' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J08-studio-slides' },
+  { file: 'src/journey-v35-preview-steps.tsx', key: 'J09-presentation-checklist' },
+];
+
 const forbiddenTextChecks = [
   {
     file: 'src/journey-v35-preview-config.ts',
@@ -163,6 +175,17 @@ if (existsSync('src/journey-v35-preview-router.tsx')) {
     if (!routerContent.includes(routerCase)) {
       failures.push(`renderV35PreviewStep must include ${routerCase}`);
     }
+  }
+}
+
+for (const check of requiredSaveKeyChecks) {
+  if (!existsSync(check.file)) {
+    continue;
+  }
+
+  const content = readFileSync(check.file, 'utf8');
+  if (!content.includes(check.key)) {
+    failures.push(`${check.file} must save ${check.key}`);
   }
 }
 
