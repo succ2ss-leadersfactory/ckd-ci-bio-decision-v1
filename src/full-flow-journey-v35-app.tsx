@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { StrategyIssueReview } from './journey-strategy-issue-review';
+import { SourceCheckSection } from './journey-source-check';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
 import type { IssueNote } from './journey-components';
@@ -11,6 +12,8 @@ const V35_STORAGE_KEYS = {
   participant: 'c1bio_v35_preview_participant',
   state: 'c1bio_v35_preview_state',
   notes: 'c1bio_v35_preview_strategy_notes',
+  sourceChecks: 'c1bio_v35_preview_source_checks',
+  sourceRisk: 'c1bio_v35_preview_source_risk',
 };
 
 const V35_APP_STEPS: JourneyStep[] = [
@@ -28,6 +31,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'strategy-issue-review',
     title: '전략 이슈 검토',
     description: '전략 이슈 메모를 v35 preview localStorage에 저장하며 화면 전환 안정성을 확인합니다.',
+  },
+  {
+    id: 'source-check',
+    title: 'Source Check',
+    description: '출처 확인 체크와 위험 메모를 v35 preview localStorage에 저장합니다.',
   },
 ];
 
@@ -83,7 +91,7 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
           <p>아직 미연동</p>
         </div>
       </div>
-      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}</p>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}</p>
       <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
         v35 preview 저장 초기화
       </button>
@@ -91,11 +99,25 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
   );
 }
 
-function V35PreviewDebugPanel({ participant, savedState, notes }: { participant: ParticipantInfo; savedState: JsonRecord; notes: IssueNote[] }) {
+function V35PreviewDebugPanel({
+  participant,
+  savedState,
+  notes,
+  sourceChecks,
+  sourceRisk,
+}: {
+  participant: ParticipantInfo;
+  savedState: JsonRecord;
+  notes: IssueNote[];
+  sourceChecks: string[];
+  sourceRisk: string;
+}) {
   const debugPayload = {
     participant,
     savedState,
     notes,
+    sourceChecks,
+    sourceRisk,
   };
 
   return (
@@ -123,11 +145,39 @@ function StrategyIssueReviewStep({ notes, setNotes, save }: { notes: IssueNote[]
   );
 }
 
+function SourceCheckStep({
+  sourceChecks,
+  setSourceChecks,
+  sourceRisk,
+  setSourceRisk,
+  save,
+}: {
+  sourceChecks: string[];
+  setSourceChecks: (checks: string[]) => void;
+  sourceRisk: string;
+  setSourceRisk: (value: string) => void;
+  save: (key: string, payload: JsonRecord) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      <SourceCheckSection checks={sourceChecks} setChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">Source Check 입력값은 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 체크 결과를 savedState에도 명시적으로 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J04-source-check', { sourceChecks, sourceRisk })}>
+          Source Check 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [savedState, setSavedState] = useStored<JsonRecord>(V35_STORAGE_KEYS.state, {});
   const [notes, setNotes] = useStored<IssueNote[]>(V35_STORAGE_KEYS.notes, createEmptyIssueNotes());
+  const [sourceChecks, setSourceChecks] = useStored<string[]>(V35_STORAGE_KEYS.sourceChecks, []);
+  const [sourceRisk, setSourceRisk] = useStored<string>(V35_STORAGE_KEYS.sourceRisk, '');
 
   const safeStep = clampStep(step);
 
@@ -149,8 +199,10 @@ export function FullFlowJourneyV35App() {
       case 1:
         return <PromptPracticeScreen save={save} />;
       case 2:
-      default:
         return <StrategyIssueReviewStep notes={notes} setNotes={setNotes} save={save} />;
+      case 3:
+      default:
+        return <SourceCheckStep sourceChecks={sourceChecks} setSourceChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} save={save} />;
     }
   };
 
@@ -165,7 +217,7 @@ export function FullFlowJourneyV35App() {
     >
       {renderCurrentStep()}
       <V35PreviewSmokePanel step={safeStep} />
-      <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} />
+      <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} />
     </JourneyShell>
   );
 }
