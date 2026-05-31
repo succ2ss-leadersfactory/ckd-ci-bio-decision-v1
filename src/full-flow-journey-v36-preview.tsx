@@ -7,6 +7,7 @@ import { DashboardAnalysisLab } from './journey-v36-dashboard-analysis-lab';
 import { HqTranslationLab } from './journey-v36-hq-translation-lab';
 import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
+import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { SourceCheckLab } from './journey-v36-source-check-lab';
 import { StakeholderMessageLab } from './journey-v36-stakeholder-message-lab';
@@ -98,6 +99,7 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
+  if (current.id === 'prompt-practice') return <PromptPracticeLab />;
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
   if (current.id === 'source-check') return <SourceCheckLab />;
   if (current.id === 'dashboard-analysis') return <DashboardAnalysisLab />;
