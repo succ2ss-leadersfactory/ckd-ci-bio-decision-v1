@@ -327,13 +327,17 @@ function assertReadmeV35Entry() {
     '/journey-v35-preview.html',
     'npm run smoke:v35',
     'npm run audit:v35:readiness',
-    'cutover는 아직 진행하지 않습니다',
   ];
 
   for (const phrase of requiredPhrases) {
     if (!readme.includes(phrase)) {
       fail(`README.md must include ${phrase}.`);
     }
+  }
+
+  const hasCutoverHold = readme.includes('cutover는 아직 진행하지 않습니다') || readme.includes('현재 cutover는 진행하지 않습니다');
+  if (!hasCutoverHold) {
+    fail('README.md must state that cutover is not currently being performed.');
   }
 }
 
