@@ -13,7 +13,13 @@ npm run smoke:v35
 실행 내용은 다음과 같다.
 
 ```bash
-npm run typecheck && npm run build
+npm run smoke:v35:static && npm run typecheck && npm run build
+```
+
+정적 구조 검사만 따로 실행하려면 아래 명령을 사용한다.
+
+```bash
+npm run smoke:v35:static
 ```
 
 ## 2. 로컬 확인 순서
@@ -38,6 +44,7 @@ http://localhost:4173/journey-v35-preview.html
 
 GitHub에 push하기 전에 아래 조건을 확인한다.
 
+- `npm run smoke:v35:static`이 통과한다.
 - `npm run smoke:v35`가 통과한다.
 - `vite.config.ts`에 `journeyV35Preview` input이 유지되어 있다.
 - `vercel.json`에 `/` → `/journey.html` redirect가 유지되어 있다.
@@ -72,11 +79,12 @@ docs/v35-preview-smoke-result.md
 
 초기에는 다음 순서가 안전하다.
 
-1. 로컬에서 `npm run smoke:v35` 수동 실행
-2. Vercel production domain에서 수동 화면 확인
-3. smoke 결과 문서 기록
-4. 필요 시 GitHub Actions 추가
-5. GitHub Actions가 안정화되면 PR 또는 main push 기준으로 자동 smoke check 실행
+1. 로컬에서 `npm run smoke:v35:static` 수동 실행
+2. 로컬에서 `npm run smoke:v35` 수동 실행
+3. Vercel production domain에서 수동 화면 확인
+4. smoke 결과 문서 기록
+5. 필요 시 GitHub Actions 추가
+6. GitHub Actions가 안정화되면 PR 또는 main push 기준으로 자동 smoke check 실행
 
 ## 7. 현재 판단
 
