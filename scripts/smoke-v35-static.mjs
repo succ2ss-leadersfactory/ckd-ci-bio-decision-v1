@@ -107,6 +107,20 @@ const requiredTextChecks = [
   },
 ];
 
+const requiredStepIds = [
+  'entry',
+  'prompt-practice',
+  'strategy-issue-review',
+  'source-check',
+  'notebook-source-prep',
+  'notebook-readiness-check',
+  'studio-report',
+  'studio-slides',
+  'presentation-checklist',
+];
+
+const requiredRouterCases = ['case 0:', 'case 1:', 'case 2:', 'case 3:', 'case 4:', 'case 5:', 'case 6:', 'case 7:', 'case 8:'];
+
 const forbiddenTextChecks = [
   {
     file: 'src/journey-v35-preview-config.ts',
@@ -131,6 +145,24 @@ for (const check of requiredTextChecks) {
   const content = readFileSync(check.file, 'utf8');
   if (!content.includes(check.text)) {
     failures.push(check.message);
+  }
+}
+
+if (existsSync('src/journey-v35-preview-config.ts')) {
+  const configContent = readFileSync('src/journey-v35-preview-config.ts', 'utf8');
+  for (const stepId of requiredStepIds) {
+    if (!configContent.includes(`id: '${stepId}'`)) {
+      failures.push(`V35_APP_STEPS must include step id: ${stepId}`);
+    }
+  }
+}
+
+if (existsSync('src/journey-v35-preview-router.tsx')) {
+  const routerContent = readFileSync('src/journey-v35-preview-router.tsx', 'utf8');
+  for (const routerCase of requiredRouterCases) {
+    if (!routerContent.includes(routerCase)) {
+      failures.push(`renderV35PreviewStep must include ${routerCase}`);
+    }
   }
 }
 
