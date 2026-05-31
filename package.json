@@ -4,6 +4,7 @@
     "build": "vite build",
     "typecheck": "npm run typecheck:v35",
     "typecheck:v35": "tsc -p tsconfig.v35-smoke.json --noEmit",
+    "typecheck:v36": "tsc -p tsconfig.v36-smoke.json --noEmit",
     "typecheck:full": "tsc --noEmit",
     "smoke:v35:static": "node scripts/smoke-v35-static.mjs",
     "smoke:v35:dist": "node scripts/smoke-v35-dist.mjs",
@@ -11,6 +12,8 @@
     "preflight:v35:cutover": "node scripts/preflight-v35-cutover.mjs",
     "audit:v35:readiness": "node scripts/audit-v35-readiness.mjs",
     "smoke:v35": "npm run smoke:v35:static && npm run typecheck:v35 && npm run build && npm run smoke:v35:dist && npm run preflight:v35:cutover",
+    "smoke:v36:static": "node scripts/smoke-v36-static.mjs",
+    "smoke:v36": "npm run smoke:v36:static && npm run typecheck:v36 && npm run build",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
