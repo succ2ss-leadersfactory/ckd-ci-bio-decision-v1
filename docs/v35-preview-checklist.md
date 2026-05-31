@@ -2,13 +2,29 @@
 
 이 문서는 `v35` 독립 실행 전환 전, preview 경로에서 확인해야 할 항목을 정리한 체크리스트입니다.
 
+## 확인 URL 기준
+
+최종 검증과 교육생 공유에는 production domain을 사용합니다.
+
+```txt
+https://ckd-ci-bio-decision-v1.vercel.app/
+```
+
+suffix가 붙은 deployment URL은 특정 배포본을 가리킬 수 있으므로 최신 commit이 반영되지 않았을 수 있습니다.
+
+```txt
+https://ckd-ci-bio-decision-v1-xxxxxxx.vercel.app/
+```
+
 ## 확인 경로
 
+- 루트 경로: `/` → `/journey.html` redirect 확인
 - 운영 경로: `/journey.html`
 - preview 경로: `/journey-v35-preview.html`
 
 ## 운영 경로 확인
 
+- `/` 접속 시 `/journey.html`로 redirect되는지 확인한다.
 - `/journey.html` 접속 시 기존 v34 화면이 정상 표시되는지 확인한다.
 - `journey-active.tsx`와 `full-flow-journey-v34.tsx`가 수정되지 않았는지 확인한다.
 - Google Sheets 연동이 기존처럼 유지되는지 확인한다.
