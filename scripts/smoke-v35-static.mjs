@@ -15,6 +15,7 @@ const requiredFiles = [
   'scripts/preflight-v35-cutover.mjs',
   '.github/workflows/v35-smoke.yml',
   '.github/workflows/v35-remote-smoke.yml',
+  '.github/workflows/v35-readiness-audit.yml',
   'docs/v35-browser-qa-result.md',
   'docs/v35-browser-qa-console-snippet.md',
   'src/vite-env.d.ts',
@@ -220,6 +221,7 @@ function assertWorkflowCoverage() {
   }
   if (smokeWorkflow.includes('npm run typecheck\n')) fail('v35-smoke.yml must not run full npm run typecheck.');
   mustInclude('.github/workflows/v35-remote-smoke.yml', 'npm run smoke:v35:remote', 'v35-remote-smoke.yml must run remote smoke.');
+  mustInclude('.github/workflows/v35-readiness-audit.yml', 'npm run audit:v35:readiness', 'v35-readiness-audit.yml must run readiness audit.');
 }
 
 function assertBrowserQaDocs() {
