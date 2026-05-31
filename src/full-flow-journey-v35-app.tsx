@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { JourneyShell, type JourneyStep } from './journey-shell';
-import { getJson, setJson, useStored, type JsonRecord } from './journey-storage';
+import { useStored, type JsonRecord } from './journey-storage';
 
 const V35_STORAGE_KEYS = {
   step: 'c1bio_v35_preview_step',
@@ -69,21 +69,37 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
   );
 }
 
+function V35PreviewDebugPanel({ participant, savedState }: { participant: ParticipantInfo; savedState: JsonRecord }) {
+  const debugPayload = {
+    participant,
+    savedState,
+  };
+
+  return (
+    <aside className="mt-4 rounded-2xl border bg-white p-4 text-sm shadow-sm" data-testid="v35-preview-debug-panel">
+      <h3 className="font-bold text-slate-900">v35 Preview Debug JSON</h3>
+      <p className="mt-1 text-slate-600">화면 전환과 저장 결과를 개발자도구 없이 확인하기 위한 preview 전용 패널입니다.</p>
+      <pre className="mt-3 max-h-72 overflow-auto rounded-xl bg-slate-100 p-3 text-xs leading-relaxed text-slate-800">
+        {JSON.stringify(debugPayload, null, 2)}
+      </pre>
+    </aside>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
+  const [savedState, setSavedState] = useStored<JsonRecord>(V35_STORAGE_KEYS.state, {});
 
   const safeStep = clampStep(step);
 
   const save = useCallback((key: string, payload: JsonRecord) => {
-    const currentState = getJson<JsonRecord>(V35_STORAGE_KEYS.state, {});
-
-    setJson(V35_STORAGE_KEYS.state, {
-      ...currentState,
+    setSavedState({
+      ...savedState,
       [key]: payload,
       v35AppLastSavedAt: new Date().toISOString(),
     });
-  }, []);
+  }, [savedState, setSavedState]);
 
   return (
     <JourneyShell
@@ -100,6 +116,7 @@ export function FullFlowJourneyV35App() {
         <PromptPracticeScreen save={save} />
       )}
       <V35PreviewSmokePanel step={safeStep} />
+      <V35PreviewDebugPanel participant={participant} savedState={savedState} />
     </JourneyShell>
   );
 }
