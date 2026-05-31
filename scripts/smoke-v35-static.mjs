@@ -15,6 +15,8 @@ const requiredFiles = [
   'scripts/preflight-v35-cutover.mjs',
   '.github/workflows/v35-smoke.yml',
   '.github/workflows/v35-remote-smoke.yml',
+  'docs/v35-browser-qa-result.md',
+  'docs/v35-browser-qa-console-snippet.md',
   'src/vite-env.d.ts',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
@@ -220,6 +222,16 @@ function assertWorkflowCoverage() {
   mustInclude('.github/workflows/v35-remote-smoke.yml', 'npm run smoke:v35:remote', 'v35-remote-smoke.yml must run remote smoke.');
 }
 
+function assertBrowserQaDocs() {
+  for (const text of ['브라우저 QA 전체 판정:', 'Console snippet 근거:', 'J01~J09 저장 여부:', 'localStorage key 분리 여부:', 'cutover 검토 가능 여부:']) {
+    mustInclude('docs/v35-browser-qa-result.md', text, `docs/v35-browser-qa-result.md must include ${text}.`);
+  }
+
+  for (const text of ['requiredPreviewKeys', 'requiredSavedStateKeys', 'missingPreviewKeys', 'missingSavedStateKeys', 'v34FlowKeysFound', 'pass']) {
+    mustInclude('docs/v35-browser-qa-console-snippet.md', text, `docs/v35-browser-qa-console-snippet.md must include ${text}.`);
+  }
+}
+
 for (const file of requiredFiles) readText(file);
 assertPackageScripts();
 assertV35TsConfig();
@@ -228,6 +240,7 @@ assertRuntimeGuards();
 assertV35ConfigAndRouter();
 assertSavedStateKeys();
 assertWorkflowCoverage();
+assertBrowserQaDocs();
 
 if (failures.length > 0) {
   console.error('v35 static smoke check failed.');
