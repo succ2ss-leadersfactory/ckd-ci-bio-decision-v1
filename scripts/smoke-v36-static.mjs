@@ -15,6 +15,7 @@ const requiredFiles = [
   'src/full-flow-journey-v35.tsx',
   'src/journey-v36-app-preview.tsx',
   'src/full-flow-journey-v36-preview.tsx',
+  'src/journey-v36-customer-call-plan-lab.tsx',
   'src/journey-v36-preview-config.ts',
 ];
 
@@ -105,6 +106,7 @@ for (const file of [
   'src/vite-env.d.ts',
   'src/journey-v36-app-preview.tsx',
   'src/full-flow-journey-v36-preview.tsx',
+  'src/journey-v36-customer-call-plan-lab.tsx',
   'src/journey-v36-preview-config.ts',
   'src/journey-shell.tsx',
   'src/journey-storage.ts',
@@ -129,8 +131,29 @@ for (const key of requiredStorageKeys) {
 }
 
 const v36App = readCode('src/full-flow-journey-v36-preview.tsx');
-for (const text of ['고객군 판단 / 콜플랜 Lab', 'Lab Standard', 'AI 안전선', 'v36 Preview Smoke']) {
-  if (!v36App.includes(text)) fail(`full-flow-journey-v36-preview.tsx must include ${text}.`);
+if (!v36App.includes('CustomerCallPlanLab')) fail('full-flow-journey-v36-preview.tsx must render CustomerCallPlanLab.');
+if (!v36App.includes('AI 안전선')) fail('full-flow-journey-v36-preview.tsx must include AI safety notice text.');
+if (!v36App.includes('v36 Preview Smoke')) fail('full-flow-journey-v36-preview.tsx must include v36 Preview Smoke panel.');
+
+const customerLab = readCode('src/journey-v36-customer-call-plan-lab.tsx');
+for (const text of [
+  'CustomerCallPlanLab',
+  'CUSTOMER_SEGMENTS',
+  'TEAM_MEMBERS',
+  'REVIEW_ITEMS',
+  'RISK_EXPRESSIONS',
+  'AI 답변 붙여넣기',
+  '컴플라이언스 위험 표현 제거',
+  '최종 산출물: 2주 콜플랜',
+  '강사용 토의 질문',
+]) {
+  if (!customerLab.includes(text)) fail(`journey-v36-customer-call-plan-lab.tsx must include ${text}.`);
+}
+for (const member of ['신재영 대리', '이대은 대리', '박재욱 사원', '유희관 과장', '김문호 차장', '김재호 차장']) {
+  if (!customerLab.includes(member)) fail(`CustomerCallPlanLab must include fixed team member ${member}.`);
+}
+for (const segment of ['A군', 'B군', 'C군', 'D군']) {
+  if (!customerLab.includes(segment)) fail(`CustomerCallPlanLab must include customer segment ${segment}.`);
 }
 
 for (const forbidden of ['src/full-flow-journey-v34.tsx', 'src/journey-active.tsx', 'src/full-flow-journey-v35.tsx']) {
@@ -140,6 +163,8 @@ for (const forbidden of ['src/full-flow-journey-v34.tsx', 'src/journey-active.ts
 
 mustNotMatch('src/full-flow-journey-v36-preview.tsx', /import\s+['"]\.\/full-flow-journey-v34['"]/, 'v36 preview shell must not import v34 directly.');
 mustNotMatch('src/full-flow-journey-v36-preview.tsx', /import\s+['"]\.\/full-flow-journey-v35['"]/, 'v36 preview shell must not import v35 staging entry.');
+mustNotMatch('src/journey-v36-customer-call-plan-lab.tsx', /병원명\s*[:=]/, 'CustomerCallPlanLab must not define real hospital names.');
+mustNotMatch('src/journey-v36-customer-call-plan-lab.tsx', /제품명\s*[:=]/, 'CustomerCallPlanLab must not define real product names.');
 
 if (failures.length > 0) {
   console.error('v36 static smoke failed:');
