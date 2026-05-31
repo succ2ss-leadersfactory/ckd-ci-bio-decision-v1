@@ -7,24 +7,25 @@ Status: Automated checks passed / Pending browser QA
 ## Scope
 
 - Route: `/journey-v36-preview.html`
-- Feature: v36 preview shell + 3 Full Labs + 2 Lite+ Labs
+- Feature: v36 preview shell + 3 Full Labs + 2 Lite+ Labs + 1 Wrap-up Lab
   - Step 7: CustomerCallPlanLab
   - Step 9: HqTranslationLab
   - Step 10: StakeholderMessageLab
   - Step 11: PerformanceDialogueLab
   - Step 12: OneOnOneCoachingLab
+  - Step 13: WrapUpLab
 - Operating route protection: `/journey.html` remains v34
 - v35 preview protection: `/journey-v35-preview.html` remains v35
-- Verified commit: `78353531f776ffd06ccdeba8a18e10f30494a781`
+- Verified commit: `3ad44056992c38501cc5ce17d071f16e6378ef81`
 
 ## Automated checks
 
 | Check | Status | Notes |
 |---|---|---|
 | `npm run smoke:v36:static` | PASS | Run through v36 Smoke workflow |
-| `npm run typecheck:v36` | PASS | Includes Full Labs and Lite+ Labs added so far |
+| `npm run typecheck:v36` | PASS | Includes all v36 Lab files added so far |
 | `npm run build` | PASS | Run through v36 Smoke workflow |
-| `npm run smoke:v36:dist` | PASS | Confirms dist bundle includes v36 route and user-visible v36 markers |
+| `npm run smoke:v36:dist` | PASS | Confirms dist bundle includes v36 route markers |
 | `npm run smoke:v36` | PASS | Integrated v36 check |
 | `npm run smoke:v35` | PASS | Regression guard passed |
 | `C1Bio MVP CI` | PASS | Existing CI remained passing |
@@ -37,42 +38,15 @@ Status: Automated checks passed / Pending browser QA
 | `/journey.html` regression | Pending | Must remain v34 operating route |
 | `/journey-v35-preview.html` regression | Pending | Must remain v35 preview route |
 | `/journey-v36-preview.html` render | Pending | Must render v36 title and 13-step flow |
-| Step 1 entry save/restore | Pending | `ckd-v36-participant`, `ckd-v36-progress` |
-| Step 7 CustomerCallPlanLab render | Pending | Full Lab screen |
-| Step 7 customer A-D cards | Pending | A/B/C/D cards and data |
-| Step 7 team member 6 cards | Pending | Fixed 6 team members |
-| Step 7 focus/deprioritized dropdowns | Pending | Choice updates prompt |
-| Step 7 member role assignment | Pending | Role edits persist |
-| Step 7 prompt copy | Pending | Copy success/failure message |
-| Step 7 AI paste area | Pending | Long text input and restore |
-| Step 7 review checklist | Pending | 8 criteria and count update |
-| Step 7 risk expression checklist | Pending | Risk count update |
-| Step 7 final call plan | Pending | 10 output fields |
-| Step 9 HqTranslationLab render | Pending | Lite+ Lab screen |
-| Step 9 brief selection | Pending | Selected brief data changes |
-| Step 9 translation fields | Pending | Intent, misunderstanding, team message, customer action, actions to avoid, HQ feedback |
-| Step 9 checklist/copy output | Pending | Checklist count and final output copy |
-| Step 10 StakeholderMessageLab render | Pending | Lite+ Lab screen |
-| Step 10 strategy selection | Pending | Selected strategy changes |
-| Step 10 stakeholder messages | Pending | Senior, HQ, team, peer messages |
-| Step 10 consistency/safety checks | Pending | Consistency, safety revision, checklist count |
-| Step 10 copy output | Pending | Final message output copy |
-| Step 11 PerformanceDialogueLab render | Pending | Full Lab screen |
-| Step 11 member selection | Pending | Selected member data changes |
-| Step 11 prompt copy | Pending | Copy success/failure message |
-| Step 11 AI paste area | Pending | Long text input and restore |
-| Step 11 review checklist | Pending | 8 criteria and count update |
-| Step 11 risk sentence checklist | Pending | Risk count update |
-| Step 11 final dialogue plan | Pending | 7 output fields |
-| Step 12 OneOnOneCoachingLab render | Pending | Full Lab screen |
-| Step 12 member selection | Pending | Selected member data changes |
-| Step 12 prompt copy | Pending | Copy success/failure message |
-| Step 12 AI paste area | Pending | Long text input and restore |
-| Step 12 review checklist | Pending | 8 criteria and count update |
-| Step 12 risk coaching expression checklist | Pending | Risk count update |
-| Step 12 final coaching plan | Pending | 8 output fields |
+| Step 1 entry save/restore | Pending | Participant and progress storage |
+| Step 7 CustomerCallPlanLab | Pending | Full Lab end-to-end check |
+| Step 9 HqTranslationLab | Pending | Lite+ Lab end-to-end check |
+| Step 10 StakeholderMessageLab | Pending | Lite+ Lab end-to-end check |
+| Step 11 PerformanceDialogueLab | Pending | Full Lab end-to-end check |
+| Step 12 OneOnOneCoachingLab | Pending | Full Lab end-to-end check |
+| Step 13 WrapUpLab | Pending | 7-day plan, 30-day criteria, declaration, copy output |
 | Facilitator summaries | Pending | Summary and discussion questions across Labs |
-| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md`; extend manually for Step 9/10/11/12 storage keys if needed |
+| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md` and add Step 13 storage key if needed |
 | Mobile/tablet layout | Pending | No major overflow or blocked controls |
 | Console errors | Pending | No blocking runtime errors |
 
@@ -91,30 +65,14 @@ Device:
 /journey-v35-preview.html regression:
 /journey-v36-preview.html render:
 Step 1 entry save/restore:
-Step 7 CustomerCallPlanLab render:
-Step 7 prompt copy:
-Step 7 AI paste area:
-Step 7 review/risk checklist:
-Step 7 final call plan fields:
-Step 9 HqTranslationLab render:
-Step 9 brief/translation/copy:
-Step 10 StakeholderMessageLab render:
-Step 10 strategy/messages/copy:
-Step 11 PerformanceDialogueLab render:
-Step 11 prompt copy:
-Step 11 AI paste area:
-Step 11 review/risk checklist:
-Step 11 final dialogue plan fields:
-Step 12 OneOnOneCoachingLab render:
-Step 12 prompt copy:
-Step 12 AI paste area:
-Step 12 review/risk checklist:
-Step 12 final coaching plan fields:
+Step 7 CustomerCallPlanLab:
+Step 9 HqTranslationLab:
+Step 10 StakeholderMessageLab:
+Step 11 PerformanceDialogueLab:
+Step 12 OneOnOneCoachingLab:
+Step 13 WrapUpLab:
 localStorage restore:
 Console snippet pass:
-missingTextMarkers:
-missingStorageKeys:
-storageKeysPresentAfterInput:
 Mobile/tablet layout:
 Console errors:
 
@@ -130,9 +88,5 @@ v36 PR should remain Draft until:
 3. Vercel deployment succeeds. ✅
 4. Browser QA is recorded in this document.
 5. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
-6. CustomerCallPlanLab Step 7 checks pass on at least desktop and one mobile/tablet viewport.
-7. HqTranslationLab Step 9 checks pass on at least desktop and one mobile/tablet viewport.
-8. StakeholderMessageLab Step 10 checks pass on at least desktop and one mobile/tablet viewport.
-9. PerformanceDialogueLab Step 11 checks pass on at least desktop and one mobile/tablet viewport.
-10. OneOnOneCoachingLab Step 12 checks pass on at least desktop and one mobile/tablet viewport.
-11. Console snippet evidence is recorded after Lab input.
+6. Step 7, Step 9, Step 10, Step 11, Step 12, and Step 13 checks pass on desktop and one mobile/tablet viewport.
+7. Console snippet evidence is recorded after Lab input.
