@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/journey-v36-app-preview.tsx",
+    "src/full-flow-journey-v36-preview.tsx",
+    "src/journey-v36-preview-config.ts",
+    "src/journey-shell.tsx",
+    "src/journey-storage.ts"
+  ]
+}
