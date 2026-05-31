@@ -19,11 +19,21 @@ import { StudioSlidesSection } from './journey-studio-slides';
 import { PresentationChecklist } from './journey-presentation-checklist';
 import { JourneyShell } from './journey-shell';
 import { FullFlowJourneyV35App } from './full-flow-journey-v35-app';
+import { clampStep, createEmptyIssueNotes, V35_APP_STEPS, V35_STORAGE_KEYS, V35_STRATEGY_SCENARIO_TITLE } from './journey-v35-preview-config';
+import { V35PreviewDebugPanel, V35PreviewSmokePanel } from './journey-v35-preview-panels';
+import { NotebookReadinessCheckStep, NotebookSourcePrepStep, PresentationChecklistStep, SourceCheckStep, StrategyIssueReviewStep, StudioReportStep, StudioSlidesStep } from './journey-v35-preview-steps';
+import { renderV35PreviewStep } from './journey-v35-preview-router';
+import { resetV35PreviewStorage, useV35PreviewState } from './journey-v35-preview-state';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
   shell: { JourneyShell },
   app: { FullFlowJourneyV35App },
+  previewConfig: { clampStep, createEmptyIssueNotes, V35_APP_STEPS, V35_STORAGE_KEYS, V35_STRATEGY_SCENARIO_TITLE },
+  previewPanels: { V35PreviewDebugPanel, V35PreviewSmokePanel },
+  previewSteps: { NotebookReadinessCheckStep, NotebookSourcePrepStep, PresentationChecklistStep, SourceCheckStep, StrategyIssueReviewStep, StudioReportStep, StudioSlidesStep },
+  previewRouter: { renderV35PreviewStep },
+  previewState: { resetV35PreviewStorage, useV35PreviewState },
   screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview, SourceCheckSection, NotebookSourcePrep, NotebookReadinessCheck, StudioReportSection, StudioSlidesSection, PresentationChecklist },
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
