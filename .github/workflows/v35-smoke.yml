@@ -40,5 +40,8 @@ jobs:
       - name: Run v35 dist smoke check
         run: npm run smoke:v35:dist
 
+      - name: Run v35 cutover preflight guard
+        run: npm run preflight:v35:cutover
+
       - name: Run integrated v35 smoke check
         run: npm run smoke:v35
