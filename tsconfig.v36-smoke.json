@@ -12,6 +12,7 @@
     "src/journey-v36-stakeholder-message-lab.tsx",
     "src/journey-v36-performance-dialogue-lab.tsx",
     "src/journey-v36-one-on-one-coaching-lab.tsx",
+    "src/journey-v36-wrap-up-lab.tsx",
     "src/journey-v36-preview-config.ts",
     "src/journey-shell.tsx",
     "src/journey-storage.ts"
