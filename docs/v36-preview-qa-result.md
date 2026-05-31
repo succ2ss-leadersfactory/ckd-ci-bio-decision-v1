@@ -7,20 +7,22 @@ Status: Automated checks passed / Pending browser QA
 ## Scope
 
 - Route: `/journey-v36-preview.html`
-- Feature: v36 preview shell + 3 Full Labs
+- Feature: v36 preview shell + 3 Full Labs + 2 Lite+ Labs
   - Step 7: CustomerCallPlanLab
+  - Step 9: HqTranslationLab
+  - Step 10: StakeholderMessageLab
   - Step 11: PerformanceDialogueLab
   - Step 12: OneOnOneCoachingLab
 - Operating route protection: `/journey.html` remains v34
 - v35 preview protection: `/journey-v35-preview.html` remains v35
-- Verified commit: `b6174799e47981787a4dc652a776141de383961a`
+- Verified commit: `78353531f776ffd06ccdeba8a18e10f30494a781`
 
 ## Automated checks
 
 | Check | Status | Notes |
 |---|---|---|
 | `npm run smoke:v36:static` | PASS | Run through v36 Smoke workflow |
-| `npm run typecheck:v36` | PASS | Includes CustomerCallPlanLab, PerformanceDialogueLab, OneOnOneCoachingLab |
+| `npm run typecheck:v36` | PASS | Includes Full Labs and Lite+ Labs added so far |
 | `npm run build` | PASS | Run through v36 Smoke workflow |
 | `npm run smoke:v36:dist` | PASS | Confirms dist bundle includes v36 route and user-visible v36 markers |
 | `npm run smoke:v36` | PASS | Integrated v36 check |
@@ -46,6 +48,15 @@ Status: Automated checks passed / Pending browser QA
 | Step 7 review checklist | Pending | 8 criteria and count update |
 | Step 7 risk expression checklist | Pending | Risk count update |
 | Step 7 final call plan | Pending | 10 output fields |
+| Step 9 HqTranslationLab render | Pending | Lite+ Lab screen |
+| Step 9 brief selection | Pending | Selected brief data changes |
+| Step 9 translation fields | Pending | Intent, misunderstanding, team message, customer action, actions to avoid, HQ feedback |
+| Step 9 checklist/copy output | Pending | Checklist count and final output copy |
+| Step 10 StakeholderMessageLab render | Pending | Lite+ Lab screen |
+| Step 10 strategy selection | Pending | Selected strategy changes |
+| Step 10 stakeholder messages | Pending | Senior, HQ, team, peer messages |
+| Step 10 consistency/safety checks | Pending | Consistency, safety revision, checklist count |
+| Step 10 copy output | Pending | Final message output copy |
 | Step 11 PerformanceDialogueLab render | Pending | Full Lab screen |
 | Step 11 member selection | Pending | Selected member data changes |
 | Step 11 prompt copy | Pending | Copy success/failure message |
@@ -60,8 +71,8 @@ Status: Automated checks passed / Pending browser QA
 | Step 12 review checklist | Pending | 8 criteria and count update |
 | Step 12 risk coaching expression checklist | Pending | Risk count update |
 | Step 12 final coaching plan | Pending | 8 output fields |
-| Facilitator summaries | Pending | Summary and discussion questions across Full Labs |
-| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md`; extend manually for Step 11/12 storage keys if needed |
+| Facilitator summaries | Pending | Summary and discussion questions across Labs |
+| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md`; extend manually for Step 9/10/11/12 storage keys if needed |
 | Mobile/tablet layout | Pending | No major overflow or blocked controls |
 | Console errors | Pending | No blocking runtime errors |
 
@@ -85,6 +96,10 @@ Step 7 prompt copy:
 Step 7 AI paste area:
 Step 7 review/risk checklist:
 Step 7 final call plan fields:
+Step 9 HqTranslationLab render:
+Step 9 brief/translation/copy:
+Step 10 StakeholderMessageLab render:
+Step 10 strategy/messages/copy:
 Step 11 PerformanceDialogueLab render:
 Step 11 prompt copy:
 Step 11 AI paste area:
@@ -116,6 +131,8 @@ v36 PR should remain Draft until:
 4. Browser QA is recorded in this document.
 5. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
 6. CustomerCallPlanLab Step 7 checks pass on at least desktop and one mobile/tablet viewport.
-7. PerformanceDialogueLab Step 11 checks pass on at least desktop and one mobile/tablet viewport.
-8. OneOnOneCoachingLab Step 12 checks pass on at least desktop and one mobile/tablet viewport.
-9. Console snippet evidence is recorded after Full Lab input.
+7. HqTranslationLab Step 9 checks pass on at least desktop and one mobile/tablet viewport.
+8. StakeholderMessageLab Step 10 checks pass on at least desktop and one mobile/tablet viewport.
+9. PerformanceDialogueLab Step 11 checks pass on at least desktop and one mobile/tablet viewport.
+10. OneOnOneCoachingLab Step 12 checks pass on at least desktop and one mobile/tablet viewport.
+11. Console snippet evidence is recorded after Lab input.
