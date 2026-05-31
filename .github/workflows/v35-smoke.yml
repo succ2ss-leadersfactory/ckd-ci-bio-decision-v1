@@ -45,3 +45,32 @@ jobs:
 
       - name: Run integrated v35 smoke check
         run: npm run smoke:v35
+
+      - name: Write v35 smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v35 Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v35:static"
+            echo "- npm run typecheck"
+            echo "- npm run build"
+            echo "- npm run smoke:v35:dist"
+            echo "- npm run preflight:v35:cutover"
+            echo "- npm run smoke:v35"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Run **v35 Remote Smoke** after Vercel deployment completes."
+            echo "2. Open /journey.html and confirm the v34 operating screen still works."
+            echo "3. Open /journey-v35-preview.html and run Step 0-8 browser QA."
+            echo "4. Record the actual results in docs/v35-preview-smoke-result.md."
+            echo "5. Run npm run audit:v35:readiness only after real QA results are recorded."
+            echo ""
+            echo "## Cutover status"
+            echo ""
+            echo "Cutover remains blocked until smoke, remote smoke, browser QA, storage key separation, and readiness audit all pass."
+          } >> "$GITHUB_STEP_SUMMARY"
