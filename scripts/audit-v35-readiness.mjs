@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const RESULT_DOC = 'docs/v35-preview-smoke-result.md';
 const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
+const CONSOLE_SNIPPET_DOC = 'docs/v35-browser-qa-console-snippet.md';
 const failures = [];
 const warnings = [];
 
@@ -70,6 +71,7 @@ function assertBrowserQaFinalJudgement(content) {
     ['v35 preview 독립 실행 여부:', /(정상|통과)/],
     ['J01~J09 저장 여부:', /(정상|통과|모두 확인)/],
     ['localStorage key 분리 여부:', /(정상|통과|분리 확인)/],
+    ['Console snippet 근거:', /(통과|PASS|pass|확인)/],
     ['cutover 검토 가능 여부:', /(가능|검토 가능)/],
   ];
 
@@ -91,6 +93,38 @@ function assertBrowserQaFinalJudgement(content) {
   }
 }
 
+function assertConsoleSnippetEvidence(content) {
+  const requiredEvidence = [
+    'Console snippet 실행',
+    'missingPreviewKeys',
+    'missingSavedStateKeys',
+    'savedStateKeysFound',
+    'v34FlowKeysFound',
+    'pass',
+  ];
+
+  for (const evidence of requiredEvidence) {
+    if (!content.includes(evidence)) {
+      fail(`Browser QA result must include console snippet evidence: ${evidence}.`);
+    }
+  }
+
+  const missingPreviewLine = findLine(content, 'missingPreviewKeys');
+  if (!/(none|없음|0)/i.test(missingPreviewLine)) {
+    fail(`missingPreviewKeys must be recorded as none/없음/0. Current line: ${missingPreviewLine.trim()}`);
+  }
+
+  const missingSavedStateLine = findLine(content, 'missingSavedStateKeys');
+  if (!/(none|없음|0)/i.test(missingSavedStateLine)) {
+    fail(`missingSavedStateKeys must be recorded as none/없음/0. Current line: ${missingSavedStateLine.trim()}`);
+  }
+
+  const passLine = findLine(content, 'pass');
+  if (!/(true|통과|PASS|pass)/.test(passLine)) {
+    fail(`Console snippet pass must be recorded as true/통과. Current line: ${passLine.trim()}`);
+  }
+}
+
 function assertRequiredEvidence(content, docName, requiredEvidence) {
   for (const evidence of requiredEvidence) {
     if (!content.includes(evidence)) {
@@ -108,6 +142,7 @@ function assertNoKnownBlockingText(content, docName) {
     /build smoke 검증:\s*실행 대기/,
     /dist smoke 검증:\s*실행 대기/,
     /브라우저 QA 전체 판정:\s*미확인/,
+    /Console snippet 근거:\s*미확인/,
     /cutover 검토 가능 여부:\s*아직 불가/,
   ];
 
@@ -118,10 +153,28 @@ function assertNoKnownBlockingText(content, docName) {
   }
 }
 
+function assertConsoleSnippetDoc(content) {
+  const requiredContent = [
+    'requiredPreviewKeys',
+    'requiredSavedStateKeys',
+    'missingPreviewKeys',
+    'missingSavedStateKeys',
+    'v34FlowKeysFound',
+    'pass',
+  ];
+
+  for (const item of requiredContent) {
+    if (!content.includes(item)) {
+      fail(`${CONSOLE_SNIPPET_DOC} must include ${item}.`);
+    }
+  }
+}
+
 console.log('Running v35 readiness audit...');
 
 const smokeResult = readText(RESULT_DOC);
 const browserQaResult = readText(BROWSER_QA_DOC);
+const consoleSnippet = readText(CONSOLE_SNIPPET_DOC);
 
 assertNoPendingTableStatus(smokeResult, RESULT_DOC);
 assertSmokeFinalJudgement(smokeResult);
@@ -140,6 +193,7 @@ assertNoKnownBlockingText(smokeResult, RESULT_DOC);
 
 assertNoPendingTableStatus(browserQaResult, BROWSER_QA_DOC);
 assertBrowserQaFinalJudgement(browserQaResult);
+assertConsoleSnippetEvidence(browserQaResult);
 assertRequiredEvidence(browserQaResult, BROWSER_QA_DOC, [
   '/journey.html',
   '/journey-v35-preview.html',
@@ -147,8 +201,13 @@ assertRequiredEvidence(browserQaResult, BROWSER_QA_DOC, [
   'J09-presentation-checklist',
   'c1bio_v35_preview_*',
   'c1bio_flow_*',
+  'missingPreviewKeys',
+  'missingSavedStateKeys',
+  'pass',
 ]);
 assertNoKnownBlockingText(browserQaResult, BROWSER_QA_DOC);
+
+assertConsoleSnippetDoc(consoleSnippet);
 
 if (warnings.length > 0) {
   console.warn('v35 readiness audit warnings:');
