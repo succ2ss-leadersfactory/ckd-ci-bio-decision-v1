@@ -164,6 +164,24 @@ function assertWorkflowCoverage() {
   if (smokeWorkflow !== null && !smokeWorkflow.includes('npm run typecheck:v35')) {
     fail('v35-smoke.yml must run npm run typecheck:v35 instead of full typecheck.');
   }
+  if (smokeWorkflow !== null) {
+    const requiredSummaryPhrases = [
+      'Protected validation entry points',
+      'README.md keeps the v35 validation entry point',
+      'docs/v35-validation-index.md keeps the document sequence',
+      'docs/v35-browser-qa-runbook.md keeps the browser QA procedure',
+      'docs/v35-browser-qa-console-snippet.md keeps the storage/key evidence check',
+      'docs/v35-browser-qa-result.md keeps the required browser QA result fields',
+      'Open README.md and start from docs/v35-validation-index.md',
+      'console snippet and confirm missingPreviewKeys none, missingSavedStateKeys none, pass true',
+    ];
+
+    for (const phrase of requiredSummaryPhrases) {
+      if (!smokeWorkflow.includes(phrase)) {
+        fail(`v35-smoke.yml summary must include ${phrase}.`);
+      }
+    }
+  }
   if (smokeWorkflow !== null && smokeWorkflow.includes('npm run typecheck\n')) {
     fail('v35-smoke.yml must not run full npm run typecheck.');
   }
@@ -200,6 +218,9 @@ function assertStaticSmokeCoversPreflight() {
     'docs/v35-validation-index.md',
     '.github/workflows/v35-readiness-audit.yml',
     'npm run audit:v35:readiness',
+    'Protected validation entry points',
+    'README.md keeps the v35 validation entry point',
+    'console snippet and confirm missingPreviewKeys none, missingSavedStateKeys none, pass true',
   ];
 
   for (const phrase of requiredPhrases) {
