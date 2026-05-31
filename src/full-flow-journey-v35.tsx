@@ -17,9 +17,11 @@ import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { StudioReportSection } from './journey-studio-report';
 import { StudioSlidesSection } from './journey-studio-slides';
 import { PresentationChecklist } from './journey-presentation-checklist';
+import { JourneyShell } from './journey-shell';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
+  shell: { JourneyShell },
   screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview, SourceCheckSection, NotebookSourcePrep, NotebookReadinessCheck, StudioReportSection, StudioSlidesSection, PresentationChecklist },
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
