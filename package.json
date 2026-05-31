@@ -13,7 +13,8 @@
     "audit:v35:readiness": "node scripts/audit-v35-readiness.mjs",
     "smoke:v35": "npm run smoke:v35:static && npm run typecheck:v35 && npm run build && npm run smoke:v35:dist && npm run preflight:v35:cutover",
     "smoke:v36:static": "node scripts/smoke-v36-static.mjs",
-    "smoke:v36": "npm run smoke:v36:static && npm run typecheck:v36 && npm run build",
+    "smoke:v36:dist": "node scripts/smoke-v36-dist.mjs",
+    "smoke:v36": "npm run smoke:v36:static && npm run typecheck:v36 && npm run build && npm run smoke:v36:dist",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
