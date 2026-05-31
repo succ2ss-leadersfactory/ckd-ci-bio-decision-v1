@@ -7,6 +7,7 @@ v35 cutover의 핵심 목표는 다음이다.
 - 기존 안정 버전 v34를 깨뜨리지 않는다.
 - v35 preview 독립 실행 검증이 끝나기 전까지 운영 경로는 v34로 유지한다.
 - 자동 smoke, 원격 smoke, 브라우저 QA, 저장 key 분리 검증이 모두 통과된 뒤에만 전환을 검토한다.
+- `v35 Readiness Audit`이 통과되기 전에는 cutover를 실행하지 않는다.
 - 전환 후 문제가 생기면 즉시 v34 위임 구조로 되돌릴 수 있어야 한다.
 
 ---
@@ -21,6 +22,7 @@ v35 cutover의 핵심 목표는 다음이다.
 | preview 격리 | `/journey-v35-preview.html`은 운영 화면과 별도로 검증한다. |
 | 저장 key 분리 | v35 preview는 `c1bio_v35_preview_*`만 사용하고 `c1bio_flow_*`를 건드리지 않는다. |
 | Google Sheets 보류 | Google Sheets 저장 연동은 v35 preview 검증 후 별도 단계에서 진행한다. |
+| 문서 기반 승인 | `docs/v35-preview-smoke-result.md`, `docs/v35-browser-qa-result.md`, `docs/v35-browser-qa-console-snippet.md`가 readiness audit을 통과해야 한다. |
 
 ---
 
@@ -42,7 +44,11 @@ v35 cutover의 핵심 목표는 다음이다.
 | remote smoke script 등록 | `package.json`에 `smoke:v35:remote` 등록 | 완료 |
 | cutover preflight script 등록 | `package.json`에 `preflight:v35:cutover` 등록 | 완료 |
 | readiness audit script 등록 | `package.json`에 `audit:v35:readiness` 등록 | 완료 |
-| 수동 remote smoke workflow | `.github/workflows/v35-remote-smoke.yml` 존재 | 완료 |
+| v35 smoke workflow | `.github/workflows/v35-smoke.yml` 존재 | 완료 |
+| v35 remote smoke workflow | `.github/workflows/v35-remote-smoke.yml` 존재 | 완료 |
+| v35 readiness audit workflow | `.github/workflows/v35-readiness-audit.yml` 존재 | 완료 |
+| browser QA 결과지 | `docs/v35-browser-qa-result.md` 존재 | 완료 |
+| console snippet 문서 | `docs/v35-browser-qa-console-snippet.md` 존재 | 완료 |
 | smoke 자동화 가이드 문서화 | `docs/v35-smoke-automation-guide.md` 존재 | 완료 |
 | preview QA 체크리스트 문서화 | `docs/v35-preview-checklist.md` 최신화 | 완료 |
 | 배포 URL 가이드 문서화 | `docs/v35-deployment-url-guide.md` 최신화 | 완료 |
@@ -59,6 +65,8 @@ npm run smoke:v35:static
 - v34 위임 import 누락
 - preview router step 누락
 - `c1bio_flow_*` key가 v35 preview config에 섞임
+- browser QA 기록지 또는 console snippet 핵심 항목 누락
+- readiness audit workflow 누락
 - `journey-active.tsx`가 예상과 다르게 변경됨
 
 ---
@@ -67,12 +75,12 @@ npm run smoke:v35:static
 
 | 기준 | 통과 조건 | 상태 |
 |---|---|---|
-| 정적 구조 검사 | `npm run smoke:v35:static` 통과 | 대기 |
-| TypeScript 검사 | `npm run typecheck` 통과 | 대기 |
-| Vite build | `npm run build` 통과 | 대기 |
-| dist 산출물 검사 | `npm run smoke:v35:dist` 통과 | 대기 |
-| cutover preflight guard | `npm run preflight:v35:cutover` 통과 | 대기 |
-| 통합 smoke | `npm run smoke:v35` 통과 | 대기 |
+| 정적 구조 검사 | `npm run smoke:v35:static` 통과 | 통과 기록 있음 |
+| TypeScript 검사 | `npm run typecheck` 또는 `npm run typecheck:v35` 통과 | 통과 기록 있음 |
+| Vite build | `npm run build` 통과 | 통과 기록 있음 |
+| dist 산출물 검사 | `npm run smoke:v35:dist` 통과 | 통과 기록 있음 |
+| cutover preflight guard | `npm run preflight:v35:cutover` 통과 | 통과 기록 있음 |
+| 통합 smoke | `npm run smoke:v35` 통과 | 통과 기록 있음 |
 
 통합 실행:
 
@@ -83,7 +91,7 @@ npm run smoke:v35
 `smoke:v35`가 확인해야 하는 것:
 
 - static smoke 통과
-- typecheck 통과
+- v35 scoped typecheck 통과
 - build 통과
 - `dist/journey.html` 존재
 - `dist/journey-v35-preview.html` 존재
@@ -106,21 +114,23 @@ npm run smoke:v35
 
 | 기준 | 통과 조건 | 상태 |
 |---|---|---|
-| v35 Smoke workflow | `Actions → v35 Smoke` 통과 | 대기 |
-| v35 Remote Smoke workflow | `Actions → v35 Remote Smoke` 통과 | 대기 |
+| v35 Smoke workflow | `Actions → v35 Smoke` 통과 | 통과 기록 있음 |
+| v35 Remote Smoke workflow | `Actions → v35 Remote Smoke` 통과 | 통과 기록 있음 |
+| v35 Readiness Audit workflow | `Actions → v35 Readiness Audit` 통과 | 브라우저 QA 기록 후 실행 |
 
 실행 경로:
 
 ```txt
 Actions → v35 Smoke → Run workflow
 Actions → v35 Remote Smoke → Run workflow
+Actions → v35 Readiness Audit → Run workflow
 ```
 
 v35 Smoke workflow 확인 항목:
 
 - dependency install
 - static smoke
-- typecheck
+- v35 scoped typecheck
 - build
 - dist smoke
 - cutover preflight guard
@@ -135,11 +145,20 @@ v35 Remote Smoke workflow 확인 항목:
 - `/assets/*.js` module script 확인
 - `/src/...` dev entry 미사용 확인
 
+v35 Readiness Audit workflow 확인 항목:
+
+- `docs/v35-preview-smoke-result.md`에 자동 smoke와 remote smoke 통과가 기록되어 있는지 확인
+- `docs/v35-browser-qa-result.md`에 브라우저 QA 통과가 기록되어 있는지 확인
+- `docs/v35-browser-qa-console-snippet.md`의 핵심 검사 항목이 유지되는지 확인
+- `missingPreviewKeys: none`, `missingSavedStateKeys: none`, `pass: true` 근거가 기록되어 있는지 확인
+- cutover 검토 가능 여부가 문서상 명확히 기록되어 있는지 확인
+
 보류 기준:
 
 - workflow 실행 실패
 - workflow가 생성되지 않음
 - remote smoke가 Vercel 최신 배포를 확인하지 못함
+- readiness audit 실패
 - production domain이 이전 배포본을 가리킴
 
 ---
@@ -237,6 +256,7 @@ Step 목록:
 | v35 saved state key | `c1bio_v35_preview_state` 생성 | 대기 |
 | v35 단계별 key | `c1bio_v35_preview_*` key 생성 | 대기 |
 | v34 key 보호 | `c1bio_flow_*` 생성·변경 없음 | 대기 |
+| console snippet 근거 | `missingPreviewKeys: none`, `missingSavedStateKeys: none`, `pass: true` 기록 | 대기 |
 | preview reset | `c1bio_v35_preview_*`만 삭제 | 대기 |
 
 반드시 확인할 v35 preview key:
@@ -264,6 +284,7 @@ c1bio_v35_preview_presentation_manager_request
 - v35 preview 저장 중 `c1bio_flow_*` 값 변경
 - preview reset이 v34 key까지 삭제
 - v35 key가 생성되지 않음
+- console snippet 결과에 누락 key가 남아 있음
 
 ---
 
@@ -271,11 +292,13 @@ c1bio_v35_preview_presentation_manager_request
 
 | 기준 | 통과 조건 | 상태 |
 |---|---|---|
-| smoke 결과 기록 | `docs/v35-preview-smoke-result.md`에 실제 결과 반영 | 대기 |
+| smoke 결과 기록 | `docs/v35-preview-smoke-result.md`에 실제 결과 반영 | 부분 완료 |
+| browser QA 결과 기록 | `docs/v35-browser-qa-result.md`에 실제 결과 반영 | 대기 |
+| console snippet 근거 기록 | `missingPreviewKeys`, `missingSavedStateKeys`, `pass` 결과 기록 | 대기 |
 | QA 실행 정보 기록 | 확인 일시, 확인자, URL, 브라우저, 기기 기록 | 대기 |
 | 실패 이슈 기록 | 발견 이슈와 조치 방향 기록 | 대기 |
 | 전환 판정 기록 | cutover 가능 여부 명시 | 대기 |
-| readiness audit | `npm run audit:v35:readiness` 통과 | 대기 |
+| readiness audit | `npm run audit:v35:readiness` 또는 `Actions → v35 Readiness Audit` 통과 | 대기 |
 
 readiness audit 실행:
 
@@ -283,12 +306,24 @@ readiness audit 실행:
 npm run audit:v35:readiness
 ```
 
-이 audit은 `docs/v35-preview-smoke-result.md`에 실제 검증 결과가 기록되었는지 확인한다.
+또는 GitHub Actions에서 수동 실행한다.
+
+```txt
+Actions → v35 Readiness Audit → Run workflow
+```
+
+이 audit은 다음 문서에 실제 검증 결과가 기록되었는지 확인한다.
+
+```txt
+docs/v35-preview-smoke-result.md
+docs/v35-browser-qa-result.md
+docs/v35-browser-qa-console-snippet.md
+```
 
 현재는 아래 이유로 실패하는 것이 정상이다.
 
-- `미확인`, `대기`, `실행 대기` 항목이 남아 있음
-- `전체 판정: 실행 검증 대기` 상태임
+- browser QA 결과가 아직 `미확인` 상태임
+- `missingPreviewKeys`, `missingSavedStateKeys`, `pass` 결과가 아직 실제값으로 기록되지 않음
 - `v35 운영 전환 가능 여부: 아직 불가` 상태임
 
 실제 QA 결과가 모두 통과로 기록된 뒤에만 이 audit이 통과해야 한다.
@@ -297,6 +332,7 @@ npm run audit:v35:readiness
 
 - 실제 결과 없이 추정으로 통과 처리
 - 브라우저 QA 미기록
+- console snippet 근거 미기록
 - 실패 이슈를 문서화하지 않음
 - 원격 smoke 미확인 상태에서 전환 진행
 - readiness audit 실패
@@ -309,7 +345,7 @@ npm run audit:v35:readiness
 
 - `npm run smoke:v35`가 통과된다.
 - `npm run smoke:v35:remote` 또는 `v35 Remote Smoke` workflow가 통과된다.
-- `npm run audit:v35:readiness`가 통과된다.
+- `npm run audit:v35:readiness` 또는 `v35 Readiness Audit` workflow가 통과된다.
 - 루트 경로 `/`가 `/journey.html`로 정상 redirect된다.
 - 운영 경로 `/journey.html`이 정상이다.
 - 기존 v34 Google Sheets 저장 흐름이 정상이다.
@@ -317,9 +353,10 @@ npm run audit:v35:readiness
 - Step 0~8이 모두 이동된다.
 - J01~J09 저장이 모두 확인된다.
 - preview 저장 key가 운영 저장 key와 분리되어 있다.
+- console snippet 결과가 `missingPreviewKeys: none`, `missingSavedStateKeys: none`, `pass: true`로 기록되어 있다.
 - console error가 없다.
 - 모바일 또는 태블릿 화면에서 주요 입력과 버튼이 사용 가능하다.
-- `docs/v35-preview-smoke-result.md`에 실제 결과가 기록되어 있다.
+- `docs/v35-preview-smoke-result.md`와 `docs/v35-browser-qa-result.md`에 실제 결과가 기록되어 있다.
 
 판정:
 
@@ -337,14 +374,15 @@ npm run audit:v35:readiness
 모든 gate 통과 후에만 아래 순서를 검토한다.
 
 1. `docs/v35-preview-smoke-result.md`에 최종 통과 결과를 기록한다.
-2. `npm run audit:v35:readiness`를 실행해 실제 결과 문서가 cutover 검토 가능한 상태인지 확인한다.
-3. rollback 기준과 rollback 커밋 후보를 명확히 적는다.
-4. `src/full-flow-journey-v35.tsx`에서 v34 위임 import 제거 여부를 검토한다.
-5. v35 app을 운영 경로에서 실행하도록 최소 변경한다.
-6. `src/journey-active.tsx`는 가능한 마지막까지 유지한다.
-7. commit은 단일 목적의 작은 단위로 만든다.
-8. Vercel 배포 완료 후 즉시 `/journey.html` 회귀 검증을 진행한다.
-9. 문제가 있으면 즉시 v34 위임 구조로 되돌린다.
+2. `docs/v35-browser-qa-result.md`에 브라우저 QA와 console snippet 결과를 기록한다.
+3. `npm run audit:v35:readiness` 또는 `Actions → v35 Readiness Audit → Run workflow`를 실행해 실제 결과 문서가 cutover 검토 가능한 상태인지 확인한다.
+4. rollback 기준과 rollback 커밋 후보를 명확히 적는다.
+5. `src/full-flow-journey-v35.tsx`에서 v34 위임 import 제거 여부를 검토한다.
+6. v35 app을 운영 경로에서 실행하도록 최소 변경한다.
+7. `src/journey-active.tsx`는 가능한 마지막까지 유지한다.
+8. commit은 단일 목적의 작은 단위로 만든다.
+9. Vercel 배포 완료 후 즉시 `/journey.html` 회귀 검증을 진행한다.
+10. 문제가 있으면 즉시 v34 위임 구조로 되돌린다.
 
 권장 cutover commit 원칙:
 
@@ -396,6 +434,8 @@ rollback 후 확인:
 - 실제 QA 결과 없이 문서상 통과 처리 금지
 - readiness audit 실패 상태에서 cutover 금지
 - Vercel remote smoke 실패 상태에서 cutover 금지
+- browser QA 미기록 상태에서 cutover 금지
+- console snippet 근거 미기록 상태에서 cutover 금지
 - v35 preview가 `c1bio_flow_*` key를 사용하도록 변경 금지
 
 ---
@@ -405,25 +445,26 @@ rollback 후 확인:
 현재 기준 판정:
 
 ```txt
-Cutover 불가 — 실행 검증 대기
+Cutover 불가 — 실행 검증 대기(브라우저 QA 및 readiness audit 대기)
 ```
 
 이유:
 
-- `npm run smoke:v35` 실제 통과 결과 미기록
-- `v35 Remote Smoke` 실제 통과 결과 미기록
-- `npm run audit:v35:readiness` 실패 예상 상태
+- `npm run smoke:v35` 통과 기록 있음
+- `v35 Remote Smoke` 통과 기록 있음
 - 브라우저 QA 결과 미기록
 - Step 0~8 실제 이동 결과 미기록
 - J01~J09 저장 결과 미기록
+- console snippet 결과 미기록
 - v34 운영 화면 회귀 결과 미기록
+- `v35 Readiness Audit` 실패 예상 상태
 
 다음 조치:
 
-1. `Actions → v35 Smoke → Run workflow`
-2. `Actions → v35 Remote Smoke → Run workflow`
-3. 브라우저에서 `/journey.html` v34 회귀 확인
-4. 브라우저에서 `/journey-v35-preview.html` v35 preview QA 수행
-5. `docs/v35-preview-smoke-result.md`에 실제 결과 반영
-6. `npm run audit:v35:readiness` 실행
-7. 모든 gate 통과 후 cutover 여부 재판정
+1. `Actions → v35 Smoke → Run workflow`를 다시 실행해 문서 보호 변경 후에도 통과하는지 확인한다.
+2. 브라우저에서 `/journey.html` v34 회귀 확인을 수행한다.
+3. 브라우저에서 `/journey-v35-preview.html` v35 preview QA를 수행한다.
+4. `docs/v35-browser-qa-result.md`에 Step 0~8, J01~J09, localStorage, console snippet 결과를 기록한다.
+5. `docs/v35-preview-smoke-result.md`에 브라우저 QA 최종 결과를 반영한다.
+6. `Actions → v35 Readiness Audit → Run workflow`를 실행한다.
+7. 모든 gate 통과 후 cutover 여부를 재판정한다.
