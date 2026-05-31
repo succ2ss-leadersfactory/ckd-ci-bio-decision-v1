@@ -2,33 +2,41 @@
 
 ## QA status
 
-Status: Automated checks passed / Pending browser QA
+Status: Automated checks passed / Pending full browser QA
 
 ## Scope
 
 - Route: `/journey-v36-preview.html`
-- Feature: v36 preview shell + 3 Full Labs + 2 Lite+ Labs + 1 Wrap-up Lab
-  - Step 7: CustomerCallPlanLab
-  - Step 9: HqTranslationLab
-  - Step 10: StakeholderMessageLab
-  - Step 11: PerformanceDialogueLab
-  - Step 12: OneOnOneCoachingLab
-  - Step 13: WrapUpLab
+- Feature: v36 full 13-step Lab Journey preview
 - Operating route protection: `/journey.html` remains v34
 - v35 preview protection: `/journey-v35-preview.html` remains v35
-- Verified commit: `3ad44056992c38501cc5ce17d071f16e6378ef81`
+- Verified commit: `fbb4685bec8a1ae1860b2ce03d158e77a6f8a10d` or later
+
+## Implemented v36 steps
+
+| Step | Lab | Status |
+|---:|---|---|
+| 1 | 입장 | Implemented |
+| 2 | AI 안전선 | Implemented |
+| 3 | 좋은 질문 만들기 | Implemented |
+| 4 | AI Research 전략 Lab | Implemented |
+| 5 | Source Check | Implemented |
+| 6 | 팀원 Dashboard 분석 | Implemented / first-pass accepted |
+| 7 | 고객군 판단 | Implemented |
+| 8 | 실행행동 Map | Implemented |
+| 9 | 본사 요청 현장 번역 | Implemented |
+| 10 | 이해관계자 메시지 | Implemented |
+| 11 | 성과대화 감별 | Implemented |
+| 12 | 1on1 코칭 | Implemented |
+| 13 | Wrap-up | Implemented |
 
 ## Automated checks
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run smoke:v36:static` | PASS | Run through v36 Smoke workflow |
-| `npm run typecheck:v36` | PASS | Includes all v36 Lab files added so far |
-| `npm run build` | PASS | Run through v36 Smoke workflow |
-| `npm run smoke:v36:dist` | PASS | Confirms dist bundle includes v36 route markers |
-| `npm run smoke:v36` | PASS | Integrated v36 check |
-| `npm run smoke:v35` | PASS | Regression guard passed |
 | `C1Bio MVP CI` | PASS | Existing CI remained passing |
+| `v35 Smoke` | PASS | Regression guard passed |
+| `v36 Smoke` | PASS | v36 route and typecheck passed |
 | `Vercel` | PASS | Deployment status success |
 
 ## Browser QA checklist
@@ -38,15 +46,21 @@ Status: Automated checks passed / Pending browser QA
 | `/journey.html` regression | Pending | Must remain v34 operating route |
 | `/journey-v35-preview.html` regression | Pending | Must remain v35 preview route |
 | `/journey-v36-preview.html` render | Pending | Must render v36 title and 13-step flow |
-| Step 1 entry save/restore | Pending | Participant and progress storage |
-| Step 7 CustomerCallPlanLab | Pending | Full Lab end-to-end check |
-| Step 9 HqTranslationLab | Pending | Lite+ Lab end-to-end check |
-| Step 10 StakeholderMessageLab | Pending | Lite+ Lab end-to-end check |
-| Step 11 PerformanceDialogueLab | Pending | Full Lab end-to-end check |
-| Step 12 OneOnOneCoachingLab | Pending | Full Lab end-to-end check |
-| Step 13 WrapUpLab | Pending | 7-day plan, 30-day criteria, declaration, copy output |
-| Facilitator summaries | Pending | Summary and discussion questions across Labs |
-| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md` and add Step 13 storage key if needed |
+| Step 1 Entry | Pending | Role acceptance, participant storage |
+| Step 2 AI Safety | Pending | Risk types, safe rewrite, declaration |
+| Step 3 Prompt Practice | Pending | `일반 질문 선택`, `질문 진단`, `좋은 질문 조건` wording |
+| Step 4 Research Strategy | Pending | Perplexity → NotebookLM → Studio report/slides |
+| Step 5 Source Check | Pending | Step 4 output import and risk expression check |
+| Step 6 Dashboard Analysis | Pending | Causal diagnosis and prompt linkage |
+| Step 7 Customer Call Plan | Pending | Focus/deprioritized segment and final call plan |
+| Step 8 Action Map | Pending | Step 7 import and member action map |
+| Step 9 HQ Translation | Pending | HQ language to field execution language |
+| Step 10 Stakeholder Message | Pending | Stakeholder-specific messages |
+| Step 11 Performance Dialogue | Pending | AI answer paste, review, final dialogue |
+| Step 12 1on1 Coaching | Pending | Member intervention and coaching questions |
+| Step 13 Wrap-up | Pending | 7-day plan, 30-day criteria, declaration, copy output |
+| localStorage restore | Pending | Refresh after input should preserve values |
+| Console snippet | Pending | Follow `docs/v36-browser-qa-console-snippet.md` |
 | Mobile/tablet layout | Pending | No major overflow or blocked controls |
 | Console errors | Pending | No blocking runtime errors |
 
@@ -64,29 +78,30 @@ Device:
 /journey.html regression:
 /journey-v35-preview.html regression:
 /journey-v36-preview.html render:
-Step 1 entry save/restore:
-Step 7 CustomerCallPlanLab:
-Step 9 HqTranslationLab:
-Step 10 StakeholderMessageLab:
-Step 11 PerformanceDialogueLab:
-Step 12 OneOnOneCoachingLab:
-Step 13 WrapUpLab:
+Step 1 Entry:
+Step 2 AI Safety:
+Step 3 Prompt Practice:
+Step 4 Research Strategy:
+Step 5 Source Check:
+Step 6 Dashboard Analysis:
+Step 7 Customer Call Plan:
+Step 8 Action Map:
+Step 9 HQ Translation:
+Step 10 Stakeholder Message:
+Step 11 Performance Dialogue:
+Step 12 OneOnOneCoaching:
+Step 13 WrapUp:
 localStorage restore:
 Console snippet pass:
 Mobile/tablet layout:
 Console errors:
 
+Final decision:
 Notes:
 ```
 
-## Decision gate
+## Decision options
 
-v36 PR should remain Draft until:
-
-1. v36 Smoke workflow passes. ✅
-2. v35 Smoke remains passing. ✅
-3. Vercel deployment succeeds. ✅
-4. Browser QA is recorded in this document.
-5. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
-6. Step 7, Step 9, Step 10, Step 11, Step 12, and Step 13 checks pass on desktop and one mobile/tablet viewport.
-7. Console snippet evidence is recorded after Lab input.
+- `PASS`: full browser QA passed, ready for first preview freeze
+- `PASS WITH NOTES`: usable for pilot, minor UX/content notes remain
+- `FAIL`: blocking render/storage/navigation issue found
