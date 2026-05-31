@@ -4,6 +4,7 @@ import { V36_STORAGE_KEYS } from './journey-v36-preview-config';
 
 type ResearchResponse = {
   selectedTheme: string;
+  customTheme: string;
   leaderQuestion: string;
   perplexityAnswer: string;
   notebookSourcePack: string;
@@ -47,6 +48,7 @@ const REVIEW_ITEMS = [
 
 const DEFAULT_RESPONSE: ResearchResponse = {
   selectedTheme: THEMES[0],
+  customTheme: '',
   leaderQuestion: '',
   perplexityAnswer: '',
   notebookSourcePack: '',
@@ -87,23 +89,31 @@ function TextArea({ value, onChange, placeholder }: { value: string; onChange: (
   return <textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={value ?? ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />;
 }
 
+function getResearchTheme(response: ResearchResponse) {
+  return response.customTheme?.trim() || response.selectedTheme;
+}
+
 function buildPerplexityPrompt(response: ResearchResponse) {
-  return `Perplexity 리서치 질문\n\n역할: 제약영업 팀장의 외부 환경 리서치 파트너\n주제: ${response.selectedTheme}\n팀장 질문: ${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사해줘.'}\n\n요청:\n1. 최근 변화 신호를 5개 이내로 정리해줘.\n2. 각 신호마다 확인 가능한 출처 또는 출처 유형을 함께 제시해줘.\n3. 제약영업팀장 관점에서 의미 있는 전략 이슈 후보를 제안해줘.\n4. 확인이 더 필요한 내용은 추정이라고 표시해줘.\n5. 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 사용하지 말아줘.\n\n출력 형식:\n- 변화 신호\n- 근거/출처\n- 신뢰도 주의점\n- 전략 이슈 후보\n- 추가 확인 질문`;
+  const researchTheme = getResearchTheme(response);
+  return `Perplexity 리서치 질문\n\n역할: 제약영업 팀장의 외부 환경 리서치 파트너\n주제: ${researchTheme}\n우리 팀 관점의 리서치 질문: ${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사해줘.'}\n\n요청:\n1. 최근 변화 신호를 5개 이내로 정리해줘.\n2. 각 신호마다 확인 가능한 출처 또는 출처 유형을 함께 제시해줘.\n3. 제약영업팀장 관점에서 의미 있는 전략 이슈 후보를 제안해줘.\n4. 확인이 더 필요한 내용은 추정이라고 표시해줘.\n5. 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 사용하지 말아줘.\n\n출력 형식:\n- 변화 신호\n- 근거/출처\n- 신뢰도 주의점\n- 전략 이슈 후보\n- 추가 확인 질문`;
 }
 
 function buildSourcePackage(response: ResearchResponse) {
   const answer = response.perplexityAnswer?.trim();
   if (!answer) return '';
+  const researchTheme = getResearchTheme(response);
 
-  return `NotebookLM 소스 패키지 초안\n\n[리서치 주제]\n${response.selectedTheme}\n\n[팀장 질문]\n${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사'}\n\n[NotebookLM에 넣을 소스 후보]\n아래 Perplexity 결과에서 출처, 링크, 자료명, 근거 문장을 확인하여 NotebookLM 소스로 넣습니다.\n\n${answer}\n\n[소스 검토 메모]\n- 실제 링크가 열리는지 확인한다.\n- 자료 날짜와 최근성을 확인한다.\n- 기사, 보고서, 기관자료 등 자료 유형을 구분한다.\n- 출처가 약하거나 추정 표현이 많은 내용은 회의 자료의 근거로 직접 사용하지 않는다.\n- 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 제거한다.`;
+  return `NotebookLM 소스 패키지 초안\n\n[리서치 주제]\n${researchTheme}\n\n[우리 팀 관점의 리서치 질문]\n${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사'}\n\n[NotebookLM에 넣을 소스 후보]\n아래 Perplexity 결과에서 출처, 링크, 자료명, 근거 문장을 확인하여 NotebookLM 소스로 넣습니다.\n\n${answer}\n\n[소스 검토 메모]\n- 실제 링크가 열리는지 확인한다.\n- 자료 날짜와 최근성을 확인한다.\n- 기사, 보고서, 기관자료 등 자료 유형을 구분한다.\n- 출처가 약하거나 추정 표현이 많은 내용은 회의 자료의 근거로 직접 사용하지 않는다.\n- 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 제거한다.`;
 }
 
 function buildNotebookPrompt(response: ResearchResponse) {
-  return `NotebookLM 소스 기반 종합 질문\n\n전제: Perplexity에서 확인한 기사, 공개 보고서, 자료를 NotebookLM 소스로 넣은 뒤 사용합니다.\n\n주제: ${response.selectedTheme}\n소스 패키지 메모:\n${response.notebookSourcePack || response.sourcePackMemo || 'Perplexity 결과를 바탕으로 소스 패키지를 먼저 생성하세요.'}\n\n팀장 질문: ${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n요청:\n1. 업로드한 소스에 근거한 핵심 변화만 정리해줘.\n2. 소스 간 공통 신호와 서로 다른 주장을 구분해줘.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해줘.\n4. 우리 팀 실행에 미치는 영향을 설명해줘.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해줘.\n6. 주의해야 할 표현을 정리해줘.\n\n출력 형식:\n- 소스 기반 핵심 변화\n- 전략 이슈 3개\n- 우리 팀에 미치는 영향\n- 추가 확인 질문\n- 실행전략 질문\n- 주의 표현`;
+  const researchTheme = getResearchTheme(response);
+  return `NotebookLM 소스 기반 종합 질문\n\n전제: Perplexity에서 확인한 기사, 공개 보고서, 자료를 NotebookLM 소스로 넣은 뒤 사용합니다.\n\n주제: ${researchTheme}\n소스 패키지 메모:\n${response.notebookSourcePack || response.sourcePackMemo || 'Perplexity 결과를 바탕으로 소스 패키지를 먼저 생성하세요.'}\n\n우리 팀 관점의 리서치 질문: ${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n요청:\n1. 업로드한 소스에 근거한 핵심 변화만 정리해줘.\n2. 소스 간 공통 신호와 서로 다른 주장을 구분해줘.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해줘.\n4. 우리 팀 실행에 미치는 영향을 설명해줘.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해줘.\n6. 주의해야 할 표현을 정리해줘.\n\n출력 형식:\n- 소스 기반 핵심 변화\n- 전략 이슈 3개\n- 우리 팀에 미치는 영향\n- 추가 확인 질문\n- 실행전략 질문\n- 주의 표현`;
 }
 
 function buildStudioReportPrompt(response: ResearchResponse) {
-  return `NotebookLM Studio 보고서 제작 요청\n\n목적: 전략회의에서 발표할 1~2페이지 보고서 초안을 만든다.\n주제: ${response.selectedTheme}\n전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n우리 팀 영향: ${response.teamImpact || '우리 팀에 미치는 영향'}\n\n요청:\n1. 회의 참석자가 빠르게 이해할 수 있는 보고서 제목을 제안해줘.\n2. 배경, 근거, 전략 이슈, 팀 영향, 제안 방향 순서로 구성해줘.\n3. 소스 기반 내용과 팀장 판단을 구분해줘.\n4. 확인이 더 필요한 내용은 별도 표시해줘.\n5. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- 보고서 제목\n- 핵심 메시지 3줄\n- 근거 요약\n- 전략 이슈 3개\n- 우리 팀 실행 제안\n- 추가 확인 필요사항`;
+  const researchTheme = getResearchTheme(response);
+  return `NotebookLM Studio 보고서 제작 요청\n\n목적: 전략회의에서 발표할 1~2페이지 보고서 초안을 만든다.\n주제: ${researchTheme}\n전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n우리 팀 영향: ${response.teamImpact || '우리 팀에 미치는 영향'}\n\n요청:\n1. 회의 참석자가 빠르게 이해할 수 있는 보고서 제목을 제안해줘.\n2. 배경, 근거, 전략 이슈, 팀 영향, 제안 방향 순서로 구성해줘.\n3. 소스 기반 내용과 팀장 판단을 구분해줘.\n4. 확인이 더 필요한 내용은 별도 표시해줘.\n5. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- 보고서 제목\n- 핵심 메시지 3줄\n- 근거 요약\n- 전략 이슈 3개\n- 우리 팀 실행 제안\n- 추가 확인 필요사항`;
 }
 
 function buildStudioSlidePrompt(response: ResearchResponse) {
@@ -114,6 +124,7 @@ export function ResearchStrategyLab() {
   const [storedResponse, setResponse] = useStored<ResearchResponse>(V36_STORAGE_KEYS.researchStrategy, DEFAULT_RESPONSE);
   const response = { ...DEFAULT_RESPONSE, ...storedResponse };
   const [copyMessage, setCopyMessage] = useState('');
+  const activeResearchTheme = getResearchTheme(response);
   const perplexityPrompt = useMemo(() => buildPerplexityPrompt(response), [response]);
   const notebookPrompt = useMemo(() => buildNotebookPrompt(response), [response]);
   const reportPrompt = useMemo(() => response.studioReportPrompt || buildStudioReportPrompt(response), [response]);
@@ -139,7 +150,7 @@ export function ResearchStrategyLab() {
     }
   };
 
-  const outputText = `전략회의 산출물\n\n[주제]\n${response.selectedTheme}\n\n[전략 이슈 1]\n${response.issueOne}\n\n[전략 이슈 2]\n${response.issueTwo}\n\n[전략 이슈 3]\n${response.issueThree}\n\n[보고서 초안]\n${response.studioReportDraft}\n\n[슬라이드 구성안]\n${response.studioSlideOutline}\n\n[발표 메모]\n${response.strategyMeetingMemo}\n\n[예상 질문]\n${response.expectedQuestions}\n\n[주의 표현]\n${response.complianceCaution}`;
+  const outputText = `전략회의 산출물\n\n[주제]\n${activeResearchTheme}\n\n[전략 이슈 1]\n${response.issueOne}\n\n[전략 이슈 2]\n${response.issueTwo}\n\n[전략 이슈 3]\n${response.issueThree}\n\n[보고서 초안]\n${response.studioReportDraft}\n\n[슬라이드 구성안]\n${response.studioSlideOutline}\n\n[발표 메모]\n${response.strategyMeetingMemo}\n\n[예상 질문]\n${response.expectedQuestions}\n\n[주의 표현]\n${response.complianceCaution}`;
 
   return (
     <div className="space-y-4">
@@ -150,12 +161,17 @@ export function ResearchStrategyLab() {
 
       <SectionCard title="1단계: Perplexity 최신 자료 탐색">
         <label className="block space-y-1">
-          <FieldLabel>리서치 주제</FieldLabel>
+          <FieldLabel>리서치 주제 선택</FieldLabel>
           <select className="w-full rounded-xl border px-3 py-2" value={response.selectedTheme} onChange={(event) => update({ selectedTheme: event.target.value })}>
             {THEMES.map((theme) => <option key={theme} value={theme}>{theme}</option>)}
           </select>
         </label>
-        <label className="block space-y-1"><FieldLabel>팀장 질문</FieldLabel><TextArea value={response.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="전략회의에서 다룰 외부 환경 질문을 작성하세요." /></label>
+        <label className="block space-y-1">
+          <FieldLabel>리서치 주제 직접 입력</FieldLabel>
+          <input className="w-full rounded-xl border px-3 py-2" value={response.customTheme} onChange={(event) => update({ customTheme: event.target.value })} placeholder="예: 비대면 채널 확대에 따른 개원의 방문 전략 변화" />
+          <p className="text-xs text-slate-500">직접 입력하면 선택형 주제보다 우선 반영됩니다. 현재 적용 주제: {activeResearchTheme}</p>
+        </label>
+        <label className="block space-y-1"><FieldLabel>우리 팀 관점의 리서치 질문</FieldLabel><TextArea value={response.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 변화가 우리 팀의 방문 우선순위와 2주 실행계획에 어떤 영향을 주는지 조사해줘." /></label>
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">Perplexity에 복사해 최신 자료와 출처를 탐색합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(perplexityPrompt, 'Perplexity 프롬프트')}>Perplexity 프롬프트 복사</button></div>
         {copyMessage ? <p className="text-sm font-semibold text-cyan-700">{copyMessage}</p> : null}
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{perplexityPrompt}</pre>
