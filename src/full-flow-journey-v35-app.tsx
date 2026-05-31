@@ -3,8 +3,10 @@ import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { StrategyIssueReview } from './journey-strategy-issue-review';
 import { SourceCheckSection } from './journey-source-check';
+import { NotebookSourcePrep } from './journey-notebook-source-prep';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
+import { buildSourcePackage, buildSourceSearchQuery } from './journey-utils';
 import type { IssueNote } from './journey-components';
 
 const V35_STORAGE_KEYS = {
@@ -15,6 +17,8 @@ const V35_STORAGE_KEYS = {
   sourceChecks: 'c1bio_v35_preview_source_checks',
   sourceRisk: 'c1bio_v35_preview_source_risk',
 };
+
+const V35_STRATEGY_SCENARIO_TITLE = 'v35 preview 전략 이슈 검토';
 
 const V35_APP_STEPS: JourneyStep[] = [
   {
@@ -36,6 +40,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'source-check',
     title: 'Source Check',
     description: '출처 확인 체크와 위험 메모를 v35 preview localStorage에 저장합니다.',
+  },
+  {
+    id: 'notebook-source-prep',
+    title: 'NotebookLM Source Prep',
+    description: '전략 이슈와 Source Check 결과를 바탕으로 NotebookLM 소스 준비 텍스트를 생성합니다.',
   },
 ];
 
@@ -171,6 +180,33 @@ function SourceCheckStep({
   );
 }
 
+function NotebookSourcePrepStep({
+  notes,
+  sourceChecks,
+  sourceRisk,
+  save,
+}: {
+  notes: IssueNote[];
+  sourceChecks: string[];
+  sourceRisk: string;
+  save: (key: string, payload: JsonRecord) => void;
+}) {
+  const searchText = buildSourceSearchQuery(V35_STRATEGY_SCENARIO_TITLE, notes);
+  const packageText = buildSourcePackage({ strategyScenarioTitle: V35_STRATEGY_SCENARIO_TITLE }, notes, sourceChecks, sourceRisk);
+
+  return (
+    <div className="grid gap-4">
+      <NotebookSourcePrep searchText={searchText} packageText={packageText} />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">NotebookLM 소스 준비 텍스트는 앞 단계의 전략 이슈와 Source Check 결과를 바탕으로 생성됩니다. 아래 버튼은 현재 생성 결과를 savedState에 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J05-notebook-source-prep', { searchText, packageText })}>
+          Notebook Source Prep 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -201,8 +237,10 @@ export function FullFlowJourneyV35App() {
       case 2:
         return <StrategyIssueReviewStep notes={notes} setNotes={setNotes} save={save} />;
       case 3:
-      default:
         return <SourceCheckStep sourceChecks={sourceChecks} setSourceChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} save={save} />;
+      case 4:
+      default:
+        return <NotebookSourcePrepStep notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} save={save} />;
     }
   };
 
