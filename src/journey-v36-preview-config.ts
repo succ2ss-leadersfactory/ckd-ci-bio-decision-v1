@@ -8,6 +8,7 @@ export const V36_STORAGE_KEYS = {
   sourceCheck: 'ckd-v36-lab-source-check',
   dashboardAnalysis: 'ckd-v36-lab-dashboard-analysis',
   customerCallPlan: 'ckd-v36-lab-customer-call-plan',
+  actionMap: 'ckd-v36-lab-action-map',
   hqTranslation: 'ckd-v36-lab-hq-translation',
   stakeholderMessage: 'ckd-v36-lab-stakeholder-message',
   performanceDialogue: 'ckd-v36-lab-performance-dialogue',
