@@ -7,6 +7,10 @@ const requiredFiles = [
   'vercel.json',
   'vite.config.ts',
   'scripts/smoke-v35-dist.mjs',
+  'scripts/smoke-v35-remote.mjs',
+  'scripts/preflight-v35-cutover.mjs',
+  '.github/workflows/v35-smoke.yml',
+  '.github/workflows/v35-remote-smoke.yml',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
   'src/full-flow-journey-v35.tsx',
@@ -208,16 +212,28 @@ function assertPackageScripts() {
 
   const scripts = packageJson.scripts;
 
-  if (scripts['smoke:v35:static'] !== 'node scripts/smoke-v35-static.mjs') {
-    fail('package.json smoke:v35:static must run node scripts/smoke-v35-static.mjs.');
-  }
+  const expectedScripts = {
+    'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
+    'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
+    'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
+    'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
+  };
 
-  if (scripts['smoke:v35:dist'] !== 'node scripts/smoke-v35-dist.mjs') {
-    fail('package.json smoke:v35:dist must run node scripts/smoke-v35-dist.mjs.');
+  for (const [scriptName, expectedCommand] of Object.entries(expectedScripts)) {
+    if (scripts[scriptName] !== expectedCommand) {
+      fail(`package.json ${scriptName} must run ${expectedCommand}.`);
+    }
   }
 
   const smokeV35 = scripts['smoke:v35'] ?? '';
-  const requiredCommands = ['npm run smoke:v35:static', 'npm run typecheck', 'npm run build', 'npm run smoke:v35:dist'];
+  const requiredCommands = [
+    'npm run smoke:v35:static',
+    'npm run typecheck',
+    'npm run build',
+    'npm run smoke:v35:dist',
+    'npm run preflight:v35:cutover',
+  ];
+
   for (const command of requiredCommands) {
     if (!smokeV35.includes(command)) {
       fail(`package.json smoke:v35 must include ${command}.`);
