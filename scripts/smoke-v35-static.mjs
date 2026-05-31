@@ -61,6 +61,36 @@ const requiredTextChecks = [
     message: 'full-flow-journey-v35.tsx must still delegate to v34 before cutover.',
   },
   {
+    file: 'src/full-flow-journey-v35.tsx',
+    text: 'FullFlowJourneyV35App',
+    message: 'full-flow-journey-v35.tsx must smoke-check FullFlowJourneyV35App.',
+  },
+  {
+    file: 'src/full-flow-journey-v35.tsx',
+    text: 'renderV35PreviewStep',
+    message: 'full-flow-journey-v35.tsx must smoke-check renderV35PreviewStep.',
+  },
+  {
+    file: 'src/full-flow-journey-v35.tsx',
+    text: 'useV35PreviewState',
+    message: 'full-flow-journey-v35.tsx must smoke-check useV35PreviewState.',
+  },
+  {
+    file: 'src/full-flow-journey-v35-app.tsx',
+    text: 'JourneyShell',
+    message: 'full-flow-journey-v35-app.tsx must render JourneyShell.',
+  },
+  {
+    file: 'src/full-flow-journey-v35-app.tsx',
+    text: 'renderV35PreviewStep',
+    message: 'full-flow-journey-v35-app.tsx must use renderV35PreviewStep.',
+  },
+  {
+    file: 'src/full-flow-journey-v35-app.tsx',
+    text: 'useV35PreviewState',
+    message: 'full-flow-journey-v35-app.tsx must use useV35PreviewState.',
+  },
+  {
     file: 'src/journey-v35-app-preview.tsx',
     text: 'FullFlowJourneyV35App',
     message: 'journey-v35-app-preview.tsx must render FullFlowJourneyV35App.',
