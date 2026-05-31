@@ -7,6 +7,7 @@ import { NotebookSourcePrep } from './journey-notebook-source-prep';
 import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { StudioReportSection } from './journey-studio-report';
 import { StudioSlidesSection } from './journey-studio-slides';
+import { PresentationChecklist } from './journey-presentation-checklist';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
 import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck, promptStudioReport, promptStudioSlides } from './journey-utils';
@@ -24,6 +25,9 @@ const V35_STORAGE_KEYS = {
   reportLinkOrFileName: 'c1bio_v35_preview_report_link_or_file_name',
   slidesSummary: 'c1bio_v35_preview_slides_summary',
   slidesLinkOrFileName: 'c1bio_v35_preview_slides_link_or_file_name',
+  presentationChecks: 'c1bio_v35_preview_presentation_checks',
+  presentationOneLiner: 'c1bio_v35_preview_presentation_one_liner',
+  presentationManagerRequest: 'c1bio_v35_preview_presentation_manager_request',
 };
 
 const V35_STRATEGY_SCENARIO_TITLE = 'v35 preview 전략 이슈 검토';
@@ -68,6 +72,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'studio-slides',
     title: 'Studio Slide Deck Output',
     description: 'NotebookLM Studio 전략회의 슬라이드 산출 결과를 v35 preview localStorage에 저장합니다.',
+  },
+  {
+    id: 'presentation-checklist',
+    title: 'Presentation Checklist',
+    description: '전략회의 발표 전 핵심 메시지와 요청사항을 v35 preview localStorage에 저장합니다.',
   },
 ];
 
@@ -123,7 +132,7 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
           <p>아직 미연동</p>
         </div>
       </div>
-      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}, {V35_STORAGE_KEYS.readinessResult}, {V35_STORAGE_KEYS.reportSummary}, {V35_STORAGE_KEYS.reportLinkOrFileName}, {V35_STORAGE_KEYS.slidesSummary}, {V35_STORAGE_KEYS.slidesLinkOrFileName}</p>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {Object.values(V35_STORAGE_KEYS).join(', ')}</p>
       <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
         v35 preview 저장 초기화
       </button>
@@ -142,6 +151,9 @@ function V35PreviewDebugPanel({
   reportLinkOrFileName,
   slidesSummary,
   slidesLinkOrFileName,
+  presentationChecks,
+  presentationOneLiner,
+  presentationManagerRequest,
 }: {
   participant: ParticipantInfo;
   savedState: JsonRecord;
@@ -153,6 +165,9 @@ function V35PreviewDebugPanel({
   reportLinkOrFileName: string;
   slidesSummary: string;
   slidesLinkOrFileName: string;
+  presentationChecks: string[];
+  presentationOneLiner: string;
+  presentationManagerRequest: string;
 }) {
   const debugPayload = {
     participant,
@@ -165,6 +180,9 @@ function V35PreviewDebugPanel({
     reportLinkOrFileName,
     slidesSummary,
     slidesLinkOrFileName,
+    presentationChecks,
+    presentationOneLiner,
+    presentationManagerRequest,
   };
 
   return (
@@ -337,6 +355,43 @@ function StudioSlidesStep({
   );
 }
 
+function PresentationChecklistStep({
+  presentationChecks,
+  setPresentationChecks,
+  presentationOneLiner,
+  setPresentationOneLiner,
+  presentationManagerRequest,
+  setPresentationManagerRequest,
+  save,
+}: {
+  presentationChecks: string[];
+  setPresentationChecks: (checks: string[]) => void;
+  presentationOneLiner: string;
+  setPresentationOneLiner: (value: string) => void;
+  presentationManagerRequest: string;
+  setPresentationManagerRequest: (value: string) => void;
+  save: (key: string, payload: JsonRecord) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      <PresentationChecklist
+        checks={presentationChecks}
+        setChecks={setPresentationChecks}
+        oneLiner={presentationOneLiner}
+        setOneLiner={setPresentationOneLiner}
+        managerRequest={presentationManagerRequest}
+        setManagerRequest={setPresentationManagerRequest}
+      />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">Presentation Checklist 입력값은 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 발표 준비 결과를 savedState에도 명시적으로 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J09-presentation-checklist', { presentationChecks, presentationOneLiner, presentationManagerRequest })}>
+          Presentation Checklist 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -349,6 +404,9 @@ export function FullFlowJourneyV35App() {
   const [reportLinkOrFileName, setReportLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.reportLinkOrFileName, '');
   const [slidesSummary, setSlidesSummary] = useStored<string>(V35_STORAGE_KEYS.slidesSummary, '');
   const [slidesLinkOrFileName, setSlidesLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.slidesLinkOrFileName, '');
+  const [presentationChecks, setPresentationChecks] = useStored<string[]>(V35_STORAGE_KEYS.presentationChecks, []);
+  const [presentationOneLiner, setPresentationOneLiner] = useStored<string>(V35_STORAGE_KEYS.presentationOneLiner, '');
+  const [presentationManagerRequest, setPresentationManagerRequest] = useStored<string>(V35_STORAGE_KEYS.presentationManagerRequest, '');
 
   const safeStep = clampStep(step);
 
@@ -388,13 +446,25 @@ export function FullFlowJourneyV35App() {
           />
         );
       case 7:
-      default:
         return (
           <StudioSlidesStep
             slidesSummary={slidesSummary}
             setSlidesSummary={setSlidesSummary}
             slidesLinkOrFileName={slidesLinkOrFileName}
             setSlidesLinkOrFileName={setSlidesLinkOrFileName}
+            save={save}
+          />
+        );
+      case 8:
+      default:
+        return (
+          <PresentationChecklistStep
+            presentationChecks={presentationChecks}
+            setPresentationChecks={setPresentationChecks}
+            presentationOneLiner={presentationOneLiner}
+            setPresentationOneLiner={setPresentationOneLiner}
+            presentationManagerRequest={presentationManagerRequest}
+            setPresentationManagerRequest={setPresentationManagerRequest}
             save={save}
           />
         );
@@ -423,6 +493,9 @@ export function FullFlowJourneyV35App() {
         reportLinkOrFileName={reportLinkOrFileName}
         slidesSummary={slidesSummary}
         slidesLinkOrFileName={slidesLinkOrFileName}
+        presentationChecks={presentationChecks}
+        presentationOneLiner={presentationOneLiner}
+        presentationManagerRequest={presentationManagerRequest}
       />
     </JourneyShell>
   );
