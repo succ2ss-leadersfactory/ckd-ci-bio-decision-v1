@@ -8,7 +8,16 @@
 - 확인 브라우저:
 - 확인 기기:
 
-## 2. 운영 경로 확인
+## 2. 배포 전 build smoke 확인
+
+| 항목 | 결과 | 메모 |
+|---|---|---|
+| `npm install` | 미확인 | 의존성 설치 확인 |
+| `npm run typecheck` | 미확인 | TypeScript 검사 확인 |
+| `npm run build` | 미확인 | Vite build 확인 |
+| `npm run smoke:v35` | 미확인 | typecheck + build 통합 확인 |
+
+## 3. 운영 경로 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
@@ -18,7 +27,7 @@
 | Google Sheets 저장 | 미확인 | 기존 저장 연동 유지 여부 |
 | console error | 미확인 | 브라우저 console 확인 |
 
-## 3. v35 preview 경로 확인
+## 4. v35 preview 경로 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
@@ -27,7 +36,7 @@
 | Debug JSON 패널 | 미확인 | 저장 결과 화면 표시 여부 |
 | console error | 미확인 | 브라우저 console 확인 |
 
-## 4. Step 이동 확인
+## 5. Step 이동 확인
 
 | Step | 화면 | 결과 | 메모 |
 |---:|---|---|---|
@@ -41,7 +50,7 @@
 | 7 | Studio Slide Deck Output | 미확인 |  |
 | 8 | Presentation Checklist | 미확인 |  |
 
-## 5. 저장 확인
+## 6. 저장 확인
 
 | 저장 key | 결과 | 메모 |
 |---|---|---|
@@ -55,7 +64,7 @@
 | `J08-studio-slides` | 미확인 |  |
 | `J09-presentation-checklist` | 미확인 |  |
 
-## 6. localStorage key 분리 확인
+## 7. localStorage key 분리 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
@@ -63,7 +72,7 @@
 | `c1bio_flow_*` key 영향 없음 | 미확인 | 기존 v34 저장 key 보호 여부 |
 | v35 preview 저장 초기화 | 미확인 | preview key만 삭제되는지 확인 |
 
-## 7. 발견 이슈
+## 8. 발견 이슈
 
 | 번호 | 이슈 | 심각도 | 조치 방향 |
 |---:|---|---|---|
@@ -71,9 +80,10 @@
 | 2 |  |  |  |
 | 3 |  |  |  |
 
-## 8. 판정
+## 9. 판정
 
 - 전체 판정: 미확인
+- build smoke 검증: 미확인
 - v35 preview 독립 실행 검증: 미확인
 - v35 운영 전환 가능 여부: 미확인
 - 다음 조치:
