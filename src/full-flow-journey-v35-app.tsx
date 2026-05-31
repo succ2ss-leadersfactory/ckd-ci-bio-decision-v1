@@ -28,6 +28,11 @@ function clampStep(step: number) {
   return Math.min(Math.max(step, 0), Math.max(V35_APP_STEPS.length - 1, 0));
 }
 
+function resetV35PreviewStorage() {
+  Object.values(V35_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+  window.location.reload();
+}
+
 function V35PreviewSmokePanel({ step }: { step: number }) {
   return (
     <aside className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-700" data-testid="v35-preview-smoke-panel">
@@ -51,6 +56,9 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
         </div>
       </div>
       <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}</p>
+      <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
+        v35 preview 저장 초기화
+      </button>
     </aside>
   );
 }
