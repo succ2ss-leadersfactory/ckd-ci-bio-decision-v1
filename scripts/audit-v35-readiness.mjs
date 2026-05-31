@@ -4,6 +4,7 @@ const RESULT_DOC = 'docs/v35-preview-smoke-result.md';
 const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
 const CONSOLE_SNIPPET_DOC = 'docs/v35-browser-qa-console-snippet.md';
 const BROWSER_QA_RUNBOOK_DOC = 'docs/v35-browser-qa-runbook.md';
+const VALIDATION_INDEX_DOC = 'docs/v35-validation-index.md';
 const failures = [];
 const warnings = [];
 
@@ -193,12 +194,38 @@ function assertBrowserQaRunbookDoc(content) {
   }
 }
 
+function assertValidationIndexDoc(content) {
+  const requiredContent = [
+    'v35 Validation Document Index',
+    'docs/v35-smoke-automation-guide.md',
+    'docs/v35-deployment-url-guide.md',
+    'docs/v35-browser-qa-runbook.md',
+    'docs/v35-browser-qa-console-snippet.md',
+    'docs/v35-browser-qa-result.md',
+    'docs/v35-preview-smoke-result.md',
+    'docs/v35-cutover-gates.md',
+    'Actions → v35 Smoke → Run workflow',
+    'Actions → v35 Remote Smoke → Run workflow',
+    'Actions → v35 Readiness Audit → Run workflow',
+    'missingPreviewKeys: none',
+    'missingSavedStateKeys: none',
+    'pass: true',
+  ];
+
+  for (const item of requiredContent) {
+    if (!content.includes(item)) {
+      fail(`${VALIDATION_INDEX_DOC} must include ${item}.`);
+    }
+  }
+}
+
 console.log('Running v35 readiness audit...');
 
 const smokeResult = readText(RESULT_DOC);
 const browserQaResult = readText(BROWSER_QA_DOC);
 const consoleSnippet = readText(CONSOLE_SNIPPET_DOC);
 const browserQaRunbook = readText(BROWSER_QA_RUNBOOK_DOC);
+const validationIndex = readText(VALIDATION_INDEX_DOC);
 
 assertNoPendingTableStatus(smokeResult, RESULT_DOC);
 assertSmokeFinalJudgement(smokeResult);
@@ -233,6 +260,7 @@ assertNoKnownBlockingText(browserQaResult, BROWSER_QA_DOC);
 
 assertConsoleSnippetDoc(consoleSnippet);
 assertBrowserQaRunbookDoc(browserQaRunbook);
+assertValidationIndexDoc(validationIndex);
 
 if (warnings.length > 0) {
   console.warn('v35 readiness audit warnings:');
