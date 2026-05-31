@@ -26,7 +26,7 @@
 
 ## v35 검증 상태
 
-v35 preview는 운영 전환 전 검증 단계를 통과했고, 현재 cutover 검토 가능 상태입니다. 현재 cutover는 아직 진행하지 않습니다.
+v35 preview는 운영 전환 전 검증 단계를 통과했고, 현재 선택 A 기준으로 preview 안정 상태를 유지합니다. 현재 cutover는 진행하지 않습니다.
 
 현재 확인 상태:
 
@@ -36,13 +36,17 @@ v35 Remote Smoke: 통과
 Browser QA: 통과
 Console snippet: 통과
 v35 Readiness Audit: 통과
+Selected decision: A. Preview 안정 상태 유지
 Cutover status: 검토 가능, 실행 전
+Operating route: v34 유지
+Preview route: v35 검증 완료 상태 유지
 ```
 
 먼저 확인할 문서:
 
 ```txt
 docs/v35-validation-index.md
+docs/v35-cutover-decision.md
 ```
 
 핵심 실행 순서:
@@ -55,6 +59,7 @@ docs/v35-validation-index.md
 5. docs/v35-preview-smoke-result.md 최종 결과 반영
 6. Actions → v35 Readiness Audit → Run workflow
 7. cutover 실행 여부 별도 결정
+8. 현재 결정은 A. Preview 안정 상태 유지
 ```
 
 cutover 금지 기준:
@@ -64,6 +69,7 @@ cutover 금지 기준:
 - `v35 Readiness Audit` 실패
 - `src/full-flow-journey-v35.tsx`의 v34 위임 import 제거 전 gate 미통과
 - cutover 실행 승인 전 임의 운영 전환
+- 선택 B 승인 전 운영 경로 전환
 
 ## Routes
 
@@ -127,6 +133,7 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 ## 운영 문서
 
 - `docs/v35-validation-index.md` v35 검증 문서 인덱스
+- `docs/v35-cutover-decision.md` v35 cutover 의사결정 기록
 - `docs/v35-smoke-automation-guide.md` v35 smoke 자동화 가이드
 - `docs/v35-browser-qa-runbook.md` v35 브라우저 QA 실행 절차서
 - `docs/v35-browser-qa-result.md` v35 브라우저 QA 결과 기록지
