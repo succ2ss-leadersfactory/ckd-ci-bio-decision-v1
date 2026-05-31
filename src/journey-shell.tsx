@@ -32,7 +32,7 @@ export function JourneyShell({
   const nextStep = steps[safeStep + 1];
   const progress = steps.length <= 1 ? 100 : Math.round(((safeStep + 1) / steps.length) * 100);
   const stepScrollerRef = React.useRef<HTMLDivElement | null>(null);
-  const activeChipRef = React.useRef<HTMLButtonElement | HTMLSpanElement | null>(null);
+  const activeChipRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -91,6 +91,9 @@ export function JourneyShell({
               {steps.map((step, index) => {
                 const isActive = index === safeStep;
                 const isDone = index < safeStep;
+                const setActiveChip = (node: HTMLElement | null) => {
+                  if (isActive) activeChipRef.current = node;
+                };
                 const className =
                   'rounded-full border px-3 py-2 text-xs font-bold transition ' +
                   (isActive
@@ -101,7 +104,7 @@ export function JourneyShell({
 
                 if (!onStepSelect) {
                   return (
-                    <span key={step.id} ref={isActive ? activeChipRef : null} className={className} aria-current={isActive ? 'step' : undefined} title={`${index + 1}. ${step.title}`}>
+                    <span key={step.id} ref={setActiveChip} className={className} aria-current={isActive ? 'step' : undefined} title={`${index + 1}. ${step.title}`}>
                       {index + 1}. {step.title}
                     </span>
                   );
@@ -110,7 +113,7 @@ export function JourneyShell({
                 return (
                   <button
                     key={step.id}
-                    ref={isActive ? activeChipRef : null}
+                    ref={setActiveChip}
                     type="button"
                     className={className}
                     aria-current={isActive ? 'step' : undefined}
