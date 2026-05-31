@@ -4,7 +4,7 @@
     "noEmit": true
   },
   "include": [
-    "src/index.css",
+    "src/vite-env.d.ts",
     "src/journey-v35-app-preview.tsx",
     "src/full-flow-journey-v35-app.tsx",
     "src/journey-v35-preview-config.ts",
