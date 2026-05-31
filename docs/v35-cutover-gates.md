@@ -13,13 +13,13 @@
 
 | 기준 | 상태 | 메모 |
 |---|---|---|
-| v35 preview app 파일 존재 | 대기 | `src/full-flow-journey-v35-app.tsx` |
-| preview config 분리 | 대기 | `src/journey-v35-preview-config.ts` |
-| preview state hook 분리 | 대기 | `src/journey-v35-preview-state.ts` |
-| preview router 분리 | 대기 | `src/journey-v35-preview-router.tsx` |
-| preview step wrapper 분리 | 대기 | `src/journey-v35-preview-steps.tsx` |
-| preview panel 분리 | 대기 | `src/journey-v35-preview-panels.tsx` |
-| preview type 분리 | 대기 | `src/journey-v35-preview-types.ts` |
+| v35 preview app 파일 존재 | 완료 | `src/full-flow-journey-v35-app.tsx` |
+| preview config 분리 | 완료 | `src/journey-v35-preview-config.ts` |
+| preview state hook 분리 | 완료 | `src/journey-v35-preview-state.ts` |
+| preview router 분리 | 완료 | `src/journey-v35-preview-router.tsx` |
+| preview step wrapper 분리 | 완료 | `src/journey-v35-preview-steps.tsx` |
+| preview panel 분리 | 완료 | `src/journey-v35-preview-panels.tsx` |
+| preview type 분리 | 완료 | `src/journey-v35-preview-types.ts` |
 
 ## Gate 2. 운영 v34 보호 검증
 
