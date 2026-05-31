@@ -216,11 +216,13 @@ function assertStaticSmokeCoversPreflight() {
     'docs/v35-browser-qa-console-snippet.md',
     'docs/v35-browser-qa-runbook.md',
     'docs/v35-validation-index.md',
+    'docs/v35-cutover-decision.md',
     '.github/workflows/v35-readiness-audit.yml',
     'npm run audit:v35:readiness',
     'Protected validation entry points',
     'README.md keeps the v35 validation entry point',
     'console snippet and confirm missingPreviewKeys none, missingSavedStateKeys none, pass true',
+    'Selected decision: A. Preview 안정 상태 유지',
   ];
 
   for (const phrase of requiredPhrases) {
@@ -311,6 +313,26 @@ function assertBrowserQaDocs() {
   }
 }
 
+function assertCutoverDecisionDoc() {
+  const decisionDoc = readText('docs/v35-cutover-decision.md');
+  if (decisionDoc === null) {
+    return;
+  }
+
+  const requiredPhrases = [
+    'Selected decision: A. Preview 안정 상태 유지',
+    'Cutover status: 검토 가능, 실행 전',
+    'Operating route: v34 유지',
+    'Preview route: v35 검증 완료 상태 유지',
+  ];
+
+  for (const phrase of requiredPhrases) {
+    if (!decisionDoc.includes(phrase)) {
+      fail(`docs/v35-cutover-decision.md must include ${phrase}.`);
+    }
+  }
+}
+
 function assertReadmeV35Entry() {
   const readme = readText('README.md');
   if (readme === null) {
@@ -320,6 +342,7 @@ function assertReadmeV35Entry() {
   const requiredPhrases = [
     'v35 검증 상태',
     'docs/v35-validation-index.md',
+    'docs/v35-cutover-decision.md',
     'Actions → v35 Smoke → Run workflow',
     'Actions → v35 Remote Smoke → Run workflow',
     'Actions → v35 Readiness Audit → Run workflow',
@@ -327,6 +350,7 @@ function assertReadmeV35Entry() {
     '/journey-v35-preview.html',
     'npm run smoke:v35',
     'npm run audit:v35:readiness',
+    'Selected decision: A. Preview 안정 상태 유지',
   ];
 
   for (const phrase of requiredPhrases) {
@@ -401,6 +425,7 @@ function assertRequiredFiles() {
     'docs/v35-browser-qa-runbook.md',
     'docs/v35-validation-index.md',
     'docs/v35-cutover-gates.md',
+    'docs/v35-cutover-decision.md',
     'docs/v35-deployment-url-guide.md',
   ];
 
@@ -418,6 +443,7 @@ assertVercelRedirect();
 assertWorkflowCoverage();
 assertStaticSmokeCoversPreflight();
 assertBrowserQaDocs();
+assertCutoverDecisionDoc();
 assertReadmeV35Entry();
 assertCurrentNoCutoverState();
 assertCutoverDocsStillBlockCutover();
