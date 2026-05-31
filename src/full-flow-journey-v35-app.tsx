@@ -6,9 +6,10 @@ import { SourceCheckSection } from './journey-source-check';
 import { NotebookSourcePrep } from './journey-notebook-source-prep';
 import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { StudioReportSection } from './journey-studio-report';
+import { StudioSlidesSection } from './journey-studio-slides';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
-import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck, promptStudioReport } from './journey-utils';
+import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck, promptStudioReport, promptStudioSlides } from './journey-utils';
 import type { IssueNote } from './journey-components';
 
 const V35_STORAGE_KEYS = {
@@ -21,6 +22,8 @@ const V35_STORAGE_KEYS = {
   readinessResult: 'c1bio_v35_preview_readiness_result',
   reportSummary: 'c1bio_v35_preview_report_summary',
   reportLinkOrFileName: 'c1bio_v35_preview_report_link_or_file_name',
+  slidesSummary: 'c1bio_v35_preview_slides_summary',
+  slidesLinkOrFileName: 'c1bio_v35_preview_slides_link_or_file_name',
 };
 
 const V35_STRATEGY_SCENARIO_TITLE = 'v35 preview 전략 이슈 검토';
@@ -60,6 +63,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'studio-report',
     title: 'Studio Report Output',
     description: 'NotebookLM Studio 전략 보고서 산출 결과를 v35 preview localStorage에 저장합니다.',
+  },
+  {
+    id: 'studio-slides',
+    title: 'Studio Slide Deck Output',
+    description: 'NotebookLM Studio 전략회의 슬라이드 산출 결과를 v35 preview localStorage에 저장합니다.',
   },
 ];
 
@@ -115,7 +123,7 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
           <p>아직 미연동</p>
         </div>
       </div>
-      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}, {V35_STORAGE_KEYS.readinessResult}, {V35_STORAGE_KEYS.reportSummary}, {V35_STORAGE_KEYS.reportLinkOrFileName}</p>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}, {V35_STORAGE_KEYS.readinessResult}, {V35_STORAGE_KEYS.reportSummary}, {V35_STORAGE_KEYS.reportLinkOrFileName}, {V35_STORAGE_KEYS.slidesSummary}, {V35_STORAGE_KEYS.slidesLinkOrFileName}</p>
       <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
         v35 preview 저장 초기화
       </button>
@@ -132,6 +140,8 @@ function V35PreviewDebugPanel({
   readinessResult,
   reportSummary,
   reportLinkOrFileName,
+  slidesSummary,
+  slidesLinkOrFileName,
 }: {
   participant: ParticipantInfo;
   savedState: JsonRecord;
@@ -141,6 +151,8 @@ function V35PreviewDebugPanel({
   readinessResult: string;
   reportSummary: string;
   reportLinkOrFileName: string;
+  slidesSummary: string;
+  slidesLinkOrFileName: string;
 }) {
   const debugPayload = {
     participant,
@@ -151,6 +163,8 @@ function V35PreviewDebugPanel({
     readinessResult,
     reportSummary,
     reportLinkOrFileName,
+    slidesSummary,
+    slidesLinkOrFileName,
   };
 
   return (
@@ -289,6 +303,40 @@ function StudioReportStep({
   );
 }
 
+function StudioSlidesStep({
+  slidesSummary,
+  setSlidesSummary,
+  slidesLinkOrFileName,
+  setSlidesLinkOrFileName,
+  save,
+}: {
+  slidesSummary: string;
+  setSlidesSummary: (value: string) => void;
+  slidesLinkOrFileName: string;
+  setSlidesLinkOrFileName: (value: string) => void;
+  save: (key: string, payload: JsonRecord) => void;
+}) {
+  const slidesPrompt = promptStudioSlides();
+
+  return (
+    <div className="grid gap-4">
+      <StudioSlidesSection
+        promptText={slidesPrompt}
+        summary={slidesSummary}
+        setSummary={setSlidesSummary}
+        linkOrFileName={slidesLinkOrFileName}
+        setLinkOrFileName={setSlidesLinkOrFileName}
+      />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">Studio slide deck 결과 요약과 파일명/링크는 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 슬라이드 산출 결과를 savedState에도 명시적으로 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J08-studio-slides', { slidesPrompt, slidesSummary, slidesLinkOrFileName })}>
+          Studio Slides 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -299,6 +347,8 @@ export function FullFlowJourneyV35App() {
   const [readinessResult, setReadinessResult] = useStored<string>(V35_STORAGE_KEYS.readinessResult, '');
   const [reportSummary, setReportSummary] = useStored<string>(V35_STORAGE_KEYS.reportSummary, '');
   const [reportLinkOrFileName, setReportLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.reportLinkOrFileName, '');
+  const [slidesSummary, setSlidesSummary] = useStored<string>(V35_STORAGE_KEYS.slidesSummary, '');
+  const [slidesLinkOrFileName, setSlidesLinkOrFileName] = useStored<string>(V35_STORAGE_KEYS.slidesLinkOrFileName, '');
 
   const safeStep = clampStep(step);
 
@@ -328,13 +378,23 @@ export function FullFlowJourneyV35App() {
       case 5:
         return <NotebookReadinessCheckStep readinessResult={readinessResult} setReadinessResult={setReadinessResult} save={save} />;
       case 6:
-      default:
         return (
           <StudioReportStep
             reportSummary={reportSummary}
             setReportSummary={setReportSummary}
             reportLinkOrFileName={reportLinkOrFileName}
             setReportLinkOrFileName={setReportLinkOrFileName}
+            save={save}
+          />
+        );
+      case 7:
+      default:
+        return (
+          <StudioSlidesStep
+            slidesSummary={slidesSummary}
+            setSlidesSummary={setSlidesSummary}
+            slidesLinkOrFileName={slidesLinkOrFileName}
+            setSlidesLinkOrFileName={setSlidesLinkOrFileName}
             save={save}
           />
         );
@@ -361,6 +421,8 @@ export function FullFlowJourneyV35App() {
         readinessResult={readinessResult}
         reportSummary={reportSummary}
         reportLinkOrFileName={reportLinkOrFileName}
+        slidesSummary={slidesSummary}
+        slidesLinkOrFileName={slidesLinkOrFileName}
       />
     </JourneyShell>
   );
