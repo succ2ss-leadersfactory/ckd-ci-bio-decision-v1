@@ -121,7 +121,9 @@ function mustNotMatch(file, pattern, message, code = true) {
 function assertPackageScripts() {
   const scripts = readJson('package.json').scripts ?? {};
   const expected = {
+    typecheck: 'npm run typecheck:v35',
     'typecheck:v35': 'tsc -p tsconfig.v35-smoke.json --noEmit',
+    'typecheck:full': 'tsc --noEmit',
     'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
