@@ -1,0 +1,56 @@
+name: v35 Readiness Audit
+
+on:
+  workflow_dispatch:
+
+jobs:
+  readiness-audit-v35:
+    name: Run v35 readiness audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v35 readiness audit
+        run: npm run audit:v35:readiness
+
+      - name: Write v35 readiness audit summary
+        if: always()
+        run: |
+          {
+            echo "# v35 Readiness Audit Summary"
+            echo ""
+            echo "## Command covered"
+            echo ""
+            echo "- npm run audit:v35:readiness"
+            echo ""
+            echo "## Documents checked"
+            echo ""
+            echo "- docs/v35-preview-smoke-result.md"
+            echo "- docs/v35-browser-qa-result.md"
+            echo "- docs/v35-browser-qa-console-snippet.md"
+            echo ""
+            echo "## Required readiness evidence"
+            echo ""
+            echo "- Automatic smoke result recorded as passed"
+            echo "- Remote smoke result recorded as passed"
+            echo "- Browser QA recorded as passed"
+            echo "- v34 operating screen recorded as no-impact"
+            echo "- v35 preview independent execution recorded as passed"
+            echo "- J01-J09 saved state recorded as verified"
+            echo "- localStorage key separation recorded as verified"
+            echo "- Console snippet evidence recorded with missingPreviewKeys none, missingSavedStateKeys none, pass true"
+            echo ""
+            echo "## Cutover status"
+            echo ""
+            echo "A green readiness audit means the documentation supports cutover review. It does not automatically perform cutover."
+          } >> "$GITHUB_STEP_SUMMARY"
