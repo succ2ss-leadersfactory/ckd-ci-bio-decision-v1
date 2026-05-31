@@ -40,6 +40,8 @@ v35 cutover의 핵심 목표는 다음이다.
 | v35 smoke script 등록 | `package.json`에 `smoke:v35` 등록 | 완료 |
 | dist smoke script 등록 | `package.json`에 `smoke:v35:dist` 등록 | 완료 |
 | remote smoke script 등록 | `package.json`에 `smoke:v35:remote` 등록 | 완료 |
+| cutover preflight script 등록 | `package.json`에 `preflight:v35:cutover` 등록 | 완료 |
+| readiness audit script 등록 | `package.json`에 `audit:v35:readiness` 등록 | 완료 |
 | 수동 remote smoke workflow | `.github/workflows/v35-remote-smoke.yml` 존재 | 완료 |
 | smoke 자동화 가이드 문서화 | `docs/v35-smoke-automation-guide.md` 존재 | 완료 |
 | preview QA 체크리스트 문서화 | `docs/v35-preview-checklist.md` 최신화 | 완료 |
@@ -69,6 +71,7 @@ npm run smoke:v35:static
 | TypeScript 검사 | `npm run typecheck` 통과 | 대기 |
 | Vite build | `npm run build` 통과 | 대기 |
 | dist 산출물 검사 | `npm run smoke:v35:dist` 통과 | 대기 |
+| cutover preflight guard | `npm run preflight:v35:cutover` 통과 | 대기 |
 | 통합 smoke | `npm run smoke:v35` 통과 | 대기 |
 
 통합 실행:
@@ -86,6 +89,7 @@ npm run smoke:v35
 - `dist/journey-v35-preview.html` 존재
 - production HTML이 `/src/...` dev entry를 직접 참조하지 않음
 - production HTML에 `/assets/*.js` module script 존재
+- cutover preflight guard 통과
 
 보류 기준:
 
@@ -94,6 +98,7 @@ npm run smoke:v35
 - `dist/journey-v35-preview.html` 누락
 - `dist/journey.html` 누락
 - dist HTML이 `/src/...` entry를 직접 참조
+- preflight guard 실패
 
 ---
 
@@ -118,6 +123,7 @@ v35 Smoke workflow 확인 항목:
 - typecheck
 - build
 - dist smoke
+- cutover preflight guard
 - integrated smoke
 
 v35 Remote Smoke workflow 확인 항목:
@@ -269,6 +275,23 @@ c1bio_v35_preview_presentation_manager_request
 | QA 실행 정보 기록 | 확인 일시, 확인자, URL, 브라우저, 기기 기록 | 대기 |
 | 실패 이슈 기록 | 발견 이슈와 조치 방향 기록 | 대기 |
 | 전환 판정 기록 | cutover 가능 여부 명시 | 대기 |
+| readiness audit | `npm run audit:v35:readiness` 통과 | 대기 |
+
+readiness audit 실행:
+
+```bash
+npm run audit:v35:readiness
+```
+
+이 audit은 `docs/v35-preview-smoke-result.md`에 실제 검증 결과가 기록되었는지 확인한다.
+
+현재는 아래 이유로 실패하는 것이 정상이다.
+
+- `미확인`, `대기`, `실행 대기` 항목이 남아 있음
+- `전체 판정: 실행 검증 대기` 상태임
+- `v35 운영 전환 가능 여부: 아직 불가` 상태임
+
+실제 QA 결과가 모두 통과로 기록된 뒤에만 이 audit이 통과해야 한다.
 
 보류 기준:
 
@@ -276,6 +299,7 @@ c1bio_v35_preview_presentation_manager_request
 - 브라우저 QA 미기록
 - 실패 이슈를 문서화하지 않음
 - 원격 smoke 미확인 상태에서 전환 진행
+- readiness audit 실패
 
 ---
 
@@ -285,6 +309,7 @@ c1bio_v35_preview_presentation_manager_request
 
 - `npm run smoke:v35`가 통과된다.
 - `npm run smoke:v35:remote` 또는 `v35 Remote Smoke` workflow가 통과된다.
+- `npm run audit:v35:readiness`가 통과된다.
 - 루트 경로 `/`가 `/journey.html`로 정상 redirect된다.
 - 운영 경로 `/journey.html`이 정상이다.
 - 기존 v34 Google Sheets 저장 흐름이 정상이다.
@@ -312,13 +337,14 @@ c1bio_v35_preview_presentation_manager_request
 모든 gate 통과 후에만 아래 순서를 검토한다.
 
 1. `docs/v35-preview-smoke-result.md`에 최종 통과 결과를 기록한다.
-2. rollback 기준과 rollback 커밋 후보를 명확히 적는다.
-3. `src/full-flow-journey-v35.tsx`에서 v34 위임 import 제거 여부를 검토한다.
-4. v35 app을 운영 경로에서 실행하도록 최소 변경한다.
-5. `src/journey-active.tsx`는 가능한 마지막까지 유지한다.
-6. commit은 단일 목적의 작은 단위로 만든다.
-7. Vercel 배포 완료 후 즉시 `/journey.html` 회귀 검증을 진행한다.
-8. 문제가 있으면 즉시 v34 위임 구조로 되돌린다.
+2. `npm run audit:v35:readiness`를 실행해 실제 결과 문서가 cutover 검토 가능한 상태인지 확인한다.
+3. rollback 기준과 rollback 커밋 후보를 명확히 적는다.
+4. `src/full-flow-journey-v35.tsx`에서 v34 위임 import 제거 여부를 검토한다.
+5. v35 app을 운영 경로에서 실행하도록 최소 변경한다.
+6. `src/journey-active.tsx`는 가능한 마지막까지 유지한다.
+7. commit은 단일 목적의 작은 단위로 만든다.
+8. Vercel 배포 완료 후 즉시 `/journey.html` 회귀 검증을 진행한다.
+9. 문제가 있으면 즉시 v34 위임 구조로 되돌린다.
 
 권장 cutover commit 원칙:
 
@@ -368,6 +394,7 @@ rollback 후 확인:
 - v35 preview 검증 전 `import './full-flow-journey-v34';` 제거 금지
 - Google Sheets 연동을 v35 preview 검증 전에 추가 금지
 - 실제 QA 결과 없이 문서상 통과 처리 금지
+- readiness audit 실패 상태에서 cutover 금지
 - Vercel remote smoke 실패 상태에서 cutover 금지
 - v35 preview가 `c1bio_flow_*` key를 사용하도록 변경 금지
 
@@ -385,6 +412,7 @@ Cutover 불가 — 실행 검증 대기
 
 - `npm run smoke:v35` 실제 통과 결과 미기록
 - `v35 Remote Smoke` 실제 통과 결과 미기록
+- `npm run audit:v35:readiness` 실패 예상 상태
 - 브라우저 QA 결과 미기록
 - Step 0~8 실제 이동 결과 미기록
 - J01~J09 저장 결과 미기록
@@ -397,4 +425,5 @@ Cutover 불가 — 실행 검증 대기
 3. 브라우저에서 `/journey.html` v34 회귀 확인
 4. 브라우저에서 `/journey-v35-preview.html` v35 preview QA 수행
 5. `docs/v35-preview-smoke-result.md`에 실제 결과 반영
-6. 모든 gate 통과 후 cutover 여부 재판정
+6. `npm run audit:v35:readiness` 실행
+7. 모든 gate 통과 후 cutover 여부 재판정
