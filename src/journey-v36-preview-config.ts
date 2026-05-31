@@ -6,6 +6,7 @@ export const V36_STORAGE_KEYS = {
   responses: 'ckd-v36-responses',
   customerCallPlan: 'ckd-v36-lab-customer-call-plan',
   hqTranslation: 'ckd-v36-lab-hq-translation',
+  stakeholderMessage: 'ckd-v36-lab-stakeholder-message',
   performanceDialogue: 'ckd-v36-lab-performance-dialogue',
   oneOnOneCoaching: 'ckd-v36-lab-one-on-one-coaching',
   wrapUp: 'ckd-v36-wrap-up',
