@@ -21,6 +21,7 @@ const requiredFiles = [
   'docs/v35-browser-qa-console-snippet.md',
   'docs/v35-browser-qa-runbook.md',
   'docs/v35-validation-index.md',
+  'docs/v35-cutover-decision.md',
   'src/vite-env.d.ts',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
@@ -248,8 +249,14 @@ function assertBrowserQaDocs() {
   }
 }
 
+function assertCutoverDecisionDoc() {
+  for (const text of ['Selected decision: A. Preview 안정 상태 유지', 'Cutover status: 검토 가능, 실행 전', 'Operating route: v34 유지', 'Preview route: v35 검증 완료 상태 유지']) {
+    mustInclude('docs/v35-cutover-decision.md', text, `docs/v35-cutover-decision.md must include ${text}.`);
+  }
+}
+
 function assertReadmeV35Entry() {
-  for (const text of ['v35 검증 상태', 'docs/v35-validation-index.md', 'Actions → v35 Smoke → Run workflow', 'Actions → v35 Remote Smoke → Run workflow', 'Actions → v35 Readiness Audit → Run workflow', '/journey.html', '/journey-v35-preview.html', 'npm run smoke:v35', 'npm run audit:v35:readiness']) {
+  for (const text of ['v35 검증 상태', 'docs/v35-validation-index.md', 'docs/v35-cutover-decision.md', 'Actions → v35 Smoke → Run workflow', 'Actions → v35 Remote Smoke → Run workflow', 'Actions → v35 Readiness Audit → Run workflow', '/journey.html', '/journey-v35-preview.html', 'npm run smoke:v35', 'npm run audit:v35:readiness', 'Selected decision: A. Preview 안정 상태 유지']) {
     mustInclude('README.md', text, `README.md must include ${text}.`);
   }
 
@@ -269,6 +276,7 @@ assertV35ConfigAndRouter();
 assertSavedStateKeys();
 assertWorkflowCoverage();
 assertBrowserQaDocs();
+assertCutoverDecisionDoc();
 assertReadmeV35Entry();
 
 if (failures.length > 0) {
