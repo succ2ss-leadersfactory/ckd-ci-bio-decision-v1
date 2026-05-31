@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
+const README_DOC = 'README.md';
 const RESULT_DOC = 'docs/v35-preview-smoke-result.md';
 const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
 const CONSOLE_SNIPPET_DOC = 'docs/v35-browser-qa-console-snippet.md';
@@ -219,14 +220,37 @@ function assertValidationIndexDoc(content) {
   }
 }
 
+function assertReadmeDoc(content) {
+  const requiredContent = [
+    'v35 검증 상태',
+    'docs/v35-validation-index.md',
+    'Actions → v35 Smoke → Run workflow',
+    'Actions → v35 Remote Smoke → Run workflow',
+    'Actions → v35 Readiness Audit → Run workflow',
+    '/journey.html',
+    '/journey-v35-preview.html',
+    'npm run smoke:v35',
+    'npm run audit:v35:readiness',
+    'cutover는 아직 진행하지 않습니다',
+  ];
+
+  for (const item of requiredContent) {
+    if (!content.includes(item)) {
+      fail(`${README_DOC} must include ${item}.`);
+    }
+  }
+}
+
 console.log('Running v35 readiness audit...');
 
+const readme = readText(README_DOC);
 const smokeResult = readText(RESULT_DOC);
 const browserQaResult = readText(BROWSER_QA_DOC);
 const consoleSnippet = readText(CONSOLE_SNIPPET_DOC);
 const browserQaRunbook = readText(BROWSER_QA_RUNBOOK_DOC);
 const validationIndex = readText(VALIDATION_INDEX_DOC);
 
+assertReadmeDoc(readme);
 assertNoPendingTableStatus(smokeResult, RESULT_DOC);
 assertSmokeFinalJudgement(smokeResult);
 assertRequiredEvidence(smokeResult, RESULT_DOC, [
