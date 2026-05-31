@@ -22,3 +22,36 @@ jobs:
 
       - name: Run v35 remote smoke check
         run: npm run smoke:v35:remote
+
+      - name: Write v35 remote smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v35 Remote Smoke Summary"
+            echo ""
+            echo "## Default checked URL"
+            echo ""
+            echo "- https://ckd-ci-bio-decision-v1.vercel.app"
+            echo ""
+            echo "## Paths covered"
+            echo ""
+            echo "- /"
+            echo "- /journey.html"
+            echo "- /journey-v35-preview.html"
+            echo ""
+            echo "## What this verifies"
+            echo ""
+            echo "- Root redirect reaches /journey.html"
+            echo "- Operating journey HTML is served"
+            echo "- v35 preview HTML is served"
+            echo "- Production HTML uses /assets/*.js"
+            echo "- Production HTML does not directly reference /src/... dev entries"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Confirm Vercel deployment is complete."
+            echo "2. Open /journey.html in a browser and confirm v34 operating screen works."
+            echo "3. Open /journey-v35-preview.html and complete Step 0-8 QA."
+            echo "4. Record results in docs/v35-preview-smoke-result.md."
+            echo "5. Run npm run audit:v35:readiness after results are recorded."
+          } >> "$GITHUB_STEP_SUMMARY"
