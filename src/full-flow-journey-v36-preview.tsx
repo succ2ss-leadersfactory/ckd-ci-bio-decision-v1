@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
 import { CustomerCallPlanLab } from './journey-v36-customer-call-plan-lab';
+import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
 import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
 import { useStored } from './journey-storage';
@@ -121,6 +122,10 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
 
   if (current.id === 'performance-dialogue') {
     return <PerformanceDialogueLab />;
+  }
+
+  if (current.id === 'one-on-one-coaching') {
+    return <OneOnOneCoachingLab />;
   }
 
   return <PlaceholderStep stepTitle={current.title} />;
