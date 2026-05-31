@@ -25,6 +25,7 @@
 | 배포 URL 가이드 문서화 | 완료 | `docs/v35-deployment-url-guide.md` |
 | v35 smoke script 등록 | 완료 | `package.json`의 `smoke:v35` |
 | smoke 자동화 가이드 문서화 | 완료 | `docs/v35-smoke-automation-guide.md` |
+| `useStored` setter 호환성 보강 | 완료 | 값 업데이트와 함수형 업데이트 모두 지원 |
 
 ## Gate 2. 운영 v34 보호 검증
 
