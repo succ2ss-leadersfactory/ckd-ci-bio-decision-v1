@@ -187,11 +187,50 @@ function assertStaticSmokeCoversPreflight() {
     'npm run typecheck:v35',
     'typecheck:full',
     'src/vite-env.d.ts',
+    'docs/v35-browser-qa-result.md',
+    'docs/v35-browser-qa-console-snippet.md',
   ];
 
   for (const phrase of requiredPhrases) {
     if (!staticSmoke.includes(phrase)) {
       fail(`smoke-v35-static.mjs must require ${phrase}.`);
+    }
+  }
+}
+
+function assertBrowserQaDocs() {
+  const browserQa = readText('docs/v35-browser-qa-result.md');
+  if (browserQa !== null) {
+    const requiredPhrases = [
+      '브라우저 QA 전체 판정:',
+      'Console snippet 근거:',
+      'J01~J09 저장 여부:',
+      'localStorage key 분리 여부:',
+      'cutover 검토 가능 여부:',
+    ];
+
+    for (const phrase of requiredPhrases) {
+      if (!browserQa.includes(phrase)) {
+        fail(`docs/v35-browser-qa-result.md must include ${phrase}.`);
+      }
+    }
+  }
+
+  const snippet = readText('docs/v35-browser-qa-console-snippet.md');
+  if (snippet !== null) {
+    const requiredPhrases = [
+      'requiredPreviewKeys',
+      'requiredSavedStateKeys',
+      'missingPreviewKeys',
+      'missingSavedStateKeys',
+      'v34FlowKeysFound',
+      'pass',
+    ];
+
+    for (const phrase of requiredPhrases) {
+      if (!snippet.includes(phrase)) {
+        fail(`docs/v35-browser-qa-console-snippet.md must include ${phrase}.`);
+      }
     }
   }
 }
@@ -248,6 +287,8 @@ function assertRequiredFiles() {
     '.github/workflows/v35-remote-smoke.yml',
     'docs/v35-preview-checklist.md',
     'docs/v35-preview-smoke-result.md',
+    'docs/v35-browser-qa-result.md',
+    'docs/v35-browser-qa-console-snippet.md',
     'docs/v35-cutover-gates.md',
     'docs/v35-deployment-url-guide.md',
   ];
@@ -265,6 +306,7 @@ assertV35TsConfig();
 assertVercelRedirect();
 assertWorkflowCoverage();
 assertStaticSmokeCoversPreflight();
+assertBrowserQaDocs();
 assertCurrentNoCutoverState();
 assertCutoverDocsStillBlockCutover();
 
