@@ -222,6 +222,9 @@ function assertWorkflowCoverage() {
   for (const text of ['npm run smoke:v35:static', 'npm run typecheck:v35', 'npm run smoke:v35:dist', 'npm run preflight:v35:cutover', 'npm run smoke:v35']) {
     if (!smokeWorkflow.includes(text)) fail(`v35-smoke.yml must include ${text}.`);
   }
+  for (const text of ['Protected validation entry points', 'README.md keeps the v35 validation entry point', 'docs/v35-validation-index.md keeps the document sequence', 'docs/v35-browser-qa-runbook.md keeps the browser QA procedure', 'docs/v35-browser-qa-console-snippet.md keeps the storage/key evidence check', 'docs/v35-browser-qa-result.md keeps the required browser QA result fields', 'Open README.md and start from docs/v35-validation-index.md', 'console snippet and confirm missingPreviewKeys none, missingSavedStateKeys none, pass true']) {
+    if (!smokeWorkflow.includes(text)) fail(`v35-smoke.yml summary must include ${text}.`);
+  }
   if (smokeWorkflow.includes('npm run typecheck\n')) fail('v35-smoke.yml must not run full npm run typecheck.');
   mustInclude('.github/workflows/v35-remote-smoke.yml', 'npm run smoke:v35:remote', 'v35-remote-smoke.yml must run remote smoke.');
   mustInclude('.github/workflows/v35-readiness-audit.yml', 'npm run audit:v35:readiness', 'v35-readiness-audit.yml must run readiness audit.');
