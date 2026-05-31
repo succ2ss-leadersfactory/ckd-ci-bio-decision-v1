@@ -5,6 +5,7 @@ export const V36_STORAGE_KEYS = {
   progress: 'ckd-v36-progress',
   responses: 'ckd-v36-responses',
   aiSafety: 'ckd-v36-lab-ai-safety',
+  promptPractice: 'ckd-v36-lab-prompt-practice',
   researchStrategy: 'ckd-v36-lab-research-strategy-v2',
   sourceCheck: 'ckd-v36-lab-source-check',
   dashboardAnalysis: 'ckd-v36-lab-dashboard-analysis',
