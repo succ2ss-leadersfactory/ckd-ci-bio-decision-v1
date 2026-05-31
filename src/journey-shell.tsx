@@ -32,6 +32,10 @@ export function JourneyShell({
   const nextStep = steps[safeStep + 1];
   const progress = steps.length <= 1 ? 100 : Math.round(((safeStep + 1) / steps.length) * 100);
 
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [safeStep]);
+
   return (
     <main className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 md:px-8 md:py-8">
       <div className="mx-auto max-w-6xl space-y-4 pb-24 md:pb-28">
