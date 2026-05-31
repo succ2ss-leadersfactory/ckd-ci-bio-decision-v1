@@ -70,11 +70,13 @@ function assertPackageScripts() {
   const scripts = packageJson?.scripts ?? {};
 
   const requiredScripts = {
+    typecheck: 'npm run typecheck:v35',
+    'typecheck:v35': 'tsc -p tsconfig.v35-smoke.json --noEmit',
+    'typecheck:full': 'tsc --noEmit',
     'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
     'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
-    'typecheck:v35': 'tsc -p tsconfig.v35-smoke.json --noEmit',
   };
 
   for (const [name, expected] of Object.entries(requiredScripts)) {
@@ -183,6 +185,7 @@ function assertStaticSmokeCoversPreflight() {
     'npm run preflight:v35:cutover',
     'typecheck:v35',
     'npm run typecheck:v35',
+    'typecheck:full',
     'src/vite-env.d.ts',
   ];
 
