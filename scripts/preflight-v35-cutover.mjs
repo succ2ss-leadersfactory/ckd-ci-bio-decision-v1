@@ -196,6 +196,7 @@ function assertStaticSmokeCoversPreflight() {
     'docs/v35-browser-qa-result.md',
     'docs/v35-browser-qa-console-snippet.md',
     'docs/v35-browser-qa-runbook.md',
+    'docs/v35-validation-index.md',
     '.github/workflows/v35-readiness-audit.yml',
     'npm run audit:v35:readiness',
   ];
@@ -263,6 +264,29 @@ function assertBrowserQaDocs() {
       }
     }
   }
+
+  const validationIndex = readText('docs/v35-validation-index.md');
+  if (validationIndex !== null) {
+    const requiredPhrases = [
+      'v35 Validation Document Index',
+      'docs/v35-smoke-automation-guide.md',
+      'docs/v35-deployment-url-guide.md',
+      'docs/v35-browser-qa-runbook.md',
+      'docs/v35-browser-qa-console-snippet.md',
+      'docs/v35-browser-qa-result.md',
+      'docs/v35-preview-smoke-result.md',
+      'docs/v35-cutover-gates.md',
+      'Actions → v35 Smoke → Run workflow',
+      'Actions → v35 Remote Smoke → Run workflow',
+      'Actions → v35 Readiness Audit → Run workflow',
+    ];
+
+    for (const phrase of requiredPhrases) {
+      if (!validationIndex.includes(phrase)) {
+        fail(`docs/v35-validation-index.md must include ${phrase}.`);
+      }
+    }
+  }
 }
 
 function assertCutoverDocsStillBlockCutover() {
@@ -322,6 +346,7 @@ function assertRequiredFiles() {
     'docs/v35-browser-qa-result.md',
     'docs/v35-browser-qa-console-snippet.md',
     'docs/v35-browser-qa-runbook.md',
+    'docs/v35-validation-index.md',
     'docs/v35-cutover-gates.md',
     'docs/v35-deployment-url-guide.md',
   ];
