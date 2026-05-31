@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
 import { CustomerCallPlanLab } from './journey-v36-customer-call-plan-lab';
+import { DashboardAnalysisLab } from './journey-v36-dashboard-analysis-lab';
 import { HqTranslationLab } from './journey-v36-hq-translation-lab';
 import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
@@ -94,6 +95,7 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
+  if (current.id === 'dashboard-analysis') return <DashboardAnalysisLab />;
   if (current.id === 'customer-judgment') return <CustomerCallPlanLab />;
   if (current.id === 'hq-translation') return <HqTranslationLab />;
   if (current.id === 'stakeholder-message') return <StakeholderMessageLab />;
