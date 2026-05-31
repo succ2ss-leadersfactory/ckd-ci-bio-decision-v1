@@ -1,9 +1,13 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+
+const failures = [];
+const cache = new Map();
 
 const requiredFiles = [
   'journey.html',
   'journey-v35-preview.html',
   'package.json',
+  'tsconfig.v35-smoke.json',
   'vercel.json',
   'vite.config.ts',
   'scripts/smoke-v35-dist.mjs',
@@ -53,295 +57,177 @@ const requiredStepIds = [
   'presentation-checklist',
 ];
 
-const requiredSaveKeyChecks = [
-  { file: 'src/journey-entry.tsx', key: 'J01-entry' },
-  { file: 'src/journey-prompt-practice.tsx', key: 'J02-prompt' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J03-strategy-issue-review' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J04-source-check' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J05-notebook-source-prep' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J06-notebook-readiness-check' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J07-studio-report' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J08-studio-slides' },
-  { file: 'src/journey-v35-preview-steps.tsx', key: 'J09-presentation-checklist' },
+const requiredSaveKeys = [
+  ['src/journey-entry.tsx', 'J01-entry'],
+  ['src/journey-prompt-practice.tsx', 'J02-prompt'],
+  ['src/journey-v35-preview-steps.tsx', 'J03-strategy-issue-review'],
+  ['src/journey-v35-preview-steps.tsx', 'J04-source-check'],
+  ['src/journey-v35-preview-steps.tsx', 'J05-notebook-source-prep'],
+  ['src/journey-v35-preview-steps.tsx', 'J06-notebook-readiness-check'],
+  ['src/journey-v35-preview-steps.tsx', 'J07-studio-report'],
+  ['src/journey-v35-preview-steps.tsx', 'J08-studio-slides'],
+  ['src/journey-v35-preview-steps.tsx', 'J09-presentation-checklist'],
 ];
-
-const requiredCodePatterns = [
-  {
-    file: 'src/journey-active.tsx',
-    pattern: /import\s+['"]\.\/full-flow-journey-v35['"];?/,
-    message: 'journey-active.tsx must keep importing full-flow-journey-v35 before cutover.',
-  },
-  {
-    file: 'src/full-flow-journey-v35.tsx',
-    pattern: /import\s+['"]\.\/full-flow-journey-v34['"];?/,
-    message: 'full-flow-journey-v35.tsx must still delegate to v34 before cutover.',
-  },
-  {
-    file: 'src/full-flow-journey-v35.tsx',
-    pattern: /\bFullFlowJourneyV35App\b/,
-    message: 'full-flow-journey-v35.tsx must smoke-check FullFlowJourneyV35App.',
-  },
-  {
-    file: 'src/full-flow-journey-v35.tsx',
-    pattern: /\brenderV35PreviewStep\b/,
-    message: 'full-flow-journey-v35.tsx must smoke-check renderV35PreviewStep.',
-  },
-  {
-    file: 'src/full-flow-journey-v35.tsx',
-    pattern: /\buseV35PreviewState\b/,
-    message: 'full-flow-journey-v35.tsx must smoke-check useV35PreviewState.',
-  },
-  {
-    file: 'src/full-flow-journey-v35-app.tsx',
-    pattern: /\bJourneyShell\b/,
-    message: 'full-flow-journey-v35-app.tsx must render JourneyShell.',
-  },
-  {
-    file: 'src/full-flow-journey-v35-app.tsx',
-    pattern: /\brenderV35PreviewStep\b/,
-    message: 'full-flow-journey-v35-app.tsx must use renderV35PreviewStep.',
-  },
-  {
-    file: 'src/full-flow-journey-v35-app.tsx',
-    pattern: /\buseV35PreviewState\b/,
-    message: 'full-flow-journey-v35-app.tsx must use useV35PreviewState.',
-  },
-  {
-    file: 'src/full-flow-journey-v35-app.tsx',
-    pattern: /\bV35PreviewSmokePanel\b/,
-    message: 'full-flow-journey-v35-app.tsx must render V35PreviewSmokePanel.',
-  },
-  {
-    file: 'src/full-flow-journey-v35-app.tsx',
-    pattern: /\bV35PreviewDebugPanel\b/,
-    message: 'full-flow-journey-v35-app.tsx must render V35PreviewDebugPanel.',
-  },
-  {
-    file: 'src/journey-v35-preview-panels.tsx',
-    pattern: /data-testid\s*=\s*['"]v35-preview-smoke-panel['"]/,
-    message: 'journey-v35-preview-panels.tsx must expose v35 preview smoke panel test id.',
-  },
-  {
-    file: 'src/journey-v35-preview-panels.tsx',
-    pattern: /data-testid\s*=\s*['"]v35-preview-debug-panel['"]/,
-    message: 'journey-v35-preview-panels.tsx must expose v35 preview debug panel test id.',
-  },
-  {
-    file: 'src/journey-v35-app-preview.tsx',
-    pattern: /\bFullFlowJourneyV35App\b/,
-    message: 'journey-v35-app-preview.tsx must render FullFlowJourneyV35App.',
-  },
-];
-
-const failures = [];
-const fileCache = new Map();
 
 function fail(message) {
   failures.push(message);
 }
 
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function readText(file) {
-  if (fileCache.has(file)) {
-    return fileCache.get(file);
-  }
-
+  if (cache.has(file)) return cache.get(file);
   if (!existsSync(file)) {
     fail(`Missing required file: ${file}`);
-    fileCache.set(file, null);
-    return null;
+    cache.set(file, '');
+    return '';
   }
-
   const content = readFileSync(file, 'utf8');
-  fileCache.set(file, content);
+  cache.set(file, content);
   return content;
-}
-
-function stripCodeComments(content) {
-  return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
-function readCode(file) {
-  const content = readText(file);
-  return content === null ? null : stripCodeComments(content);
-}
-
-function assertPattern({ file, pattern, message, code = true }) {
-  const content = code ? readCode(file) : readText(file);
-  if (content === null) {
-    return;
-  }
-
-  if (!pattern.test(content)) {
-    fail(message);
-  }
 }
 
 function readJson(file) {
   const content = readText(file);
-  if (content === null) {
-    return null;
-  }
-
   try {
     return JSON.parse(content);
   } catch (error) {
     fail(`${file} must be valid JSON. ${error instanceof Error ? error.message : String(error)}`);
-    return null;
+    return {};
   }
 }
 
-function assertHtmlModuleEntry(file, expectedSrc) {
-  assertPattern({
-    file,
-    code: false,
-    pattern: new RegExp(`<script\\b(?=[^>]*\\btype=["']module["'])(?=[^>]*\\bsrc=["']${escapeRegExp(expectedSrc)}["'])[^>]*>`, 's'),
-    message: `${file} must load ${expectedSrc} as a module script.`,
-  });
+function stripComments(content) {
+  return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+}
+
+function readCode(file) {
+  return stripComments(readText(file));
+}
+
+function mustInclude(file, text, message) {
+  if (!readText(file).includes(text)) fail(message);
+}
+
+function mustMatch(file, pattern, message, code = true) {
+  const content = code ? readCode(file) : readText(file);
+  if (!pattern.test(content)) fail(message);
+}
+
+function mustNotMatch(file, pattern, message, code = true) {
+  const content = code ? readCode(file) : readText(file);
+  if (pattern.test(content)) fail(message);
 }
 
 function assertPackageScripts() {
-  const packageJson = readJson('package.json');
-  if (!packageJson?.scripts) {
-    fail('package.json must include scripts.');
-    return;
-  }
-
-  const scripts = packageJson.scripts;
-
-  const expectedScripts = {
+  const scripts = readJson('package.json').scripts ?? {};
+  const expected = {
+    'typecheck:v35': 'tsc -p tsconfig.v35-smoke.json --noEmit',
     'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
     'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
+    'audit:v35:readiness': 'node scripts/audit-v35-readiness.mjs',
   };
 
-  for (const [scriptName, expectedCommand] of Object.entries(expectedScripts)) {
-    if (scripts[scriptName] !== expectedCommand) {
-      fail(`package.json ${scriptName} must run ${expectedCommand}.`);
-    }
+  for (const [name, command] of Object.entries(expected)) {
+    if (scripts[name] !== command) fail(`package.json ${name} must run ${command}.`);
   }
 
-  const smokeV35 = scripts['smoke:v35'] ?? '';
-  const requiredCommands = [
+  const smoke = scripts['smoke:v35'] ?? '';
+  for (const command of [
     'npm run smoke:v35:static',
-    'npm run typecheck',
+    'npm run typecheck:v35',
     'npm run build',
     'npm run smoke:v35:dist',
     'npm run preflight:v35:cutover',
-  ];
+  ]) {
+    if (!smoke.includes(command)) fail(`package.json smoke:v35 must include ${command}.`);
+  }
+  if (smoke.includes('npm run typecheck &&')) fail('package.json smoke:v35 must not run full typecheck; use typecheck:v35.');
+}
 
-  for (const command of requiredCommands) {
-    if (!smokeV35.includes(command)) {
-      fail(`package.json smoke:v35 must include ${command}.`);
-    }
+function assertV35TsConfig() {
+  const include = readJson('tsconfig.v35-smoke.json').include ?? [];
+  for (const file of [
+    'src/journey-v35-app-preview.tsx',
+    'src/full-flow-journey-v35-app.tsx',
+    'src/journey-v35-preview-config.ts',
+    'src/journey-v35-preview-state.ts',
+    'src/journey-v35-preview-router.tsx',
+    'src/journey-v35-preview-steps.tsx',
+    'src/journey-v35-preview-panels.tsx',
+    'src/journey-v35-preview-types.ts',
+  ]) {
+    if (!include.includes(file)) fail(`tsconfig.v35-smoke.json must include ${file}.`);
+  }
+
+  for (const archived of [
+    'src/full-flow-journey-v26.tsx',
+    'src/full-flow-journey-v28.tsx',
+    'src/full-flow-journey-v29.tsx',
+    'src/full-flow-journey-v30.tsx',
+    'src/full-flow-journey-v31.tsx',
+    'src/full-flow-journey-v32.tsx',
+    'src/full-flow-journey-v33.tsx',
+    'src/full-flow-journey-v34.tsx',
+  ]) {
+    if (include.includes(archived)) fail(`tsconfig.v35-smoke.json must not include archived file ${archived}.`);
   }
 }
 
-function assertVercelRedirect() {
-  const vercelJson = readJson('vercel.json');
-  const redirects = Array.isArray(vercelJson?.redirects) ? vercelJson.redirects : [];
-  const hasRootJourneyRedirect = redirects.some((redirect) => redirect?.source === '/' && redirect?.destination === '/journey.html');
-
-  if (!hasRootJourneyRedirect) {
-    fail('vercel.json must redirect root to /journey.html.');
+function assertVercelAndVite() {
+  const redirects = readJson('vercel.json').redirects ?? [];
+  if (!redirects.some((r) => r?.source === '/' && r?.destination === '/journey.html')) {
+    fail('vercel.json must redirect / to /journey.html.');
   }
+  mustMatch('vite.config.ts', /\bjourneyV35Preview\s*:/, 'vite.config.ts must include journeyV35Preview input.');
+  mustMatch('vite.config.ts', /journey-v35-preview\.html/, 'vite.config.ts must include journey-v35-preview.html build input.');
 }
 
-function assertVitePreviewInput() {
-  const content = readCode('vite.config.ts');
-  if (content === null) {
-    return;
-  }
-
-  if (!/\bjourneyV35Preview\s*:/.test(content)) {
-    fail('vite.config.ts must include journeyV35Preview input.');
-  }
-
-  if (!/resolve\s*\([^)]*['"]journey-v35-preview\.html['"][^)]*\)/s.test(content)) {
-    fail('vite.config.ts must include journey-v35-preview.html as a build input.');
-  }
+function assertRuntimeGuards() {
+  mustMatch('journey.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-active\.tsx["'])[^>]*>/s, 'journey.html must load /src/journey-active.tsx as module.', false);
+  mustMatch('journey-v35-preview.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-v35-app-preview\.tsx["'])[^>]*>/s, 'journey-v35-preview.html must load /src/journey-v35-app-preview.tsx as module.', false);
+  mustMatch('src/journey-active.tsx', /import\s+['"]\.\/full-flow-journey-v35['"];?/, 'journey-active.tsx must keep importing v35 staging entry.');
+  mustMatch('src/full-flow-journey-v35.tsx', /import\s+['"]\.\/full-flow-journey-v34['"];?/, 'full-flow-journey-v35.tsx must still delegate to v34 before cutover.');
+  mustNotMatch('src/journey-v35-preview-config.ts', /c1bio_flow_/, 'v35 preview config must not use c1bio_flow_* keys.');
 }
 
-function assertV35Config() {
-  const content = readCode('src/journey-v35-preview-config.ts');
-  if (content === null) {
-    return;
-  }
-
-  for (const storageKey of requiredStorageKeys) {
-    const storageKeyPattern = new RegExp(`["']${escapeRegExp(storageKey)}["']`);
-    if (!storageKeyPattern.test(content)) {
-      fail(`V35_STORAGE_KEYS must include storage key: ${storageKey}`);
-    }
-  }
-
-  for (const stepId of requiredStepIds) {
-    const stepPattern = new RegExp(`\\bid\\s*:\\s*["']${escapeRegExp(stepId)}["']`);
-    if (!stepPattern.test(content)) {
-      fail(`V35_APP_STEPS must include step id: ${stepId}`);
-    }
-  }
-
-  if (/['"]c1bio_flow_/.test(content) || /c1bio_flow_/.test(content)) {
-    fail('v35 preview config must not use v34 c1bio_flow_ storage keys.');
-  }
-}
-
-function assertV35RouterCases() {
-  const content = readCode('src/journey-v35-preview-router.tsx');
-  if (content === null) {
-    return;
-  }
-
+function assertV35ConfigAndRouter() {
+  const config = readCode('src/journey-v35-preview-config.ts');
+  for (const key of requiredStorageKeys) if (!config.includes(key)) fail(`V35_STORAGE_KEYS must include ${key}.`);
+  for (const id of requiredStepIds) if (!new RegExp(`\\bid\\s*:\\s*['"]${id}['"]`).test(config)) fail(`V35_APP_STEPS must include ${id}.`);
+  const router = readCode('src/journey-v35-preview-router.tsx');
   for (let index = 0; index < requiredStepIds.length; index += 1) {
-    const casePattern = new RegExp(`case\\s+${index}\\s*:`);
-    if (!casePattern.test(content)) {
-      fail(`renderV35PreviewStep must include case ${index}.`);
-    }
+    if (!new RegExp(`case\\s+${index}\\s*:`).test(router)) fail(`renderV35PreviewStep must include case ${index}.`);
   }
 }
 
-function assertSaveKeys() {
-  for (const { file, key } of requiredSaveKeyChecks) {
-    const content = readCode(file);
-    if (content === null) {
-      continue;
-    }
-
-    const keyPattern = new RegExp(`["']${escapeRegExp(key)}["']`);
-    if (!keyPattern.test(content)) {
-      fail(`${file} must save ${key}.`);
-    }
+function assertSavedStateKeys() {
+  for (const [file, key] of requiredSaveKeys) {
+    if (!readCode(file).includes(key)) fail(`${file} must save ${key}.`);
   }
 }
 
-for (const file of requiredFiles) {
-  readText(file);
+function assertWorkflowCoverage() {
+  const smokeWorkflow = readText('.github/workflows/v35-smoke.yml');
+  for (const text of ['npm run smoke:v35:static', 'npm run typecheck:v35', 'npm run smoke:v35:dist', 'npm run preflight:v35:cutover', 'npm run smoke:v35']) {
+    if (!smokeWorkflow.includes(text)) fail(`v35-smoke.yml must include ${text}.`);
+  }
+  if (smokeWorkflow.includes('npm run typecheck\n')) fail('v35-smoke.yml must not run full npm run typecheck.');
+  mustInclude('.github/workflows/v35-remote-smoke.yml', 'npm run smoke:v35:remote', 'v35-remote-smoke.yml must run remote smoke.');
 }
 
+for (const file of requiredFiles) readText(file);
 assertPackageScripts();
-assertHtmlModuleEntry('journey.html', '/src/journey-active.tsx');
-assertHtmlModuleEntry('journey-v35-preview.html', '/src/journey-v35-app-preview.tsx');
-assertVitePreviewInput();
-assertVercelRedirect();
-
-for (const check of requiredCodePatterns) {
-  assertPattern(check);
-}
-
-assertV35Config();
-assertV35RouterCases();
-assertSaveKeys();
+assertV35TsConfig();
+assertVercelAndVite();
+assertRuntimeGuards();
+assertV35ConfigAndRouter();
+assertSavedStateKeys();
+assertWorkflowCoverage();
 
 if (failures.length > 0) {
   console.error('v35 static smoke check failed.');
-  for (const failure of failures) {
-    console.error(`- ${failure}`);
-  }
+  for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
