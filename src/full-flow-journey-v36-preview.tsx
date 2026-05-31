@@ -35,6 +35,7 @@ const DEFAULT_PROGRESS: V36Progress = {
   step: 0,
 };
 
+const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
 const SHOW_QA_PANEL = false;
 const V36_SMOKE_MARKER = 'v36 Preview Smoke';
 
@@ -64,12 +65,15 @@ function EntryStep({ participant, setParticipant }: { participant: V36Participan
         <p>당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 외부 환경, 고객군 반응, 팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.</p>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500">이름</span>
-            <input className="w-full rounded-xl border px-3 py-2" value={participant.name} onChange={(event) => setParticipant({ ...participant, name: event.target.value })} placeholder="예: 김현태" />
+            <span className="text-xs font-semibold text-slate-500">팀명</span>
+            <select className="w-full rounded-xl border bg-white px-3 py-2" value={participant.teamName} onChange={(event) => setParticipant({ ...participant, teamName: event.target.value })}>
+              <option value="">팀을 선택하세요</option>
+              {TEAM_OPTIONS.map((team) => <option key={team} value={team}>{team}</option>)}
+            </select>
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500">팀명</span>
-            <input className="w-full rounded-xl border px-3 py-2" value={participant.teamName} onChange={(event) => setParticipant({ ...participant, teamName: event.target.value })} placeholder="예: 3조" />
+            <span className="text-xs font-semibold text-slate-500">이름/닉네임</span>
+            <input className="w-full rounded-xl border px-3 py-2" value={participant.name} onChange={(event) => setParticipant({ ...participant, name: event.target.value })} placeholder="예: 콜플랜마스터" />
           </label>
         </div>
         <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3">
