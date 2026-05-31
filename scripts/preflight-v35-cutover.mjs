@@ -186,6 +186,7 @@ function assertStaticSmokeCoversPreflight() {
   }
 
   const requiredPhrases = [
+    'README.md',
     'scripts/preflight-v35-cutover.mjs',
     'preflight:v35:cutover',
     'npm run preflight:v35:cutover',
@@ -289,6 +290,32 @@ function assertBrowserQaDocs() {
   }
 }
 
+function assertReadmeV35Entry() {
+  const readme = readText('README.md');
+  if (readme === null) {
+    return;
+  }
+
+  const requiredPhrases = [
+    'v35 검증 상태',
+    'docs/v35-validation-index.md',
+    'Actions → v35 Smoke → Run workflow',
+    'Actions → v35 Remote Smoke → Run workflow',
+    'Actions → v35 Readiness Audit → Run workflow',
+    '/journey.html',
+    '/journey-v35-preview.html',
+    'npm run smoke:v35',
+    'npm run audit:v35:readiness',
+    'cutover는 아직 진행하지 않습니다',
+  ];
+
+  for (const phrase of requiredPhrases) {
+    if (!readme.includes(phrase)) {
+      fail(`README.md must include ${phrase}.`);
+    }
+  }
+}
+
 function assertCutoverDocsStillBlockCutover() {
   const cutoverDoc = readText('docs/v35-cutover-gates.md');
   if (cutoverDoc === null) {
@@ -332,6 +359,7 @@ function assertCurrentNoCutoverState() {
 
 function assertRequiredFiles() {
   const requiredFiles = [
+    'README.md',
     'scripts/smoke-v35-static.mjs',
     'scripts/smoke-v35-dist.mjs',
     'scripts/smoke-v35-remote.mjs',
@@ -365,6 +393,7 @@ assertVercelRedirect();
 assertWorkflowCoverage();
 assertStaticSmokeCoversPreflight();
 assertBrowserQaDocs();
+assertReadmeV35Entry();
 assertCurrentNoCutoverState();
 assertCutoverDocsStillBlockCutover();
 
