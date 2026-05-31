@@ -142,6 +142,18 @@ export function FullFlowJourneyV35App() {
     setSavedState(nextState);
   }, [setSavedState]);
 
+  const renderCurrentStep = () => {
+    switch (safeStep) {
+      case 0:
+        return <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />;
+      case 1:
+        return <PromptPracticeScreen save={save} />;
+      case 2:
+      default:
+        return <StrategyIssueReviewStep notes={notes} setNotes={setNotes} save={save} />;
+    }
+  };
+
   return (
     <JourneyShell
       title="종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v35"
@@ -151,13 +163,7 @@ export function FullFlowJourneyV35App() {
       onPrev={() => setStep(clampStep(safeStep - 1))}
       onNext={() => setStep(clampStep(safeStep + 1))}
     >
-      {safeStep === 0 ? (
-        <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />
-      ) : safeStep === 1 ? (
-        <PromptPracticeScreen save={save} />
-      ) : (
-        <StrategyIssueReviewStep notes={notes} setNotes={setNotes} save={save} />
-      )}
+      {renderCurrentStep()}
       <V35PreviewSmokePanel step={safeStep} />
       <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} />
     </JourneyShell>
