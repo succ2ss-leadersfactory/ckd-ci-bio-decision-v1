@@ -131,7 +131,7 @@ export function FullFlowJourneyV36PreviewApp() {
     >
       {renderV36Step(safeStep, participant, setParticipant)}
       <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
-        <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기</summary>
+        <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · v36 Preview Smoke</summary>
         <p className="mt-2">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
         <p className="mt-1">current step: {safeStep + 1} / {V36_APP_STEPS.length}</p>
       </details>
