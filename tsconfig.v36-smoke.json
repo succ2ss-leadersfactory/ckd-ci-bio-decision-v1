@@ -8,6 +8,7 @@
     "src/journey-v36-app-preview.tsx",
     "src/full-flow-journey-v36-preview.tsx",
     "src/journey-v36-customer-call-plan-lab.tsx",
+    "src/journey-v36-performance-dialogue-lab.tsx",
     "src/journey-v36-preview-config.ts",
     "src/journey-shell.tsx",
     "src/journey-storage.ts"
