@@ -10,6 +10,7 @@ const requiredFiles = [
   'package.json',
   'tsconfig.v36-smoke.json',
   'vite.config.ts',
+  'scripts/smoke-v36-dist.mjs',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
   'src/full-flow-journey-v35.tsx',
@@ -96,8 +97,11 @@ if (scripts['typecheck:v36'] !== 'tsc -p tsconfig.v36-smoke.json --noEmit') {
 if (scripts['smoke:v36:static'] !== 'node scripts/smoke-v36-static.mjs') {
   fail('package.json smoke:v36:static must run node scripts/smoke-v36-static.mjs.');
 }
+if (scripts['smoke:v36:dist'] !== 'node scripts/smoke-v36-dist.mjs') {
+  fail('package.json smoke:v36:dist must run node scripts/smoke-v36-dist.mjs.');
+}
 const smoke = scripts['smoke:v36'] ?? '';
-for (const command of ['npm run smoke:v36:static', 'npm run typecheck:v36', 'npm run build']) {
+for (const command of ['npm run smoke:v36:static', 'npm run typecheck:v36', 'npm run build', 'npm run smoke:v36:dist']) {
   if (!smoke.includes(command)) fail(`package.json smoke:v36 must include ${command}.`);
 }
 
