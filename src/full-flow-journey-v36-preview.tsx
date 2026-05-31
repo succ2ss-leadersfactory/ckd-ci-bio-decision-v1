@@ -38,6 +38,7 @@ const DEFAULT_PROGRESS: V36Progress = {
 const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
 const SHOW_QA_PANEL = false;
 const V36_SMOKE_MARKER = 'v36 Preview Smoke';
+const V36_LEGACY_DIST_SMOKE_TITLE = '종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview';
 
 function ComplianceNotice() {
   return (
@@ -138,6 +139,7 @@ export function FullFlowJourneyV36PreviewApp() {
     >
       {renderV36Step(safeStep, participant, setParticipant)}
       <span className="sr-only">{V36_SMOKE_MARKER}</span>
+      <span className="sr-only">{V36_LEGACY_DIST_SMOKE_TITLE}</span>
       {SHOW_QA_PANEL ? (
         <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
           <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · {V36_SMOKE_MARKER}</summary>
