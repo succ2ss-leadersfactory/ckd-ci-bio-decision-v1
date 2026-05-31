@@ -1,17 +1,15 @@
 import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
-import { StrategyIssueReview } from './journey-strategy-issue-review';
-import { SourceCheckSection } from './journey-source-check';
-import { NotebookSourcePrep } from './journey-notebook-source-prep';
 import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { StudioReportSection } from './journey-studio-report';
 import { StudioSlidesSection } from './journey-studio-slides';
 import { PresentationChecklist } from './journey-presentation-checklist';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
-import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck, promptStudioReport, promptStudioSlides } from './journey-utils';
+import { promptSourceCheck, promptStudioReport, promptStudioSlides } from './journey-utils';
 import { V35PreviewDebugPanel, V35PreviewSmokePanel } from './journey-v35-preview-panels';
+import { NotebookSourcePrepStep, SourceCheckStep, StrategyIssueReviewStep } from './journey-v35-preview-steps';
 import type { IssueNote } from './journey-components';
 
 const V35_STORAGE_KEYS = {
@@ -109,73 +107,6 @@ function clampStep(step: number) {
 function resetV35PreviewStorage() {
   Object.values(V35_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
   window.location.reload();
-}
-
-function StrategyIssueReviewStep({ notes, setNotes, save }: { notes: IssueNote[]; setNotes: (notes: IssueNote[]) => void; save: (key: string, payload: JsonRecord) => void }) {
-  return (
-    <div className="grid gap-4">
-      <StrategyIssueReview notes={notes} setNotes={setNotes} />
-      <div className="rounded-2xl border bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-600">전략 이슈 메모는 입력 즉시 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 메모를 savedState에도 명시적으로 기록합니다.</p>
-        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J03-strategy-issue-review', { notes })}>
-          전략 이슈 저장
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function SourceCheckStep({
-  sourceChecks,
-  setSourceChecks,
-  sourceRisk,
-  setSourceRisk,
-  save,
-}: {
-  sourceChecks: string[];
-  setSourceChecks: (checks: string[]) => void;
-  sourceRisk: string;
-  setSourceRisk: (value: string) => void;
-  save: (key: string, payload: JsonRecord) => void;
-}) {
-  return (
-    <div className="grid gap-4">
-      <SourceCheckSection checks={sourceChecks} setChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} />
-      <div className="rounded-2xl border bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-600">Source Check 입력값은 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 체크 결과를 savedState에도 명시적으로 기록합니다.</p>
-        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J04-source-check', { sourceChecks, sourceRisk })}>
-          Source Check 저장
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function NotebookSourcePrepStep({
-  notes,
-  sourceChecks,
-  sourceRisk,
-  save,
-}: {
-  notes: IssueNote[];
-  sourceChecks: string[];
-  sourceRisk: string;
-  save: (key: string, payload: JsonRecord) => void;
-}) {
-  const searchText = buildSourceSearchQuery(V35_STRATEGY_SCENARIO_TITLE, notes);
-  const packageText = buildSourcePackage({ strategyScenarioTitle: V35_STRATEGY_SCENARIO_TITLE }, notes, sourceChecks, sourceRisk);
-
-  return (
-    <div className="grid gap-4">
-      <NotebookSourcePrep searchText={searchText} packageText={packageText} />
-      <div className="rounded-2xl border bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-600">NotebookLM 소스 준비 텍스트는 앞 단계의 전략 이슈와 Source Check 결과를 바탕으로 생성됩니다. 아래 버튼은 현재 생성 결과를 savedState에 기록합니다.</p>
-        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J05-notebook-source-prep', { searchText, packageText })}>
-          Notebook Source Prep 저장
-        </button>
-      </div>
-    </div>
-  );
 }
 
 function NotebookReadinessCheckStep({
@@ -347,7 +278,7 @@ export function FullFlowJourneyV35App() {
       case 3:
         return <SourceCheckStep sourceChecks={sourceChecks} setSourceChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} save={save} />;
       case 4:
-        return <NotebookSourcePrepStep notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} save={save} />;
+        return <NotebookSourcePrepStep title={V35_STRATEGY_SCENARIO_TITLE} notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} save={save} />;
       case 5:
         return <NotebookReadinessCheckStep readinessResult={readinessResult} setReadinessResult={setReadinessResult} save={save} />;
       case 6:
