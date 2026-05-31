@@ -25,6 +25,7 @@
 
 | 기준 | 통과 조건 | 상태 |
 |---|---|---|
+| `/` 루트 접속 | `/journey.html`로 redirect됨 | 대기 |
 | `/journey.html` 정상 표시 | 기존 v34 화면이 정상 동작 | 대기 |
 | 기존 localStorage 영향 없음 | `c1bio_flow_*` key가 유지됨 | 대기 |
 | 기존 Google Sheets 저장 유지 | 기존 저장 흐름이 깨지지 않음 | 대기 |
@@ -58,6 +59,7 @@
 
 아래 조건이 모두 충족되기 전에는 `full-flow-journey-v35.tsx`에서 v34 import를 제거하지 않는다.
 
+- 루트 경로 `/`가 `/journey.html`로 정상 redirect된다.
 - 운영 경로 `/journey.html`이 정상이다.
 - preview 경로 `/journey-v35-preview.html`이 정상이다.
 - Step 0~8이 모두 이동된다.
