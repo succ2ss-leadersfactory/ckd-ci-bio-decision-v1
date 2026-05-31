@@ -31,14 +31,27 @@ export function JourneyShell({
   const activeStep = steps[safeStep];
   const nextStep = steps[safeStep + 1];
   const progress = steps.length <= 1 ? 100 : Math.round(((safeStep + 1) / steps.length) * 100);
+  const stepScrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const activeChipRef = React.useRef<HTMLButtonElement | HTMLSpanElement | null>(null);
 
   React.useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [safeStep]);
 
+  React.useEffect(() => {
+    const scroller = stepScrollerRef.current;
+    const activeChip = activeChipRef.current;
+    if (!scroller || !activeChip) return;
+
+    const chipLeft = activeChip.offsetLeft;
+    const chipWidth = activeChip.offsetWidth;
+    const targetLeft = Math.max(chipLeft - scroller.clientWidth / 2 + chipWidth / 2, 0);
+    scroller.scrollTo({ left: targetLeft, behavior: 'smooth' });
+  }, [safeStep]);
+
   return (
     <main className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 md:px-8 md:py-8">
-      <div className="mx-auto max-w-6xl space-y-4 pb-24 md:pb-28">
+      <div className="mx-auto max-w-6xl space-y-4 pb-28 md:pb-32">
         <header className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-sm">
           <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-5 md:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100">
@@ -73,7 +86,7 @@ export function JourneyShell({
             </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto pb-1">
+          <div ref={stepScrollerRef} className="mt-4 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex min-w-max gap-2">
               {steps.map((step, index) => {
                 const isActive = index === safeStep;
@@ -88,14 +101,23 @@ export function JourneyShell({
 
                 if (!onStepSelect) {
                   return (
-                    <span key={step.id} className={className} aria-current={isActive ? 'step' : undefined}>
+                    <span key={step.id} ref={isActive ? activeChipRef : null} className={className} aria-current={isActive ? 'step' : undefined} title={`${index + 1}. ${step.title}`}>
                       {index + 1}. {step.title}
                     </span>
                   );
                 }
 
                 return (
-                  <button key={step.id} type="button" className={className} aria-current={isActive ? 'step' : undefined} onClick={() => onStepSelect(index)}>
+                  <button
+                    key={step.id}
+                    ref={isActive ? activeChipRef : null}
+                    type="button"
+                    className={className}
+                    aria-current={isActive ? 'step' : undefined}
+                    aria-label={`${index + 1}단계 ${step.title}로 이동`}
+                    title={`${index + 1}. ${step.title}`}
+                    onClick={() => onStepSelect(index)}
+                  >
                     {index + 1}. {step.title}
                   </button>
                 );
@@ -106,7 +128,7 @@ export function JourneyShell({
 
         <section>{children}</section>
 
-        <nav className="sticky bottom-3 z-30 rounded-3xl border bg-white/95 p-3 shadow-lg backdrop-blur md:p-4">
+        <nav className="sticky bottom-3 z-30 rounded-3xl border bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-lg backdrop-blur md:p-4 md:pb-4">
           <div className="flex items-center justify-between gap-3">
             <button
               className="min-h-12 flex-1 rounded-2xl border px-4 py-3 text-sm font-black text-slate-700 disabled:opacity-40 md:flex-none md:min-w-32"
