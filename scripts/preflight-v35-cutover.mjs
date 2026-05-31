@@ -74,6 +74,7 @@ function assertPackageScripts() {
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
     'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
+    'typecheck:v35': 'tsc -p tsconfig.v35-smoke.json --noEmit',
   };
 
   for (const [name, expected] of Object.entries(requiredScripts)) {
@@ -85,7 +86,7 @@ function assertPackageScripts() {
   const smokeV35 = scripts['smoke:v35'] ?? '';
   const requiredCommands = [
     'npm run smoke:v35:static',
-    'npm run typecheck',
+    'npm run typecheck:v35',
     'npm run build',
     'npm run smoke:v35:dist',
     'npm run preflight:v35:cutover',
@@ -94,6 +95,49 @@ function assertPackageScripts() {
   for (const command of requiredCommands) {
     if (!smokeV35.includes(command)) {
       fail(`package.json smoke:v35 must include ${command}.`);
+    }
+  }
+
+  if (smokeV35.includes('npm run typecheck &&')) {
+    fail('package.json smoke:v35 must not use full npm run typecheck; use npm run typecheck:v35 instead.');
+  }
+}
+
+function assertV35TsConfig() {
+  const config = readJson('tsconfig.v35-smoke.json');
+  const includes = Array.isArray(config?.include) ? config.include : [];
+
+  const requiredIncludes = [
+    'src/journey-v35-app-preview.tsx',
+    'src/full-flow-journey-v35-app.tsx',
+    'src/journey-v35-preview-config.ts',
+    'src/journey-v35-preview-state.ts',
+    'src/journey-v35-preview-router.tsx',
+    'src/journey-v35-preview-steps.tsx',
+    'src/journey-v35-preview-panels.tsx',
+    'src/journey-v35-preview-types.ts',
+  ];
+
+  for (const include of requiredIncludes) {
+    if (!includes.includes(include)) {
+      fail(`tsconfig.v35-smoke.json must include ${include}.`);
+    }
+  }
+
+  const forbiddenIncludes = [
+    'src/full-flow-journey-v26.tsx',
+    'src/full-flow-journey-v28.tsx',
+    'src/full-flow-journey-v29.tsx',
+    'src/full-flow-journey-v30.tsx',
+    'src/full-flow-journey-v31.tsx',
+    'src/full-flow-journey-v32.tsx',
+    'src/full-flow-journey-v33.tsx',
+    'src/full-flow-journey-v34.tsx',
+  ];
+
+  for (const include of forbiddenIncludes) {
+    if (includes.includes(include)) {
+      fail(`tsconfig.v35-smoke.json must not include archived operating file ${include}.`);
     }
   }
 }
@@ -113,6 +157,12 @@ function assertWorkflowCoverage() {
   if (smokeWorkflow !== null && !smokeWorkflow.includes('npm run preflight:v35:cutover')) {
     fail('v35-smoke.yml must run npm run preflight:v35:cutover.');
   }
+  if (smokeWorkflow !== null && !smokeWorkflow.includes('npm run typecheck:v35')) {
+    fail('v35-smoke.yml must run npm run typecheck:v35 instead of full typecheck.');
+  }
+  if (smokeWorkflow !== null && smokeWorkflow.includes('npm run typecheck\n')) {
+    fail('v35-smoke.yml must not run full npm run typecheck.');
+  }
 
   const remoteWorkflow = readText('.github/workflows/v35-remote-smoke.yml');
   if (remoteWorkflow !== null && !remoteWorkflow.includes('npm run smoke:v35:remote')) {
@@ -130,6 +180,8 @@ function assertStaticSmokeCoversPreflight() {
     'scripts/preflight-v35-cutover.mjs',
     'preflight:v35:cutover',
     'npm run preflight:v35:cutover',
+    'typecheck:v35',
+    'npm run typecheck:v35',
   ];
 
   for (const phrase of requiredPhrases) {
@@ -185,6 +237,7 @@ function assertRequiredFiles() {
     'scripts/smoke-v35-dist.mjs',
     'scripts/smoke-v35-remote.mjs',
     'scripts/preflight-v35-cutover.mjs',
+    'tsconfig.v35-smoke.json',
     '.github/workflows/v35-smoke.yml',
     '.github/workflows/v35-remote-smoke.yml',
     'docs/v35-preview-checklist.md',
@@ -202,6 +255,7 @@ console.log('Running v35 cutover preflight guard...');
 
 assertRequiredFiles();
 assertPackageScripts();
+assertV35TsConfig();
 assertVercelRedirect();
 assertWorkflowCoverage();
 assertStaticSmokeCoversPreflight();
