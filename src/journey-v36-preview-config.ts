@@ -4,6 +4,7 @@ export const V36_STORAGE_KEYS = {
   participant: 'ckd-v36-participant',
   progress: 'ckd-v36-progress',
   responses: 'ckd-v36-responses',
+  researchStrategy: 'ckd-v36-lab-research-strategy',
   customerCallPlan: 'ckd-v36-lab-customer-call-plan',
   hqTranslation: 'ckd-v36-lab-hq-translation',
   stakeholderMessage: 'ckd-v36-lab-stakeholder-message',
