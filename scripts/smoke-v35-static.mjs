@@ -56,6 +56,11 @@ const requiredTextChecks = [
     message: 'vercel.json must redirect root to /journey.html.',
   },
   {
+    file: 'src/journey-active.tsx',
+    text: "import './full-flow-journey-v35';",
+    message: 'journey-active.tsx must keep importing full-flow-journey-v35 before cutover.',
+  },
+  {
     file: 'src/full-flow-journey-v35.tsx',
     text: "import './full-flow-journey-v34';",
     message: 'full-flow-journey-v35.tsx must still delegate to v34 before cutover.',
