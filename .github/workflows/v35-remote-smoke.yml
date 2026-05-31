@@ -1,0 +1,24 @@
+name: v35 Remote Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  remote-smoke-v35:
+    name: Run v35 remote smoke check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v35 remote smoke check
+        run: npm run smoke:v35:remote
