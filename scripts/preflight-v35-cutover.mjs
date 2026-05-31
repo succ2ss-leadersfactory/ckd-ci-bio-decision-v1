@@ -108,6 +108,7 @@ function assertV35TsConfig() {
   const includes = Array.isArray(config?.include) ? config.include : [];
 
   const requiredIncludes = [
+    'src/vite-env.d.ts',
     'src/journey-v35-app-preview.tsx',
     'src/full-flow-journey-v35-app.tsx',
     'src/journey-v35-preview-config.ts',
@@ -182,6 +183,7 @@ function assertStaticSmokeCoversPreflight() {
     'npm run preflight:v35:cutover',
     'typecheck:v35',
     'npm run typecheck:v35',
+    'src/vite-env.d.ts',
   ];
 
   for (const phrase of requiredPhrases) {
@@ -238,6 +240,7 @@ function assertRequiredFiles() {
     'scripts/smoke-v35-remote.mjs',
     'scripts/preflight-v35-cutover.mjs',
     'tsconfig.v35-smoke.json',
+    'src/vite-env.d.ts',
     '.github/workflows/v35-smoke.yml',
     '.github/workflows/v35-remote-smoke.yml',
     'docs/v35-preview-checklist.md',
