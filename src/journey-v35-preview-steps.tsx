@@ -6,10 +6,8 @@ import { StudioReportSection } from './journey-studio-report';
 import { StudioSlidesSection } from './journey-studio-slides';
 import { PresentationChecklist } from './journey-presentation-checklist';
 import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck, promptStudioReport, promptStudioSlides } from './journey-utils';
-import type { JsonRecord } from './journey-storage';
 import type { IssueNote } from './journey-components';
-
-export type V35Save = (key: string, payload: JsonRecord) => void;
+import type { V35Save } from './journey-v35-preview-types';
 
 export type StrategyIssueReviewStepProps = {
   notes: IssueNote[];
