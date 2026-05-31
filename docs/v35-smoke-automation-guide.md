@@ -22,7 +22,29 @@ npm run smoke:v35:static && npm run typecheck && npm run build
 npm run smoke:v35:static
 ```
 
-## 2. 로컬 확인 순서
+## 2. 정적 smoke 검사 범위
+
+`npm run smoke:v35:static`은 다음 항목을 확인한다.
+
+- 필수 파일 존재 여부
+- `package.json` smoke script 연결
+- `journey.html` → `/src/journey-active.tsx` entry 연결
+- `journey-v35-preview.html` → `/src/journey-v35-app-preview.tsx` entry 연결
+- `vite.config.ts`의 `journeyV35Preview` build input 유지
+- `vercel.json`의 `/` → `/journey.html` root redirect 유지
+- `src/full-flow-journey-v35.tsx`의 v34 위임 import 유지
+- v35 staging smoke check 구조 유지
+- v35 app의 `JourneyShell`, `renderV35PreviewStep`, `useV35PreviewState` 조립 구조 유지
+- v35 preview app entry 연결 유지
+- `V35_STORAGE_KEYS` 전체 key 유지
+- v34 운영 key인 `c1bio_flow_`를 v35 preview config에서 사용하지 않는지 확인
+- `V35_APP_STEPS` 9개 step id 유지
+- `renderV35PreviewStep`의 `case 0:`~`case 8:` 유지
+- `J01-entry`~`J09-presentation-checklist` 저장 key 유지
+- `V35PreviewSmokePanel`과 `V35PreviewDebugPanel` 연결 유지
+- `v35-preview-smoke-panel`, `v35-preview-debug-panel` test id 유지
+
+## 3. 로컬 확인 순서
 
 배포 전 로컬에서 아래 순서로 확인한다.
 
@@ -40,7 +62,7 @@ http://localhost:4173/journey.html
 http://localhost:4173/journey-v35-preview.html
 ```
 
-## 3. Vercel 배포 전 확인
+## 4. Vercel 배포 전 확인
 
 GitHub에 push하기 전에 아래 조건을 확인한다.
 
@@ -50,7 +72,7 @@ GitHub에 push하기 전에 아래 조건을 확인한다.
 - `vercel.json`에 `/` → `/journey.html` redirect가 유지되어 있다.
 - `full-flow-journey-v35.tsx`의 마지막 `import './full-flow-journey-v34';`가 유지되어 있다.
 
-## 4. Vercel 배포 후 확인
+## 5. Vercel 배포 후 확인
 
 production domain 기준으로 확인한다.
 
@@ -66,7 +88,7 @@ https://ckd-ci-bio-decision-v1.vercel.app/journey-v35-preview.html
 docs/v35-preview-smoke-result.md
 ```
 
-## 5. GitHub Actions 적용 후보
+## 6. GitHub Actions 적용 후보
 
 향후 자동화를 적용할 경우, 다음 조건을 먼저 확인한다.
 
@@ -75,7 +97,7 @@ docs/v35-preview-smoke-result.md
 - lockfile을 추가하지 않는다면 `npm install` 기반 workflow를 사용한다.
 - workflow는 `npm run smoke:v35`만 실행하고 운영 배포 설정은 건드리지 않는다.
 
-## 6. 권장 workflow 방향
+## 7. 권장 workflow 방향
 
 초기에는 다음 순서가 안전하다.
 
@@ -86,6 +108,6 @@ docs/v35-preview-smoke-result.md
 5. 필요 시 GitHub Actions 추가
 6. GitHub Actions가 안정화되면 PR 또는 main push 기준으로 자동 smoke check 실행
 
-## 7. 현재 판단
+## 8. 현재 판단
 
 현재는 v35 독립 실행 검증 전 단계이므로, GitHub Actions 자동화보다 수동 smoke check와 문서 기록을 우선한다.
