@@ -3,7 +3,8 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "smoke:v35": "npm run typecheck && npm run build",
+    "smoke:v35:static": "node scripts/smoke-v35-static.mjs",
+    "smoke:v35": "npm run smoke:v35:static && npm run typecheck && npm run build",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
