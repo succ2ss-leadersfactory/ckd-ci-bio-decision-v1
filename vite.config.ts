@@ -9,7 +9,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         instructorLive: resolve(__dirname, 'instructor-live.html'),
-        journey: resolve(__dirname, 'journey.html')
+        journey: resolve(__dirname, 'journey.html'),
+        journeyV35Preview: resolve(__dirname, 'journey-v35-preview.html')
       }
     }
   }
