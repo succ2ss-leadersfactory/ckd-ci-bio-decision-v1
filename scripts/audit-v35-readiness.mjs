@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const RESULT_DOC = 'docs/v35-preview-smoke-result.md';
 const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
 const CONSOLE_SNIPPET_DOC = 'docs/v35-browser-qa-console-snippet.md';
+const BROWSER_QA_RUNBOOK_DOC = 'docs/v35-browser-qa-runbook.md';
 const failures = [];
 const warnings = [];
 
@@ -170,11 +171,34 @@ function assertConsoleSnippetDoc(content) {
   }
 }
 
+function assertBrowserQaRunbookDoc(content) {
+  const requiredContent = [
+    '/journey.html',
+    '/journey-v35-preview.html',
+    'Step 0~8',
+    'J01~J09',
+    'Console snippet',
+    'missingPreviewKeys: none',
+    'missingSavedStateKeys: none',
+    'pass: true',
+    'docs/v35-browser-qa-result.md',
+    'docs/v35-preview-smoke-result.md',
+    'Actions → v35 Readiness Audit → Run workflow',
+  ];
+
+  for (const item of requiredContent) {
+    if (!content.includes(item)) {
+      fail(`${BROWSER_QA_RUNBOOK_DOC} must include ${item}.`);
+    }
+  }
+}
+
 console.log('Running v35 readiness audit...');
 
 const smokeResult = readText(RESULT_DOC);
 const browserQaResult = readText(BROWSER_QA_DOC);
 const consoleSnippet = readText(CONSOLE_SNIPPET_DOC);
+const browserQaRunbook = readText(BROWSER_QA_RUNBOOK_DOC);
 
 assertNoPendingTableStatus(smokeResult, RESULT_DOC);
 assertSmokeFinalJudgement(smokeResult);
@@ -208,6 +232,7 @@ assertRequiredEvidence(browserQaResult, BROWSER_QA_DOC, [
 assertNoKnownBlockingText(browserQaResult, BROWSER_QA_DOC);
 
 assertConsoleSnippetDoc(consoleSnippet);
+assertBrowserQaRunbookDoc(browserQaRunbook);
 
 if (warnings.length > 0) {
   console.warn('v35 readiness audit warnings:');
