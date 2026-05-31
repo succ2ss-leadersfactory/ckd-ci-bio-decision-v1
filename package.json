@@ -6,7 +6,8 @@
     "smoke:v35:static": "node scripts/smoke-v35-static.mjs",
     "smoke:v35:dist": "node scripts/smoke-v35-dist.mjs",
     "smoke:v35:remote": "node scripts/smoke-v35-remote.mjs",
-    "smoke:v35": "npm run smoke:v35:static && npm run typecheck && npm run build && npm run smoke:v35:dist",
+    "preflight:v35:cutover": "node scripts/preflight-v35-cutover.mjs",
+    "smoke:v35": "npm run smoke:v35:static && npm run typecheck && npm run build && npm run smoke:v35:dist && npm run preflight:v35:cutover",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
