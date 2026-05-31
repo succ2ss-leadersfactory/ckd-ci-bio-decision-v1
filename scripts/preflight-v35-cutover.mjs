@@ -73,6 +73,7 @@ function assertPackageScripts() {
     'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
+    'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
   };
 
   for (const [name, expected] of Object.entries(requiredScripts)) {
@@ -82,7 +83,15 @@ function assertPackageScripts() {
   }
 
   const smokeV35 = scripts['smoke:v35'] ?? '';
-  for (const command of ['npm run smoke:v35:static', 'npm run typecheck', 'npm run build', 'npm run smoke:v35:dist']) {
+  const requiredCommands = [
+    'npm run smoke:v35:static',
+    'npm run typecheck',
+    'npm run build',
+    'npm run smoke:v35:dist',
+    'npm run preflight:v35:cutover',
+  ];
+
+  for (const command of requiredCommands) {
     if (!smokeV35.includes(command)) {
       fail(`package.json smoke:v35 must include ${command}.`);
     }
@@ -96,6 +105,37 @@ function assertVercelRedirect() {
 
   if (!hasRootJourneyRedirect) {
     fail('vercel.json must keep / redirecting to /journey.html.');
+  }
+}
+
+function assertWorkflowCoverage() {
+  const smokeWorkflow = readText('.github/workflows/v35-smoke.yml');
+  if (smokeWorkflow !== null && !smokeWorkflow.includes('npm run preflight:v35:cutover')) {
+    fail('v35-smoke.yml must run npm run preflight:v35:cutover.');
+  }
+
+  const remoteWorkflow = readText('.github/workflows/v35-remote-smoke.yml');
+  if (remoteWorkflow !== null && !remoteWorkflow.includes('npm run smoke:v35:remote')) {
+    fail('v35-remote-smoke.yml must run npm run smoke:v35:remote.');
+  }
+}
+
+function assertStaticSmokeCoversPreflight() {
+  const staticSmoke = readText('scripts/smoke-v35-static.mjs');
+  if (staticSmoke === null) {
+    return;
+  }
+
+  const requiredPhrases = [
+    'scripts/preflight-v35-cutover.mjs',
+    'preflight:v35:cutover',
+    'npm run preflight:v35:cutover',
+  ];
+
+  for (const phrase of requiredPhrases) {
+    if (!staticSmoke.includes(phrase)) {
+      fail(`smoke-v35-static.mjs must require ${phrase}.`);
+    }
   }
 }
 
@@ -144,6 +184,7 @@ function assertRequiredFiles() {
     'scripts/smoke-v35-static.mjs',
     'scripts/smoke-v35-dist.mjs',
     'scripts/smoke-v35-remote.mjs',
+    'scripts/preflight-v35-cutover.mjs',
     '.github/workflows/v35-smoke.yml',
     '.github/workflows/v35-remote-smoke.yml',
     'docs/v35-preview-checklist.md',
@@ -162,6 +203,8 @@ console.log('Running v35 cutover preflight guard...');
 assertRequiredFiles();
 assertPackageScripts();
 assertVercelRedirect();
+assertWorkflowCoverage();
+assertStaticSmokeCoversPreflight();
 assertCurrentNoCutoverState();
 assertCutoverDocsStillBlockCutover();
 
