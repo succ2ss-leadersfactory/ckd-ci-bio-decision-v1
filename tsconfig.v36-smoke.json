@@ -7,6 +7,7 @@
     "src/vite-env.d.ts",
     "src/journey-v36-app-preview.tsx",
     "src/full-flow-journey-v36-preview.tsx",
+    "src/journey-v36-ai-safety-lab.tsx",
     "src/journey-v36-research-strategy-lab.tsx",
     "src/journey-v36-source-check-lab.tsx",
     "src/journey-v36-dashboard-analysis-lab.tsx",
