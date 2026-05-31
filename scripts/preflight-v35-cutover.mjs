@@ -1,0 +1,183 @@
+import { existsSync, readFileSync } from 'node:fs';
+
+const failures = [];
+const warnings = [];
+
+function fail(message) {
+  failures.push(message);
+}
+
+function warn(message) {
+  warnings.push(message);
+}
+
+function readText(file) {
+  if (!existsSync(file)) {
+    fail(`Missing required file: ${file}`);
+    return null;
+  }
+
+  return readFileSync(file, 'utf8');
+}
+
+function stripCodeComments(content) {
+  return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+}
+
+function readCode(file) {
+  const content = readText(file);
+  return content === null ? null : stripCodeComments(content);
+}
+
+function readJson(file) {
+  const content = readText(file);
+  if (content === null) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    fail(`${file} must be valid JSON. ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+function assertContains(file, pattern, message, { code = false } = {}) {
+  const content = code ? readCode(file) : readText(file);
+  if (content === null) {
+    return;
+  }
+
+  if (!pattern.test(content)) {
+    fail(message);
+  }
+}
+
+function assertNotContains(file, pattern, message, { code = false } = {}) {
+  const content = code ? readCode(file) : readText(file);
+  if (content === null) {
+    return;
+  }
+
+  if (pattern.test(content)) {
+    fail(message);
+  }
+}
+
+function assertPackageScripts() {
+  const packageJson = readJson('package.json');
+  const scripts = packageJson?.scripts ?? {};
+
+  const requiredScripts = {
+    'smoke:v35:static': 'node scripts/smoke-v35-static.mjs',
+    'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
+    'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
+  };
+
+  for (const [name, expected] of Object.entries(requiredScripts)) {
+    if (scripts[name] !== expected) {
+      fail(`package.json must keep ${name} = ${expected}.`);
+    }
+  }
+
+  const smokeV35 = scripts['smoke:v35'] ?? '';
+  for (const command of ['npm run smoke:v35:static', 'npm run typecheck', 'npm run build', 'npm run smoke:v35:dist']) {
+    if (!smokeV35.includes(command)) {
+      fail(`package.json smoke:v35 must include ${command}.`);
+    }
+  }
+}
+
+function assertVercelRedirect() {
+  const vercelJson = readJson('vercel.json');
+  const redirects = Array.isArray(vercelJson?.redirects) ? vercelJson.redirects : [];
+  const hasRootJourneyRedirect = redirects.some((redirect) => redirect?.source === '/' && redirect?.destination === '/journey.html');
+
+  if (!hasRootJourneyRedirect) {
+    fail('vercel.json must keep / redirecting to /journey.html.');
+  }
+}
+
+function assertCutoverDocsStillBlockCutover() {
+  const cutoverDoc = readText('docs/v35-cutover-gates.md');
+  if (cutoverDoc === null) {
+    return;
+  }
+
+  const requiredPhrases = [
+    'Cutover 불가',
+    '실행 검증 대기',
+    'import \'./full-flow-journey-v34\';',
+    'v35 Remote Smoke',
+    'rollback',
+  ];
+
+  for (const phrase of requiredPhrases) {
+    if (!cutoverDoc.includes(phrase)) {
+      warn(`docs/v35-cutover-gates.md should mention: ${phrase}`);
+    }
+  }
+
+  const smokeResultDoc = readText('docs/v35-preview-smoke-result.md');
+  if (smokeResultDoc === null) {
+    return;
+  }
+
+  if (/전체 판정:\s*(통과|PASS|Pass|pass)/.test(smokeResultDoc)) {
+    warn('docs/v35-preview-smoke-result.md appears to mark overall status as passed. Confirm all gates are genuinely complete before cutover.');
+  }
+
+  if (!/전체 판정:\s*실행 검증 대기/.test(smokeResultDoc)) {
+    warn('docs/v35-preview-smoke-result.md no longer says 전체 판정: 실행 검증 대기. Confirm this reflects real QA results.');
+  }
+}
+
+function assertCurrentNoCutoverState() {
+  assertContains('src/journey-active.tsx', /import\s+['"]\.\/full-flow-journey-v35['"];?/, 'journey-active.tsx must keep importing full-flow-journey-v35.', { code: true });
+  assertContains('src/full-flow-journey-v35.tsx', /import\s+['"]\.\/full-flow-journey-v34['"];?/, 'full-flow-journey-v35.tsx must still delegate to v34 before approved cutover.', { code: true });
+  assertNotContains('src/journey-v35-preview-config.ts', /c1bio_flow_/, 'v35 preview config must not use v34 c1bio_flow_* keys.', { code: true });
+}
+
+function assertRequiredFiles() {
+  const requiredFiles = [
+    'scripts/smoke-v35-static.mjs',
+    'scripts/smoke-v35-dist.mjs',
+    'scripts/smoke-v35-remote.mjs',
+    '.github/workflows/v35-smoke.yml',
+    '.github/workflows/v35-remote-smoke.yml',
+    'docs/v35-preview-checklist.md',
+    'docs/v35-preview-smoke-result.md',
+    'docs/v35-cutover-gates.md',
+    'docs/v35-deployment-url-guide.md',
+  ];
+
+  for (const file of requiredFiles) {
+    readText(file);
+  }
+}
+
+console.log('Running v35 cutover preflight guard...');
+
+assertRequiredFiles();
+assertPackageScripts();
+assertVercelRedirect();
+assertCurrentNoCutoverState();
+assertCutoverDocsStillBlockCutover();
+
+if (warnings.length > 0) {
+  console.warn('v35 cutover preflight warnings:');
+  for (const warning of warnings) {
+    console.warn(`- ${warning}`);
+  }
+}
+
+if (failures.length > 0) {
+  console.error('v35 cutover preflight failed.');
+  for (const failure of failures) {
+    console.error(`- ${failure}`);
+  }
+  process.exit(1);
+}
+
+console.log('v35 cutover preflight passed. Current state remains protected; cutover is still blocked until QA results are recorded.');
