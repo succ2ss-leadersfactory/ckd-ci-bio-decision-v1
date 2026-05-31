@@ -1,13 +1,16 @@
 import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
+import { StrategyIssueReview } from './journey-strategy-issue-review';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
+import type { IssueNote } from './journey-components';
 
 const V35_STORAGE_KEYS = {
   step: 'c1bio_v35_preview_step',
   participant: 'c1bio_v35_preview_participant',
   state: 'c1bio_v35_preview_state',
+  notes: 'c1bio_v35_preview_strategy_notes',
 };
 
 const V35_APP_STEPS: JourneyStep[] = [
@@ -21,6 +24,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     title: '좋은 질문 만들기',
     description: '안전한 프롬프트를 복사하고 v35 preview localStorage에 저장하는 최소 실습 단계입니다.',
   },
+  {
+    id: 'strategy-issue-review',
+    title: '전략 이슈 검토',
+    description: '전략 이슈 메모를 v35 preview localStorage에 저장하며 화면 전환 안정성을 확인합니다.',
+  },
 ];
 
 const DEFAULT_PARTICIPANT: ParticipantInfo = {
@@ -29,6 +37,20 @@ const DEFAULT_PARTICIPANT: ParticipantInfo = {
   name: '',
   teamName: '',
 };
+
+function createEmptyIssueNotes(): IssueNote[] {
+  return Array.from({ length: 3 }, () => ({
+    issue: '',
+    change: '',
+    source: '',
+    date: '',
+    reliability: '',
+    why: '',
+    check: '',
+    question: '',
+    compliance: '',
+  }));
+}
 
 function clampStep(step: number) {
   return Math.min(Math.max(step, 0), Math.max(V35_APP_STEPS.length - 1, 0));
@@ -61,7 +83,7 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
           <p>아직 미연동</p>
         </div>
       </div>
-      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}</p>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}</p>
       <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
         v35 preview 저장 초기화
       </button>
@@ -69,10 +91,11 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
   );
 }
 
-function V35PreviewDebugPanel({ participant, savedState }: { participant: ParticipantInfo; savedState: JsonRecord }) {
+function V35PreviewDebugPanel({ participant, savedState, notes }: { participant: ParticipantInfo; savedState: JsonRecord; notes: IssueNote[] }) {
   const debugPayload = {
     participant,
     savedState,
+    notes,
   };
 
   return (
@@ -90,6 +113,7 @@ export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [savedState, setSavedState] = useStored<JsonRecord>(V35_STORAGE_KEYS.state, {});
+  const [notes, setNotes] = useStored<IssueNote[]>(V35_STORAGE_KEYS.notes, createEmptyIssueNotes());
 
   const safeStep = clampStep(step);
 
@@ -115,11 +139,13 @@ export function FullFlowJourneyV35App() {
     >
       {safeStep === 0 ? (
         <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />
-      ) : (
+      ) : safeStep === 1 ? (
         <PromptPracticeScreen save={save} />
+      ) : (
+        <StrategyIssueReview notes={notes} setNotes={setNotes} />
       )}
       <V35PreviewSmokePanel step={safeStep} />
-      <V35PreviewDebugPanel participant={participant} savedState={savedState} />
+      <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} />
     </JourneyShell>
   );
 }
