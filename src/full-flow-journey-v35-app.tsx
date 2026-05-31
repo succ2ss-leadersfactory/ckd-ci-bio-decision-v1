@@ -4,9 +4,10 @@ import { PromptPracticeScreen } from './journey-prompt-practice';
 import { StrategyIssueReview } from './journey-strategy-issue-review';
 import { SourceCheckSection } from './journey-source-check';
 import { NotebookSourcePrep } from './journey-notebook-source-prep';
+import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
-import { buildSourcePackage, buildSourceSearchQuery } from './journey-utils';
+import { buildSourcePackage, buildSourceSearchQuery, promptSourceCheck } from './journey-utils';
 import type { IssueNote } from './journey-components';
 
 const V35_STORAGE_KEYS = {
@@ -16,6 +17,7 @@ const V35_STORAGE_KEYS = {
   notes: 'c1bio_v35_preview_strategy_notes',
   sourceChecks: 'c1bio_v35_preview_source_checks',
   sourceRisk: 'c1bio_v35_preview_source_risk',
+  readinessResult: 'c1bio_v35_preview_readiness_result',
 };
 
 const V35_STRATEGY_SCENARIO_TITLE = 'v35 preview 전략 이슈 검토';
@@ -45,6 +47,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'notebook-source-prep',
     title: 'NotebookLM Source Prep',
     description: '전략 이슈와 Source Check 결과를 바탕으로 NotebookLM 소스 준비 텍스트를 생성합니다.',
+  },
+  {
+    id: 'notebook-readiness-check',
+    title: 'NotebookLM Readiness Check',
+    description: 'NotebookLM 소스 준비 상태 점검 결과를 v35 preview localStorage에 저장합니다.',
   },
 ];
 
@@ -100,7 +107,7 @@ function V35PreviewSmokePanel({ step }: { step: number }) {
           <p>아직 미연동</p>
         </div>
       </div>
-      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}</p>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}, {V35_STORAGE_KEYS.notes}, {V35_STORAGE_KEYS.sourceChecks}, {V35_STORAGE_KEYS.sourceRisk}, {V35_STORAGE_KEYS.readinessResult}</p>
       <button className="mt-3 rounded-xl border border-cyan-700 bg-white px-4 py-2 font-semibold text-cyan-800" type="button" onClick={resetV35PreviewStorage}>
         v35 preview 저장 초기화
       </button>
@@ -114,12 +121,14 @@ function V35PreviewDebugPanel({
   notes,
   sourceChecks,
   sourceRisk,
+  readinessResult,
 }: {
   participant: ParticipantInfo;
   savedState: JsonRecord;
   notes: IssueNote[];
   sourceChecks: string[];
   sourceRisk: string;
+  readinessResult: string;
 }) {
   const debugPayload = {
     participant,
@@ -127,6 +136,7 @@ function V35PreviewDebugPanel({
     notes,
     sourceChecks,
     sourceRisk,
+    readinessResult,
   };
 
   return (
@@ -207,6 +217,30 @@ function NotebookSourcePrepStep({
   );
 }
 
+function NotebookReadinessCheckStep({
+  readinessResult,
+  setReadinessResult,
+  save,
+}: {
+  readinessResult: string;
+  setReadinessResult: (value: string) => void;
+  save: (key: string, payload: JsonRecord) => void;
+}) {
+  const readinessPrompt = promptSourceCheck();
+
+  return (
+    <div className="grid gap-4">
+      <NotebookReadinessCheck promptText={readinessPrompt} resultText={readinessResult} setResultText={setReadinessResult} />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">NotebookLM readiness result는 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 점검 결과를 savedState에도 명시적으로 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J06-notebook-readiness-check', { readinessPrompt, readinessResult })}>
+          Readiness Check 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -214,6 +248,7 @@ export function FullFlowJourneyV35App() {
   const [notes, setNotes] = useStored<IssueNote[]>(V35_STORAGE_KEYS.notes, createEmptyIssueNotes());
   const [sourceChecks, setSourceChecks] = useStored<string[]>(V35_STORAGE_KEYS.sourceChecks, []);
   const [sourceRisk, setSourceRisk] = useStored<string>(V35_STORAGE_KEYS.sourceRisk, '');
+  const [readinessResult, setReadinessResult] = useStored<string>(V35_STORAGE_KEYS.readinessResult, '');
 
   const safeStep = clampStep(step);
 
@@ -239,8 +274,10 @@ export function FullFlowJourneyV35App() {
       case 3:
         return <SourceCheckStep sourceChecks={sourceChecks} setSourceChecks={setSourceChecks} sourceRisk={sourceRisk} setSourceRisk={setSourceRisk} save={save} />;
       case 4:
-      default:
         return <NotebookSourcePrepStep notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} save={save} />;
+      case 5:
+      default:
+        return <NotebookReadinessCheckStep readinessResult={readinessResult} setReadinessResult={setReadinessResult} save={save} />;
     }
   };
 
@@ -255,7 +292,7 @@ export function FullFlowJourneyV35App() {
     >
       {renderCurrentStep()}
       <V35PreviewSmokePanel step={safeStep} />
-      <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} />
+      <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} sourceChecks={sourceChecks} sourceRisk={sourceRisk} readinessResult={readinessResult} />
     </JourneyShell>
   );
 }
