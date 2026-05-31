@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
 import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
 import { useStored } from './journey-storage';
@@ -34,7 +35,7 @@ function ComplianceNotice() {
   );
 }
 
-function ShellCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ShellCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-2xl border bg-white p-5 shadow-sm">
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
