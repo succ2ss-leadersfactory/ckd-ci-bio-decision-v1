@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
+import { PromptPracticeScreen } from './journey-prompt-practice';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { getJson, setJson, useStored, type JsonRecord } from './journey-storage';
 
@@ -14,6 +15,11 @@ const V35_APP_STEPS: JourneyStep[] = [
     id: 'entry',
     title: '입장',
     description: '참여자 정보와 세션 정보를 localStorage에 저장하는 v35 독립 실행 준비 단계입니다.',
+  },
+  {
+    id: 'prompt-practice',
+    title: '좋은 질문 만들기',
+    description: '안전한 프롬프트를 복사하고 v35 preview localStorage에 저장하는 최소 실습 단계입니다.',
   },
 ];
 
@@ -88,7 +94,11 @@ export function FullFlowJourneyV35App() {
       onPrev={() => setStep(clampStep(safeStep - 1))}
       onNext={() => setStep(clampStep(safeStep + 1))}
     >
-      <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />
+      {safeStep === 0 ? (
+        <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />
+      ) : (
+        <PromptPracticeScreen save={save} />
+      )}
       <V35PreviewSmokePanel step={safeStep} />
     </JourneyShell>
   );
