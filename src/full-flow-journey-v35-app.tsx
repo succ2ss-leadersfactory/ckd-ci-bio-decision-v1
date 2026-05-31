@@ -109,6 +109,20 @@ function V35PreviewDebugPanel({ participant, savedState, notes }: { participant:
   );
 }
 
+function StrategyIssueReviewStep({ notes, setNotes, save }: { notes: IssueNote[]; setNotes: (notes: IssueNote[]) => void; save: (key: string, payload: JsonRecord) => void }) {
+  return (
+    <div className="grid gap-4">
+      <StrategyIssueReview notes={notes} setNotes={setNotes} />
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-600">전략 이슈 메모는 입력 즉시 v35 preview 전용 key에 저장됩니다. 아래 버튼은 현재 메모를 savedState에도 명시적으로 기록합니다.</p>
+        <button className="mt-3 rounded-xl bg-cyan-700 px-4 py-2 font-semibold text-white" type="button" onClick={() => save('J03-strategy-issue-review', { notes })}>
+          전략 이슈 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -142,7 +156,7 @@ export function FullFlowJourneyV35App() {
       ) : safeStep === 1 ? (
         <PromptPracticeScreen save={save} />
       ) : (
-        <StrategyIssueReview notes={notes} setNotes={setNotes} />
+        <StrategyIssueReviewStep notes={notes} setNotes={setNotes} save={save} />
       )}
       <V35PreviewSmokePanel step={safeStep} />
       <V35PreviewDebugPanel participant={participant} savedState={savedState} notes={notes} />
