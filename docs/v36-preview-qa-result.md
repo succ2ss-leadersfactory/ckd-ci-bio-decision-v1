@@ -2,7 +2,7 @@
 
 ## QA status
 
-Status: Pending browser QA
+Status: Automated checks passed / Pending browser QA
 
 ## Scope
 
@@ -10,17 +10,20 @@ Status: Pending browser QA
 - Feature: v36 preview shell + CustomerCallPlanLab
 - Operating route protection: `/journey.html` remains v34
 - v35 preview protection: `/journey-v35-preview.html` remains v35
+- Verified commit: `95c267af8beba03048e01e2d2a027176aa19ea4f`
 
 ## Automated checks
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run smoke:v36:static` | Pending | Run through v36 Smoke workflow |
-| `npm run typecheck:v36` | Pending | Run through v36 Smoke workflow |
-| `npm run build` | Pending | Run through v36 Smoke workflow |
-| `npm run smoke:v36:dist` | Pending | Confirms dist bundle includes v36 route and CustomerCallPlanLab markers |
-| `npm run smoke:v36` | Pending | Integrated v36 check |
-| `npm run smoke:v35` | Pending | Regression guard |
+| `npm run smoke:v36:static` | PASS | Run through v36 Smoke workflow |
+| `npm run typecheck:v36` | PASS | Run through v36 Smoke workflow |
+| `npm run build` | PASS | Run through v36 Smoke workflow |
+| `npm run smoke:v36:dist` | PASS | Confirms dist bundle includes v36 route and user-visible CustomerCallPlanLab markers |
+| `npm run smoke:v36` | PASS | Integrated v36 check |
+| `npm run smoke:v35` | PASS | Regression guard passed |
+| `C1Bio MVP CI` | PASS | Existing CI remained passing |
+| `Vercel` | PASS | Deployment status success |
 
 ## Browser QA checklist
 
@@ -82,9 +85,10 @@ Notes:
 
 v36 PR should remain Draft until:
 
-1. v36 Smoke workflow passes.
-2. v35 Smoke remains passing.
-3. Browser QA is recorded in this document.
-4. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
-5. CustomerCallPlanLab Step 7 checks pass on at least desktop and one mobile/tablet viewport.
-6. Console snippet evidence is recorded after Step 7 input.
+1. v36 Smoke workflow passes. ✅
+2. v35 Smoke remains passing. ✅
+3. Vercel deployment succeeds. ✅
+4. Browser QA is recorded in this document.
+5. `/journey.html` and `/journey-v35-preview.html` regression checks pass.
+6. CustomerCallPlanLab Step 7 checks pass on at least desktop and one mobile/tablet viewport.
+7. Console snippet evidence is recorded after Step 7 input.
