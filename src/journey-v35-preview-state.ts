@@ -3,6 +3,7 @@ import type { ParticipantInfo } from './journey-entry';
 import { getJson, useStored, type JsonRecord } from './journey-storage';
 import { createEmptyIssueNotes, V35_STORAGE_KEYS } from './journey-v35-preview-config';
 import type { IssueNote } from './journey-components';
+import type { V35PreviewState } from './journey-v35-preview-types';
 
 const DEFAULT_PARTICIPANT: ParticipantInfo = {
   participantId: `v35-${Date.now()}`,
@@ -16,7 +17,7 @@ export function resetV35PreviewStorage() {
   window.location.reload();
 }
 
-export function useV35PreviewState() {
+export function useV35PreviewState(): V35PreviewState {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [savedState, setSavedState] = useStored<JsonRecord>(V35_STORAGE_KEYS.state, {});
