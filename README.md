@@ -24,11 +24,41 @@
 - MR 1on1 코칭 Lab
 - 7일 실행계획, 30일 점검 기준, 전체 결과 요약 복사
 
+## v35 검증 상태
+
+v35 preview는 운영 전환 전 검증 단계입니다. 현재 cutover는 아직 진행하지 않습니다.
+
+먼저 확인할 문서:
+
+```txt
+docs/v35-validation-index.md
+```
+
+핵심 실행 순서:
+
+```txt
+1. Actions → v35 Smoke → Run workflow
+2. Actions → v35 Remote Smoke → Run workflow
+3. docs/v35-browser-qa-runbook.md 기준 브라우저 QA
+4. docs/v35-browser-qa-result.md 결과 기록
+5. docs/v35-preview-smoke-result.md 최종 결과 반영
+6. Actions → v35 Readiness Audit → Run workflow
+```
+
+cutover 금지 기준:
+
+- 브라우저 QA 미기록
+- Console snippet 근거 미기록
+- `v35 Readiness Audit` 실패
+- `src/full-flow-journey-v35.tsx`의 v34 위임 import 제거 전 gate 미통과
+
 ## Routes
 
 - `/` 참여자 앱
 - `/?view=instructor` 강사용 대시보드
 - `/?view=check` 사전점검 화면
+- `/journey.html` v34 보호 운영 경로
+- `/journey-v35-preview.html` v35 preview 검증 경로
 
 ## Stack
 
@@ -43,6 +73,14 @@ npm run typecheck
 npm run audit:linebreaks
 npm run smoke:parser
 npm run build
+```
+
+v35 검증용 명령:
+
+```bash
+npm run smoke:v35
+npm run smoke:v35:remote
+npm run audit:v35:readiness
 ```
 
 ## Vercel
@@ -75,6 +113,12 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 
 ## 운영 문서
 
+- `docs/v35-validation-index.md` v35 검증 문서 인덱스
+- `docs/v35-smoke-automation-guide.md` v35 smoke 자동화 가이드
+- `docs/v35-browser-qa-runbook.md` v35 브라우저 QA 실행 절차서
+- `docs/v35-browser-qa-result.md` v35 브라우저 QA 결과 기록지
+- `docs/v35-browser-qa-console-snippet.md` v35 브라우저 QA 콘솔 스니펫
+- `docs/v35-cutover-gates.md` v35 cutover gate 기준
 - `docs/DEPLOYMENT_RUNBOOK.md` 배포 런북
 - `docs/pilot-qa-checklist.md` 파일럿 전 QA 체크리스트
 - `docs/manual-test-script.md` 수동 테스트 스크립트
