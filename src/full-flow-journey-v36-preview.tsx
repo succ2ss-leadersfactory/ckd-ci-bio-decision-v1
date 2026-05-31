@@ -1,0 +1,168 @@
+import { JourneyShell } from './journey-shell';
+import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
+import { useStored } from './journey-storage';
+
+type V36Participant = {
+  name: string;
+  teamName: string;
+  roleAccepted: boolean;
+};
+
+type V36Progress = {
+  step: number;
+};
+
+const DEFAULT_PARTICIPANT: V36Participant = {
+  name: '',
+  teamName: '',
+  roleAccepted: false,
+};
+
+const DEFAULT_PROGRESS: V36Progress = {
+  step: 0,
+};
+
+function ComplianceNotice() {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <p className="font-bold">AI 안전선</p>
+      <p className="mt-1">
+        실제 고객명, 병원명, 의사명, 내부 매출·처방 수치, 개인정보, 미승인 효능이나 허가 외 표현은 입력하지 마세요.
+        AI 답변은 그대로 사용하지 말고 반드시 검토·수정하세요.
+      </p>
+    </div>
+  );
+}
+
+function ShellCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+      <div className="mt-3 space-y-3 text-sm text-slate-700">{children}</div>
+    </section>
+  );
+}
+
+function EntryStep({ participant, setParticipant }: { participant: V36Participant; setParticipant: (next: V36Participant) => void }) {
+  return (
+    <div className="space-y-4">
+      <ComplianceNotice />
+      <ShellCard title="C1바이오 영업팀장 역할 부여">
+        <p>
+          당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 6명의 MR과 함께 외부 영업환경, 고객군 반응,
+          팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="space-y-1">
+            <span className="text-xs font-semibold text-slate-500">이름</span>
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              value={participant.name}
+              onChange={(event) => setParticipant({ ...participant, name: event.target.value })}
+              placeholder="예: 김현태"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-semibold text-slate-500">팀명</span>
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              value={participant.teamName}
+              onChange={(event) => setParticipant({ ...participant, teamName: event.target.value })}
+              placeholder="예: 3조"
+            />
+          </label>
+        </div>
+        <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3">
+          <input
+            type="checkbox"
+            checked={participant.roleAccepted}
+            onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })}
+          />
+          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고 기록합니다.</span>
+        </label>
+      </ShellCard>
+    </div>
+  );
+}
+
+function CustomerCallPlanPrototypeStep() {
+  return (
+    <div className="space-y-4">
+      <ComplianceNotice />
+      <ShellCard title="1차 Prototype: 고객군 판단 / 콜플랜 Lab">
+        <p>
+          v36의 첫 번째 Full Lab은 고객군 A~D 반응 데이터를 바탕으로 2주 집중 고객군과 제외 고객군을 결정하고,
+          팀원별 역할·콜 전 준비·콜 후 24시간 내 후속조치·CRM 기록 기준까지 설계하는 구조로 구현합니다.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          {['상황 제시', '판단 데이터', '리더의 1차 판단', 'AI 질문 생성', 'AI 답변 붙여넣기', 'AI 답변 감별', '현장형 수정', '최종 산출물', '저장', '강사용 대시보드 요약'].map((item, index) => (
+            <div key={item} className="rounded-xl border bg-slate-50 p-3">
+              <p className="text-xs font-bold text-cyan-700">Block {index + 1}</p>
+              <p className="mt-1 font-semibold">{item}</p>
+            </div>
+          ))}
+        </div>
+      </ShellCard>
+    </div>
+  );
+}
+
+function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
+  return (
+    <div className="space-y-4">
+      <ComplianceNotice />
+      <ShellCard title={`${stepTitle} - v36 preview shell`}>
+        <p>
+          이 화면은 v36 preview shell에서 13단계 흐름을 먼저 고정하기 위한 자리표시자입니다.
+          다음 구현 단계에서 Lab Standard v1 컴포넌트와 실제 실습 데이터를 연결합니다.
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>사람의 1차 판단을 먼저 입력합니다.</li>
+          <li>AI 질문을 생성하고 외부 AI에 복사합니다.</li>
+          <li>AI 답변을 붙여넣고 감별합니다.</li>
+          <li>현장형으로 수정한 뒤 최종 산출물을 저장합니다.</li>
+        </ul>
+      </ShellCard>
+    </div>
+  );
+}
+
+function renderV36Step(step: number, participant: V36Participant, setParticipant: (next: V36Participant) => void) {
+  const current = V36_APP_STEPS[step];
+
+  if (current.id === 'entry') {
+    return <EntryStep participant={participant} setParticipant={setParticipant} />;
+  }
+
+  if (current.id === 'customer-judgment') {
+    return <CustomerCallPlanPrototypeStep />;
+  }
+
+  return <PlaceholderStep stepTitle={current.title} />;
+}
+
+export function FullFlowJourneyV36PreviewApp() {
+  const [participant, setParticipant] = useStored<V36Participant>(V36_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
+  const [progress, setProgress] = useStored<V36Progress>(V36_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
+  const safeStep = clampV36Step(progress.step);
+
+  return (
+    <JourneyShell
+      title="종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview"
+      subtitle="v35 안정 상태를 유지한 채, v36 실습 고도화를 독립 preview route에서 검증합니다."
+      steps={V36_APP_STEPS}
+      currentStep={safeStep}
+      onPrev={() => setProgress({ step: clampV36Step(safeStep - 1) })}
+      onNext={() => setProgress({ step: clampV36Step(safeStep + 1) })}
+    >
+      {renderV36Step(safeStep, participant, setParticipant)}
+      <section className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
+        <p className="font-bold text-slate-700">v36 Preview Smoke</p>
+        <p className="mt-1">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
+        <p className="mt-1">current step: {safeStep + 1} / {V36_APP_STEPS.length}</p>
+      </section>
+    </JourneyShell>
+  );
+}
+
+export default FullFlowJourneyV36PreviewApp;
