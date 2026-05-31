@@ -6,6 +6,7 @@
 
 - v35 cutover는 자동 smoke 통과만으로 진행하지 않는다.
 - v35 remote smoke, 브라우저 QA, console snippet 근거, readiness audit까지 모두 통과해야 cutover 검토가 가능하다.
+- 실제 브라우저 QA는 `docs/v35-browser-qa-runbook.md`를 따라 수행한다.
 - `src/full-flow-journey-v34.tsx`와 `src/journey-active.tsx`는 cutover 전까지 수정하지 않는다.
 - `src/full-flow-journey-v35.tsx`의 마지막 `import './full-flow-journey-v34';`는 독립 실행 검증 전까지 유지한다.
 
@@ -28,11 +29,9 @@ npm run smoke:v35
 npm run audit:v35:readiness
 ```
 
-각 명령의 역할은 다음과 같다.
-
 | 명령 | 역할 |
 |---|---|
-| `npm run smoke:v35:static` | v35 preview 구조, entry, storage key, workflow, QA 문서 보호 검사 |
+| `npm run smoke:v35:static` | v35 preview 구조, entry, storage key, workflow, QA 문서·Runbook 보호 검사 |
 | `npm run typecheck` | 현재는 `typecheck:v35`로 위임 |
 | `npm run typecheck:v35` | `tsconfig.v35-smoke.json` 기준 v35 scoped TypeScript 검사 |
 | `npm run typecheck:full` | 전체 repository TypeScript 검사. archived 파일 오류가 있으므로 v35 smoke gate에는 사용하지 않음 |
@@ -41,7 +40,7 @@ npm run audit:v35:readiness
 | `npm run smoke:v35:remote` | Vercel production URL 원격 검사 |
 | `npm run preflight:v35:cutover` | cutover 전 보호장치 검사 |
 | `npm run smoke:v35` | static + typecheck:v35 + build + dist + preflight 통합 검사 |
-| `npm run audit:v35:readiness` | smoke result, browser QA result, console snippet 근거 최종 검사 |
+| `npm run audit:v35:readiness` | smoke result, browser QA result, console snippet, browser QA Runbook 최종 검사 |
 
 ---
 
@@ -76,16 +75,14 @@ npm run preflight:v35:cutover
 - `vite.config.ts`의 `journeyV35Preview` build input 유지
 - `vercel.json`의 `/` → `/journey.html` root redirect 유지
 - `src/full-flow-journey-v35.tsx`의 v34 위임 import 유지
-- v35 app의 `JourneyShell`, `renderV35PreviewStep`, `useV35PreviewState` 조립 구조 유지
 - `V35_STORAGE_KEYS` 전체 key 유지
 - v34 운영 key인 `c1bio_flow_`를 v35 preview config에서 사용하지 않는지 확인
 - `V35_APP_STEPS` 9개 step id 유지
 - `renderV35PreviewStep`의 `case 0:`~`case 8:` 유지
 - `J01-entry`~`J09-presentation-checklist` 저장 key 유지
-- `V35PreviewSmokePanel`과 `V35PreviewDebugPanel` 연결 유지
-- `v35-preview-smoke-panel`, `v35-preview-debug-panel` test id 유지
 - `docs/v35-browser-qa-result.md` 핵심 판정 항목 유지
 - `docs/v35-browser-qa-console-snippet.md` 핵심 스니펫 항목 유지
+- `docs/v35-browser-qa-runbook.md` 핵심 실행 절차 유지
 - `.github/workflows/v35-smoke.yml`, `.github/workflows/v35-remote-smoke.yml`, `.github/workflows/v35-readiness-audit.yml` 유지
 
 ---
@@ -104,10 +101,12 @@ Actions → v35 Readiness Audit → Run workflow
 
 1. `v35 Smoke` 실행
 2. `v35 Remote Smoke` 실행
-3. 브라우저에서 `/journey.html` v34 회귀 확인
-4. 브라우저에서 `/journey-v35-preview.html` v35 preview QA 수행
-5. `docs/v35-browser-qa-result.md`와 `docs/v35-preview-smoke-result.md`에 실제 결과 기록
-6. `v35 Readiness Audit` 실행
+3. `docs/v35-browser-qa-runbook.md`를 열고 절차대로 브라우저 QA 수행
+4. 브라우저에서 `/journey.html` v34 회귀 확인
+5. 브라우저에서 `/journey-v35-preview.html` v35 preview QA 수행
+6. Console snippet 실행
+7. `docs/v35-browser-qa-result.md`와 `docs/v35-preview-smoke-result.md`에 실제 결과 기록
+8. `v35 Readiness Audit` 실행
 
 주의:
 
@@ -134,7 +133,7 @@ http://localhost:4173/journey.html
 http://localhost:4173/journey-v35-preview.html
 ```
 
-브라우저 QA까지 로컬에서 사전 확인하려면 `docs/v35-browser-qa-console-snippet.md`의 콘솔 스니펫을 실행한다.
+브라우저 QA까지 로컬에서 사전 확인하려면 `docs/v35-browser-qa-runbook.md`를 따라 수행하고, `docs/v35-browser-qa-console-snippet.md`의 콘솔 스니펫을 실행한다.
 
 ---
 
@@ -146,6 +145,12 @@ production domain 기준으로 확인한다.
 https://ckd-ci-bio-decision-v1.vercel.app/
 https://ckd-ci-bio-decision-v1.vercel.app/journey.html
 https://ckd-ci-bio-decision-v1.vercel.app/journey-v35-preview.html
+```
+
+브라우저 QA 실행 절차:
+
+```txt
+docs/v35-browser-qa-runbook.md
 ```
 
 확인 결과는 아래 문서에 기록한다.
@@ -207,6 +212,7 @@ Actions → v35 Readiness Audit → Run workflow
 docs/v35-preview-smoke-result.md
 docs/v35-browser-qa-result.md
 docs/v35-browser-qa-console-snippet.md
+docs/v35-browser-qa-runbook.md
 ```
 
 실패 기준:
@@ -215,6 +221,7 @@ docs/v35-browser-qa-console-snippet.md
 - `missingPreviewKeys`가 none/없음/0이 아님
 - `missingSavedStateKeys`가 none/없음/0이 아님
 - `pass`가 true/통과가 아님
+- `docs/v35-browser-qa-runbook.md`에 핵심 QA 절차가 빠져 있음
 - v35 운영 전환 가능 여부가 아직 불가로 남아 있음
 
 ---
@@ -225,6 +232,7 @@ docs/v35-browser-qa-console-snippet.md
 
 - `v35 Smoke` 통과 기록 있음
 - `v35 Remote Smoke` 통과 기록 있음
+- `docs/v35-browser-qa-runbook.md` 추가 및 보호 연결 완료
 - 브라우저 QA 결과는 아직 미기록
 - console snippet 결과는 아직 미기록
 - `v35 Readiness Audit`은 아직 실패 예상 상태
