@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
+import { CustomerCallPlanLab } from './journey-v36-customer-call-plan-lab';
 import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
 import { useStored } from './journey-storage';
 
@@ -86,28 +87,6 @@ function EntryStep({ participant, setParticipant }: { participant: V36Participan
   );
 }
 
-function CustomerCallPlanPrototypeStep() {
-  return (
-    <div className="space-y-4">
-      <ComplianceNotice />
-      <ShellCard title="1차 Prototype: 고객군 판단 / 콜플랜 Lab">
-        <p>
-          v36의 첫 번째 Full Lab은 고객군 A~D 반응 데이터를 바탕으로 2주 집중 고객군과 제외 고객군을 결정하고,
-          팀원별 역할·콜 전 준비·콜 후 24시간 내 후속조치·CRM 기록 기준까지 설계하는 구조로 구현합니다.
-        </p>
-        <div className="grid gap-3 md:grid-cols-2">
-          {['상황 제시', '판단 데이터', '리더의 1차 판단', 'AI 질문 생성', 'AI 답변 붙여넣기', 'AI 답변 감별', '현장형 수정', '최종 산출물', '저장', '강사용 대시보드 요약'].map((item, index) => (
-            <div key={item} className="rounded-xl border bg-slate-50 p-3">
-              <p className="text-xs font-bold text-cyan-700">Block {index + 1}</p>
-              <p className="mt-1 font-semibold">{item}</p>
-            </div>
-          ))}
-        </div>
-      </ShellCard>
-    </div>
-  );
-}
-
 function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
   return (
     <div className="space-y-4">
@@ -136,7 +115,7 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
   }
 
   if (current.id === 'customer-judgment') {
-    return <CustomerCallPlanPrototypeStep />;
+    return <CustomerCallPlanLab />;
   }
 
   return <PlaceholderStep stepTitle={current.title} />;
