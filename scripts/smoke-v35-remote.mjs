@@ -1,5 +1,8 @@
 const DEFAULT_BASE_URL = 'https://ckd-ci-bio-decision-v1.vercel.app';
 const baseUrl = (process.env.V35_REMOTE_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, '');
+const maxAttempts = Number.parseInt(process.env.V35_REMOTE_MAX_ATTEMPTS || '5', 10);
+const retryDelayMs = Number.parseInt(process.env.V35_REMOTE_RETRY_DELAY_MS || '5000', 10);
+const requestTimeoutMs = Number.parseInt(process.env.V35_REMOTE_TIMEOUT_MS || '15000', 10);
 
 const checks = [
   {
@@ -32,16 +35,24 @@ function buildUrl(path) {
   return `${baseUrl}${path}`;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function fetchWithTimeout(url) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
 
   try {
     return await fetch(url, {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'user-agent': 'c1bio-v35-remote-smoke/1.0',
+        'user-agent': 'c1bio-v35-remote-smoke/1.1',
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'cache-control': 'no-cache',
       },
     });
   } finally {
@@ -49,14 +60,35 @@ async function fetchWithTimeout(url) {
   }
 }
 
+async function fetchWithRetry(url, checkName) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      console.log(`[${checkName}] attempt ${attempt}/${maxAttempts}: ${url}`);
+      const response = await fetchWithTimeout(url);
+      console.log(`[${checkName}] attempt ${attempt}/${maxAttempts}: HTTP ${response.status}, final URL ${response.url}`);
+      return response;
+    } catch (error) {
+      lastError = error;
+      console.warn(`[${checkName}] attempt ${attempt}/${maxAttempts} failed: ${error instanceof Error ? error.message : String(error)}`);
+      if (attempt < maxAttempts) {
+        await sleep(retryDelayMs);
+      }
+    }
+  }
+
+  throw lastError ?? new Error(`Failed to fetch ${url}`);
+}
+
 async function runCheck(check) {
   const url = buildUrl(check.path);
   let response;
 
   try {
-    response = await fetchWithTimeout(url);
+    response = await fetchWithRetry(url, check.name);
   } catch (error) {
-    fail(`${check.name}: failed to fetch ${url}. ${error instanceof Error ? error.message : String(error)}`);
+    fail(`${check.name}: failed to fetch ${url} after ${maxAttempts} attempts. ${error instanceof Error ? error.message : String(error)}`);
     return;
   }
 
@@ -89,6 +121,7 @@ async function runCheck(check) {
 }
 
 console.log(`Running v35 remote smoke checks against ${baseUrl}`);
+console.log(`Retry policy: maxAttempts=${maxAttempts}, retryDelayMs=${retryDelayMs}, requestTimeoutMs=${requestTimeoutMs}`);
 
 for (const check of checks) {
   await runCheck(check);
