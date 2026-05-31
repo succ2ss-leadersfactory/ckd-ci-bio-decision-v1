@@ -23,6 +23,8 @@
 | preview HTML build input 등록 | 완료 | `vite.config.ts`의 `journeyV35Preview` |
 | 루트 redirect 설정 | 완료 | `vercel.json`의 `/` → `/journey.html` |
 | 배포 URL 가이드 문서화 | 완료 | `docs/v35-deployment-url-guide.md` |
+| v35 smoke script 등록 | 완료 | `package.json`의 `smoke:v35` |
+| smoke 자동화 가이드 문서화 | 완료 | `docs/v35-smoke-automation-guide.md` |
 
 ## Gate 2. 운영 v34 보호 검증
 
@@ -62,6 +64,7 @@
 
 아래 조건이 모두 충족되기 전에는 `full-flow-journey-v35.tsx`에서 v34 import를 제거하지 않는다.
 
+- `npm run smoke:v35`가 통과된다.
 - 루트 경로 `/`가 `/journey.html`로 정상 redirect된다.
 - 운영 경로 `/journey.html`이 정상이다.
 - preview 경로 `/journey-v35-preview.html`이 정상이다.
@@ -73,12 +76,13 @@
 
 ## Gate 6. 전환 순서
 
-1. `docs/v35-preview-smoke-result.md`에 실제 확인 결과를 기록한다.
-2. 발견 이슈를 수정한다.
-3. preview 재검증을 통과한다.
-4. `src/full-flow-journey-v35.tsx`에서 v35 app 실행 전환을 검토한다.
-5. `journey-active.tsx`는 마지막 단계까지 유지한다.
-6. 전환 후 즉시 `/journey.html`에서 회귀 검증을 진행한다.
+1. `npm run smoke:v35`를 실행한다.
+2. `docs/v35-preview-smoke-result.md`에 실제 확인 결과를 기록한다.
+3. 발견 이슈를 수정한다.
+4. preview 재검증을 통과한다.
+5. `src/full-flow-journey-v35.tsx`에서 v35 app 실행 전환을 검토한다.
+6. `journey-active.tsx`는 마지막 단계까지 유지한다.
+7. 전환 후 즉시 `/journey.html`에서 회귀 검증을 진행한다.
 
 ## 금지 작업
 
