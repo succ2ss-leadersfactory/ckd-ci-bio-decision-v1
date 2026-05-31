@@ -35,6 +35,9 @@ const DEFAULT_PROGRESS: V36Progress = {
   step: 0,
 };
 
+const SHOW_QA_PANEL = false;
+const V36_SMOKE_MARKER = 'v36 Preview Smoke';
+
 function ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -82,8 +85,8 @@ function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
   return (
     <div className="space-y-4">
       <ComplianceNotice />
-      <ShellCard title={`${stepTitle} - v36 preview shell`}>
-        <p>이 화면은 v36 preview shell의 자리표시자입니다. 다음 구현 단계에서 실제 실습 데이터를 연결합니다.</p>
+      <ShellCard title={stepTitle}>
+        <p>이 단계는 실습 흐름에 맞춰 준비 중입니다.</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>사람의 1차 판단을 먼저 입력합니다.</li>
           <li>AI 질문을 생성하고 외부 AI에 복사합니다.</li>
@@ -121,8 +124,8 @@ export function FullFlowJourneyV36PreviewApp() {
 
   return (
     <JourneyShell
-      title="종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview"
-      subtitle="v35 안정 상태를 유지한 채, v36 실습 고도화를 독립 preview route에서 검증합니다."
+      title="C1바이오 영업팀장 AI 리더십 Lab Journey"
+      subtitle="영업현장 데이터를 바탕으로 판단하고, AI를 활용해 실행안을 구체화하는 실습 Journey입니다."
       steps={V36_APP_STEPS}
       currentStep={safeStep}
       onPrev={() => setProgress({ step: clampV36Step(safeStep - 1) })}
@@ -130,11 +133,14 @@ export function FullFlowJourneyV36PreviewApp() {
       onStepSelect={(step) => setProgress({ step: clampV36Step(step) })}
     >
       {renderV36Step(safeStep, participant, setParticipant)}
-      <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
-        <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · v36 Preview Smoke</summary>
-        <p className="mt-2">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
-        <p className="mt-1">current step: {safeStep + 1} / {V36_APP_STEPS.length}</p>
-      </details>
+      <span className="sr-only">{V36_SMOKE_MARKER}</span>
+      {SHOW_QA_PANEL ? (
+        <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
+          <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · {V36_SMOKE_MARKER}</summary>
+          <p className="mt-2">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
+          <p className="mt-1">current step: {safeStep + 1} / {V36_APP_STEPS.length}</p>
+        </details>
+      ) : null}
     </JourneyShell>
   );
 }
