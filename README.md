@@ -26,7 +26,18 @@
 
 ## v35 검증 상태
 
-v35 preview는 운영 전환 전 검증 단계입니다. 현재 cutover는 아직 진행하지 않습니다.
+v35 preview는 운영 전환 전 검증 단계를 통과했고, 현재 cutover 검토 가능 상태입니다. 현재 cutover는 아직 진행하지 않습니다.
+
+현재 확인 상태:
+
+```txt
+v35 Smoke: 통과
+v35 Remote Smoke: 통과
+Browser QA: 통과
+Console snippet: 통과
+v35 Readiness Audit: 통과
+Cutover status: 검토 가능, 실행 전
+```
 
 먼저 확인할 문서:
 
@@ -43,6 +54,7 @@ docs/v35-validation-index.md
 4. docs/v35-browser-qa-result.md 결과 기록
 5. docs/v35-preview-smoke-result.md 최종 결과 반영
 6. Actions → v35 Readiness Audit → Run workflow
+7. cutover 실행 여부 별도 결정
 ```
 
 cutover 금지 기준:
@@ -51,6 +63,7 @@ cutover 금지 기준:
 - Console snippet 근거 미기록
 - `v35 Readiness Audit` 실패
 - `src/full-flow-journey-v35.tsx`의 v34 위임 import 제거 전 gate 미통과
+- cutover 실행 승인 전 임의 운영 전환
 
 ## Routes
 
