@@ -10,9 +10,7 @@ import {
   StudioReportStep,
   StudioSlidesStep,
 } from './journey-v35-preview-steps';
-import type { useV35PreviewState } from './journey-v35-preview-state';
-
-type V35PreviewState = ReturnType<typeof useV35PreviewState>;
+import type { V35PreviewState } from './journey-v35-preview-types';
 
 export function renderV35PreviewStep(safeStep: number, state: V35PreviewState) {
   switch (safeStep) {
