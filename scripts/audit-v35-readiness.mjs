@@ -231,13 +231,17 @@ function assertReadmeDoc(content) {
     '/journey-v35-preview.html',
     'npm run smoke:v35',
     'npm run audit:v35:readiness',
-    'cutover는 아직 진행하지 않습니다',
   ];
 
   for (const item of requiredContent) {
     if (!content.includes(item)) {
       fail(`${README_DOC} must include ${item}.`);
     }
+  }
+
+  const hasCutoverHold = content.includes('cutover는 아직 진행하지 않습니다') || content.includes('현재 cutover는 진행하지 않습니다');
+  if (!hasCutoverHold) {
+    fail(`${README_DOC} must state that cutover is not currently being performed.`);
   }
 }
 
