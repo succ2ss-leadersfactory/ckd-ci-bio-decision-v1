@@ -3,7 +3,7 @@
 ## 1. 확인 정보
 
 - 확인 일시: 2026-05-31
-- 확인자: GPT 코드 검토 + GitHub Actions 화면 확인
+- 확인자: GPT 코드 검토 + GitHub Actions 화면 확인 + 사용자 정상 확인
 - 배포 URL:
   - `https://ckd-ci-bio-decision-v1.vercel.app/`
   - `https://ckd-ci-bio-decision-v1.vercel.app/journey.html`
@@ -11,7 +11,10 @@
 - 확인 브라우저: 미확인
 - 확인 기기: 미확인
 - 자동 smoke 확인 근거: GitHub Actions 화면에서 `v35 Smoke #34` green 확인
-- 확인 commit: `d98be897975185ed506d99ed9ae81db100944a6d`
+- Remote Smoke 확인 근거: 사용자 정상 확인
+- 확인 commit:
+  - 자동 smoke 통과 기록 기준: `d98be897975185ed506d99ed9ae81db100944a6d`
+  - remote smoke retry 보강 기준: `b601509cf6b7673f69a20917e85a69655943a7de`
 
 ## 2. 배포 전 build smoke 확인
 
@@ -75,7 +78,7 @@ npm run smoke:v35:dist
 
 결과: 통과
 
-## 2-3. remote smoke check 준비 결과
+## 2-3. remote smoke check 결과
 
 2026-05-31 기준으로 `scripts/smoke-v35-remote.mjs`와 수동 GitHub Actions workflow를 추가했다.
 
@@ -107,28 +110,28 @@ Actions → v35 Remote Smoke → Run workflow
 
 현재 확인:
 
-- remote smoke 검증: 실행 대기
-- 현재 세션에서는 Vercel URL fetch가 실패해 실제 원격 결과는 확인하지 못했다.
-- 따라서 remote smoke 결과는 GitHub Actions 또는 로컬 터미널에서 별도로 확인해야 한다.
+- remote smoke 검증: 통과
+- 확인 근거: 사용자 정상 확인
+- 보강 사항: Vercel 배포 직후 propagation 지연을 고려해 최대 5회 재시도, 요청 timeout, 시도별 로그를 추가했다.
 
 ## 3. 운영 경로 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
-| `/` 루트 접속 | 미확인 | `/journey.html`로 redirect되는지 확인 |
-| `/journey.html` 접속 | 미확인 | 기존 v34 화면 정상 표시 여부 |
-| 기존 v34 화면 동작 | 미확인 | 기존 운영 흐름 유지 여부 |
-| Google Sheets 저장 | 미확인 | 기존 저장 연동 유지 여부 |
-| console error | 미확인 | 브라우저 console 확인 |
+| `/` 루트 접속 | 미확인 | `/journey.html`로 redirect되는지 브라우저 확인 필요 |
+| `/journey.html` 접속 | 미확인 | 기존 v34 화면 정상 표시 여부 브라우저 확인 필요 |
+| 기존 v34 화면 동작 | 미확인 | 기존 운영 흐름 유지 여부 확인 필요 |
+| Google Sheets 저장 | 미확인 | 기존 저장 연동 유지 여부 확인 필요 |
+| console error | 미확인 | 브라우저 console 확인 필요 |
 
 ## 4. v35 preview 경로 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
-| `/journey-v35-preview.html` 접속 | 미확인 | preview 화면 표시 여부 |
-| Smoke Check 패널 | 미확인 | `v35 Preview Smoke Check` 표시 여부 |
-| Debug JSON 패널 | 미확인 | 저장 결과 화면 표시 여부 |
-| console error | 미확인 | 브라우저 console 확인 |
+| `/journey-v35-preview.html` 접속 | 미확인 | preview 화면 표시 여부 확인 필요 |
+| Smoke Check 패널 | 미확인 | `v35 Preview Smoke Check` 표시 여부 확인 필요 |
+| Debug JSON 패널 | 미확인 | 저장 결과 화면 표시 여부 확인 필요 |
+| console error | 미확인 | 브라우저 console 확인 필요 |
 
 ## 5. Step 이동 확인
 
@@ -175,18 +178,19 @@ Actions → v35 Remote Smoke → Run workflow
 | 3 | 현재 세션에서 Vercel URL fetch가 실패해 운영/preview 화면을 원격 확인하지 못했다. | 낮음 | `smoke:v35:remote`와 수동 Actions workflow 추가 완료. |
 | 4 | 전체 `npm run typecheck`가 v26~v34 archived 파일까지 검사해 v35 smoke를 막았다. | 중간 | 기본 `typecheck`를 `typecheck:v35`로 위임하고 전체 검사는 `typecheck:full`로 분리 완료. |
 | 5 | v35 scoped typecheck에서 CSS side-effect import 타입 선언을 읽지 못했다. | 낮음 | `tsconfig.v35-smoke.json`에 `src/vite-env.d.ts` 포함 완료. |
+| 6 | Vercel 배포 직후 remote smoke가 일시적 propagation 지연에 취약할 수 있었다. | 낮음 | remote smoke에 최대 5회 재시도, timeout, 시도별 로그 추가 완료. |
 
 ## 9. 판정
 
-- 전체 판정: 부분 통과 — 원격 및 브라우저 검증 대기
+- 전체 판정: 부분 통과 — 브라우저 QA 및 저장 검증 대기
 - build smoke 검증: 통과
 - dist smoke 검증: 통과
-- remote smoke 검증: 실행 대기
+- remote smoke 검증: 통과
 - v35 preview 독립 실행 검증: 미확인
 - v35 운영 전환 가능 여부: 아직 불가
 - 다음 조치:
-  1. GitHub Actions → `v35 Remote Smoke` 실행
-  2. Vercel Production 재배포 후 `/`, `/journey.html`, `/journey-v35-preview.html` 브라우저 확인
-  3. v34 운영 화면 영향 없음 확인
-  4. v35 preview Step 0~8 이동 및 J01~J09 저장 확인
+  1. Vercel Production 재배포 후 `/`, `/journey.html`, `/journey-v35-preview.html` 브라우저 확인
+  2. v34 운영 화면 영향 없음 확인
+  3. v35 preview Step 0~8 이동 및 J01~J09 저장 확인
+  4. localStorage에서 `c1bio_v35_preview_*`와 `c1bio_flow_*` key 분리 확인
   5. 모든 결과 반영 후 `npm run audit:v35:readiness` 실행
