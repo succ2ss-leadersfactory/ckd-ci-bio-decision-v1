@@ -22,7 +22,13 @@
   ];
 
   const labStorageKeys = [
+    'ckd-v36-lab-ai-safety',
+    'ckd-v36-lab-prompt-practice',
+    'ckd-v36-lab-research-strategy-v2',
+    'ckd-v36-lab-source-check',
+    'ckd-v36-lab-dashboard-analysis',
     'ckd-v36-lab-customer-call-plan',
+    'ckd-v36-lab-action-map',
     'ckd-v36-lab-hq-translation',
     'ckd-v36-lab-stakeholder-message',
     'ckd-v36-lab-performance-dialogue',
@@ -36,7 +42,13 @@
   ];
 
   const labTextMarkers = [
+    '좋은 질문 만들기 Lab',
+    '일반 질문 선택',
+    'AI Research 전략 Lab',
+    'Source Check Lab',
+    '팀원 Dashboard 분석 Lab',
     '고객군 판단',
+    '실행행동 Map Lab',
     '본사 요청 현장 번역',
     '이해관계자 메시지',
     '성과대화 감별',
@@ -45,74 +57,51 @@
   ];
 
   const bodyText = document.body.innerText || '';
-  const allStorageKeys = [...coreStorageKeys, ...labStorageKeys];
+  const currentStorageKeys = Object.keys(localStorage).filter((key) => key.startsWith('ckd-v36'));
 
-  const storageSnapshot = Object.fromEntries(
-    allStorageKeys.map((key) => [key, localStorage.getItem(key)])
-  );
+  const markerResults = [...requiredTextMarkers, ...labTextMarkers].map((marker) => ({
+    marker,
+    presentOnCurrentScreen: bodyText.includes(marker),
+  }));
 
-  const missingCoreStorageKeys = coreStorageKeys.filter((key) => localStorage.getItem(key) === null);
-  const missingLabStorageKeys = labStorageKeys.filter((key) => localStorage.getItem(key) === null);
-  const missingRequiredTextMarkers = requiredTextMarkers.filter((marker) => !bodyText.includes(marker));
-  const visibleLabMarkers = labTextMarkers.filter((marker) => bodyText.includes(marker));
+  const storageResults = [...coreStorageKeys, ...labStorageKeys].map((key) => ({
+    key,
+    exists: localStorage.getItem(key) !== null,
+    bytes: localStorage.getItem(key)?.length || 0,
+  }));
 
-  const result = {
-    route: location.pathname,
-    routePass: location.pathname.includes('journey-v36-preview'),
-    screenPass: missingRequiredTextMarkers.length === 0,
-    coreStoragePass: missingCoreStorageKeys.length === 0,
-    fullLabStoragePassAfterAllInputs: missingLabStorageKeys.length === 0,
-    missingRequiredTextMarkers,
-    visibleLabMarkers,
-    missingCoreStorageKeys,
-    missingLabStorageKeys,
-    storageSnapshot,
+  const summary = {
+    url: location.href,
+    title: document.title,
+    bodyLength: bodyText.length,
+    hasRoot: Boolean(document.querySelector('#root')),
+    visibleButtons: Array.from(document.querySelectorAll('button')).map((button) => button.innerText).filter(Boolean).slice(0, 30),
+    visibleInputs: document.querySelectorAll('input, textarea, select').length,
+    currentStorageKeys,
+    markerResults,
+    storageResults,
   };
 
-  console.table({
-    route: result.route,
-    routePass: result.routePass,
-    screenPass: result.screenPass,
-    coreStoragePass: result.coreStoragePass,
-    fullLabStoragePassAfterAllInputs: result.fullLabStoragePassAfterAllInputs,
-    missingRequiredTextMarkers: result.missingRequiredTextMarkers.join(', ') || 'none',
-    visibleLabMarkers: result.visibleLabMarkers.join(', ') || 'none',
-    missingCoreStorageKeys: result.missingCoreStorageKeys.join(', ') || 'none',
-    missingLabStorageKeys: result.missingLabStorageKeys.join(', ') || 'none',
-  });
-
-  console.log('v36 QA result:', result);
-  return result;
+  console.table(markerResults);
+  console.table(storageResults);
+  console.log('v36 QA summary:', summary);
+  return summary;
 })();
 ```
 
-## 판정 기준
+## 해석 기준
 
-### Step 1만 입력한 직후
+- `hasRoot`가 `true`여야 한다.
+- `bodyLength`가 지나치게 작으면 빈 화면 가능성이 있다.
+- 현재 화면에 보이는 단계의 marker는 `presentOnCurrentScreen: true`여야 한다.
+- `storageResults.exists`는 사용자가 해당 Lab을 방문하거나 입력한 이후 `true`가 될 수 있다.
+- 13단계 전체 marker는 한 화면에 모두 표시되지 않을 수 있으므로, 각 단계 이동 후 필요한 marker만 확인한다.
 
-- `routePass`는 `true`여야 한다.
-- `screenPass`는 `true`여야 한다.
-- `coreStoragePass`는 `true`여야 한다.
-- Lab 저장 키들은 아직 없을 수 있다.
+## 전체 저장값 초기화 스니펫
 
-### Step 7~13 Lab 입력 후
-
-- `fullLabStoragePassAfterAllInputs`는 `true`여야 한다.
-- `missingLabStorageKeys`는 `none`이어야 한다.
-- 각 Lab을 방문한 화면에서는 해당 Lab 이름이 `visibleLabMarkers`에 포함되어야 한다.
-
-## 결과 기록
-
-실행 결과를 `docs/v36-preview-qa-result.md`에 기록한다.
-
-```text
-Console snippet routePass:
-Console snippet screenPass:
-Console snippet coreStoragePass:
-fullLabStoragePassAfterAllInputs:
-missingRequiredTextMarkers:
-missingCoreStorageKeys:
-missingLabStorageKeys:
-visibleLabMarkers:
-Notes:
+```js
+Object.keys(localStorage)
+  .filter((key) => key.startsWith('ckd-v36'))
+  .forEach((key) => localStorage.removeItem(key));
+location.reload();
 ```
