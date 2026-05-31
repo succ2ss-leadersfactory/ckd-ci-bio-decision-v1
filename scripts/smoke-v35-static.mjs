@@ -15,6 +15,7 @@ const requiredFiles = [
   'scripts/preflight-v35-cutover.mjs',
   '.github/workflows/v35-smoke.yml',
   '.github/workflows/v35-remote-smoke.yml',
+  'src/vite-env.d.ts',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
   'src/full-flow-journey-v35.tsx',
@@ -148,6 +149,7 @@ function assertPackageScripts() {
 function assertV35TsConfig() {
   const include = readJson('tsconfig.v35-smoke.json').include ?? [];
   for (const file of [
+    'src/vite-env.d.ts',
     'src/journey-v35-app-preview.tsx',
     'src/full-flow-journey-v35-app.tsx',
     'src/journey-v35-preview-config.ts',
