@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { PromptPracticeScreen } from './journey-prompt-practice';
 import { JourneyShell, type JourneyStep } from './journey-shell';
-import { useStored, type JsonRecord } from './journey-storage';
+import { getJson, useStored, type JsonRecord } from './journey-storage';
 
 const V35_STORAGE_KEYS = {
   step: 'c1bio_v35_preview_step',
@@ -94,12 +94,15 @@ export function FullFlowJourneyV35App() {
   const safeStep = clampStep(step);
 
   const save = useCallback((key: string, payload: JsonRecord) => {
-    setSavedState({
-      ...savedState,
+    const currentState = getJson<JsonRecord>(V35_STORAGE_KEYS.state, {});
+    const nextState = {
+      ...currentState,
       [key]: payload,
       v35AppLastSavedAt: new Date().toISOString(),
-    });
-  }, [savedState, setSavedState]);
+    };
+
+    setSavedState(nextState);
+  }, [setSavedState]);
 
   return (
     <JourneyShell
