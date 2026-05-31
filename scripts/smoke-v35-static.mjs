@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 const requiredFiles = [
   'journey.html',
   'journey-v35-preview.html',
+  'package.json',
   'vercel.json',
   'vite.config.ts',
   'src/journey-active.tsx',
@@ -19,6 +20,26 @@ const requiredFiles = [
 ];
 
 const requiredTextChecks = [
+  {
+    file: 'package.json',
+    text: 'smoke:v35:static',
+    message: 'package.json must include smoke:v35:static script.',
+  },
+  {
+    file: 'package.json',
+    text: 'npm run smoke:v35:static && npm run typecheck && npm run build',
+    message: 'package.json smoke:v35 must run static, typecheck, then build.',
+  },
+  {
+    file: 'journey.html',
+    text: '/src/journey-active.tsx',
+    message: 'journey.html must load /src/journey-active.tsx.',
+  },
+  {
+    file: 'journey-v35-preview.html',
+    text: '/src/journey-v35-app-preview.tsx',
+    message: 'journey-v35-preview.html must load /src/journey-v35-app-preview.tsx.',
+  },
   {
     file: 'vite.config.ts',
     text: 'journeyV35Preview',
