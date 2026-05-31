@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type SetStateAction } from 'react';
 
 export type JsonRecord = Record<string, any>;
 
@@ -23,9 +23,15 @@ export function setJson<T>(key: string, value: T) {
 export function useStored<T>(key: string, fallback: T) {
   const [value, setValue] = useState<T>(() => getJson(key, fallback));
 
-  const setBoth = (next: T) => {
-    setValue(next);
-    setJson(key, next);
+  const setBoth = (next: SetStateAction<T>) => {
+    setValue(currentValue => {
+      const nextValue = typeof next === 'function'
+        ? (next as (current: T) => T)(currentValue)
+        : next;
+
+      setJson(key, nextValue);
+      return nextValue;
+    });
   };
 
   return [value, setBoth] as const;
