@@ -2,21 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 import { V36_STORAGE_KEYS } from './journey-v36-preview-config';
 
-type SourceCandidate = {
-  id: string;
-  useForNotebookLm: boolean;
-  title: string;
-  url: string;
-  sourceType: string;
-  keyClaim: string;
-  reliabilityMemo: string;
-};
-
 type ResearchResponse = {
   selectedTheme: string;
   leaderQuestion: string;
   perplexityAnswer: string;
-  sourceCandidates: SourceCandidate[];
   notebookSourcePack: string;
   sourcePackMemo: string;
   notebookLmAnswer: string;
@@ -46,9 +35,9 @@ const THEMES = [
 ];
 
 const REVIEW_ITEMS = [
-  'Perplexity 결과에서 소스 후보를 추출했는가?',
-  'NotebookLM에 넣을 소스 묶음이 명확한가?',
-  '사용할 소스와 제외할 소스를 검토했는가?',
+  'Perplexity 결과에 출처와 최근성 단서가 있는가?',
+  'NotebookLM에 넣을 소스 패키지를 생성했는가?',
+  '소스 패키지에 출처·링크·핵심 주장이 보존되어 있는가?',
   'NotebookLM 결과가 소스 기반 종합으로 정리되었는가?',
   'NotebookLM Studio 보고서 산출물 목적이 명확한가?',
   '전략회의 발표 슬라이드 흐름이 잡혀 있는가?',
@@ -60,7 +49,6 @@ const DEFAULT_RESPONSE: ResearchResponse = {
   selectedTheme: THEMES[0],
   leaderQuestion: '',
   perplexityAnswer: '',
-  sourceCandidates: [],
   notebookSourcePack: '',
   sourcePackMemo: '',
   notebookLmAnswer: '',
@@ -96,98 +84,22 @@ function FieldLabel({ children }: { children: string }) {
 }
 
 function TextArea({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder?: string }) {
-  return <textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />;
-}
-
-function normalizeUrl(rawUrl: string) {
-  const cleaned = rawUrl.trim().replace(/[\].,;:!?]+$/g, '').replace(/^\(/, '').replace(/\)$/g, '');
-  return cleaned.startsWith('http') ? cleaned : `https://${cleaned}`;
-}
-
-function getDomain(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return '출처 미확인';
-  }
-}
-
-function inferSourceType(url: string, context: string) {
-  const lower = `${url} ${context}`.toLowerCase();
-  if (lower.includes('.pdf') || lower.includes('report') || lower.includes('보고서')) return '보고서/자료';
-  if (lower.includes('news') || lower.includes('daily') || lower.includes('press') || lower.includes('기사')) return '기사/뉴스';
-  if (lower.includes('gov') || lower.includes('or.kr') || lower.includes('기관')) return '공공/기관자료';
-  if (lower.includes('journal') || lower.includes('study') || lower.includes('research')) return '연구/전문자료';
-  return '웹자료';
-}
-
-function compactText(text: string, limit = 180) {
-  const compacted = text.replace(/\s+/g, ' ').trim();
-  return compacted.length > limit ? `${compacted.slice(0, limit)}...` : compacted;
-}
-
-function extractSourceCandidates(text: string): SourceCandidate[] {
-  const lines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const urlPattern = /(https?:\/\/[^\s)\]]+|www\.[^\s)\]]+)/g;
-  const seen = new Set<string>();
-  const candidates: SourceCandidate[] = [];
-
-  lines.forEach((line, lineIndex) => {
-    const matches = line.match(urlPattern) ?? [];
-    matches.forEach((match) => {
-      const url = normalizeUrl(match);
-      if (seen.has(url)) return;
-      seen.add(url);
-      const previousLine = lines[lineIndex - 1] ?? '';
-      const nextLine = lines[lineIndex + 1] ?? '';
-      const context = compactText([previousLine, line, nextLine].filter(Boolean).join(' '));
-      const titleCandidate = line.replace(match, '').replace(/[\[\]()]/g, '').replace(/^[-*•\d.\s]+/, '').trim();
-      const domain = getDomain(url);
-
-      candidates.push({
-        id: `source-${candidates.length + 1}`,
-        useForNotebookLm: true,
-        title: titleCandidate || previousLine || domain,
-        url,
-        sourceType: inferSourceType(url, context),
-        keyClaim: context || '핵심 주장 또는 활용 이유를 수정해 주세요.',
-        reliabilityMemo: `출처: ${domain} / 최근성·원문 확인 필요`,
-      });
-    });
-  });
-
-  if (candidates.length > 0) return candidates;
-
-  const sourceLikeLines = lines.filter((line) => /출처|source|근거|자료|보고서|기사|링크/i.test(line)).slice(0, 5);
-  return sourceLikeLines.map((line, index) => ({
-    id: `source-${index + 1}`,
-    useForNotebookLm: true,
-    title: compactText(line, 80),
-    url: '',
-    sourceType: '수동 확인 필요',
-    keyClaim: compactText(line),
-    reliabilityMemo: 'URL이 없어 원문 링크를 직접 확인해야 합니다.',
-  }));
-}
-
-function buildNotebookSourcePack(candidates: SourceCandidate[]) {
-  const selected = candidates.filter((candidate) => candidate.useForNotebookLm);
-  if (selected.length === 0) return '';
-  return selected.map((candidate, index) => [
-    `${index + 1}. ${candidate.title || '제목 미정'}`,
-    `- 자료유형: ${candidate.sourceType || '유형 미정'}`,
-    `- URL: ${candidate.url || 'URL 수동 입력 필요'}`,
-    `- 핵심 주장/활용 이유: ${candidate.keyClaim || '핵심 주장 수동 입력 필요'}`,
-    `- 신뢰도/최근성 메모: ${candidate.reliabilityMemo || '검토 필요'}`,
-  ].join('\n')).join('\n\n');
+  return <textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={value ?? ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />;
 }
 
 function buildPerplexityPrompt(response: ResearchResponse) {
   return `Perplexity 리서치 질문\n\n역할: 제약영업 팀장의 외부 환경 리서치 파트너\n주제: ${response.selectedTheme}\n팀장 질문: ${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사해줘.'}\n\n요청:\n1. 최근 변화 신호를 5개 이내로 정리해줘.\n2. 각 신호마다 확인 가능한 출처 또는 출처 유형을 함께 제시해줘.\n3. 제약영업팀장 관점에서 의미 있는 전략 이슈 후보를 제안해줘.\n4. 확인이 더 필요한 내용은 추정이라고 표시해줘.\n5. 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 사용하지 말아줘.\n\n출력 형식:\n- 변화 신호\n- 근거/출처\n- 신뢰도 주의점\n- 전략 이슈 후보\n- 추가 확인 질문`;
 }
 
+function buildSourcePackage(response: ResearchResponse) {
+  const answer = response.perplexityAnswer?.trim();
+  if (!answer) return '';
+
+  return `NotebookLM 소스 패키지 초안\n\n[리서치 주제]\n${response.selectedTheme}\n\n[팀장 질문]\n${response.leaderQuestion || '최근 제약영업 환경 변화가 영업팀 실행 방식에 어떤 영향을 주는지 조사'}\n\n[NotebookLM에 넣을 소스 후보]\n아래 Perplexity 결과에서 출처, 링크, 자료명, 근거 문장을 확인하여 NotebookLM 소스로 넣습니다.\n\n${answer}\n\n[소스 검토 메모]\n- 실제 링크가 열리는지 확인한다.\n- 자료 날짜와 최근성을 확인한다.\n- 기사, 보고서, 기관자료 등 자료 유형을 구분한다.\n- 출처가 약하거나 추정 표현이 많은 내용은 회의 자료의 근거로 직접 사용하지 않는다.\n- 실제 고객명, 기관명, 제품명, 내부 수치, 민감정보는 제거한다.`;
+}
+
 function buildNotebookPrompt(response: ResearchResponse) {
-  return `NotebookLM 소스 기반 종합 질문\n\n전제: Perplexity에서 확인한 기사, 공개 보고서, 자료를 NotebookLM 소스로 넣은 뒤 사용합니다.\n\n주제: ${response.selectedTheme}\n소스 묶음:\n${response.notebookSourcePack || response.sourcePackMemo || '소스 묶음을 먼저 생성하거나 정리하세요.'}\n\n팀장 질문: ${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n요청:\n1. 업로드한 소스에 근거한 핵심 변화만 정리해줘.\n2. 소스 간 공통 신호와 서로 다른 주장을 구분해줘.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해줘.\n4. 우리 팀 실행에 미치는 영향을 설명해줘.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해줘.\n6. 주의해야 할 표현을 정리해줘.\n\n출력 형식:\n- 소스 기반 핵심 변화\n- 전략 이슈 3개\n- 우리 팀에 미치는 영향\n- 추가 확인 질문\n- 실행전략 질문\n- 주의 표현`;
+  return `NotebookLM 소스 기반 종합 질문\n\n전제: Perplexity에서 확인한 기사, 공개 보고서, 자료를 NotebookLM 소스로 넣은 뒤 사용합니다.\n\n주제: ${response.selectedTheme}\n소스 패키지 메모:\n${response.notebookSourcePack || response.sourcePackMemo || 'Perplexity 결과를 바탕으로 소스 패키지를 먼저 생성하세요.'}\n\n팀장 질문: ${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n요청:\n1. 업로드한 소스에 근거한 핵심 변화만 정리해줘.\n2. 소스 간 공통 신호와 서로 다른 주장을 구분해줘.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해줘.\n4. 우리 팀 실행에 미치는 영향을 설명해줘.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해줘.\n6. 주의해야 할 표현을 정리해줘.\n\n출력 형식:\n- 소스 기반 핵심 변화\n- 전략 이슈 3개\n- 우리 팀에 미치는 영향\n- 추가 확인 질문\n- 실행전략 질문\n- 주의 표현`;
 }
 
 function buildStudioReportPrompt(response: ResearchResponse) {
@@ -199,38 +111,28 @@ function buildStudioSlidePrompt(response: ResearchResponse) {
 }
 
 export function ResearchStrategyLab() {
-  const [response, setResponse] = useStored<ResearchResponse>(V36_STORAGE_KEYS.researchStrategy, DEFAULT_RESPONSE);
+  const [storedResponse, setResponse] = useStored<ResearchResponse>(V36_STORAGE_KEYS.researchStrategy, DEFAULT_RESPONSE);
+  const response = { ...DEFAULT_RESPONSE, ...storedResponse };
   const [copyMessage, setCopyMessage] = useState('');
   const perplexityPrompt = useMemo(() => buildPerplexityPrompt(response), [response]);
   const notebookPrompt = useMemo(() => buildNotebookPrompt(response), [response]);
   const reportPrompt = useMemo(() => response.studioReportPrompt || buildStudioReportPrompt(response), [response]);
   const slidePrompt = useMemo(() => response.studioSlidePrompt || buildStudioSlidePrompt(response), [response]);
-  const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
+  const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks?.[item]).length;
 
   const update = (patch: Partial<ResearchResponse>) => {
     setResponse({ ...response, ...patch, savedAt: new Date().toISOString() });
   };
 
-  const updateSourceCandidate = (id: string, patch: Partial<SourceCandidate>) => {
-    update({ sourceCandidates: response.sourceCandidates.map((candidate) => candidate.id === id ? { ...candidate, ...patch } : candidate) });
-  };
-
-  const extractSources = () => {
-    const nextCandidates = extractSourceCandidates(response.perplexityAnswer);
-    const nextSourcePack = buildNotebookSourcePack(nextCandidates);
-    update({ sourceCandidates: nextCandidates, notebookSourcePack: nextSourcePack, sourcePackMemo: nextSourcePack });
-    setCopyMessage(nextCandidates.length > 0 ? `소스 후보 ${nextCandidates.length}개를 추출했습니다.` : '자동 추출할 소스를 찾지 못했습니다. 소스 묶음을 직접 입력하세요.');
-  };
-
   const generateSourcePack = () => {
-    const nextSourcePack = buildNotebookSourcePack(response.sourceCandidates);
+    const nextSourcePack = buildSourcePackage(response);
     update({ notebookSourcePack: nextSourcePack, sourcePackMemo: nextSourcePack });
-    setCopyMessage(nextSourcePack ? 'NotebookLM 소스 패키지를 생성했습니다.' : '선택된 소스가 없습니다. 사용할 소스를 체크하세요.');
+    setCopyMessage(nextSourcePack ? 'NotebookLM 소스 패키지를 생성했습니다.' : 'Perplexity 답변을 먼저 붙여넣으세요.');
   };
 
   const copyText = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(text || '');
       setCopyMessage(`${label} 내용을 복사했습니다.`);
     } catch {
       setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.');
@@ -243,7 +145,7 @@ export function ResearchStrategyLab() {
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
         <p className="font-bold">Perplexity + NotebookLM Studio 전략회의 Lab</p>
-        <p className="mt-1">최종 산출물은 전략회의에 사용할 보고서 초안과 발표 슬라이드 구성안입니다. Perplexity 답변에서 소스 후보를 자동 추출한 뒤 교육생이 검토·수정합니다.</p>
+        <p className="mt-1">최종 산출물은 전략회의에 사용할 보고서 초안과 발표 슬라이드 구성안입니다. Perplexity 결과를 바탕으로 NotebookLM 소스 패키지를 만들고, Studio에서 보고서와 슬라이드를 제작합니다.</p>
       </div>
 
       <SectionCard title="1단계: Perplexity 최신 자료 탐색">
@@ -260,33 +162,11 @@ export function ResearchStrategyLab() {
       </SectionCard>
 
       <SectionCard title="2단계: Perplexity 결과와 NotebookLM 소스 묶음 정리">
-        <label className="block space-y-1"><FieldLabel>Perplexity 답변 붙여넣기</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.perplexityAnswer} onChange={(event) => update({ perplexityAnswer: event.target.value })} placeholder="Perplexity 답변을 붙여넣으세요. URL, 출처명, 근거 문장을 포함하면 자동 추출 품질이 좋아집니다." /></label>
+        <label className="block space-y-1"><FieldLabel>Perplexity 답변 붙여넣기</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.perplexityAnswer} onChange={(event) => update({ perplexityAnswer: event.target.value })} placeholder="Perplexity 답변을 붙여넣으세요. 출처, 링크, 근거 문장이 포함되어 있으면 좋습니다." /></label>
         <div className="flex flex-wrap gap-2">
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white" onClick={extractSources}>소스 후보 자동 추출</button>
           <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateSourcePack}>NotebookLM 소스 패키지 생성</button>
           <button className="rounded-xl border px-4 py-2 text-sm font-bold text-slate-700" onClick={() => copyText(response.notebookSourcePack || response.sourcePackMemo, 'NotebookLM 소스 패키지')}>소스 패키지 복사</button>
         </div>
-        {response.sourceCandidates.length > 0 ? (
-          <div className="space-y-3">
-            {response.sourceCandidates.map((candidate, index) => (
-              <article key={candidate.id} className="rounded-2xl border bg-slate-50 p-4 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="flex items-center gap-2 font-bold text-slate-900"><input type="checkbox" checked={candidate.useForNotebookLm} onChange={(event) => updateSourceCandidate(candidate.id, { useForNotebookLm: event.target.checked })} />소스 {index + 1} 사용</label>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-500">{candidate.sourceType}</span>
-                </div>
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  <label className="block space-y-1"><FieldLabel>출처명/제목</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={candidate.title} onChange={(event) => updateSourceCandidate(candidate.id, { title: event.target.value })} /></label>
-                  <label className="block space-y-1"><FieldLabel>자료유형</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={candidate.sourceType} onChange={(event) => updateSourceCandidate(candidate.id, { sourceType: event.target.value })} /></label>
-                </div>
-                <label className="mt-3 block space-y-1"><FieldLabel>URL</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={candidate.url} onChange={(event) => updateSourceCandidate(candidate.id, { url: event.target.value })} /></label>
-                <label className="mt-3 block space-y-1"><FieldLabel>핵심 주장/활용 이유</FieldLabel><TextArea value={candidate.keyClaim} onChange={(value) => updateSourceCandidate(candidate.id, { keyClaim: value })} /></label>
-                <label className="mt-3 block space-y-1"><FieldLabel>신뢰도/최근성 메모</FieldLabel><TextArea value={candidate.reliabilityMemo} onChange={(value) => updateSourceCandidate(candidate.id, { reliabilityMemo: value })} /></label>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">아직 추출된 소스 후보가 없습니다. Perplexity 답변을 붙여넣고 “소스 후보 자동 추출”을 누르세요.</div>
-        )}
         <label className="block space-y-1"><FieldLabel>NotebookLM 소스 패키지</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.notebookSourcePack || response.sourcePackMemo} onChange={(event) => update({ notebookSourcePack: event.target.value, sourcePackMemo: event.target.value })} placeholder="자동 생성된 소스 패키지를 검토·수정하거나 직접 입력하세요." /></label>
       </SectionCard>
 
@@ -331,7 +211,7 @@ export function ResearchStrategyLab() {
 
       <SectionCard title="최종 점검과 산출물">
         <div className="grid gap-2 md:grid-cols-2">
-          {REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}
+          {REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks?.[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}
         </div>
         <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">점검 완료: {checkedCount} / {REVIEW_ITEMS.length}</div>
         <pre className="whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{outputText}</pre>
