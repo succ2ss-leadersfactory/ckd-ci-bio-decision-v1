@@ -249,8 +249,14 @@ function assertBrowserQaDocs() {
 }
 
 function assertReadmeV35Entry() {
-  for (const text of ['v35 검증 상태', 'docs/v35-validation-index.md', 'Actions → v35 Smoke → Run workflow', 'Actions → v35 Remote Smoke → Run workflow', 'Actions → v35 Readiness Audit → Run workflow', '/journey.html', '/journey-v35-preview.html', 'npm run smoke:v35', 'npm run audit:v35:readiness', 'cutover는 아직 진행하지 않습니다']) {
+  for (const text of ['v35 검증 상태', 'docs/v35-validation-index.md', 'Actions → v35 Smoke → Run workflow', 'Actions → v35 Remote Smoke → Run workflow', 'Actions → v35 Readiness Audit → Run workflow', '/journey.html', '/journey-v35-preview.html', 'npm run smoke:v35', 'npm run audit:v35:readiness']) {
     mustInclude('README.md', text, `README.md must include ${text}.`);
+  }
+
+  const readme = readText('README.md');
+  const hasCutoverHold = readme.includes('cutover는 아직 진행하지 않습니다') || readme.includes('현재 cutover는 진행하지 않습니다');
+  if (!hasCutoverHold) {
+    fail('README.md must state that cutover is not currently being performed.');
   }
 }
 
