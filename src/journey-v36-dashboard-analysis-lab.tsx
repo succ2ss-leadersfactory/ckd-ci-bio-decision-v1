@@ -84,6 +84,8 @@ const EXPERIMENT_OPTIONS = [
   '2주 동안 실행지연 항목 일일 점검',
 ];
 
+const CHECK_METRIC_OPTIONS = ['CRM기록충실도', '후속조치율', '고객반응지수', '성과전환지수', '실행지연', '팀기여지수', '실제 고객 반응 메모', '팀원 1on1 대화 내용'];
+
 const REVIEW_ITEMS = [
   '문제가 되는 선행변수를 선택했는가?',
   '문제가 되는 과정변수를 선택했는가?',
@@ -184,7 +186,7 @@ function parseAi(raw: string) {
 }
 
 function buildPrompt(member: Member, response: DashboardResponse) {
-  return `당신은 영업팀장의 데이터 기반 성과진단을 돕는 리더십 코치입니다.\n\n핵심 전제:\n성과가 낮다는 결과만 보지 말고, 어떤 선행변수와 과정변수가 결과변수에 영향을 주었는지 점검하세요.\n\n[팀원]\n${member.name} / ${member.type}\n\n[팀원 발언]\n${member.comment}\n\n[지표]\n${METRIC_ORDER.map((key) => `${metricLabel(key)}(${METRIC_META[key].group}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장 첫 판단]\n${response.intuitionJudgment || '-'}\n\n[선택한 선행변수]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[선택한 과정변수]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[선택한 결과변수]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[선택한 확산변수]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[진단 유형]\n${response.diagnosisType || '-'}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.map(metricLabel).join(', ') || '-'}\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 이 진단이 타당한 이유\n## 2. 이 진단이 틀렸을 가능성\n## 3. 팀장이 확인해야 할 질문\n## 4. 2주 실행 실험 보완 제안\n## 5. 성급한 판단을 피하기 위한 주의점`;
+  return `당신은 영업팀장의 데이터 기반 성과진단을 돕는 리더십 코치입니다.\n\n역할:\n아래 진단을 새로 만드는 것이 아니라, 팀장이 먼저 선택한 판단이 타당한지 검증하고 보완하세요. 성과가 낮다는 결과만 보지 말고, 어떤 선행변수와 과정변수가 결과변수에 영향을 주었는지 점검하세요.\n\n[팀원]\n${member.name} / ${member.type}\n\n[팀원 발언]\n${member.comment}\n\n[지표 데이터]\n${METRIC_ORDER.map((key) => `${metricLabel(key)}(${METRIC_META[key].group}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장 첫 판단]\n${response.intuitionJudgment || '-'}\n\n[팀장이 선택한 선행변수]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[팀장이 선택한 과정변수]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[팀장이 선택한 결과변수]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[팀장이 선택한 확산변수]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[팀장이 선택한 진단 유형]\n${response.diagnosisType || '-'}\n\n[선택 이유]\n${response.reasonOneLine || '-'}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.map(metricLabel).join(', ') || '-'}\n\n검토 요청:\n1. 위 진단이 타당한 이유를 근거 지표와 연결해 설명하세요.\n2. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n3. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n4. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n5. 성급한 판단을 피하기 위한 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 이 진단이 타당한 이유\n## 2. 이 진단이 틀렸을 가능성\n## 3. 팀장이 확인해야 할 질문\n## 4. 2주 실행 실험 보완 제안\n## 5. 성급한 판단을 피하기 위한 주의점`;
 }
 
 export function DashboardAnalysisLab() {
@@ -217,7 +219,7 @@ export function DashboardAnalysisLab() {
   const copyPrompt = async () => {
     try {
       await navigator.clipboard.writeText(prompt);
-      setCopyMessage('Dashboard 인과 진단 프롬프트를 복사했습니다.');
+      setCopyMessage('Dashboard 인과 진단 프롬프트를 복사했습니다. 3단계와 4단계 선택값이 포함되어 있습니다.');
     } catch {
       setCopyMessage('복사가 차단되었습니다. 프롬프트 영역을 직접 선택해 복사하세요.');
     }
@@ -229,7 +231,7 @@ export function DashboardAnalysisLab() {
     setCopyMessage('AI 답변을 5개 검토 영역으로 분리했습니다.');
   };
 
-  const outputText = `[현재 상황 점검]\n\n[선택 팀원]\n${currentMember.name} / ${currentMember.type}\n\n[진단 유형]\n${response.diagnosisType}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(currentMember, response)}\n\n[선택한 선행변수]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[선택한 과정변수]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[선택한 결과변수]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.map(metricLabel).join(', ') || '-'}\n\n[팀원에게 던질 질문]\n${response.confirmQuestion}\n\n[최종 실행 문장]\n${response.finalActionSentence}`;
+  const outputText = `[현재 상황 점검]\n\n[선택 팀원]\n${currentMember.name} / ${currentMember.type}\n\n[진단 유형]\n${response.diagnosisType}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(currentMember, response)}\n\n[선택한 선행변수]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[선택한 과정변수]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[선택한 결과변수]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[선택한 확산변수]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.map(metricLabel).join(', ') || '-'}\n\n[팀원에게 던질 질문]\n${response.confirmQuestion}\n\n[최종 실행 문장]\n${response.finalActionSentence}`;
 
   return (
     <div className="space-y-4">
@@ -265,11 +267,12 @@ export function DashboardAnalysisLab() {
       </SectionCard>
 
       <SectionCard title="3단계: 현재 상황 점검">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">복수 선택 가능: 문제가 되는 지표를 모두 고르되, 가장 설명력이 큰 변수 중심으로 선택하세요.</div>
         <label className="block space-y-1"><FieldLabel>진단 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.diagnosisType} onChange={(event) => update({ diagnosisType: event.target.value })}><option value="">선택하세요</option>{DIAGNOSIS_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
         <div className="grid gap-4 md:grid-cols-3">
           <div><FieldLabel>문제가 되는 선행변수</FieldLabel><div className="mt-2 space-y-2">{metricOptions('선행변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedLeadVariables.includes(metric)} onChange={() => update({ selectedLeadVariables: toggle(response.selectedLeadVariables, metric) })} />{metricLabel(metric)}</label>)}</div></div>
           <div><FieldLabel>문제가 되는 과정변수</FieldLabel><div className="mt-2 space-y-2">{metricOptions('과정변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProcessVariables.includes(metric)} onChange={() => update({ selectedProcessVariables: toggle(response.selectedProcessVariables, metric) })} />{metricLabel(metric)}</label>)}</div></div>
-          <div><FieldLabel>문제가 나타난 결과변수</FieldLabel><div className="mt-2 space-y-2">{metricOptions('결과변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metricLabel(metric)}</label>)}{metricOptions('확산변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metricLabel(metric)}</label>)}</div></div>
+          <div><FieldLabel>문제가 나타난 결과/확산변수</FieldLabel><div className="mt-2 space-y-2">{metricOptions('결과변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metricLabel(metric)}</label>)}{metricOptions('확산변수').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metricLabel(metric)}</label>)}</div></div>
         </div>
         <label className="block space-y-1"><FieldLabel>선택 이유 한 줄</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.reasonOneLine} onChange={(event) => update({ reasonOneLine: event.target.value })} placeholder="예: 활동량은 높지만 후속조치율과 성과 신호 전환지수가 낮다." /></label>
         <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateDiagnosis}>인과 진단문 생성</button>
@@ -277,12 +280,34 @@ export function DashboardAnalysisLab() {
       </SectionCard>
 
       <SectionCard title="4단계: 2주 실행 실험과 확인 지표 선택">
-        <div className="grid gap-2 md:grid-cols-2">{EXPERIMENT_OPTIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedExperiments.includes(item)} onChange={() => update({ selectedExperiments: toggle(response.selectedExperiments, item) })} />{item}</label>)}</div>
-        <div className="grid gap-2 md:grid-cols-4">{['CRM기록충실도', '후속조치율', '고객반응지수', '성과전환지수', '실행지연', '팀기여지수', '실제 고객 반응 메모', '팀원 1on1 대화 내용'].map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedCheckMetrics.includes(item)} onChange={() => update({ selectedCheckMetrics: toggle(response.selectedCheckMetrics, item) })} />{metricLabel(item)}</label>)}</div>
+        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">복수 선택 가능 · 2주 동안 실제로 실행 가능한 실험은 2개 이내, 확인 지표는 2~3개를 권장합니다.</div>
+        <div>
+          <FieldLabel>2주 실행 실험</FieldLabel>
+          <div className="mt-2 grid gap-2 md:grid-cols-2">{EXPERIMENT_OPTIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedExperiments.includes(item)} onChange={() => update({ selectedExperiments: toggle(response.selectedExperiments, item) })} />{item}</label>)}</div>
+          <p className="mt-2 text-xs text-slate-500">현재 선택: {response.selectedExperiments.length}개 / 권장: 최대 2개</p>
+        </div>
+        <div>
+          <FieldLabel>2주 후 확인 지표</FieldLabel>
+          <div className="mt-2 grid gap-2 md:grid-cols-4">{CHECK_METRIC_OPTIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedCheckMetrics.includes(item)} onChange={() => update({ selectedCheckMetrics: toggle(response.selectedCheckMetrics, item) })} />{metricLabel(item)}</label>)}</div>
+          <p className="mt-2 text-xs text-slate-500">현재 선택: {response.selectedCheckMetrics.length}개 / 권장: 2~3개</p>
+        </div>
       </SectionCard>
 
       <SectionCard title="5단계: AI로 반대 가능성 점검">
-        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">생성한 인과 진단문이 너무 성급하지 않은지 AI로 점검합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={copyPrompt}>프롬프트 복사</button></div>
+        <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-700">
+          <p className="font-bold text-slate-900">AI 프롬프트에 반영되는 선택 요약</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            <p><b>선행변수:</b> {listOrNone(response.selectedLeadVariables, '-')}</p>
+            <p><b>과정변수:</b> {listOrNone(response.selectedProcessVariables, '-')}</p>
+            <p><b>결과변수:</b> {listOrNone(response.selectedResultVariables, '-')}</p>
+            <p><b>확산변수:</b> {listOrNone(response.selectedDiffusionVariables, '-')}</p>
+            <p><b>진단 유형:</b> {response.diagnosisType || '-'}</p>
+            <p><b>2주 실험:</b> {response.selectedExperiments.join(', ') || '-'}</p>
+            <p><b>확인 지표:</b> {response.selectedCheckMetrics.map(metricLabel).join(', ') || '-'}</p>
+            <p><b>선택 이유:</b> {response.reasonOneLine || '-'}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">위 선택값이 자동 프롬프트에 반영됩니다. AI는 진단을 새로 만드는 것이 아니라, 팀장의 판단을 검증합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={copyPrompt}>프롬프트 복사</button></div>
         {copyMessage ? <p className="text-sm font-semibold text-cyan-700">{copyMessage}</p> : null}
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
         <textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.aiAnswerRaw} onChange={(event) => update({ aiAnswerRaw: event.target.value })} placeholder="AI 답변을 붙여넣으세요. ## 1~5 제목을 기준으로 자동 분리할 수 있습니다." />
