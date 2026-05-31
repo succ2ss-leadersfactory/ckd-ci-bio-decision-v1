@@ -16,10 +16,11 @@ import { NotebookSourcePrep } from './journey-notebook-source-prep';
 import { NotebookReadinessCheck } from './journey-notebook-readiness';
 import { StudioReportSection } from './journey-studio-report';
 import { StudioSlidesSection } from './journey-studio-slides';
+import { PresentationChecklist } from './journey-presentation-checklist';
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
-  screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview, SourceCheckSection, NotebookSourcePrep, NotebookReadinessCheck, StudioReportSection, StudioSlidesSection },
+  screens: { EntryScreen, PromptPracticeScreen, StrategyIssueReview, SourceCheckSection, NotebookSourcePrep, NotebookReadinessCheck, StudioReportSection, StudioSlidesSection, PresentationChecklist },
   data: { MEMBERS, SCENARIOS, METRIC_ORDER, FOCUS_OPTIONS, SOURCE_CHECKS, STUDIO_CHECKS },
   utils: { emptyNotes, metricLabel, parseResearch, parseAiSections, buildSourceSearchQuery, buildSourcePackage, promptSourceCheck, promptStudioReport, promptStudioSlides, promptResearch, promptMember },
   output: { getMember, buildPayloadBase, buildContextRows },
