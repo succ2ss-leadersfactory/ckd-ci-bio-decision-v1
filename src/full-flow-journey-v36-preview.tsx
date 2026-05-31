@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { JourneyShell } from './journey-shell';
 import { CustomerCallPlanLab } from './journey-v36-customer-call-plan-lab';
+import { HqTranslationLab } from './journey-v36-hq-translation-lab';
 import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
 import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
@@ -118,6 +119,10 @@ function renderV36Step(step: number, participant: V36Participant, setParticipant
 
   if (current.id === 'customer-judgment') {
     return <CustomerCallPlanLab />;
+  }
+
+  if (current.id === 'hq-translation') {
+    return <HqTranslationLab />;
   }
 
   if (current.id === 'performance-dialogue') {
