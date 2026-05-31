@@ -91,6 +91,26 @@ const requiredTextChecks = [
     message: 'full-flow-journey-v35-app.tsx must use useV35PreviewState.',
   },
   {
+    file: 'src/full-flow-journey-v35-app.tsx',
+    text: 'V35PreviewSmokePanel',
+    message: 'full-flow-journey-v35-app.tsx must render V35PreviewSmokePanel.',
+  },
+  {
+    file: 'src/full-flow-journey-v35-app.tsx',
+    text: 'V35PreviewDebugPanel',
+    message: 'full-flow-journey-v35-app.tsx must render V35PreviewDebugPanel.',
+  },
+  {
+    file: 'src/journey-v35-preview-panels.tsx',
+    text: 'data-testid="v35-preview-smoke-panel"',
+    message: 'journey-v35-preview-panels.tsx must expose v35 preview smoke panel test id.',
+  },
+  {
+    file: 'src/journey-v35-preview-panels.tsx',
+    text: 'data-testid="v35-preview-debug-panel"',
+    message: 'journey-v35-preview-panels.tsx must expose v35 preview debug panel test id.',
+  },
+  {
     file: 'src/journey-v35-app-preview.tsx',
     text: 'FullFlowJourneyV35App',
     message: 'journey-v35-app-preview.tsx must render FullFlowJourneyV35App.',
