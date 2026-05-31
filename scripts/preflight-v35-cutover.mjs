@@ -77,6 +77,7 @@ function assertPackageScripts() {
     'smoke:v35:dist': 'node scripts/smoke-v35-dist.mjs',
     'smoke:v35:remote': 'node scripts/smoke-v35-remote.mjs',
     'preflight:v35:cutover': 'node scripts/preflight-v35-cutover.mjs',
+    'audit:v35:readiness': 'node scripts/audit-v35-readiness.mjs',
   };
 
   for (const [name, expected] of Object.entries(requiredScripts)) {
@@ -171,6 +172,11 @@ function assertWorkflowCoverage() {
   if (remoteWorkflow !== null && !remoteWorkflow.includes('npm run smoke:v35:remote')) {
     fail('v35-remote-smoke.yml must run npm run smoke:v35:remote.');
   }
+
+  const readinessWorkflow = readText('.github/workflows/v35-readiness-audit.yml');
+  if (readinessWorkflow !== null && !readinessWorkflow.includes('npm run audit:v35:readiness')) {
+    fail('v35-readiness-audit.yml must run npm run audit:v35:readiness.');
+  }
 }
 
 function assertStaticSmokeCoversPreflight() {
@@ -189,6 +195,8 @@ function assertStaticSmokeCoversPreflight() {
     'src/vite-env.d.ts',
     'docs/v35-browser-qa-result.md',
     'docs/v35-browser-qa-console-snippet.md',
+    '.github/workflows/v35-readiness-audit.yml',
+    'npm run audit:v35:readiness',
   ];
 
   for (const phrase of requiredPhrases) {
@@ -246,6 +254,7 @@ function assertCutoverDocsStillBlockCutover() {
     '실행 검증 대기',
     'import \'./full-flow-journey-v34\';',
     'v35 Remote Smoke',
+    'v35 Readiness Audit',
     'rollback',
   ];
 
@@ -285,6 +294,7 @@ function assertRequiredFiles() {
     'src/vite-env.d.ts',
     '.github/workflows/v35-smoke.yml',
     '.github/workflows/v35-remote-smoke.yml',
+    '.github/workflows/v35-readiness-audit.yml',
     'docs/v35-preview-checklist.md',
     'docs/v35-preview-smoke-result.md',
     'docs/v35-browser-qa-result.md',
