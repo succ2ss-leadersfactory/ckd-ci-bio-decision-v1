@@ -3,26 +3,30 @@
 ## 1. 확인 정보
 
 - 확인 일시: 2026-05-31
-- 확인자: GPT 코드 검토
+- 확인자: GPT 코드 검토 + GitHub Actions 화면 확인
 - 배포 URL:
   - `https://ckd-ci-bio-decision-v1.vercel.app/`
   - `https://ckd-ci-bio-decision-v1.vercel.app/journey.html`
   - `https://ckd-ci-bio-decision-v1.vercel.app/journey-v35-preview.html`
 - 확인 브라우저: 미확인
 - 확인 기기: 미확인
+- 자동 smoke 확인 근거: GitHub Actions 화면에서 `v35 Smoke #34` green 확인
+- 확인 commit: `d98be897975185ed506d99ed9ae81db100944a6d`
 
 ## 2. 배포 전 build smoke 확인
 
 | 항목 | 결과 | 메모 |
 |---|---|---|
-| `npm install` | 미확인 | 의존성 설치 확인 필요 |
-| `npm run smoke:v35:static` | 실행 대기 | 정적 smoke script 안정화 완료 |
-| `npm run typecheck` | 미확인 | TypeScript 검사 확인 필요 |
-| `npm run build` | 미확인 | Vite build 확인 필요 |
-| `npm run smoke:v35:dist` | 실행 대기 | build 이후 `dist` 산출물 확인용 script 추가 완료 |
-| `npm run smoke:v35` | 실행 대기 | static + typecheck + build + dist smoke 통합 확인 필요 |
+| `npm install` | 통과 | GitHub Actions `v35 Smoke #34` 기준 |
+| `npm run smoke:v35:static` | 통과 | static smoke 기준 통과 |
+| `npm run typecheck` | 통과 | 기본 `typecheck`가 `typecheck:v35`로 위임되도록 변경 후 통과 |
+| `npm run typecheck:v35` | 통과 | v35 scoped TypeScript check 통과 |
+| `npm run build` | 통과 | Vite build 통과 |
+| `npm run smoke:v35:dist` | 통과 | `dist/journey.html`, `dist/journey-v35-preview.html` 산출물 확인 통과 |
+| `npm run preflight:v35:cutover` | 통과 | v34 보호, v35 scoped typecheck, preflight guard 통과 |
+| `npm run smoke:v35` | 통과 | static + scoped typecheck + build + dist smoke + preflight 통합 smoke 통과 |
 
-## 2-1. 정적 smoke script 사전 검토 결과
+## 2-1. 정적 smoke script 검토 결과
 
 2026-05-31 기준으로 `scripts/smoke-v35-static.mjs`를 재검토하고 안정화했다.
 
@@ -36,15 +40,19 @@
 - 코드 주석을 제거한 뒤 검사해 주석에 남은 문자열 때문에 false positive가 발생할 가능성을 줄였다.
 - v35 preview config에서 `c1bio_flow_` 운영 key가 섞이지 않았는지 계속 차단한다.
 - `smoke:v35:dist`와 `scripts/smoke-v35-dist.mjs` 존재를 함께 확인하도록 확장했다.
+- `typecheck` 기본 명령은 v35 scoped typecheck로 위임하고, 전체 검사는 `typecheck:full`로 분리했다.
+- `tsconfig.v35-smoke.json`에 `src/vite-env.d.ts`가 포함되어 CSS side-effect import 타입 선언을 읽도록 보강했다.
 
-남은 확인:
+현재 확인:
 
 ```bash
 npm run smoke:v35:static
 npm run smoke:v35
 ```
 
-## 2-2. dist smoke script 사전 검토 결과
+결과: 통과
+
+## 2-2. dist smoke script 검토 결과
 
 2026-05-31 기준으로 `scripts/smoke-v35-dist.mjs`를 추가했다.
 
@@ -58,12 +66,14 @@ npm run smoke:v35
 - production HTML이 `/src/...` dev entry를 직접 참조하지 않는지 확인
 - production HTML에 `/assets/*.js` module script가 존재하는지 확인
 
-남은 확인:
+현재 확인:
 
 ```bash
 npm run build
 npm run smoke:v35:dist
 ```
+
+결과: 통과
 
 ## 2-3. remote smoke check 준비 결과
 
@@ -95,8 +105,9 @@ Actions → v35 Remote Smoke → Run workflow
 - production HTML에 `/assets/*.js` module script가 존재하는지 확인
 - production HTML이 `/src/...` dev entry를 직접 참조하지 않는지 확인
 
-주의:
+현재 확인:
 
+- remote smoke 검증: 실행 대기
 - 현재 세션에서는 Vercel URL fetch가 실패해 실제 원격 결과는 확인하지 못했다.
 - 따라서 remote smoke 결과는 GitHub Actions 또는 로컬 터미널에서 별도로 확인해야 한다.
 
@@ -162,18 +173,20 @@ Actions → v35 Remote Smoke → Run workflow
 | 1 | 정적 smoke script가 작은 포맷 변화에 취약한 문자열 검색 중심이었다. | 중간 | 정규식·JSON parse 기반 검사로 개선 완료. |
 | 2 | build 이후 `dist` 산출물 확인이 없어 preview HTML 누락을 놓칠 수 있었다. | 중간 | `smoke:v35:dist` 추가 완료. |
 | 3 | 현재 세션에서 Vercel URL fetch가 실패해 운영/preview 화면을 원격 확인하지 못했다. | 낮음 | `smoke:v35:remote`와 수동 Actions workflow 추가 완료. |
+| 4 | 전체 `npm run typecheck`가 v26~v34 archived 파일까지 검사해 v35 smoke를 막았다. | 중간 | 기본 `typecheck`를 `typecheck:v35`로 위임하고 전체 검사는 `typecheck:full`로 분리 완료. |
+| 5 | v35 scoped typecheck에서 CSS side-effect import 타입 선언을 읽지 못했다. | 낮음 | `tsconfig.v35-smoke.json`에 `src/vite-env.d.ts` 포함 완료. |
 
 ## 9. 판정
 
-- 전체 판정: 실행 검증 대기
-- build smoke 검증: 실행 대기
-- dist smoke 검증: 실행 대기
+- 전체 판정: 부분 통과 — 원격 및 브라우저 검증 대기
+- build smoke 검증: 통과
+- dist smoke 검증: 통과
 - remote smoke 검증: 실행 대기
 - v35 preview 독립 실행 검증: 미확인
 - v35 운영 전환 가능 여부: 아직 불가
 - 다음 조치:
-  1. GitHub Actions → `v35 Smoke` 실행
-  2. GitHub Actions → `v35 Remote Smoke` 실행
-  3. Vercel Production 재배포 후 `/`, `/journey.html`, `/journey-v35-preview.html` 브라우저 확인
-  4. v34 운영 화면 영향 없음 확인
-  5. v35 preview Step 0~8 이동 및 J01~J09 저장 확인
+  1. GitHub Actions → `v35 Remote Smoke` 실행
+  2. Vercel Production 재배포 후 `/`, `/journey.html`, `/journey-v35-preview.html` 브라우저 확인
+  3. v34 운영 화면 영향 없음 확인
+  4. v35 preview Step 0~8 이동 및 J01~J09 저장 확인
+  5. 모든 결과 반영 후 `npm run audit:v35:readiness` 실행
