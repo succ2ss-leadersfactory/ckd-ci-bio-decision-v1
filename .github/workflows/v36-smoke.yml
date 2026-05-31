@@ -37,6 +37,9 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
+      - name: Run v36 dist smoke check
+        run: npm run smoke:v36:dist
+
       - name: Run integrated v36 smoke check
         run: npm run smoke:v36
 
@@ -52,6 +55,7 @@ jobs:
             echo "- npm run smoke:v36:static"
             echo "- npm run typecheck:v36"
             echo "- npm run build"
+            echo "- npm run smoke:v36:dist"
             echo "- npm run smoke:v36"
             echo ""
             echo "## Protected route policy"
@@ -67,6 +71,7 @@ jobs:
             echo "- localStorage preview save"
             echo "- compliance risk expression review"
             echo "- facilitator discussion summary text"
+            echo "- dist bundle includes v36 route and CustomerCallPlanLab markers"
             echo ""
             echo "## Next required checks"
             echo ""
