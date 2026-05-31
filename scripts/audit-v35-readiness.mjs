@@ -6,6 +6,7 @@ const BROWSER_QA_DOC = 'docs/v35-browser-qa-result.md';
 const CONSOLE_SNIPPET_DOC = 'docs/v35-browser-qa-console-snippet.md';
 const BROWSER_QA_RUNBOOK_DOC = 'docs/v35-browser-qa-runbook.md';
 const VALIDATION_INDEX_DOC = 'docs/v35-validation-index.md';
+const CUTOVER_DECISION_DOC = 'docs/v35-cutover-decision.md';
 const failures = [];
 const warnings = [];
 
@@ -220,10 +221,26 @@ function assertValidationIndexDoc(content) {
   }
 }
 
+function assertCutoverDecisionDoc(content) {
+  const requiredContent = [
+    'Selected decision: A. Preview 안정 상태 유지',
+    'Cutover status: 검토 가능, 실행 전',
+    'Operating route: v34 유지',
+    'Preview route: v35 검증 완료 상태 유지',
+  ];
+
+  for (const item of requiredContent) {
+    if (!content.includes(item)) {
+      fail(`${CUTOVER_DECISION_DOC} must include ${item}.`);
+    }
+  }
+}
+
 function assertReadmeDoc(content) {
   const requiredContent = [
     'v35 검증 상태',
     'docs/v35-validation-index.md',
+    'docs/v35-cutover-decision.md',
     'Actions → v35 Smoke → Run workflow',
     'Actions → v35 Remote Smoke → Run workflow',
     'Actions → v35 Readiness Audit → Run workflow',
@@ -231,6 +248,7 @@ function assertReadmeDoc(content) {
     '/journey-v35-preview.html',
     'npm run smoke:v35',
     'npm run audit:v35:readiness',
+    'Selected decision: A. Preview 안정 상태 유지',
   ];
 
   for (const item of requiredContent) {
@@ -253,6 +271,7 @@ const browserQaResult = readText(BROWSER_QA_DOC);
 const consoleSnippet = readText(CONSOLE_SNIPPET_DOC);
 const browserQaRunbook = readText(BROWSER_QA_RUNBOOK_DOC);
 const validationIndex = readText(VALIDATION_INDEX_DOC);
+const cutoverDecision = readText(CUTOVER_DECISION_DOC);
 
 assertReadmeDoc(readme);
 assertNoPendingTableStatus(smokeResult, RESULT_DOC);
@@ -289,6 +308,7 @@ assertNoKnownBlockingText(browserQaResult, BROWSER_QA_DOC);
 assertConsoleSnippetDoc(consoleSnippet);
 assertBrowserQaRunbookDoc(browserQaRunbook);
 assertValidationIndexDoc(validationIndex);
+assertCutoverDecisionDoc(cutoverDecision);
 
 if (warnings.length > 0) {
   console.warn('v35 readiness audit warnings:');
