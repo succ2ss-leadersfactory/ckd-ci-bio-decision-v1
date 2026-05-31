@@ -127,6 +127,7 @@ export function FullFlowJourneyV36PreviewApp() {
       currentStep={safeStep}
       onPrev={() => setProgress({ step: clampV36Step(safeStep - 1) })}
       onNext={() => setProgress({ step: clampV36Step(safeStep + 1) })}
+      onStepSelect={(step) => setProgress({ step: clampV36Step(step) })}
     >
       {renderV36Step(safeStep, participant, setParticipant)}
       <section className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
