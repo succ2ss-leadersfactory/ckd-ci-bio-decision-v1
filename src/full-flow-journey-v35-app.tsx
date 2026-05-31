@@ -28,6 +28,33 @@ function clampStep(step: number) {
   return Math.min(Math.max(step, 0), Math.max(V35_APP_STEPS.length - 1, 0));
 }
 
+function V35PreviewSmokePanel({ step }: { step: number }) {
+  return (
+    <aside className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-700" data-testid="v35-preview-smoke-panel">
+      <h3 className="font-bold text-slate-900">v35 Preview Smoke Check</h3>
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        <div>
+          <b>실행 경로</b>
+          <p>/journey-v35-preview.html 전용</p>
+        </div>
+        <div>
+          <b>현재 step</b>
+          <p>{step}</p>
+        </div>
+        <div>
+          <b>운영 연결</b>
+          <p>journey-active.tsx 미사용</p>
+        </div>
+        <div>
+          <b>Google Sheets</b>
+          <p>아직 미연동</p>
+        </div>
+      </div>
+      <p className="mt-3 font-semibold text-cyan-800">저장 key: {V35_STORAGE_KEYS.participant}, {V35_STORAGE_KEYS.state}</p>
+    </aside>
+  );
+}
+
 export function FullFlowJourneyV35App() {
   const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
   const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
@@ -54,6 +81,7 @@ export function FullFlowJourneyV35App() {
       onNext={() => setStep(clampStep(safeStep + 1))}
     >
       <EntryScreen participant={participant} setParticipant={setParticipant} save={save} />
+      <V35PreviewSmokePanel step={safeStep} />
     </JourneyShell>
   );
 }
