@@ -20,6 +20,9 @@
 | preview step wrapper 분리 | 완료 | `src/journey-v35-preview-steps.tsx` |
 | preview panel 분리 | 완료 | `src/journey-v35-preview-panels.tsx` |
 | preview type 분리 | 완료 | `src/journey-v35-preview-types.ts` |
+| preview HTML build input 등록 | 완료 | `vite.config.ts`의 `journeyV35Preview` |
+| 루트 redirect 설정 | 완료 | `vercel.json`의 `/` → `/journey.html` |
+| 배포 URL 가이드 문서화 | 완료 | `docs/v35-deployment-url-guide.md` |
 
 ## Gate 2. 운영 v34 보호 검증
 
