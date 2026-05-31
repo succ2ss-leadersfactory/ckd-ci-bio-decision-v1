@@ -1,7 +1,13 @@
 import { useCallback } from 'react';
 import { EntryScreen, type ParticipantInfo } from './journey-entry';
 import { JourneyShell, type JourneyStep } from './journey-shell';
-import { STORAGE_KEYS, getJson, setJson, useStored, type JsonRecord } from './journey-storage';
+import { getJson, setJson, useStored, type JsonRecord } from './journey-storage';
+
+const V35_STORAGE_KEYS = {
+  step: 'c1bio_v35_preview_step',
+  participant: 'c1bio_v35_preview_participant',
+  state: 'c1bio_v35_preview_state',
+};
 
 const V35_APP_STEPS: JourneyStep[] = [
   {
@@ -23,15 +29,15 @@ function clampStep(step: number) {
 }
 
 export function FullFlowJourneyV35App() {
-  const [step, setStep] = useStored<number>(STORAGE_KEYS.step, 0);
-  const [participant, setParticipant] = useStored<ParticipantInfo>(STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
+  const [step, setStep] = useStored<number>(V35_STORAGE_KEYS.step, 0);
+  const [participant, setParticipant] = useStored<ParticipantInfo>(V35_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
 
   const safeStep = clampStep(step);
 
   const save = useCallback((key: string, payload: JsonRecord) => {
-    const currentState = getJson<JsonRecord>(STORAGE_KEYS.state, {});
+    const currentState = getJson<JsonRecord>(V35_STORAGE_KEYS.state, {});
 
-    setJson(STORAGE_KEYS.state, {
+    setJson(V35_STORAGE_KEYS.state, {
       ...currentState,
       [key]: payload,
       v35AppLastSavedAt: new Date().toISOString(),
