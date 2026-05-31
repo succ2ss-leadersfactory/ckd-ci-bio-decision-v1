@@ -18,6 +18,7 @@ const requiredFiles = [
   '.github/workflows/v35-readiness-audit.yml',
   'docs/v35-browser-qa-result.md',
   'docs/v35-browser-qa-console-snippet.md',
+  'docs/v35-browser-qa-runbook.md',
   'src/vite-env.d.ts',
   'src/journey-active.tsx',
   'src/full-flow-journey-v34.tsx',
@@ -231,6 +232,10 @@ function assertBrowserQaDocs() {
 
   for (const text of ['requiredPreviewKeys', 'requiredSavedStateKeys', 'missingPreviewKeys', 'missingSavedStateKeys', 'v34FlowKeysFound', 'pass']) {
     mustInclude('docs/v35-browser-qa-console-snippet.md', text, `docs/v35-browser-qa-console-snippet.md must include ${text}.`);
+  }
+
+  for (const text of ['/journey.html', '/journey-v35-preview.html', 'Step 0~8', 'J01~J09', 'Console snippet', 'missingPreviewKeys: none', 'missingSavedStateKeys: none', 'pass: true', 'Actions → v35 Readiness Audit → Run workflow']) {
+    mustInclude('docs/v35-browser-qa-runbook.md', text, `docs/v35-browser-qa-runbook.md must include ${text}.`);
   }
 }
 
