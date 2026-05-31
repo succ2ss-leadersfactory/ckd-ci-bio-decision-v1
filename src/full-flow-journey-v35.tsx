@@ -24,6 +24,12 @@ import { V35PreviewDebugPanel, V35PreviewSmokePanel } from './journey-v35-previe
 import { NotebookReadinessCheckStep, NotebookSourcePrepStep, PresentationChecklistStep, SourceCheckStep, StrategyIssueReviewStep, StudioReportStep, StudioSlidesStep } from './journey-v35-preview-steps';
 import { renderV35PreviewStep } from './journey-v35-preview-router';
 import { resetV35PreviewStorage, useV35PreviewState } from './journey-v35-preview-state';
+import type { V35PreviewState, V35Save } from './journey-v35-preview-types';
+
+type V35PreviewTypeSmokeCheck = {
+  state?: V35PreviewState;
+  save?: V35Save;
+};
 
 const modularSmokeCheck = {
   components: { CardShell, Help, TextBox, Chips, CopyBlock, IssueEditor, ContextCard },
@@ -41,6 +47,9 @@ const modularSmokeCheck = {
   storage: { STORAGE_KEYS, getJson, setJson, useStored, callGoogleScript, buildResponsePayload },
 };
 
+const previewTypeSmokeCheck: V35PreviewTypeSmokeCheck = {};
+
 void modularSmokeCheck;
+void previewTypeSmokeCheck;
 
 import './full-flow-journey-v34';
