@@ -4,7 +4,7 @@
 
 ## 배포 전 build smoke check
 
-배포 전 아래 명령을 실행해 typecheck와 build가 모두 통과되는지 확인합니다.
+배포 전 아래 명령을 실행해 정적 구조 검사, typecheck, build가 모두 통과되는지 확인합니다.
 
 ```bash
 npm run smoke:v35
@@ -13,7 +13,13 @@ npm run smoke:v35
 이 명령은 다음을 순서대로 실행합니다.
 
 ```bash
-npm run typecheck && npm run build
+npm run smoke:v35:static && npm run typecheck && npm run build
+```
+
+정적 구조 검사만 따로 확인하려면 아래 명령을 실행합니다.
+
+```bash
+npm run smoke:v35:static
 ```
 
 ## 확인 URL 기준
