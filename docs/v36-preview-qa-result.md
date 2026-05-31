@@ -2,7 +2,7 @@
 
 ## QA status
 
-Status: Automated checks passed / Pending full browser QA
+Status: First-pass freeze recorded / Automated checks passed / Pending full browser QA
 
 ## Scope
 
@@ -10,7 +10,12 @@ Status: Automated checks passed / Pending full browser QA
 - Feature: v36 full 13-step Lab Journey preview
 - Operating route protection: `/journey.html` remains v34
 - v35 preview protection: `/journey-v35-preview.html` remains v35
-- Verified commit: `fbb4685bec8a1ae1860b2ce03d158e77a6f8a10d` or later
+- Freeze commit: `c25b90c7f03ae3247cc44be48ee444505c83865b`
+- Last functional commit: `f53622ba4d1d09fdb6974f6b15b955e2c8275ff3`
+
+## Freeze decision
+
+v36 Preview is first-pass frozen. Further work should focus on browser QA, pilot feedback, and usability fixes rather than new feature expansion.
 
 ## Implemented v36 steps
 
@@ -30,6 +35,19 @@ Status: Automated checks passed / Pending full browser QA
 | 12 | 1on1 코칭 | Implemented |
 | 13 | Wrap-up | Implemented |
 
+## UI/UX freeze scope
+
+| Area | Status | Notes |
+|---|---|---|
+| Current/next step display | Implemented | Header shows current and next step |
+| Progress indicator | Implemented | `Step n / 13` and progress bar |
+| Direct step navigation | Implemented | Step chips are clickable |
+| Scroll-to-top on step change | Implemented | Previous/next/chip movement starts new step at top |
+| Active step chip auto exposure | Implemented | Horizontal chip list scrolls to active step |
+| Sticky bottom navigation | Implemented | Korean previous/next buttons |
+| Mobile safe-area support | Implemented | Bottom buttons avoid system gesture area |
+| Collapsed QA smoke panel | Implemented | Keeps `v36 Preview Smoke` marker |
+
 ## Automated checks
 
 | Check | Status | Notes |
@@ -46,6 +64,9 @@ Status: Automated checks passed / Pending full browser QA
 | `/journey.html` regression | Pending | Must remain v34 operating route |
 | `/journey-v35-preview.html` regression | Pending | Must remain v35 preview route |
 | `/journey-v36-preview.html` render | Pending | Must render v36 title and 13-step flow |
+| Common UI/UX | Pending | Current/next step, progress, chips, sticky navigation |
+| Step movement UX | Pending | New step should start at page top |
+| Mobile safe-area UX | Pending | Bottom navigation must not overlap system gesture area |
 | Step 1 Entry | Pending | Role acceptance, participant storage |
 | Step 2 AI Safety | Pending | Risk types, safe rewrite, declaration |
 | Step 3 Prompt Practice | Pending | `일반 질문 선택`, `질문 진단`, `좋은 질문 조건` wording |
@@ -78,6 +99,9 @@ Device:
 /journey.html regression:
 /journey-v35-preview.html regression:
 /journey-v36-preview.html render:
+Common UI/UX:
+Step movement UX:
+Mobile safe-area UX:
 Step 1 Entry:
 Step 2 AI Safety:
 Step 3 Prompt Practice:
@@ -102,6 +126,6 @@ Notes:
 
 ## Decision options
 
-- `PASS`: full browser QA passed, ready for first preview freeze
+- `PASS`: full browser QA passed, ready for pilot use
 - `PASS WITH NOTES`: usable for pilot, minor UX/content notes remain
 - `FAIL`: blocking render/storage/navigation issue found
