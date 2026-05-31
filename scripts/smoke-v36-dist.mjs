@@ -44,7 +44,6 @@ const bundledJs = assetFiles.filter((file) => file.endsWith('.js')).map((file) =
 
 for (const text of [
   '종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview',
-  'CustomerCallPlanLab',
   '고객군 판단',
   'AI 답변 붙여넣기',
   '컴플라이언스 위험 표현 제거',
