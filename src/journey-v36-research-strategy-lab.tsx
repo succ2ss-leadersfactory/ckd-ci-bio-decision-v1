@@ -42,7 +42,6 @@ const THEMES = [
 const REVIEW_ITEMS = [
   'Perplexity 결과에 출처와 최근성 단서가 있는가?',
   'NotebookLM에 넣을 소스 패키지를 생성했는가?',
-  '소스 패키지에 출처·링크·핵심 주장이 보존되어 있는가?',
   'NotebookLM 결과가 소스 기반 종합으로 정리되었는가?',
   'NotebookLM Studio 보고서 산출물 목적이 명확한가?',
   '발표용 10장 슬라이드가 메시지 중심으로 구성되었는가?',
@@ -125,7 +124,7 @@ function buildStudioReportPrompt(response: ResearchResponse) {
 }
 
 function buildStudioSlidePrompt(response: ResearchResponse) {
-  return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적:\n전략회의에서 발표할 수 있는 발표용 슬라이드 초안을 만든다. 단순 요약 문서가 아니라, 실제 발표자가 설명하기 쉬운 발표 자료로 구성한다.\n\n활용할 핵심 내용:\n${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n반드시 반영할 전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n\n추가 맥락:\n- 우리 팀에 미치는 영향: ${response.teamImpact || '우리 팀에 미치는 영향'}\n- 실행전략으로 번역할 질문: ${response.executionTranslation || '실행전략으로 번역할 질문'}\n- 주의해야 할 표현: ${response.complianceCaution || '주의해야 할 표현'}\n\n요청:\n1. 발표용으로 최적화된 10장 슬라이드 구성안을 만들어줘.\n2. 각 슬라이드는 읽는 문서형이 아니라 발표형으로 구성해줘.\n3. 슬라이드마다 핵심 메시지는 1개만 분명하게 보이게 해줘.\n4. 본문 bullet은 3개 이내로 제한해줘.\n5. 시각자료(차트, 아이콘, 비교표, 흐름도 등) 제안도 함께 넣어줘.\n6. 마지막 슬라이드는 실행 제안과 회의 논의 질문으로 마무리해줘.\n7. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n각 슬라이드는 아래 형식을 따른다.\n\n- Slide 1. 제목\n  - 슬라이드 목적\n  - 핵심 메시지\n  - 본문 bullet 3개 이내\n  - 권장 시각자료\n  - 발표자 메모\n\n반드시 총 10장으로 작성해줘.\n\n권장 10장 구성 예시:\n- Slide 1: 전략회의 제목 / 문제 제기\n- Slide 2: 외부 변화 신호 요약\n- Slide 3: Source Check 요약\n- Slide 4: 전략 이슈 1\n- Slide 5: 전략 이슈 2\n- Slide 6: 전략 이슈 3\n- Slide 7: 우리 팀에 미치는 영향\n- Slide 8: 실행전략 제안\n- Slide 9: 실행 우선순위와 팀 적용 포인트\n- Slide 10: 회의 논의 질문 및 의사결정 요청`;
+  return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적:\n전략회의에서 발표할 수 있는 발표용 슬라이드 초안을 만든다. 단순 요약 문서가 아니라, 실제 발표자가 설명하기 쉬운 발표 자료로 구성한다.\n\n활용할 핵심 내용:\n${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n반드시 반영할 전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n\n추가 맥락:\n- 우리 팀에 미치는 영향: ${response.teamImpact || '우리 팀에 미치는 영향'}\n- 실행전략으로 번역할 질문: ${response.executionTranslation || '실행전략으로 번역할 질문'}\n- 주의해야 할 표현: ${response.complianceCaution || '주의해야 할 표현'}\n\n요청:\n1. 발표용으로 최적화된 10장 슬라이드 구성안을 만들어줘.\n2. 각 슬라이드는 읽는 문서형이 아니라 발표형으로 구성해줘.\n3. 슬라이드마다 핵심 메시지는 1개만 분명하게 보이게 해줘.\n4. 본문 bullet은 3개 이내로 제한해줘.\n5. 시각자료(차트, 아이콘, 비교표, 흐름도 등) 제안도 함께 넣어줘.\n6. 마지막 슬라이드는 실행 제안과 회의 논의 질문으로 마무리해줘.\n7. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n각 슬라이드는 아래 형식을 따른다.\n\n- Slide 1. 제목\n  - 슬라이드 목적\n  - 핵심 메시지\n  - 본문 bullet 3개 이내\n  - 권장 시각자료\n  - 발표자 메모\n\n반드시 총 10장으로 작성해줘.\n\n권장 10장 구성 예시:\n- Slide 1: 전략회의 제목 / 문제 제기\n- Slide 2: 외부 변화 신호 요약\n- Slide 3: 핵심 근거 요약\n- Slide 4: 전략 이슈 1\n- Slide 5: 전략 이슈 2\n- Slide 6: 전략 이슈 3\n- Slide 7: 우리 팀에 미치는 영향\n- Slide 8: 실행전략 제안\n- Slide 9: 실행 우선순위와 팀 적용 포인트\n- Slide 10: 회의 논의 질문 및 의사결정 요청`;
 }
 
 function buildStudioInfographicPrompt(response: ResearchResponse) {
@@ -304,12 +303,11 @@ export function ResearchStrategyLab() {
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">NotebookLM에 소스 패키지를 넣은 뒤, 아래 R-C-I-F 프롬프트를 복사해 사용합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(notebookPrompt, 'NotebookLM 프롬프트')}>NotebookLM 프롬프트 복사</button></div>
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{notebookPrompt}</pre>
         <label className="block space-y-1"><FieldLabel>NotebookLM 소스 기반 종합 결과 붙여넣기</FieldLabel><TextArea value={response.notebookLmAnswer} onChange={(value) => update({ notebookLmAnswer: value })} placeholder="NotebookLM의 소스 기반 종합 결과를 붙여넣으세요." /></label>
-        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">자동 분리 결과는 초안입니다. 4단계 이후에서 팀장 관점으로 반드시 검토·수정하세요.</div>
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">자동 분리 결과는 초안입니다. 이후 단계에서 팀장 관점으로 반드시 검토·수정하세요.</div>
         <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={splitNotebookAnswer}>전략 이슈 초안으로 분리</button>
       </SectionCard>
 
-      <SectionCard title="4단계: Source Check와 전략 이슈 3개">
-        <label className="block space-y-1"><FieldLabel>소스 신뢰도와 충돌 메모</FieldLabel><TextArea value={response.sourceReliabilityMemo} onChange={(value) => update({ sourceReliabilityMemo: value })} placeholder="출처가 약한 내용, 최근성 확인이 필요한 내용, 충돌하는 내용을 적으세요." /></label>
+      <SectionCard title="4단계: 전략 이슈 3개 정리">
         <label className="block space-y-1"><FieldLabel>전략 이슈 1</FieldLabel><TextArea value={response.issueOne} onChange={(value) => update({ issueOne: value })} /></label>
         <label className="block space-y-1"><FieldLabel>전략 이슈 2</FieldLabel><TextArea value={response.issueTwo} onChange={(value) => update({ issueTwo: value })} /></label>
         <label className="block space-y-1"><FieldLabel>전략 이슈 3</FieldLabel><TextArea value={response.issueThree} onChange={(value) => update({ issueThree: value })} /></label>
