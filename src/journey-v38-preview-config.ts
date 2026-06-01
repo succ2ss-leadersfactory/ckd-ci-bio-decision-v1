@@ -41,6 +41,11 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
     title: '집중/후순위 고객군 선택',
     description: '2주 실행 관점에서 집중할 고객군, 후순위 고객군, 관찰/유지 고객군을 선택합니다.',
   },
+  {
+    id: 'member-role',
+    title: '팀원별 역할 방향',
+    description: '선택한 고객군 판단을 팀원별 실행 역할과 코칭 포인트로 전환합니다.',
+  },
 ];
 
 export function clampV38Step(step: number) {
