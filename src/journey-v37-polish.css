@@ -177,6 +177,118 @@ pre[data-v37-source-call-plan='true'] {
   color: rgb(51 65 85);
 }
 
+.v37-classification-helper {
+  margin-top: 0.9rem;
+  border: 1px solid rgb(34 197 94 / 0.28);
+  border-radius: 1.15rem;
+  background: linear-gradient(135deg, rgb(240 253 244), rgb(255 255 255));
+  padding: 0.9rem;
+}
+
+.v37-helper-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.v37-helper-head span {
+  border-radius: 999px;
+  background: rgb(22 101 52);
+  padding: 0.24rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: white;
+}
+
+.v37-helper-head b {
+  font-size: 0.85rem;
+  color: rgb(20 83 45);
+}
+
+.v37-helper-question-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.v37-helper-question-grid article {
+  border: 1px solid rgb(187 247 208);
+  border-radius: 0.95rem;
+  background: white;
+  padding: 0.7rem;
+}
+
+.v37-helper-question-grid p {
+  margin: 0 0 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: rgb(71 85 105);
+}
+
+.v37-helper-question-grid button {
+  width: 100%;
+  border: 1px solid rgb(187 247 208);
+  border-radius: 0.85rem;
+  background: rgb(240 253 244);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.45;
+  color: rgb(20 83 45);
+}
+
+.v37-helper-question-grid button:hover,
+.v37-helper-question-grid button:focus {
+  border-color: rgb(34 197 94);
+  background: rgb(220 252 231);
+  outline: none;
+}
+
+.v37-helper-result {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.v37-helper-result div {
+  border-radius: 0.95rem;
+  background: rgb(255 255 255 / 0.92);
+  padding: 0.7rem;
+}
+
+.v37-helper-result span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: rgb(100 116 139);
+}
+
+.v37-helper-result b {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.92rem;
+  color: rgb(22 101 52);
+}
+
+.v37-helper-reason {
+  margin: 0.75rem 0 0;
+  border-radius: 0.95rem;
+  background: white;
+  padding: 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: rgb(30 41 59);
+}
+
+.v37-helper-note {
+  margin: 0.55rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: rgb(71 85 105);
+}
+
 .v37-judgment-ladder {
   margin-top: 0.9rem;
   border: 1px dashed rgb(14 165 233 / 0.45);
@@ -346,6 +458,11 @@ pre[data-v37-source-call-plan='true'] {
   .v37-axis-grid,
   .v37-call-plan-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .v37-helper-question-grid,
+  .v37-helper-result {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .v37-full-data-details div {
