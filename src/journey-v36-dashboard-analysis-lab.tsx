@@ -49,6 +49,19 @@ type DiagnosisResponse = {
   savedAt: string;
 };
 
+type SignalItem = {
+  key: string;
+  value: number | GuardrailStatus;
+  note: string;
+};
+
+type HypothesisCandidate = {
+  hypothesis: string;
+  reason: string;
+  metrics: string[];
+  priority: number;
+};
+
 const CORE_METRIC_ORDER = [
   '계획 접점 실행률',
   '핵심 고객군 커버리지',
@@ -211,6 +224,8 @@ const CHECK_METRIC_OPTIONS = [
 
 const REVIEW_ITEMS = [
   '지표를 보기 전 직관적 해석을 먼저 기록했는가?',
+  '데이터 신호 요약을 확인했는가?',
+  '검토 후보 가설과 연결 지표를 확인했는가?',
   '데이터 확인 후 진단 가설을 다시 세웠는가?',
   '직관과 데이터의 차이를 비교했는가?',
   '선행지표·과정지표·결과지표·확산지표를 모두 확인했는가?',
@@ -268,6 +283,12 @@ function metricTone(value: number) {
   return 'border-red-200 bg-red-50';
 }
 
+function signalTone(type: 'strong' | 'weak' | 'guardrail') {
+  if (type === 'strong') return 'border-cyan-200 bg-cyan-50 text-cyan-900';
+  if (type === 'weak') return 'border-red-200 bg-red-50 text-red-900';
+  return 'border-amber-200 bg-amber-50 text-amber-900';
+}
+
 function guardrailTone(status: GuardrailStatus) {
   if (status === '안전') return 'border-cyan-200 bg-cyan-50 text-cyan-800';
   if (status === '주의') return 'border-amber-200 bg-amber-50 text-amber-800';
@@ -302,6 +323,134 @@ function listOrNone(items: string[], noneText = '-') {
   return items.length ? items.join(', ') : noneText;
 }
 
+function metricValue(member: Member, key: string) {
+  return member.metrics[key] ?? 0;
+}
+
+function makeSignalItem(member: Member, key: string): SignalItem {
+  const value = metricValue(member, key);
+  return { key, value, note: `${METRIC_META[key].group} · ${METRIC_META[key].expertLabel}` };
+}
+
+function createCandidate(hypothesis: string, reason: string, metrics: string[], priority: number): HypothesisCandidate {
+  return { hypothesis, reason, metrics, priority };
+}
+
+function buildDataSignalSummary(member: Member) {
+  const strong = CORE_METRIC_ORDER
+    .filter((key) => metricValue(member, key) >= 85)
+    .map((key) => makeSignalItem(member, key))
+    .slice(0, 5);
+
+  const weak = CORE_METRIC_ORDER
+    .filter((key) => metricValue(member, key) < 65)
+    .map((key) => makeSignalItem(member, key));
+
+  const guardrailIssues = GUARDRAIL_ORDER
+    .filter((key) => member.guardrails[key] !== '안전')
+    .map((key) => ({ key, value: member.guardrails[key], note: '안전선 점검 · 가드레일' }));
+
+  const candidates: HypothesisCandidate[] = [];
+
+  if (metricValue(member, '계획 접점 실행률') < 75 || metricValue(member, '핵심 고객군 커버리지') < 75) {
+    candidates.push(createCandidate(
+      '접점 기회가 부족한 것 같다',
+      '계획 접점 실행률 또는 핵심 고객군 커버리지가 낮아, 성과 가능성을 만드는 접점 기회부터 확인할 필요가 있습니다.',
+      ['계획 접점 실행률', '핵심 고객군 커버리지'],
+      70,
+    ));
+  }
+
+  if (metricValue(member, '사전 인사이트 준비도') < 70 && metricValue(member, '메시지-니즈 적합도') < 75) {
+    candidates.push(createCandidate(
+      '사전 준비가 약한 것 같다',
+      '사전 인사이트 준비도와 메시지-니즈 적합도가 함께 낮아, 방문 전 고객 맥락과 대화 목적 준비를 점검할 수 있습니다.',
+      ['사전 인사이트 준비도', '메시지-니즈 적합도'],
+      72,
+    ));
+  }
+
+  if (metricValue(member, '메시지-니즈 적합도') < 70 && metricValue(member, '고객 인게이지먼트 지수') < 75) {
+    candidates.push(createCandidate(
+      '메시지와 고객 니즈가 맞지 않는 것 같다',
+      '메시지-니즈 적합도와 고객 인게이지먼트가 낮아, 고객에게 맞는 메시지였는지 확인할 필요가 있습니다.',
+      ['메시지-니즈 적합도', '고객 인게이지먼트 지수'],
+      76,
+    ));
+  }
+
+  const executionWeakCount = ['CRM 기록 품질', '후속조치 실행률', '실행 적시성'].filter((key) => metricValue(member, key) < 70).length;
+  if (executionWeakCount >= 2) {
+    candidates.push(createCandidate(
+      '기록과 후속 실행이 끊기는 것 같다',
+      'CRM 기록 품질, 후속조치 실행률, 실행 적시성 중 두 개 이상이 낮아 접점 이후 다음 행동이 끊기는지 확인할 수 있습니다.',
+      ['CRM 기록 품질', '후속조치 실행률', '실행 적시성'],
+      80 + executionWeakCount,
+    ));
+  }
+
+  if (metricValue(member, '고객 인게이지먼트 지수') < 70 && metricValue(member, '고객 대화 지속성') < 70) {
+    candidates.push(createCandidate(
+      '고객 반응 자체가 약한 것 같다',
+      '고객 인게이지먼트와 고객 대화 지속성이 모두 낮아 고객의 질문, 관심, 반복 대화 신호가 약한지 볼 필요가 있습니다.',
+      ['고객 인게이지먼트 지수', '고객 대화 지속성'],
+      74,
+    ));
+  }
+
+  if (metricValue(member, '고객 인게이지먼트 지수') >= 70 && metricValue(member, '후속 대화 연결지수') < 70) {
+    candidates.push(createCandidate(
+      '반응은 있으나 다음 대화로 연결되지 않는 것 같다',
+      '고객 반응은 있지만 후속 대화 연결지수가 낮아, 관심이 다음 설명·자료·미팅으로 이어지는지 점검할 수 있습니다.',
+      ['고객 인게이지먼트 지수', '후속 대화 연결지수'],
+      76,
+    ));
+  }
+
+  if (metricValue(member, '고객 대화 지속성') < 65) {
+    candidates.push(createCandidate(
+      '대화가 반복 관계로 이어지지 않는 것 같다',
+      '고객 대화 지속성이 낮아 반복 대화, 피드백, 후속 접점 수락 신호가 약한지 확인할 필요가 있습니다.',
+      ['고객 대화 지속성'],
+      68,
+    ));
+  }
+
+  if (metricValue(member, '팀 학습 기여도') < 65 || metricValue(member, '실행 인사이트 재사용도') < 65) {
+    candidates.push(createCandidate(
+      '개인 경험이 팀 학습으로 퍼지지 않는 것 같다',
+      '팀 학습 기여도 또는 실행 인사이트 재사용도가 낮아, 개인 경험이 팀의 공유 자산으로 전환되는지 점검할 수 있습니다.',
+      ['팀 학습 기여도', '실행 인사이트 재사용도'],
+      82,
+    ));
+  }
+
+  if (guardrailIssues.length > 0) {
+    candidates.push(createCandidate(
+      '안전선부터 확인해야 할 것 같다',
+      '컴플라이언스 또는 AI 입력 안전이 주의·점검 필요 상태이므로 실행 강화보다 안전선 확인을 먼저 해야 합니다.',
+      guardrailIssues.map((item) => item.key),
+      95,
+    ));
+  }
+
+  const sortedCandidates = candidates.sort((a, b) => b.priority - a.priority).slice(0, 3);
+
+  return {
+    strong,
+    weak,
+    guardrailIssues,
+    candidates: sortedCandidates.length > 0
+      ? sortedCandidates
+      : [createCandidate('아직 단정하기 어렵다', '강한 신호와 약한 신호가 뚜렷하게 한 방향으로 모이지 않아 추가 맥락 확인이 필요합니다.', [], 10)],
+  };
+}
+
+function selectedHypothesisReason(member: Member, hypothesis: string) {
+  const candidate = buildDataSignalSummary(member).candidates.find((item) => item.hypothesis === hypothesis);
+  return candidate?.reason ?? DATA_HYPOTHESIS_GUIDES[hypothesis] ?? '';
+}
+
 function makeDiagnosisStatement(member: Member, response: DiagnosisResponse) {
   const comparison = response.comparisonChoice || '직관과 데이터의 차이는 추가 확인이 필요하다';
   const lead = listOrNone(response.selectedLeadVariables, '선행지표에서 결정적 신호는 아직 약함');
@@ -329,7 +478,8 @@ function parseAi(raw: string) {
 }
 
 function buildPrompt(member: Member, response: DiagnosisResponse) {
-  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n핵심 원칙:\n팀장이 먼저 상황만 보고 직관적 해석을 했고, 이후 실제 데이터를 보고 데이터 기반 진단 가설을 세웠습니다. 이 둘이 어떻게 같고 다른지, 그리고 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 검토하세요.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.profile}\n\n[관찰 상황]\n${member.observation}\n\n[팀원 발언]\n${member.quote}\n\n[1단계: 상황만 보고 처음 든 생각]\n${response.observationIntuition || '-'}\n\n[2단계: 데이터를 보고 다시 세운 진단 가설]\n${response.dataHypothesis || '-'}\n\n[2단계 가설 선택 기준]\n${response.dataHypothesis ? DATA_HYPOTHESIS_GUIDES[response.dataHypothesis] : '-'}\n\n[3단계: 직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n\n[판단이 유지/수정/유보된 이유]\n${response.changedReason || '-'}\n\n[진단 지표 데이터]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[안전선 점검]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장이 선택한 근거 지표]\n- 기회 만들기·선행지표: ${listOrNone(response.selectedLeadVariables)}\n- 실행 품질·과정지표: ${listOrNone(response.selectedProcessVariables)}\n- 고객 반응·결과지표: ${listOrNone(response.selectedResultVariables)}\n- 팀 학습·확산지표: ${listOrNone(response.selectedDiffusionVariables)}\n- 안전선 점검·가드레일: ${listOrNone(response.selectedGuardrails)}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n검토 요청:\n1. 상황 기반 직관과 데이터 기반 가설이 섞이지 않았는지 점검하세요.\n2. 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 설명하세요.\n3. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n4. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n5. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n6. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 직관과 데이터 가설 구분 점검\n## 2. 선행·과정·결과·확산지표 연결 점검\n## 3. 이 진단이 틀렸을 가능성\n## 4. 팀장이 확인해야 할 질문\n## 5. 2주 실행 실험 보완 제안\n## 6. 안전선 관점의 주의점`;
+  const dataSummary = buildDataSignalSummary(member);
+  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n핵심 원칙:\n팀장이 먼저 상황만 보고 직관적 해석을 했고, 이후 실제 데이터를 보고 데이터 기반 진단 가설을 세웠습니다. 이 둘이 어떻게 같고 다른지, 그리고 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 검토하세요.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.profile}\n\n[관찰 상황]\n${member.observation}\n\n[팀원 발언]\n${member.quote}\n\n[1단계: 상황만 보고 처음 든 생각]\n${response.observationIntuition || '-'}\n\n[2단계: 데이터를 보고 다시 세운 진단 가설]\n${response.dataHypothesis || '-'}\n\n[데이터 신호 요약]\n강한 신호: ${dataSummary.strong.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n약한 신호: ${dataSummary.weak.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n안전선 이슈: ${dataSummary.guardrailIssues.map((item) => `${item.key} ${item.value}`).join(', ') || '현재 주요 이슈 없음'}\n검토 후보 가설: ${dataSummary.candidates.map((item) => `${item.hypothesis}(${item.reason})`).join(' / ')}\n\n[2단계 가설 선택 기준]\n${selectedHypothesisReason(member, response.dataHypothesis) || '-'}\n\n[3단계: 직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n\n[판단이 유지/수정/유보된 이유]\n${response.changedReason || '-'}\n\n[진단 지표 데이터]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[안전선 점검]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장이 선택한 근거 지표]\n- 기회 만들기·선행지표: ${listOrNone(response.selectedLeadVariables)}\n- 실행 품질·과정지표: ${listOrNone(response.selectedProcessVariables)}\n- 고객 반응·결과지표: ${listOrNone(response.selectedResultVariables)}\n- 팀 학습·확산지표: ${listOrNone(response.selectedDiffusionVariables)}\n- 안전선 점검·가드레일: ${listOrNone(response.selectedGuardrails)}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n검토 요청:\n1. 상황 기반 직관과 데이터 기반 가설이 섞이지 않았는지 점검하세요.\n2. 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 설명하세요.\n3. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n4. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n5. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n6. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 직관과 데이터 가설 구분 점검\n## 2. 선행·과정·결과·확산지표 연결 점검\n## 3. 이 진단이 틀렸을 가능성\n## 4. 팀장이 확인해야 할 질문\n## 5. 2주 실행 실험 보완 제안\n## 6. 안전선 관점의 주의점`;
 }
 
 export function DashboardAnalysisLab() {
@@ -348,11 +498,17 @@ export function DashboardAnalysisLab() {
   };
   const [copyMessage, setCopyMessage] = useState('');
   const currentMember = getMember(response.selectedMemberId);
+  const dataSummary = useMemo(() => buildDataSignalSummary(currentMember), [currentMember]);
   const prompt = useMemo(() => buildPrompt(currentMember, response), [currentMember, response]);
   const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
 
   const update = (patch: Partial<DiagnosisResponse>) => {
     setResponse({ ...response, ...patch, savedAt: new Date().toISOString() });
+  };
+
+  const selectCandidate = (candidate: HypothesisCandidate) => {
+    update({ dataHypothesis: candidate.hypothesis });
+    setCopyMessage(`검토 후보 가설을 선택했습니다: ${candidate.hypothesis}`);
   };
 
   const generateDiagnosis = () => {
@@ -410,8 +566,50 @@ export function DashboardAnalysisLab() {
             return <div key={key} className={`rounded-2xl border p-4 ${guardrailTone(status)}`}><div className="flex items-center justify-between gap-2"><div><p className="text-sm font-black">{key}</p><p className="text-xs font-bold">안전선 점검 · 가드레일</p></div><span className="rounded-full bg-white/70 px-3 py-1 text-xs font-black">{status}</span></div><p className="mt-2 text-xs leading-5">{METRIC_META[key].description}</p></div>;
           })}
         </div>
-        <label className="block space-y-1"><FieldLabel>데이터를 보고 다시 세운 진단 가설</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.dataHypothesis} onChange={(event) => update({ dataHypothesis: event.target.value })}><option value="">선택하세요</option>{DATA_HYPOTHESIS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
-        {response.dataHypothesis ? <div className="rounded-xl border border-cyan-100 bg-white p-3 text-sm text-cyan-900"><p className="font-bold">데이터 가설 선택 기준</p><p className="mt-1">{DATA_HYPOTHESIS_GUIDES[response.dataHypothesis]}</p></div> : null}
+
+        <div className="rounded-2xl border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 className="font-black text-slate-900">데이터 신호 요약</h4>
+              <p className="mt-1 text-sm text-slate-600">강한 신호와 약한 신호의 조합을 보고 우선 검토할 가설을 찾습니다. 이 후보는 정답이 아니라 판단을 돕는 힌트입니다.</p>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className={`rounded-2xl border p-3 ${signalTone('strong')}`}>
+              <p className="font-bold">강한 신호</p>
+              <div className="mt-2 space-y-2 text-xs">
+                {dataSummary.strong.length ? dataSummary.strong.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 강한 신호 없음</p>}
+              </div>
+            </div>
+            <div className={`rounded-2xl border p-3 ${signalTone('weak')}`}>
+              <p className="font-bold">약한 신호</p>
+              <div className="mt-2 space-y-2 text-xs">
+                {dataSummary.weak.length ? dataSummary.weak.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 약한 신호 없음</p>}
+              </div>
+            </div>
+            <div className={`rounded-2xl border p-3 ${dataSummary.guardrailIssues.length ? signalTone('guardrail') : signalTone('strong')}`}>
+              <p className="font-bold">안전선 상태</p>
+              <div className="mt-2 space-y-2 text-xs">
+                {dataSummary.guardrailIssues.length ? dataSummary.guardrailIssues.map((item) => <p key={item.key}><b>{item.key}</b> {item.value}</p>) : <p>현재 주요 안전선 이슈 없음</p>}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm font-black text-slate-900">검토해볼 만한 가설 후보</p>
+            <div className="mt-2 grid gap-3 md:grid-cols-3">
+              {dataSummary.candidates.map((candidate) => (
+                <button key={candidate.hypothesis} type="button" onClick={() => selectCandidate(candidate)} className={`rounded-2xl border p-4 text-left text-sm transition hover:-translate-y-0.5 hover:shadow ${response.dataHypothesis === candidate.hypothesis ? 'border-cyan-500 bg-cyan-50' : 'bg-white'}`}>
+                  <p className="font-black text-slate-900">{candidate.hypothesis}</p>
+                  <p className="mt-2 leading-5 text-slate-600">{candidate.reason}</p>
+                  {candidate.metrics.length ? <p className="mt-2 text-xs font-bold text-cyan-700">연결 지표: {candidate.metrics.join(', ')}</p> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <label className="block space-y-1"><FieldLabel>데이터 조합을 보고 가장 설명력이 큰 진단 가설</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.dataHypothesis} onChange={(event) => update({ dataHypothesis: event.target.value })}><option value="">선택하세요</option>{DATA_HYPOTHESIS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+        {response.dataHypothesis ? <div className="rounded-xl border border-cyan-100 bg-white p-3 text-sm text-cyan-900"><p className="font-bold">왜 이 가설인가?</p><p className="mt-1">{selectedHypothesisReason(currentMember, response.dataHypothesis)}</p></div> : null}
       </SectionCard>
 
       <SectionCard title="3단계: 직관과 데이터 비교, 근거 지표 선택">
