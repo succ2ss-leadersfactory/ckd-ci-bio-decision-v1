@@ -28,6 +28,8 @@ type ResearchResponse = {
   savedAt: string;
 };
 
+type ParsedKey = 'sourceReliabilityMemo' | 'issueOne' | 'issueTwo' | 'issueThree' | 'teamImpact' | 'nextQuestions' | 'executionTranslation' | 'complianceCaution';
+
 const THEMES = [
   '의료진 정보 탐색 방식 변화',
   '병원·의원 방문 환경 변화',
@@ -120,9 +122,13 @@ function buildStudioSlidePrompt(response: ResearchResponse) {
   return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적: 전략회의에서 5~7분 발표할 슬라이드 초안을 만든다.\n보고서 핵심 내용: ${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n요청:\n1. 5~6장 분량의 발표 슬라이드 구성안을 만들어줘.\n2. 각 장마다 제목, 핵심 메시지, 넣을 근거, 발표자 메모를 작성해줘.\n3. 전략 이슈 3개와 팀 실행 제안이 자연스럽게 연결되게 해줘.\n4. 마지막 장에는 회의에서 논의할 질문 2~3개를 넣어줘.\n5. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- Slide 1: 문제 제기\n- Slide 2: 외부 변화 신호\n- Slide 3: 전략 이슈 3개\n- Slide 4: 우리 팀 영향\n- Slide 5: 실행 제안\n- Slide 6: 회의 질문`;
 }
 
-function sectionTitleToKey(title: string) {
-  const clean = title.replace(/[\[\]#:*\-]/g, '').trim();
-  if (clean.includes('핵심 변화') || clean.includes('출처') || clean.includes('근거')) return 'sourceReliabilityMemo';
+function sectionTitleToKey(title: string): ParsedKey | '' {
+  const clean = title
+    .replace(/[\[\]#*_`]/g, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^[-•]\s*/, '')
+    .trim();
+
   if (clean.includes('전략 이슈 1')) return 'issueOne';
   if (clean.includes('전략 이슈 2')) return 'issueTwo';
   if (clean.includes('전략 이슈 3')) return 'issueThree';
@@ -130,38 +136,76 @@ function sectionTitleToKey(title: string) {
   if (clean.includes('추가 확인')) return 'nextQuestions';
   if (clean.includes('실행전략')) return 'executionTranslation';
   if (clean.includes('주의')) return 'complianceCaution';
+  if (clean.includes('핵심 변화') || clean.includes('출처') || clean.includes('근거') || clean.includes('신뢰도') || clean.includes('충돌')) return 'sourceReliabilityMemo';
   return '';
+}
+
+function readNotebookHeading(line: string): { key: ParsedKey; inlineText: string } | null {
+  let normalized = line
+    .trim()
+    .replace(/^>\s*/, '')
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^[-•]\s*/, '')
+    .trim();
+
+  normalized = normalized.replace(/^\*\*/, '').replace(/\*\*$/, '').trim();
+
+  const bracketMatch = normalized.match(/^\[([^\]]+)\]\s*(?:[:：-]\s*)?(.*)$/);
+  if (bracketMatch) {
+    const key = sectionTitleToKey(bracketMatch[1]);
+    if (key) return { key, inlineText: bracketMatch[2]?.trim() || '' };
+  }
+
+  const plainMatch = normalized.match(/^(핵심 변화 신호|출처\/근거 요약|소스 신뢰도와 충돌 메모|전략 이슈\s*1|전략 이슈\s*2|전략 이슈\s*3|우리 팀에 미치는 영향|추가 확인 질문|실행전략으로 번역할 질문|주의해야 할 표현|주의 표현)\s*(?:[:：-]\s*)?(.*)$/);
+  if (plainMatch) {
+    const key = sectionTitleToKey(plainMatch[1]);
+    if (key) return { key, inlineText: plainMatch[2]?.trim() || '' };
+  }
+
+  return null;
 }
 
 function parseNotebookAnswer(answer: string): Partial<ResearchResponse> {
   const lines = answer.split(/\r?\n/);
-  const buckets: Record<string, string[]> = {};
-  let currentKey = '';
+  const buckets: Record<ParsedKey, string[]> = {
+    sourceReliabilityMemo: [],
+    issueOne: [],
+    issueTwo: [],
+    issueThree: [],
+    teamImpact: [],
+    nextQuestions: [],
+    executionTranslation: [],
+    complianceCaution: [],
+  };
+  let currentKey: ParsedKey | '' = '';
 
   for (const line of lines) {
-    const trimmed = line.trim();
-    const headingMatch = trimmed.match(/^(?:#{1,6}\s*)?\[?([^\]:]+)\]?\s*:?\s*$/);
-    const nextKey = headingMatch ? sectionTitleToKey(headingMatch[1]) : '';
+    const heading = readNotebookHeading(line);
 
-    if (nextKey) {
-      currentKey = nextKey;
-      buckets[currentKey] = buckets[currentKey] || [];
+    if (heading) {
+      currentKey = heading.key;
+      if (heading.inlineText) buckets[currentKey].push(heading.inlineText);
       continue;
     }
 
     if (currentKey) buckets[currentKey].push(line);
   }
 
-  const sourceParts = [buckets.sourceReliabilityMemo?.join('\n').trim()].filter(Boolean);
   const patch: Partial<ResearchResponse> = {};
-  if (sourceParts.length) patch.sourceReliabilityMemo = sourceParts.join('\n\n');
-  if (buckets.issueOne?.join('\n').trim()) patch.issueOne = buckets.issueOne.join('\n').trim();
-  if (buckets.issueTwo?.join('\n').trim()) patch.issueTwo = buckets.issueTwo.join('\n').trim();
-  if (buckets.issueThree?.join('\n').trim()) patch.issueThree = buckets.issueThree.join('\n').trim();
-  if (buckets.teamImpact?.join('\n').trim()) patch.teamImpact = buckets.teamImpact.join('\n').trim();
-  if (buckets.nextQuestions?.join('\n').trim()) patch.nextQuestions = buckets.nextQuestions.join('\n').trim();
-  if (buckets.executionTranslation?.join('\n').trim()) patch.executionTranslation = buckets.executionTranslation.join('\n').trim();
-  if (buckets.complianceCaution?.join('\n').trim()) patch.complianceCaution = buckets.complianceCaution.join('\n').trim();
+  const apply = (key: ParsedKey) => {
+    const value = buckets[key].join('\n').replace(/^\s+|\s+$/g, '');
+    if (value) patch[key] = value;
+  };
+
+  apply('sourceReliabilityMemo');
+  apply('issueOne');
+  apply('issueTwo');
+  apply('issueThree');
+  apply('teamImpact');
+  apply('nextQuestions');
+  apply('executionTranslation');
+  apply('complianceCaution');
   return patch;
 }
 
