@@ -105,23 +105,48 @@ function renderV38Step(step: number, participant: V38Participant, setParticipant
   return <ShellCard title={current.title}><p>이 단계는 v38에서 준비 중입니다.</p></ShellCard>;
 }
 
+function V38ResetControl({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="mx-auto -mt-3 mb-4 flex max-w-6xl justify-end px-4 md:px-6">
+      <button
+        type="button"
+        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm hover:bg-slate-50"
+        onClick={onReset}
+      >
+        v38 진행 초기화
+      </button>
+    </div>
+  );
+}
+
 function V38PreviewApp() {
   const [participant, setParticipant] = useStored<V38Participant>(V38_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V38Progress>(V38_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const safeStep = clampV38Step(progress.step);
 
+  const resetV38Progress = () => {
+    window.localStorage.removeItem(V38_STORAGE_KEYS.participant);
+    window.localStorage.removeItem(V38_STORAGE_KEYS.progress);
+    setParticipant(DEFAULT_PARTICIPANT);
+    setProgress(DEFAULT_PROGRESS);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <JourneyShell
-      title="C1바이오 영업팀장 AI 리더십 Lab Journey v38"
-      subtitle="v38은 DOM 후처리 없이 정식 React 컴포넌트 방식으로 복구·확장하는 미리보기 Journey입니다."
-      steps={V38_VISIBLE_APP_STEPS}
-      currentStep={safeStep}
-      onPrev={() => setProgress({ step: clampV38Step(safeStep - 1) })}
-      onNext={() => setProgress({ step: clampV38Step(safeStep + 1) })}
-      onStepSelect={(step) => setProgress({ step: clampV38Step(step) })}
-    >
-      {renderV38Step(safeStep, participant, setParticipant)}
-    </JourneyShell>
+    <>
+      <JourneyShell
+        title="C1바이오 영업팀장 AI 리더십 Lab Journey v38"
+        subtitle="v38은 DOM 후처리 없이 정식 React 컴포넌트 방식으로 복구·확장하는 미리보기 Journey입니다."
+        steps={V38_VISIBLE_APP_STEPS}
+        currentStep={safeStep}
+        onPrev={() => setProgress({ step: clampV38Step(safeStep - 1) })}
+        onNext={() => setProgress({ step: clampV38Step(safeStep + 1) })}
+        onStepSelect={(step) => setProgress({ step: clampV38Step(step) })}
+      >
+        {renderV38Step(safeStep, participant, setParticipant)}
+      </JourneyShell>
+      <V38ResetControl onReset={resetV38Progress} />
+    </>
   );
 }
 
