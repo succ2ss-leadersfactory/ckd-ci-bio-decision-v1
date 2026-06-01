@@ -40,6 +40,14 @@ const customerCardSummaries = [
     ],
     signals: ['반응 상승', '자료 요청', '후속 가능', '표현 주의'],
     full: ['고객 등급 A', '잠재력 높음', '관계 수준 중간', '최근 방문일 7일 전', '4주 콜 횟수 2회', '접촉 성공률 80%', '최근 콜 반응 긍정 상승', '자료 요청 있음', '후속 미팅 동의', '거절/보류 사유 없음', '후속조치 완료율 90%', 'CRM 기록 충실', '컴플라이언스 중간'],
+    helper: {
+      strongestSignal: '반응 상승과 후속 미팅 동의',
+      twoWeekAction: '허용된 정보 범위 안에서 후속 대화로 연결한다',
+      caution: '컴플라이언스 표현 안전선을 확인한다',
+      primary: '반응 상승 집중군',
+      secondary: '관심 보류 관리군',
+      reason: '자료 요청과 후속 미팅 동의가 있어 2주 안에 다음 대화로 이어질 가능성이 높다. 다만 표현 안전선은 실행 전 확인해야 한다.',
+    },
   },
   {
     summary: [
@@ -50,6 +58,14 @@ const customerCardSummaries = [
     ],
     signals: ['관심 보류', '니즈 재확인', '자료 활용', '속도 조절'],
     full: ['고객 등급 A', '잠재력 높음', '관계 수준 높음', '최근 방문일 20일 전', '4주 콜 횟수 1회', '접촉 성공률 60%', '최근 콜 반응 관심 있으나 보류', '자료 요청 있음', '후속 미팅 보류', '거절/보류 사유 기존 치료 유지 선호', '후속조치 완료율 60%', 'CRM 기록 보통', '컴플라이언스 낮음'],
+    helper: {
+      strongestSignal: '관심은 있으나 후속 미팅이 보류됨',
+      twoWeekAction: '압박보다 니즈를 다시 확인한다',
+      caution: '기존 치료 유지 선호를 가볍게 보지 않는다',
+      primary: '관심 보류 관리군',
+      secondary: '반응 상승 집중군',
+      reason: '기회성은 높지만 후속 미팅이 보류되어 있어, 바로 집중하기보다 니즈 재확인이 먼저 필요하다.',
+    },
   },
   {
     summary: [
@@ -60,6 +76,14 @@ const customerCardSummaries = [
     ],
     signals: ['관계 안정', '변화 신호 낮음', '유지 품질', '과잉 접촉 주의'],
     full: ['고객 등급 B', '잠재력 중간', '관계 수준 높음', '최근 방문일 10일 전', '4주 콜 횟수 2회', '접촉 성공률 90%', '최근 콜 반응 안정적 유지', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 추가 필요성 낮음', '후속조치 완료율 80%', 'CRM 기록 충실', '컴플라이언스 낮음'],
+    helper: {
+      strongestSignal: '관계는 안정적이나 변화 신호가 낮음',
+      twoWeekAction: '관계 품질을 유지하고 과잉 접촉을 피한다',
+      caution: '변화 신호가 낮은 고객군을 무리하게 끌어올리려 하지 않는다',
+      primary: '관계 유지군',
+      secondary: '데이터 보완군',
+      reason: '관계와 접촉 성공률은 안정적이지만 자료 요청이나 후속 미팅 같은 변화 신호가 낮아 유지 품질 관리가 적합하다.',
+    },
   },
   {
     summary: [
@@ -70,6 +94,14 @@ const customerCardSummaries = [
     ],
     signals: ['접촉 피로', '무반응 증가', '실행 품질 저하', '리스크 관리'],
     full: ['고객 등급 B', '잠재력 중간', '관계 수준 낮음', '최근 방문일 5일 전', '4주 콜 횟수 4회', '접촉 성공률 40%', '최근 콜 반응 무반응 증가', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 시간 부족·피로감 표현', '후속조치 완료율 30%', 'CRM 기록 부족', '컴플라이언스 높음'],
+    helper: {
+      strongestSignal: '접촉 피로와 무반응 증가',
+      twoWeekAction: '접근 강도와 표현을 줄인다',
+      caution: '컴플라이언스 민감도와 고객 부담을 먼저 관리한다',
+      primary: '리스크 관리군',
+      secondary: '데이터 보완군',
+      reason: '접촉은 많지만 반응이 낮고 컴플라이언스 민감도가 높아, 더 밀기보다 접근 강도와 표현을 조절해야 한다.',
+    },
   },
   {
     summary: [
@@ -80,6 +112,14 @@ const customerCardSummaries = [
     ],
     signals: ['기회 신호 큼', '질문 증가', '후속 가능', '표현 안전선 중요'],
     full: ['고객 등급 A', '잠재력 높음', '관계 수준 낮음', '최근 방문일 14일 전', '4주 콜 횟수 1회', '접촉 성공률 70%', '최근 콜 반응 질문 증가', '자료 요청 있음', '후속 미팅 동의', '거절/보류 사유 근거자료 확인 필요', '후속조치 완료율 70%', 'CRM 기록 보통', '컴플라이언스 높음'],
+    helper: {
+      strongestSignal: '질문 증가와 후속 미팅 동의',
+      twoWeekAction: '근거자료를 안전하게 준비해 후속 대화로 연결한다',
+      caution: '컴플라이언스 높은 고객군이므로 표현과 자료 활용을 먼저 점검한다',
+      primary: '반응 상승 집중군',
+      secondary: '리스크 관리군',
+      reason: '기회 신호와 후속 가능성은 높지만 컴플라이언스 민감도가 높아, 집중하되 표현 안전선을 강하게 관리해야 한다.',
+    },
   },
   {
     summary: [
@@ -90,6 +130,14 @@ const customerCardSummaries = [
     ],
     signals: ['데이터 부족', '정보 보완', '판단 유보', '기록 정리'],
     full: ['고객 등급 C', '잠재력 낮음', '관계 수준 높음', '최근 방문일 35일 전', '4주 콜 횟수 0회', '접촉 성공률 50%', '최근 콜 반응 데이터 부족', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 정보 없음', '후속조치 완료율 20%', 'CRM 기록 부족', '컴플라이언스 중간'],
+    helper: {
+      strongestSignal: '반응 데이터와 CRM 기록 부족',
+      twoWeekAction: '판단보다 정보 보완과 기록 정리를 먼저 한다',
+      caution: '부족한 데이터로 고객군을 과도하게 단정하지 않는다',
+      primary: '데이터 보완군',
+      secondary: '관계 유지군',
+      reason: '관계 수준은 높지만 최근 반응과 CRM 기록이 부족해, 당장 집중보다 정보 보완이 먼저 필요하다.',
+    },
   },
 ];
 
@@ -125,6 +173,46 @@ function buildCustomerDataPanel(index: number) {
         <summary>전체 13개 Data 다시 보기</summary>
         <div>${data.full.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
       </details>
+    </div>
+  `;
+}
+
+function buildClassificationHelper(index: number) {
+  const data = customerCardSummaries[index];
+  if (!data) return '';
+  const helper = data.helper;
+  return `
+    <div class="v37-classification-helper" data-v37-classification-helper="true">
+      <div class="v37-helper-head">
+        <span>분류 도우미</span>
+        <b>세 질문으로 가까운 후보를 먼저 좁혀보세요</b>
+      </div>
+      <div class="v37-helper-question-grid">
+        <article>
+          <p>Q1. 가장 강한 신호는?</p>
+          <button type="button">${escapeHtml(helper.strongestSignal)}</button>
+        </article>
+        <article>
+          <p>Q2. 2주 행동 방향은?</p>
+          <button type="button">${escapeHtml(helper.twoWeekAction)}</button>
+        </article>
+        <article>
+          <p>Q3. 가장 큰 주의점은?</p>
+          <button type="button">${escapeHtml(helper.caution)}</button>
+        </article>
+      </div>
+      <div class="v37-helper-result">
+        <div>
+          <span>가까운 후보</span>
+          <b>${escapeHtml(helper.primary)}</b>
+        </div>
+        <div>
+          <span>함께 검토할 후보</span>
+          <b>${escapeHtml(helper.secondary)}</b>
+        </div>
+      </div>
+      <p class="v37-helper-reason"><b>분류 이유 초안:</b> ${escapeHtml(helper.reason)}</p>
+      <p class="v37-helper-note">이 후보는 정답이 아니라 선택 부담을 줄이기 위한 판단 보조입니다. 최종 분류는 아래 선택란에서 직접 결정하세요.</p>
     </div>
   `;
 }
@@ -167,6 +255,13 @@ function enhanceClassificationSection() {
       cardHead?.insertAdjacentElement('afterend', panel.firstElementChild as Element);
     }
 
+    if (!card.querySelector('[data-v37-classification-helper="true"]')) {
+      const helper = document.createElement('div');
+      helper.innerHTML = buildClassificationHelper(index);
+      const dataPanel = card.querySelector('[data-v37-customer-data-panel="true"]');
+      dataPanel?.insertAdjacentElement('afterend', helper.firstElementChild as Element);
+    }
+
     if (card.querySelector('[data-v37-judgment-ladder="true"]')) return;
     const ladder = document.createElement('div');
     ladder.setAttribute('data-v37-judgment-ladder', 'true');
@@ -174,7 +269,7 @@ function enhanceClassificationSection() {
       <div class="v37-judgment-ladder">
         <div class="v37-ladder-title">
           <span>판단 계단 ${index + 1}</span>
-          <b>신호를 먼저 고르고, 그 다음 분류하세요</b>
+          <b>필요하면 아래 4축 판단으로 내 선택을 다시 점검하세요</b>
         </div>
         <div class="v37-signal-tags" aria-label="핵심 신호 선택 도움말">
           ${signalTags.map((tag) => `<button type="button">${tag}</button>`).join('')}
