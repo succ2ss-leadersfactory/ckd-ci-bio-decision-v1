@@ -219,9 +219,15 @@ function buildClassificationHelper(index: number) {
   `;
 }
 
+function findCustomerClassificationSection() {
+  return Array.from(document.querySelectorAll('section')).find((item) => {
+    const title = item.querySelector('h3')?.textContent ?? '';
+    return title.includes('고객군 직접 분류하기') || title.includes('고객군 후보별 Data 읽기와 분류하기');
+  });
+}
+
 function enhanceClassificationSection() {
-  const sections = Array.from(document.querySelectorAll('section'));
-  const section = sections.find((item) => item.querySelector('h3')?.textContent?.includes('2단계: 고객군 직접 분류하기'));
+  const section = findCustomerClassificationSection();
   if (!section) return;
 
   if (!section.querySelector('[data-v37-classification-guide="true"]')) {
