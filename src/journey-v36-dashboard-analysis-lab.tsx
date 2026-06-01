@@ -165,6 +165,14 @@ const COMPARISON_OPTIONS = [
   '아직 판단을 유보한다',
 ];
 
+const REVIEW_ITEMS = [
+  '상황만 보고 처음 든 생각을 기록했다',
+  '데이터 신호 요약을 확인했다',
+  '데이터 기반 진단 가설을 직접 작성했다',
+  '직관과 데이터 비교 및 이유를 기록했다',
+  '최종 2주 실행 문장을 작성했다',
+];
+
 const DEFAULT_RESPONSE: DiagnosisResponse = {
   selectedMemberId: 'M01',
   observationIntuition: '',
