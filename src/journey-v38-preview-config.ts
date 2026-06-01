@@ -51,6 +51,11 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
     title: 'AI 콜플랜 결과물 요청',
     description: '앞 단계의 판단을 바탕으로 AI에 요청할 결과물을 선택하고 복사용 프롬프트를 생성합니다.',
   },
+  {
+    id: 'compliance-cleanup',
+    title: '컴플라이언스 위험 표현 제거',
+    description: 'AI 초안과 콜플랜 문장에서 위험 표현을 찾아 안전한 대체 표현으로 수정합니다.',
+  },
 ];
 
 export function clampV38Step(step: number) {
