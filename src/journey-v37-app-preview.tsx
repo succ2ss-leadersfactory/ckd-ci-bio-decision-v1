@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import './journey-v37-polish.css';
+import './journey-v37-label-polish';
 import { FullFlowJourneyV36PreviewApp } from './full-flow-journey-v36-preview';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
