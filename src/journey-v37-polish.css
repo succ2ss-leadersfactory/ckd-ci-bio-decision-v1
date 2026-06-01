@@ -1,0 +1,77 @@
+pre[data-v37-source-call-plan='true'] {
+  display: none;
+}
+
+.v37-call-plan-card-shell {
+  margin-top: 1rem;
+  border: 1px solid rgb(14 165 233 / 0.22);
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, rgb(240 249 255), rgb(255 255 255));
+  padding: 1rem;
+  box-shadow: 0 14px 40px rgb(15 23 42 / 0.08);
+}
+
+.v37-call-plan-card-head {
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.86);
+  padding: 1rem;
+}
+
+.v37-call-plan-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: rgb(8 145 178);
+}
+
+.v37-call-plan-card-head h4 {
+  margin: 0.25rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: rgb(15 23 42);
+}
+
+.v37-call-plan-card-head p:last-child {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgb(71 85 105);
+}
+
+.v37-call-plan-card-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.v37-call-plan-card-item {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.92);
+  padding: 0.9rem;
+}
+
+.v37-call-plan-card-item p {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: rgb(14 116 144);
+}
+
+.v37-call-plan-card-item div {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: rgb(30 41 59);
+}
+
+@media (min-width: 768px) {
+  .v37-call-plan-card-shell {
+    padding: 1.25rem;
+  }
+
+  .v37-call-plan-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
