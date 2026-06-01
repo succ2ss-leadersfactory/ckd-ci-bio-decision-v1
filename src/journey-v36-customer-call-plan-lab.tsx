@@ -48,6 +48,7 @@ type CustomerCallPlanResponse = {
   pastedAiAnswer: string;
   aiOutputResults: Record<string, string>;
   riskExpressions: Record<string, boolean>;
+  reviewChecks: Record<string, boolean>;
   fieldRevisions: string;
   finalFocusDirection: string;
   finalOperatingPrinciples: string;
@@ -242,6 +243,7 @@ const DEFAULT_RESPONSE: CustomerCallPlanResponse = {
   pastedAiAnswer: '',
   aiOutputResults: {},
   riskExpressions: {},
+  reviewChecks: {},
   fieldRevisions: '',
   finalFocusDirection: '',
   finalOperatingPrinciples: '',
@@ -252,7 +254,7 @@ const DEFAULT_RESPONSE: CustomerCallPlanResponse = {
   savedAt: '',
 };
 
-function FieldLabel({ children }: { children: string }) {
+function FieldLabel({ children }: { children: ReactNode }) {
   return <span className="text-xs font-bold text-slate-500">{children}</span>;
 }
 function SectionCard({ title, children }: { title: string; children: ReactNode }) {
@@ -321,6 +323,7 @@ export function CustomerCallPlanLab() {
     selectedAiOutputs: storedResponse.selectedAiOutputs ?? DEFAULT_RESPONSE.selectedAiOutputs,
     aiOutputResults: storedResponse.aiOutputResults ?? {},
     riskExpressions: storedResponse.riskExpressions ?? {},
+    reviewChecks: storedResponse.reviewChecks ?? {},
   };
   const [copyMessage, setCopyMessage] = useState('');
   const prompt = useMemo(() => buildPrompt(response), [response]);
@@ -415,6 +418,7 @@ export function CustomerCallPlanLab() {
       <p className="text-sm text-slate-600">AI 답변에 아래와 유사한 표현이 있으면 체크하고, 최종 콜플랜에서 제거하거나 안전한 표현으로 완화합니다.</p>
       <div className="grid gap-2 md:grid-cols-2">{RISK_EXPRESSIONS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><input type="checkbox" className="mt-1" checked={Boolean(response.riskExpressions[item])} onChange={(event) => update({ riskExpressions: { ...response.riskExpressions, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
       <label className="block space-y-1"><FieldLabel>현장형 수정 메모</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.fieldRevisions} onChange={(event) => update({ fieldRevisions: event.target.value })} placeholder="AI 답변에서 현장에 맞지 않는 부분이나 위험 표현을 어떻게 수정할지 작성하세요." /></label>
+      <div className="grid gap-2 md:grid-cols-2">{REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
     </SectionCard>
 
     <SectionCard title="최종 산출물: 2주 콜플랜">
