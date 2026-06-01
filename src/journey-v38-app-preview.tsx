@@ -8,6 +8,7 @@ import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
 import { V38CustomerJudgmentLab } from './journey-v38-customer-judgment-lab';
+import { V38CustomerPriorityLab } from './journey-v38-customer-priority-lab';
 import { clampV38Step, V38_STORAGE_KEYS, V38_VISIBLE_APP_STEPS } from './journey-v38-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
@@ -89,6 +90,7 @@ function renderV38Step(step: number, participant: V38Participant, setParticipant
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
   if (current.id === 'dashboard-analysis') return <DashboardAnalysisLab />;
   if (current.id === 'customer-judgment') return <V38CustomerJudgmentLab />;
+  if (current.id === 'customer-priority') return <V38CustomerPriorityLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 v38에서 준비 중입니다.</p></ShellCard>;
 }
