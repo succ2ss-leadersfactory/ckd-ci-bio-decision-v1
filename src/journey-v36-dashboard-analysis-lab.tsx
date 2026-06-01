@@ -3,6 +3,7 @@ import { useStored } from './journey-storage';
 import { V36_STORAGE_KEYS } from './journey-v36-preview-config';
 
 type MetricGroup = '기회 만들기' | '실행 품질' | '고객 반응' | '팀 학습' | '안전선 점검';
+type ExpertMetricLabel = '선행지표' | '과정지표' | '결과지표' | '확산지표' | '가드레일';
 
 type Member = {
   id: string;
@@ -16,7 +17,7 @@ type Member = {
 
 type MetricMeta = {
   group: MetricGroup;
-  expertLabel: '선행변수' | '과정변수' | '결과변수' | '확산변수' | '가드레일';
+  expertLabel: ExpertMetricLabel;
   description: string;
   interpretation: string;
 };
@@ -77,88 +78,88 @@ const INTUITION_OPTIONS = [
 ];
 
 const INTUITION_GUIDES: Record<string, string> = {
-  '접점 기회가 부족한 것 같다': '계획 접점 실행률과 핵심 고객군 커버리지가 낮을 때 먼저 검토할 가설입니다.',
-  '사전 준비가 약한 것 같다': '사전 인사이트 준비도와 메시지-니즈 적합도가 함께 낮을 때 검토할 가설입니다.',
-  '메시지와 고객 니즈가 맞지 않는 것 같다': '접점은 있으나 메시지-니즈 적합도와 고객 인게이지먼트가 낮을 때 검토할 가설입니다.',
-  '기록과 후속 실행이 끊기는 것 같다': 'CRM 기록 품질, 후속조치 실행률, 실행 적시성이 함께 낮을 때 검토할 가설입니다.',
-  '고객 반응 자체가 약한 것 같다': '고객 질문, 관심, 자료 요청, 대화 참여 신호가 전반적으로 낮을 때 검토할 가설입니다.',
-  '반응은 있으나 다음 대화로 연결되지 않는 것 같다': '고객 인게이지먼트는 있지만 후속 대화 연결지수가 낮을 때 검토할 가설입니다.',
-  '대화가 반복 관계로 이어지지 않는 것 같다': '고객 대화 지속성이 낮거나 반복 접점, 피드백, 추가 질문이 약할 때 검토할 가설입니다.',
-  '개인 경험이 팀 학습으로 퍼지지 않는 것 같다': '팀 학습 기여도와 실행 인사이트 재사용도가 낮을 때 검토할 가설입니다.',
-  '안전선부터 확인해야 할 것 같다': '컴플라이언스 위험 점검 또는 AI 입력 안전 점검이 주의·점검 필요일 때 우선 검토할 가설입니다.',
-  '아직 단정하기 어렵다': '지표 신호가 엇갈리거나 팀원 대화·고객 맥락 확인 없이는 판단하기 어려울 때 선택합니다.',
+  '접점 기회가 부족한 것 같다': '선행지표인 계획 접점 실행률과 핵심 고객군 커버리지가 낮을 때 먼저 검토할 가설입니다.',
+  '사전 준비가 약한 것 같다': '선행지표인 사전 인사이트 준비도와 과정지표인 메시지-니즈 적합도가 함께 낮을 때 검토할 가설입니다.',
+  '메시지와 고객 니즈가 맞지 않는 것 같다': '과정지표인 메시지-니즈 적합도와 결과지표인 고객 인게이지먼트가 낮을 때 검토할 가설입니다.',
+  '기록과 후속 실행이 끊기는 것 같다': '과정지표인 CRM 기록 품질, 후속조치 실행률, 실행 적시성이 함께 낮을 때 검토할 가설입니다.',
+  '고객 반응 자체가 약한 것 같다': '결과지표인 고객 질문, 관심, 자료 요청, 대화 참여 신호가 전반적으로 낮을 때 검토할 가설입니다.',
+  '반응은 있으나 다음 대화로 연결되지 않는 것 같다': '결과지표 중 고객 인게이지먼트는 있지만 후속 대화 연결지수가 낮을 때 검토할 가설입니다.',
+  '대화가 반복 관계로 이어지지 않는 것 같다': '결과지표인 고객 대화 지속성이 낮거나 반복 접점, 피드백, 추가 질문이 약할 때 검토할 가설입니다.',
+  '개인 경험이 팀 학습으로 퍼지지 않는 것 같다': '확산지표인 팀 학습 기여도와 실행 인사이트 재사용도가 낮을 때 검토할 가설입니다.',
+  '안전선부터 확인해야 할 것 같다': '가드레일인 컴플라이언스 위험 점검 또는 AI 입력 안전 점검이 주의·점검 필요일 때 우선 검토할 가설입니다.',
+  '아직 단정하기 어렵다': '선행·과정·결과·확산지표의 신호가 엇갈리거나 팀원 대화·고객 맥락 확인 없이는 판단하기 어려울 때 선택합니다.',
 };
 
 const METRIC_META: Record<string, MetricMeta> = {
   '계획 접점 실행률': {
     group: '기회 만들기',
-    expertLabel: '선행변수',
+    expertLabel: '선행지표',
     description: '우선순위 고객군에 대해 사전에 계획한 접점을 실제로 실행한 정도',
     interpretation: '성과 가능성을 만드는 활동 기회가 충분한지 봅니다.',
   },
   '핵심 고객군 커버리지': {
     group: '기회 만들기',
-    expertLabel: '선행변수',
+    expertLabel: '선행지표',
     description: '우선순위 고객군을 계획 기준에 맞게 균형 있게 접촉한 정도',
     interpretation: '특정 고객군에 치우치지 않고 전략적 접점이 유지되는지 봅니다.',
   },
   '사전 인사이트 준비도': {
     group: '기회 만들기',
-    expertLabel: '선행변수',
+    expertLabel: '선행지표',
     description: '방문 전 고객 상황, 이전 반응, 정보 니즈, 대화 목적을 준비한 정도',
     interpretation: '많이 만나는가보다 목적 있게 만나는가를 봅니다.',
   },
   '메시지-니즈 적합도': {
     group: '실행 품질',
-    expertLabel: '과정변수',
+    expertLabel: '과정지표',
     description: '고객의 정보 니즈와 허가된 메시지 범위에 맞게 근거 기반 메시지를 전달한 정도',
     interpretation: '고객에게 맞는 대화를 하고 있는지 확인합니다.',
   },
   'CRM 기록 품질': {
     group: '실행 품질',
-    expertLabel: '과정변수',
+    expertLabel: '과정지표',
     description: '고객 상황, 반응, 이슈, 다음 행동이 후속 판단 가능하도록 기록된 정도',
     interpretation: '기록량이 아니라 다음 실행을 판단할 수 있는 기록인지 봅니다.',
   },
   '후속조치 실행률': {
     group: '실행 품질',
-    expertLabel: '과정변수',
+    expertLabel: '과정지표',
     description: '고객 접점 이후 약속되거나 필요한 다음 행동을 실행한 정도',
     interpretation: '방문이 실제 다음 행동으로 이어지는지 봅니다.',
   },
   '실행 적시성': {
     group: '실행 품질',
-    expertLabel: '과정변수',
+    expertLabel: '과정지표',
     description: '계획된 실행과 후속조치가 지연 없이 적시에 이루어진 정도',
     interpretation: '실행 리듬이 끊기거나 늦어지지 않는지 봅니다.',
   },
   '고객 인게이지먼트 지수': {
     group: '고객 반응',
-    expertLabel: '결과변수',
+    expertLabel: '결과지표',
     description: '고객이 질문, 관심, 자료 요청, 추가 논의 등으로 대화에 참여한 정도',
     interpretation: '고객이 대화 안으로 들어오고 있는지 봅니다.',
   },
   '후속 대화 연결지수': {
     group: '고객 반응',
-    expertLabel: '결과변수',
+    expertLabel: '결과지표',
     description: '고객 반응이 후속 설명, 추가 자료 요청, 다음 미팅 등 다음 대화로 연결된 정도',
     interpretation: '성과 압박이 아니라 다음 대화의 연결 신호를 봅니다.',
   },
   '고객 대화 지속성': {
     group: '고객 반응',
-    expertLabel: '결과변수',
+    expertLabel: '결과지표',
     description: '고객이 반복 대화, 피드백 제공, 추가 질문, 후속 접점 수락 등으로 대화를 지속한 정도',
     interpretation: '관계 신뢰를 추상적으로 보지 않고 행동 신호로 봅니다.',
   },
   '팀 학습 기여도': {
     group: '팀 학습',
-    expertLabel: '확산변수',
+    expertLabel: '확산지표',
     description: '개인의 실행 경험을 팀 회의, 사례 공유, 개선 아이디어로 전환한 정도',
     interpretation: '개인 경험이 팀의 재사용 가능한 학습으로 바뀌는지 봅니다.',
   },
   '실행 인사이트 재사용도': {
     group: '팀 학습',
-    expertLabel: '확산변수',
+    expertLabel: '확산지표',
     description: '한 팀원의 성공·실패 사례가 다른 팀원의 실행 개선에 활용된 정도',
     interpretation: '공유에서 끝나지 않고 실제 실행에 재사용되는지 봅니다.',
   },
@@ -271,11 +272,11 @@ const CHECK_METRIC_OPTIONS = [
 
 const REVIEW_ITEMS = [
   '관찰 프로필과 진단 가설을 구분했는가?',
-  '기회 만들기 지표를 확인했는가?',
-  '실행 품질 지표를 확인했는가?',
-  '고객 반응 지표를 확인했는가?',
-  '팀 학습 지표를 확인했는가?',
-  '안전선 점검을 별도로 확인했는가?',
+  '기회 만들기·선행지표를 확인했는가?',
+  '실행 품질·과정지표를 확인했는가?',
+  '고객 반응·결과지표를 확인했는가?',
+  '팀 학습·확산지표를 확인했는가?',
+  '안전선 점검·가드레일을 별도로 확인했는가?',
   '인과 진단문을 생성하고 수정했는가?',
   '2주 동안 실행할 실험을 2개 이내로 정했는가?',
   'AI로 반대 가능성과 확인 질문을 점검했는가?',
@@ -344,6 +345,18 @@ function groupTone(group: MetricGroup) {
   return 'bg-rose-50 text-rose-700 border-rose-100';
 }
 
+function expertLabelForGroup(group: MetricGroup): ExpertMetricLabel {
+  if (group === '기회 만들기') return '선행지표';
+  if (group === '실행 품질') return '과정지표';
+  if (group === '고객 반응') return '결과지표';
+  if (group === '팀 학습') return '확산지표';
+  return '가드레일';
+}
+
+function groupLabel(group: MetricGroup) {
+  return `${group} · ${expertLabelForGroup(group)}`;
+}
+
 function metricOptions(group: MetricGroup) {
   return CORE_METRIC_ORDER.filter((key) => METRIC_META[key].group === group);
 }
@@ -353,11 +366,11 @@ function listOrNone(items: string[], noneText = '큰 문제 없음') {
 }
 
 function makeDiagnosisStatement(member: Member, response: DashboardResponse) {
-  const lead = listOrNone(response.selectedLeadVariables, '기회 만들기 지표는 큰 문제 없어 보이지만');
-  const process = listOrNone(response.selectedProcessVariables, '실행 품질은 추가 확인이 필요하고');
-  const result = listOrNone(response.selectedResultVariables, '고객 반응에는 약한 신호가 나타나고 있다');
-  const diffusion = response.selectedDiffusionVariables.length ? ` 또한 ${listOrNone(response.selectedDiffusionVariables)}도 함께 점검해야 한다.` : '';
-  const guardrails = response.selectedGuardrails.length ? ` 단, ${listOrNone(response.selectedGuardrails)}은 먼저 안전선 기준으로 확인해야 한다.` : '';
+  const lead = listOrNone(response.selectedLeadVariables, '기회 만들기·선행지표는 큰 문제 없어 보이지만');
+  const process = listOrNone(response.selectedProcessVariables, '실행 품질·과정지표는 추가 확인이 필요하고');
+  const result = listOrNone(response.selectedResultVariables, '고객 반응·결과지표에는 약한 신호가 나타나고 있다');
+  const diffusion = response.selectedDiffusionVariables.length ? ` 또한 ${listOrNone(response.selectedDiffusionVariables)} 등 확산지표도 함께 점검해야 한다.` : '';
+  const guardrails = response.selectedGuardrails.length ? ` 단, ${listOrNone(response.selectedGuardrails)}은 먼저 안전선·가드레일 기준으로 확인해야 한다.` : '';
   const experiment = response.selectedExperiments.length ? response.selectedExperiments.join(', ') : '선행/과정 행동 1개를 정해 실험한다';
   const check = response.selectedCheckMetrics.length ? response.selectedCheckMetrics.join(', ') : '고객 인게이지먼트 지수와 후속 대화 연결지수';
   const intuition = response.intuitionJudgment ? ` 초기 가설은 “${response.intuitionJudgment}”이다.` : '';
@@ -378,7 +391,7 @@ function parseAi(raw: string) {
 }
 
 function buildPrompt(member: Member, response: DashboardResponse) {
-  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n역할:\n아래 진단을 새로 만드는 것이 아니라, 팀장이 먼저 선택한 판단이 타당한지 검증하고 보완하세요. 관찰 프로필은 정답이 아니라 사례 배경이며, 초기 진단 가설은 팀장이 데이터를 보고 세운 검증 대상입니다. 단순 성과 판단이 아니라 기회 만들기, 실행 품질, 고객 반응, 팀 학습, 안전선 점검의 경로를 보세요.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.type}\n\n[관찰 메모]\n${member.signal}\n\n[팀원 발언]\n${member.comment}\n\n[진단 지표 데이터]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[안전선 점검]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장의 초기 진단 가설]\n${response.intuitionJudgment || '-'}\n\n[초기 가설 선택 기준]\n${response.intuitionJudgment ? INTUITION_GUIDES[response.intuitionJudgment] : '-'}\n\n[팀장이 선택한 기회 만들기 지표]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[팀장이 선택한 실행 품질 지표]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[팀장이 선택한 고객 반응 지표]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[팀장이 선택한 팀 학습 지표]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[팀장이 선택한 안전선 점검]\n${listOrNone(response.selectedGuardrails, '-')}\n\n[진단 유형]\n${response.diagnosisType || '-'}\n\n[선택 이유]\n${response.reasonOneLine || '-'}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n검토 요청:\n1. 관찰 프로필과 초기 진단 가설이 섞이지 않았는지 점검하세요.\n2. 위 진단이 타당한 이유를 근거 지표와 연결해 설명하세요.\n3. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n4. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n5. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n6. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 관찰 프로필과 초기 가설 구분 점검\n## 2. 이 진단이 타당한 이유\n## 3. 이 진단이 틀렸을 가능성\n## 4. 팀장이 확인해야 할 질문\n## 5. 2주 실행 실험 보완 제안\n## 6. 안전선 관점의 주의점`;
+  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n역할:\n아래 진단을 새로 만드는 것이 아니라, 팀장이 먼저 선택한 판단이 타당한지 검증하고 보완하세요. 관찰 프로필은 정답이 아니라 사례 배경이며, 초기 진단 가설은 팀장이 데이터를 보고 세운 검증 대상입니다. 단순 성과 판단이 아니라 기회 만들기(선행지표), 실행 품질(과정지표), 고객 반응(결과지표), 팀 학습(확산지표), 안전선 점검(가드레일)의 경로를 보세요.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.type}\n\n[관찰 메모]\n${member.signal}\n\n[팀원 발언]\n${member.comment}\n\n[진단 지표 데이터]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[안전선 점검]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장의 초기 진단 가설]\n${response.intuitionJudgment || '-'}\n\n[초기 가설 선택 기준]\n${response.intuitionJudgment ? INTUITION_GUIDES[response.intuitionJudgment] : '-'}\n\n[팀장이 선택한 기회 만들기·선행지표]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[팀장이 선택한 실행 품질·과정지표]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[팀장이 선택한 고객 반응·결과지표]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[팀장이 선택한 팀 학습·확산지표]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[팀장이 선택한 안전선 점검·가드레일]\n${listOrNone(response.selectedGuardrails, '-')}\n\n[진단 유형]\n${response.diagnosisType || '-'}\n\n[선택 이유]\n${response.reasonOneLine || '-'}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n검토 요청:\n1. 관찰 프로필과 초기 진단 가설이 섞이지 않았는지 점검하세요.\n2. 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 설명하세요.\n3. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n4. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n5. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n6. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 관찰 프로필과 초기 가설 구분 점검\n## 2. 선행·과정·결과·확산지표 연결 점검\n## 3. 이 진단이 틀렸을 가능성\n## 4. 팀장이 확인해야 할 질문\n## 5. 2주 실행 실험 보완 제안\n## 6. 안전선 관점의 주의점`;
 }
 
 export function DashboardAnalysisLab() {
@@ -424,7 +437,7 @@ export function DashboardAnalysisLab() {
     setCopyMessage('AI 답변을 6개 검토 영역으로 분리했습니다.');
   };
 
-  const outputText = `[팀원 실행진단 결과]\n\n[선택 팀원]\n${currentMember.name}\n\n[관찰 프로필]\n${currentMember.type}\n\n[초기 진단 가설]\n${response.intuitionJudgment || '-'}\n\n[진단 유형]\n${response.diagnosisType}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(currentMember, response)}\n\n[기회 만들기]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[실행 품질]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[고객 반응]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[팀 학습]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[안전선 점검]\n${listOrNone(response.selectedGuardrails, '-')}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n[팀원에게 던질 질문]\n${response.confirmQuestion}\n\n[최종 실행 문장]\n${response.finalActionSentence}`;
+  const outputText = `[팀원 실행진단 결과]\n\n[선택 팀원]\n${currentMember.name}\n\n[관찰 프로필]\n${currentMember.type}\n\n[초기 진단 가설]\n${response.intuitionJudgment || '-'}\n\n[진단 유형]\n${response.diagnosisType}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(currentMember, response)}\n\n[기회 만들기 · 선행지표]\n${listOrNone(response.selectedLeadVariables, '-')}\n\n[실행 품질 · 과정지표]\n${listOrNone(response.selectedProcessVariables, '-')}\n\n[고객 반응 · 결과지표]\n${listOrNone(response.selectedResultVariables, '-')}\n\n[팀 학습 · 확산지표]\n${listOrNone(response.selectedDiffusionVariables, '-')}\n\n[안전선 점검 · 가드레일]\n${listOrNone(response.selectedGuardrails, '-')}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n[팀원에게 던질 질문]\n${response.confirmQuestion}\n\n[최종 실행 문장]\n${response.finalActionSentence}`;
 
   return (
     <div className="space-y-4">
@@ -434,10 +447,14 @@ export function DashboardAnalysisLab() {
       </div>
 
       <SectionCard title="지표 읽는 법: 숫자보다 실행 경로를 본다">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">화면에는 쉬운 표현과 전문가용 지표 구분을 함께 표시합니다. 선행지표는 성과 가능성을 만드는 행동, 과정지표는 실행 품질, 결과지표는 고객 반응, 확산지표는 팀 학습으로 이어지는 정도를 뜻합니다.</div>
         <div className="grid gap-3 md:grid-cols-5">
           {(['기회 만들기', '실행 품질', '고객 반응', '팀 학습', '안전선 점검'] as MetricGroup[]).map((group) => (
             <div key={group} className={`rounded-2xl border p-4 ${groupTone(group)}`}>
-              <h4 className="font-black">{group}</h4>
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-black">{group}</h4>
+                <span className="rounded-full border bg-white/70 px-2 py-0.5 text-[10px] font-black">{expertLabelForGroup(group)}</span>
+              </div>
               <p className="mt-2 text-sm">
                 {group === '기회 만들기'
                   ? '성과 가능성을 만드는 사전 행동입니다.'
@@ -461,19 +478,19 @@ export function DashboardAnalysisLab() {
         <div className="grid gap-3 md:grid-cols-4">
           {CORE_METRIC_ORDER.map((key) => {
             const meta = METRIC_META[key];
-            return <div key={key} className={`rounded-2xl border p-3 ${metricTone(currentMember.metrics[key], key)}`}><div className="flex items-center justify-between gap-2"><p className="text-xs font-bold text-slate-500">{key}</p><span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${groupTone(meta.group)}`}>{meta.group}</span></div><p className="mt-1 text-2xl font-black text-slate-900">{currentMember.metrics[key]}</p><p className="mt-2 text-xs leading-5 text-slate-600">{meta.description}</p></div>;
+            return <div key={key} className={`rounded-2xl border p-3 ${metricTone(currentMember.metrics[key], key)}`}><div className="flex items-center justify-between gap-2"><p className="text-xs font-bold text-slate-500">{key}</p><span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${groupTone(meta.group)}`}>{meta.group} · {meta.expertLabel}</span></div><p className="mt-1 text-2xl font-black text-slate-900">{currentMember.metrics[key]}</p><p className="mt-2 text-xs leading-5 text-slate-600">{meta.description}</p></div>;
           })}
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           {GUARDRAIL_ORDER.map((key) => {
             const status = currentMember.guardrails[key];
-            return <div key={key} className={`rounded-2xl border p-4 ${guardrailTone(status)}`}><div className="flex items-center justify-between gap-2"><p className="text-sm font-black">{key}</p><span className="rounded-full bg-white/70 px-3 py-1 text-xs font-black">{status}</span></div><p className="mt-2 text-xs leading-5">{METRIC_META[key].description}</p></div>;
+            return <div key={key} className={`rounded-2xl border p-4 ${guardrailTone(status)}`}><div className="flex items-center justify-between gap-2"><div><p className="text-sm font-black">{key}</p><p className="text-xs font-bold">안전선 점검 · 가드레일</p></div><span className="rounded-full bg-white/70 px-3 py-1 text-xs font-black">{status}</span></div><p className="mt-2 text-xs leading-5">{METRIC_META[key].description}</p></div>;
           })}
         </div>
       </SectionCard>
 
       <SectionCard title="2단계: 초기 진단 가설 선택">
-        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">아래 선택은 정답이 아니라 다음 단계에서 검증할 가설입니다. 1단계의 관찰 프로필을 그대로 따라가지 말고, 지표 조합을 보고 가장 먼저 의심되는 실행 병목을 선택하세요.</div>
+        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">아래 선택은 정답이 아니라 다음 단계에서 검증할 가설입니다. 1단계의 관찰 프로필을 그대로 따라가지 말고, 선행지표·과정지표·결과지표·확산지표의 조합을 보고 가장 먼저 의심되는 실행 병목을 선택하세요.</div>
         <label className="block space-y-1"><FieldLabel>지표를 보고 처음 세운 가설</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.intuitionJudgment} onChange={(event) => update({ intuitionJudgment: event.target.value })}><option value="">선택하세요</option>{INTUITION_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
         {response.intuitionJudgment ? <div className="rounded-xl border border-cyan-100 bg-white p-3 text-sm text-cyan-900"><p className="font-bold">가설 선택 기준</p><p className="mt-1">{INTUITION_GUIDES[response.intuitionJudgment]}</p></div> : null}
       </SectionCard>
@@ -482,11 +499,11 @@ export function DashboardAnalysisLab() {
         <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">복수 선택 가능: 문제가 되는 지표를 모두 고르되, 가장 설명력이 큰 지표 중심으로 선택하세요. 안전선은 평균 점수가 아니라 우선 점검 기준입니다.</div>
         <label className="block space-y-1"><FieldLabel>진단 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.diagnosisType} onChange={(event) => update({ diagnosisType: event.target.value })}><option value="">선택하세요</option>{DIAGNOSIS_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
         <div className="grid gap-4 md:grid-cols-5">
-          <div><FieldLabel>기회 만들기</FieldLabel><div className="mt-2 space-y-2">{metricOptions('기회 만들기').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedLeadVariables.includes(metric)} onChange={() => update({ selectedLeadVariables: toggle(response.selectedLeadVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>실행 품질</FieldLabel><div className="mt-2 space-y-2">{metricOptions('실행 품질').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProcessVariables.includes(metric)} onChange={() => update({ selectedProcessVariables: toggle(response.selectedProcessVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>고객 반응</FieldLabel><div className="mt-2 space-y-2">{metricOptions('고객 반응').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>팀 학습</FieldLabel><div className="mt-2 space-y-2">{metricOptions('팀 학습').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>안전선 점검</FieldLabel><div className="mt-2 space-y-2">{GUARDRAIL_ORDER.map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedGuardrails.includes(metric)} onChange={() => update({ selectedGuardrails: toggle(response.selectedGuardrails, metric) })} />{metric}</label>)}</div></div>
+          <div><FieldLabel>{groupLabel('기회 만들기')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('기회 만들기').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedLeadVariables.includes(metric)} onChange={() => update({ selectedLeadVariables: toggle(response.selectedLeadVariables, metric) })} />{metric}</label>)}</div></div>
+          <div><FieldLabel>{groupLabel('실행 품질')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('실행 품질').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProcessVariables.includes(metric)} onChange={() => update({ selectedProcessVariables: toggle(response.selectedProcessVariables, metric) })} />{metric}</label>)}</div></div>
+          <div><FieldLabel>{groupLabel('고객 반응')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('고객 반응').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metric}</label>)}</div></div>
+          <div><FieldLabel>{groupLabel('팀 학습')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('팀 학습').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metric}</label>)}</div></div>
+          <div><FieldLabel>{groupLabel('안전선 점검')}</FieldLabel><div className="mt-2 space-y-2">{GUARDRAIL_ORDER.map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedGuardrails.includes(metric)} onChange={() => update({ selectedGuardrails: toggle(response.selectedGuardrails, metric) })} />{metric}</label>)}</div></div>
         </div>
         <label className="block space-y-1"><FieldLabel>선택 이유 한 줄</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.reasonOneLine} onChange={(event) => update({ reasonOneLine: event.target.value })} placeholder="예: 접점은 충분하지만 메시지-니즈 적합도와 후속 대화 연결지수가 낮다." /></label>
         <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateDiagnosis}>인과 진단문 생성</button>
@@ -513,11 +530,11 @@ export function DashboardAnalysisLab() {
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             <p><b>관찰 프로필:</b> {currentMember.type}</p>
             <p><b>초기 진단 가설:</b> {response.intuitionJudgment || '-'}</p>
-            <p><b>기회 만들기:</b> {listOrNone(response.selectedLeadVariables, '-')}</p>
-            <p><b>실행 품질:</b> {listOrNone(response.selectedProcessVariables, '-')}</p>
-            <p><b>고객 반응:</b> {listOrNone(response.selectedResultVariables, '-')}</p>
-            <p><b>팀 학습:</b> {listOrNone(response.selectedDiffusionVariables, '-')}</p>
-            <p><b>안전선 점검:</b> {listOrNone(response.selectedGuardrails, '-')}</p>
+            <p><b>기회 만들기·선행지표:</b> {listOrNone(response.selectedLeadVariables, '-')}</p>
+            <p><b>실행 품질·과정지표:</b> {listOrNone(response.selectedProcessVariables, '-')}</p>
+            <p><b>고객 반응·결과지표:</b> {listOrNone(response.selectedResultVariables, '-')}</p>
+            <p><b>팀 학습·확산지표:</b> {listOrNone(response.selectedDiffusionVariables, '-')}</p>
+            <p><b>안전선 점검·가드레일:</b> {listOrNone(response.selectedGuardrails, '-')}</p>
             <p><b>진단 유형:</b> {response.diagnosisType || '-'}</p>
             <p><b>2주 실험:</b> {response.selectedExperiments.join(', ') || '-'}</p>
             <p><b>확인 지표:</b> {response.selectedCheckMetrics.join(', ') || '-'}</p>
