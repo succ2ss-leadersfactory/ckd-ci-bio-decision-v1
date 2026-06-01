@@ -36,8 +36,7 @@ const DEFAULT_PROGRESS: V36Progress = {
 
 const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
 const SHOW_QA_PANEL = false;
-const V36_SMOKE_MARKER = 'v36 Preview Smoke';
-const V36_LEGACY_DIST_SMOKE_TITLE = '종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview';
+const SMOKE_MARKER = 'Journey Smoke Marker';
 
 function ComplianceNotice() {
   return (
@@ -136,11 +135,10 @@ export function FullFlowJourneyV36PreviewApp() {
       onStepSelect={(step) => setProgress({ step: clampV36Step(step) })}
     >
       {renderV36Step(safeStep, participant, setParticipant)}
-      <span className="sr-only">{V36_SMOKE_MARKER}</span>
-      <span className="sr-only">{V36_LEGACY_DIST_SMOKE_TITLE}</span>
+      <span className="sr-only">{SMOKE_MARKER}</span>
       {SHOW_QA_PANEL ? (
         <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
-          <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · {V36_SMOKE_MARKER}</summary>
+          <summary className="cursor-pointer font-bold text-slate-700">검사용 정보 · {SMOKE_MARKER}</summary>
           <p className="mt-2">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
           <p className="mt-1">current step: {safeStep + 1} / {V36_VISIBLE_APP_STEPS.length}</p>
         </details>
