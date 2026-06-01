@@ -61,6 +61,11 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
     title: '최종 2주 콜플랜 카드',
     description: '앞 단계의 판단과 수정 내용을 교육 후 가져갈 수 있는 실행 카드로 정리합니다.',
   },
+  {
+    id: 'instructor-discussion',
+    title: '강사용 토의 질문',
+    description: '강사가 실습 후 디브리핑에 사용할 토의 질문을 영역별로 확인합니다.',
+  },
 ];
 
 export function clampV38Step(step: number) {
