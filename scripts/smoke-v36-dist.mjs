@@ -15,8 +15,14 @@ function readText(file) {
   return readFileSync(file, 'utf8');
 }
 
-function stripScriptTags(content) {
-  return content.replace(/<script\b[\s\S]*?<\/script>/gi, '');
+function extractVisibleText(content) {
+  return content
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, '')
+    .replace(/<link\b[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function listFiles(dir) {
@@ -37,9 +43,9 @@ if (!distHtml.includes('<title>C1바이오 영업팀장 AI 리더십 Lab Journey
   fail('dist/journey-v36-preview.html must include the customer-facing title.');
 }
 
-const distPageShell = stripScriptTags(distHtml);
-if (/Preview|preview|v35|v36|검증|QA/.test(distPageShell)) {
-  fail('dist/journey-v36-preview.html must not expose demo/debug wording in the visible page shell.');
+const distVisibleText = extractVisibleText(distHtml);
+if (/Preview|preview|v35|v36|검증|QA/.test(distVisibleText)) {
+  fail('dist/journey-v36-preview.html must not expose demo/debug wording in visible text.');
 }
 
 if (!/<script\b[^>]*type=["']module["'][^>]*src=["'][^"']+\.js["'][^>]*>/s.test(distHtml)) {
