@@ -36,6 +36,11 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
     title: '고객군 판단',
     description: '고객군 후보별 Data를 읽고 직접 분류한 뒤 후속 실행 판단의 근거를 만듭니다.',
   },
+  {
+    id: 'customer-priority',
+    title: '집중/후순위 고객군 선택',
+    description: '2주 실행 관점에서 집중할 고객군, 후순위 고객군, 관찰/유지 고객군을 선택합니다.',
+  },
 ];
 
 export function clampV38Step(step: number) {
