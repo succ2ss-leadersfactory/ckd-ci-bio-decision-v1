@@ -36,6 +36,12 @@ type AiOutputOption = {
   required?: boolean;
 };
 
+type DataFieldGuide = {
+  label: string;
+  meaning: string;
+  interpretation: string;
+};
+
 type CustomerCallPlanResponse = {
   groupClassifications: Record<string, string>;
   classificationReasons: Record<string, string>;
@@ -83,10 +89,26 @@ const RISK_EXPRESSIONS = [
   '내부 전략상 반드시 밀어야 합니다',
 ];
 
+const DATA_FIELD_GUIDE: DataFieldGuide[] = [
+  { label: '고객 등급', meaning: '회사 기준의 고객 중요도와 타깃 우선순위', interpretation: '등급이 높더라도 최근 반응과 후속 가능성이 함께 있어야 집중 대상이 됩니다.' },
+  { label: '잠재력', meaning: '환자군 규모, 진료량, 성장 가능성을 반영한 가상 잠재 가치', interpretation: '현재 반응이 낮아도 잠재력이 높으면 보류·재탐색 후보가 될 수 있습니다.' },
+  { label: '관계 수준', meaning: '고객과 담당자 간 신뢰, 접촉 수용성, 관계 안정성', interpretation: '관계가 낮으면 접근 강도를 조절하고, 관계가 높으면 유지 품질을 봅니다.' },
+  { label: '최근 방문일', meaning: '마지막 대면 또는 주요 접점 시점', interpretation: '오래되면 데이터 보완이 필요하고, 너무 최근이면 과잉 접촉 가능성을 확인합니다.' },
+  { label: '4주 콜 횟수', meaning: '최근 4주 동안 방문·통화·온라인 미팅 등 접점 횟수', interpretation: '접점 부족과 접촉 피로도를 동시에 판단하는 기본 데이터입니다.' },
+  { label: '접촉 성공률', meaning: '접촉 시도 대비 실제 고객과 연결된 비율', interpretation: '낮으면 집중군이어도 2주 실행 가능성이 떨어질 수 있습니다.' },
+  { label: '최근 콜 반응', meaning: '최근 접점에서 나타난 긍정·보류·무반응·거절 신호', interpretation: '고객군 분류에서 가장 직접적인 반응 신호입니다.' },
+  { label: '자료 요청', meaning: '고객이 논문, 근거자료, 제품자료, 환자교육자료 등을 요청했는지', interpretation: '정보 니즈가 명확하고 후속 대화 가능성이 있는지 판단합니다.' },
+  { label: '후속 미팅', meaning: '고객이 다음 미팅, 추가 설명, 자료 전달 등 후속 접점을 수락했는지', interpretation: '2주 안에 실제 행동으로 이어질 수 있는지 판단합니다.' },
+  { label: '거절/보류 사유', meaning: '고객이 관심을 보류하거나 접촉을 거절한 이유', interpretation: '무리하게 접근할지, 질문으로 확인할지, 후순위로 둘지 판단합니다.' },
+  { label: '후속조치 완료율', meaning: '약속한 자료 전달, 재방문, 답변 제공 등이 완료된 정도', interpretation: '고객 반응을 실제 실행으로 연결하는 팀 실행력을 봅니다.' },
+  { label: 'CRM 기록', meaning: '고객 반응, 요청자료, 다음 행동, 보류 사유가 기록된 정도', interpretation: '데이터 신뢰성과 후속 판단 가능성을 확인합니다.' },
+  { label: '컴플라이언스', meaning: '고객 요청이나 대화 주제에 규정상 주의가 필요한 정도', interpretation: '집중 여부와 별개로 접근 전 표현·자료 안전선을 확인해야 합니다.' },
+];
+
 const CUSTOMER_GROUPS: CustomerGroup[] = [
   {
     id: 'G1',
-    label: '고객 묶음 1',
+    label: '고객군 후보 1',
     customerGrade: 'A',
     potentialGrade: '높음',
     relationshipLevel: '중간',
@@ -105,7 +127,7 @@ const CUSTOMER_GROUPS: CustomerGroup[] = [
   },
   {
     id: 'G2',
-    label: '고객 묶음 2',
+    label: '고객군 후보 2',
     customerGrade: 'A',
     potentialGrade: '높음',
     relationshipLevel: '높음',
@@ -124,7 +146,7 @@ const CUSTOMER_GROUPS: CustomerGroup[] = [
   },
   {
     id: 'G3',
-    label: '고객 묶음 3',
+    label: '고객군 후보 3',
     customerGrade: 'B',
     potentialGrade: '중간',
     relationshipLevel: '높음',
@@ -143,7 +165,7 @@ const CUSTOMER_GROUPS: CustomerGroup[] = [
   },
   {
     id: 'G4',
-    label: '고객 묶음 4',
+    label: '고객군 후보 4',
     customerGrade: 'B',
     potentialGrade: '중간',
     relationshipLevel: '낮음',
@@ -162,7 +184,7 @@ const CUSTOMER_GROUPS: CustomerGroup[] = [
   },
   {
     id: 'G5',
-    label: '고객 묶음 5',
+    label: '고객군 후보 5',
     customerGrade: 'A',
     potentialGrade: '높음',
     relationshipLevel: '낮음',
@@ -181,7 +203,7 @@ const CUSTOMER_GROUPS: CustomerGroup[] = [
   },
   {
     id: 'G6',
-    label: '고객 묶음 6',
+    label: '고객군 후보 6',
     customerGrade: 'C',
     potentialGrade: '낮음',
     relationshipLevel: '높음',
@@ -261,7 +283,8 @@ function SectionCard({ title, children }: { title: string; children: ReactNode }
   return <section className="rounded-2xl border bg-white p-5 shadow-sm"><h3 className="text-lg font-bold text-slate-900">{title}</h3><div className="mt-4 space-y-4">{children}</div></section>;
 }
 function DataPill({ label, value }: { label: string; value: ReactNode }) {
-  return <div className="rounded-xl border bg-white px-3 py-2"><p className="text-[11px] font-black text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-800">{value}</p></div>;
+  const guide = DATA_FIELD_GUIDE.find((item) => item.label === label);
+  return <div className="rounded-xl border bg-white px-3 py-2"><p className="text-[11px] font-black text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-800">{value}</p>{guide ? <p className="mt-1 text-[11px] leading-4 text-slate-500">{guide.interpretation}</p> : null}</div>;
 }
 function toggle(items: string[], item: string) {
   return items.includes(item) ? items.filter((value) => value !== item) : [...items, item];
@@ -300,16 +323,16 @@ function parseAiAnswerByOutputs(raw: string, selectedIds: string[]) {
 function buildPrompt(response: CustomerCallPlanResponse) {
   const selectedOutputs = selectedOutputOptions(response.selectedAiOutputs);
   const memberRoleText = TEAM_MEMBERS.map((member) => `- ${member.name}: ${response.memberRoles[member.name] || member.suggestedRole}`).join('\n');
-  return `너는 제약영업 팀장의 고객군 판단과 2주 콜플랜 설계를 돕는 리더십 코치입니다.\n\n[상황]\n나는 C1바이오 영업2본부 수도권중부영업팀장입니다. 실제 고객명·병원명은 사용하지 않고, 아래 교육용 고객 묶음 데이터를 기준으로 향후 2주 실행 방향을 정하려고 합니다.\n\n[기존 라벨 참고]\n기존 ${CUSTOMER_SEGMENTS.join('/')} 라벨을 먼저 사용하지 말고, 아래 고객 Data와 교육생의 분류 결과를 우선으로 판단하세요.\n\n[고객 묶음별 원천 Data]\n${CUSTOMER_GROUPS.map(summarizeGroupData).join('\n')}\n\n[교육생의 고객군 분류 결과]\n${buildClassificationText(response)}\n\n[집중/후순위 판단]\n- 2주 집중 고객군 유형: ${response.selectedFocusType || '미선택'}\n- 후순위 고객군 유형: ${response.selectedDeprioritizedType || '미선택'}\n- 선택 이유: ${response.decisionReason || '미작성'}\n- 포기 비용/리스크 관리 기준: ${response.riskTradeoffMemo || '미작성'}\n\n[팀원별 역할 방향]\n${memberRoleText}\n\n[요청 결과물]\n${selectedOutputs.map((item, index) => `${index + 1}. ${item.title}: ${item.description}`).join('\n') || '-'}\n\n작성 원칙:\n1. 선택된 고객군 분류와 집중/후순위 판단을 중심으로 작성하세요.\n2. 실제 고객명, 병원명, 의사명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n3. 미승인 효능, 허가 외 사용, 제품 효과 단정, 고객 압박, 경쟁사 비방 표현은 사용하지 마세요.\n4. 고객군별 반응 데이터, 후속 가능성, CRM 기록, 컴플라이언스 민감도를 함께 고려하세요.\n5. 팀원별 실행 행동은 서로 다르게 제안하세요.\n6. 후속 단계인 실행행동 Map에서 더 세분화할 수 있도록 방향과 원칙 중심으로 작성하세요.\n\n출력 형식:\n${selectedOutputs.map((item) => `[${item.title}]\n- 내용을 작성하세요.`).join('\n\n')}`;
+  return `너는 제약영업 팀장의 고객군 판단과 2주 콜플랜 설계를 돕는 리더십 코치입니다.\n\n[상황]\n나는 C1바이오 영업2본부 수도권중부영업팀장입니다. 실제 고객명·병원명은 사용하지 않고, 아래 교육용 고객군 후보 데이터를 기준으로 향후 2주 실행 방향을 정하려고 합니다.\n\n[고객군 후보 안내]\n고객군 후보 1~6은 개별 고객 6명이 아니라, 유사한 CRM·콜 리포트 패턴을 보이는 여러 고객을 교육용으로 묶은 가상 고객군 후보입니다.\n\n[기존 라벨 참고]\n기존 ${CUSTOMER_SEGMENTS.join('/')} 라벨을 먼저 사용하지 말고, 아래 고객 Data와 교육생의 분류 결과를 우선으로 판단하세요.\n\n[고객군 후보별 원천 Data]\n${CUSTOMER_GROUPS.map(summarizeGroupData).join('\n')}\n\n[교육생의 고객군 분류 결과]\n${buildClassificationText(response)}\n\n[집중/후순위 판단]\n- 2주 집중 고객군 유형: ${response.selectedFocusType || '미선택'}\n- 후순위 고객군 유형: ${response.selectedDeprioritizedType || '미선택'}\n- 선택 이유: ${response.decisionReason || '미작성'}\n- 포기 비용/리스크 관리 기준: ${response.riskTradeoffMemo || '미작성'}\n\n[팀원별 역할 방향]\n${memberRoleText}\n\n[요청 결과물]\n${selectedOutputs.map((item, index) => `${index + 1}. ${item.title}: ${item.description}`).join('\n') || '-'}\n\n작성 원칙:\n1. 선택된 고객군 분류와 집중/후순위 판단을 중심으로 작성하세요.\n2. 실제 고객명, 병원명, 의사명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n3. 미승인 효능, 허가 외 사용, 제품 효과 단정, 고객 압박, 경쟁사 비방 표현은 사용하지 마세요.\n4. 고객군별 반응 데이터, 후속 가능성, CRM 기록, 컴플라이언스 민감도를 함께 고려하세요.\n5. 팀원별 실행 행동은 서로 다르게 제안하세요.\n6. 후속 단계인 실행행동 Map에서 더 세분화할 수 있도록 방향과 원칙 중심으로 작성하세요.\n\n출력 형식:\n${selectedOutputs.map((item) => `[${item.title}]\n- 내용을 작성하세요.`).join('\n\n')}`;
 }
 function getGroupsByType(response: CustomerCallPlanResponse, type: string) {
-  return CUSTOMER_GROUPS.filter((group) => response.groupClassifications[group.id] === type).map((group) => group.label).join(', ') || '해당 고객 묶음 없음';
+  return CUSTOMER_GROUPS.filter((group) => response.groupClassifications[group.id] === type).map((group) => group.label).join(', ') || '해당 고객군 후보 없음';
 }
 function checkedRiskExpressions(response: CustomerCallPlanResponse) {
   return RISK_EXPRESSIONS.filter((item) => response.riskExpressions[item]);
 }
 function makeCallPlanCard(response: CustomerCallPlanResponse) {
-  return `[2주 콜플랜 카드]\n\n[집중 고객군 유형]\n${response.selectedFocusType || '미선택'}\n\n[집중 고객 묶음]\n${getGroupsByType(response, response.selectedFocusType)}\n\n[후순위 고객군 유형]\n${response.selectedDeprioritizedType || '미선택'}\n\n[후순위 고객 묶음]\n${getGroupsByType(response, response.selectedDeprioritizedType)}\n\n[판단 이유]\n${response.decisionReason || '미작성'}\n\n[포기 비용/리스크 관리]\n${response.riskTradeoffMemo || '미작성'}\n\n[2주 집중 방향]\n${response.finalFocusDirection || '미작성'}\n\n[고객군별 운영 원칙]\n${response.finalOperatingPrinciples || '미작성'}\n\n[팀원별 역할]\n${response.finalMemberRoles || '미작성'}\n\n[후속조치·CRM 기준]\n${response.finalFollowUpStandards || '미작성'}\n\n[하지 않을 행동/주의 표현]\n${response.finalAvoidActions || '미작성'}\n\n[팀장 회의 공유 문장]\n${response.finalManagerMessage || '미작성'}`;
+  return `[2주 콜플랜 카드]\n\n[집중 고객군 유형]\n${response.selectedFocusType || '미선택'}\n\n[집중 고객군 후보]\n${getGroupsByType(response, response.selectedFocusType)}\n\n[후순위 고객군 유형]\n${response.selectedDeprioritizedType || '미선택'}\n\n[후순위 고객군 후보]\n${getGroupsByType(response, response.selectedDeprioritizedType)}\n\n[판단 이유]\n${response.decisionReason || '미작성'}\n\n[포기 비용/리스크 관리]\n${response.riskTradeoffMemo || '미작성'}\n\n[2주 집중 방향]\n${response.finalFocusDirection || '미작성'}\n\n[고객군별 운영 원칙]\n${response.finalOperatingPrinciples || '미작성'}\n\n[팀원별 역할]\n${response.finalMemberRoles || '미작성'}\n\n[후속조치·CRM 기준]\n${response.finalFollowUpStandards || '미작성'}\n\n[하지 않을 행동/주의 표현]\n${response.finalAvoidActions || '미작성'}\n\n[팀장 회의 공유 문장]\n${response.finalManagerMessage || '미작성'}`;
 }
 
 export function CustomerCallPlanLab() {
@@ -338,7 +361,7 @@ export function CustomerCallPlanLab() {
   const updateReason = (groupId: string, value: string) => update({ classificationReasons: { ...response.classificationReasons, [groupId]: value } });
   const copyPrompt = async () => {
     if (completedClassifications < CUSTOMER_GROUPS.length) {
-      setCopyMessage('먼저 고객 묶음 1~6을 모두 분류하세요.');
+      setCopyMessage('먼저 고객군 후보 1~6을 모두 분류하세요.');
       return;
     }
     if (!response.selectedFocusType || !response.selectedDeprioritizedType) {
@@ -377,23 +400,29 @@ export function CustomerCallPlanLab() {
     </div>
 
     <SectionCard title="상황 제시: 고객 Data를 보고 2주 콜플랜 방향 정하기">
-      <p className="text-sm leading-6 text-slate-700">이대호 팀장은 앱이 미리 정해준 고객군을 고르는 것이 아니라, 고객 묶음별 CRM·콜 리포트 데이터를 읽고 직접 고객군을 분류해야 합니다. 분류 결과를 바탕으로 2주 동안 어디에 집중하고 무엇을 줄일지 판단합니다.</p>
+      <p className="text-sm leading-6 text-slate-700">이대호 팀장은 앱이 미리 정해준 고객군을 고르는 것이 아니라, 고객군 후보별 CRM·콜 리포트 데이터를 읽고 직접 고객군을 분류해야 합니다. 분류 결과를 바탕으로 2주 동안 어디에 집중하고 무엇을 줄일지 판단합니다.</p>
+      <div className="rounded-xl bg-cyan-50 p-4 text-sm text-cyan-900"><p className="font-bold">고객군 후보 안내</p><p className="mt-1">고객군 후보 1~6은 개별 고객 6명이 아닙니다. 유사한 CRM·콜 리포트 패턴을 보이는 여러 고객을 교육용으로 묶은 가상 고객군 후보입니다.</p></div>
       <div className="rounded-xl bg-cyan-50 p-4 text-sm text-cyan-900"><p className="font-bold">오늘의 판단 과제</p><p className="mt-1">고객 Data → 고객군 분류 → 집중/후순위 판단 → AI 결과물 요청 → 최종 산출물: 2주 콜플랜</p></div>
     </SectionCard>
 
-    <SectionCard title="1단계: 고객 묶음별 현업형 Data 읽기">
-      <div className="grid gap-3">{CUSTOMER_GROUPS.map((group) => <article key={group.id} className="rounded-2xl border bg-slate-50 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-black text-slate-900">{group.label}</h4><span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">추천 예시: {group.recommendedType}</span></div><p className="mt-2 text-sm leading-6 text-slate-700">{group.dataSignal}</p><div className="mt-3 grid gap-2 md:grid-cols-4"><DataPill label="고객 등급" value={group.customerGrade} /><DataPill label="잠재력" value={group.potentialGrade} /><DataPill label="관계 수준" value={group.relationshipLevel} /><DataPill label="최근 방문일" value={group.lastVisit} /><DataPill label="4주 콜 횟수" value={`${group.callCount4w}회`} /><DataPill label="접촉 성공률" value={group.contactSuccessRate} /><DataPill label="최근 콜 반응" value={group.recentCallReaction} /><DataPill label="자료 요청" value={group.materialRequest} /><DataPill label="후속 미팅" value={group.followUpMeeting} /><DataPill label="거절/보류 사유" value={group.holdReason} /><DataPill label="후속조치 완료율" value={group.followUpCompletion} /><DataPill label="CRM 기록" value={group.crmQuality} /><DataPill label="컴플라이언스" value={group.complianceSensitivity} /></div></article>)}</div>
+    <SectionCard title="지표 해석 도움말: 13개 고객 Data 읽는 법">
+      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">아래 지표는 고객군을 미리 정해주는 정답이 아니라, 참여자가 고객군 후보를 분류할 때 참고하는 원천 Data입니다.</div>
+      <div className="grid gap-3 md:grid-cols-2">{DATA_FIELD_GUIDE.map((item) => <div key={item.label} className="rounded-xl border bg-white p-3 text-sm"><p className="font-black text-slate-900">{item.label}</p><p className="mt-1 text-slate-600">{item.meaning}</p><p className="mt-2 rounded-lg bg-cyan-50 p-2 text-xs font-semibold leading-5 text-cyan-900">판단 활용: {item.interpretation}</p></div>)}</div>
+    </SectionCard>
+
+    <SectionCard title="1단계: 고객군 후보별 현업형 Data 읽기">
+      <div className="grid gap-3">{CUSTOMER_GROUPS.map((group) => <article key={group.id} className="rounded-2xl border bg-slate-50 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-black text-slate-900">{group.label}</h4><span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-700">데이터 신호 확인</span></div><p className="mt-2 text-sm leading-6 text-slate-700">{group.dataSignal}</p><div className="mt-3 grid gap-2 md:grid-cols-4"><DataPill label="고객 등급" value={group.customerGrade} /><DataPill label="잠재력" value={group.potentialGrade} /><DataPill label="관계 수준" value={group.relationshipLevel} /><DataPill label="최근 방문일" value={group.lastVisit} /><DataPill label="4주 콜 횟수" value={`${group.callCount4w}회`} /><DataPill label="접촉 성공률" value={group.contactSuccessRate} /><DataPill label="최근 콜 반응" value={group.recentCallReaction} /><DataPill label="자료 요청" value={group.materialRequest} /><DataPill label="후속 미팅" value={group.followUpMeeting} /><DataPill label="거절/보류 사유" value={group.holdReason} /><DataPill label="후속조치 완료율" value={group.followUpCompletion} /><DataPill label="CRM 기록" value={group.crmQuality} /><DataPill label="컴플라이언스" value={group.complianceSensitivity} /></div></article>)}</div>
     </SectionCard>
 
     <SectionCard title="2단계: 고객군 직접 분류하기">
-      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">각 고객 묶음을 데이터 근거로 분류하세요. 추천 예시는 참고용이며, 현장 판단에 따라 다르게 분류할 수 있습니다.</div>
-      <div className="space-y-3">{CUSTOMER_GROUPS.map((group) => <div key={group.id} className="rounded-2xl border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><p className="font-black text-slate-900">{group.label}</p><span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-800">{group.dataSignal}</span></div><div className="mt-3 grid gap-3 md:grid-cols-2"><label className="space-y-1"><FieldLabel>분류 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.groupClassifications[group.id] || ''} onChange={(event) => updateClassification(group.id, event.target.value)}><option value="">선택하세요</option>{CUSTOMER_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label className="space-y-1"><FieldLabel>분류 이유</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.classificationReasons[group.id] || ''} onChange={(event) => updateReason(group.id, event.target.value)} placeholder="예: 반응 상승과 후속 미팅 동의가 있어 집중군으로 판단" /></label></div></div>)}</div>
+      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">각 고객군 후보를 데이터 근거로 분류하세요. 추천 예시는 처음부터 정답처럼 보이지 않도록 숨겨두었습니다. 먼저 자신의 판단을 선택한 뒤 필요하면 펼쳐보세요.</div>
+      <div className="space-y-3">{CUSTOMER_GROUPS.map((group) => <div key={group.id} className="rounded-2xl border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><p className="font-black text-slate-900">{group.label}</p><span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-800">{group.dataSignal}</span></div><div className="mt-3 grid gap-3 md:grid-cols-2"><label className="space-y-1"><FieldLabel>분류 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.groupClassifications[group.id] || ''} onChange={(event) => updateClassification(group.id, event.target.value)}><option value="">선택하세요</option>{CUSTOMER_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label className="space-y-1"><FieldLabel>분류 이유</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.classificationReasons[group.id] || ''} onChange={(event) => updateReason(group.id, event.target.value)} placeholder="예: 반응 상승과 후속 미팅 동의가 있어 집중군으로 판단" /></label></div><details className="mt-3 rounded-xl border bg-slate-50 p-3 text-xs text-slate-600"><summary className="cursor-pointer font-bold text-slate-700">추천 분류 예시 보기</summary><p className="mt-2">추천 예시: <b>{group.recommendedType}</b></p><p className="mt-1">이 예시는 정답이 아니라 데이터 해석 참고용입니다.</p></details></div>)}</div>
       <p className="text-sm font-bold text-cyan-700">분류 완료: {completedClassifications} / {CUSTOMER_GROUPS.length}</p>
     </SectionCard>
 
     <SectionCard title="3단계: 집중/후순위 고객군 판단하기">
       <div className="grid gap-3 md:grid-cols-2"><label className="space-y-1"><FieldLabel>2주 집중 고객군 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedFocusType} onChange={(event) => update({ selectedFocusType: event.target.value })}><option value="">선택하세요</option>{CUSTOMER_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label className="space-y-1"><FieldLabel>후순위 고객군 유형</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedDeprioritizedType} onChange={(event) => update({ selectedDeprioritizedType: event.target.value })}><option value="">선택하세요</option>{CUSTOMER_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label></div>
-      <div className="grid gap-3 md:grid-cols-2"><div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900"><b>집중 고객 묶음:</b> {getGroupsByType(response, response.selectedFocusType)}</div><div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900"><b>후순위 고객 묶음:</b> {getGroupsByType(response, response.selectedDeprioritizedType)}</div></div>
+      <div className="grid gap-3 md:grid-cols-2"><div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900"><b>집중 고객군 후보:</b> {getGroupsByType(response, response.selectedFocusType)}</div><div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900"><b>후순위 고객군 후보:</b> {getGroupsByType(response, response.selectedDeprioritizedType)}</div></div>
       <label className="block space-y-1"><FieldLabel>선택 이유</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.decisionReason} onChange={(event) => update({ decisionReason: event.target.value })} placeholder="어떤 Data 때문에 이 고객군을 2주 집중 대상으로 보았습니까?" /></label>
       <label className="block space-y-1"><FieldLabel>포기 비용과 리스크 관리 기준</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.riskTradeoffMemo} onChange={(event) => update({ riskTradeoffMemo: event.target.value })} placeholder="후순위로 미루는 고객군에서 발생할 수 있는 비용과 관리 기준을 작성하세요." /></label>
     </SectionCard>
