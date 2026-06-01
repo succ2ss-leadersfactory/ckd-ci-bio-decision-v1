@@ -24,7 +24,7 @@ export const V36_APP_STEPS: JourneyStep[] = [
   { id: 'prompt-practice', title: '좋은 질문 만들기', description: '안전하고 구체적인 AI 질문 구조를 연습합니다.' },
   { id: 'research-strategy', title: 'AI Research 전략 Lab', description: '외부 환경 변화와 전략 이슈를 도출합니다.' },
   { id: 'source-check', title: 'Source Check', description: 'AI 결과의 출처·최근성·위험 표현을 감별합니다.' },
-  { id: 'dashboard-analysis', title: '팀원 Dashboard 분석', description: '내부 실행 데이터를 진단합니다.' },
+  { id: 'dashboard-analysis', title: '팀원 실행진단', description: '실행 데이터를 바탕으로 팀원의 강점, 병목, 개입 지점을 찾습니다.' },
   { id: 'customer-judgment', title: '고객군 판단', description: '어디에 집중하고 무엇을 줄일지 결정합니다.' },
   { id: 'action-map', title: '실행행동 Map', description: '팀원별 2주 실행행동을 설계합니다.' },
   { id: 'hq-translation', title: '본사 요청 현장 번역', description: '본사 언어를 팀 실행 언어로 변환합니다.' },
