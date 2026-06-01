@@ -30,6 +30,69 @@ const classificationGuide = [
   ['데이터 보완군', 'CRM 부족, 최근 반응 불명확', '분류보다 정보 보완과 기록 정리가 먼저다'],
 ];
 
+const customerCardSummaries = [
+  {
+    summary: [
+      ['기회성', '고객 등급 A · 잠재력 높음 · 근거자료 요청 있음'],
+      ['반응성', '최근 콜 반응 긍정 상승 · 후속 미팅 동의'],
+      ['실행 가능성', '후속조치 완료율 90% · CRM 기록 충실'],
+      ['리스크', '컴플라이언스 중간 · 표현 안전선 확인 필요'],
+    ],
+    signals: ['반응 상승', '자료 요청', '후속 가능', '표현 주의'],
+    full: ['고객 등급 A', '잠재력 높음', '관계 수준 중간', '최근 방문일 7일 전', '4주 콜 횟수 2회', '접촉 성공률 80%', '최근 콜 반응 긍정 상승', '자료 요청 있음', '후속 미팅 동의', '거절/보류 사유 없음', '후속조치 완료율 90%', 'CRM 기록 충실', '컴플라이언스 중간'],
+  },
+  {
+    summary: [
+      ['기회성', '고객 등급 A · 잠재력 높음 · 자료 요청 있음'],
+      ['반응성', '관심 있으나 보류 · 후속 미팅 보류'],
+      ['실행 가능성', '접촉 성공률 60% · 후속조치 완료율 60%'],
+      ['리스크', '컴플라이언스 낮음 · 기존 치료 유지 선호'],
+    ],
+    signals: ['관심 보류', '니즈 재확인', '자료 활용', '속도 조절'],
+    full: ['고객 등급 A', '잠재력 높음', '관계 수준 높음', '최근 방문일 20일 전', '4주 콜 횟수 1회', '접촉 성공률 60%', '최근 콜 반응 관심 있으나 보류', '자료 요청 있음', '후속 미팅 보류', '거절/보류 사유 기존 치료 유지 선호', '후속조치 완료율 60%', 'CRM 기록 보통', '컴플라이언스 낮음'],
+  },
+  {
+    summary: [
+      ['기회성', '고객 등급 B · 잠재력 중간 · 자료 요청 없음'],
+      ['반응성', '관계 수준 높음 · 안정적 유지'],
+      ['실행 가능성', '접촉 성공률 90% · CRM 기록 충실'],
+      ['리스크', '컴플라이언스 낮음 · 추가 필요성 낮음'],
+    ],
+    signals: ['관계 안정', '변화 신호 낮음', '유지 품질', '과잉 접촉 주의'],
+    full: ['고객 등급 B', '잠재력 중간', '관계 수준 높음', '최근 방문일 10일 전', '4주 콜 횟수 2회', '접촉 성공률 90%', '최근 콜 반응 안정적 유지', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 추가 필요성 낮음', '후속조치 완료율 80%', 'CRM 기록 충실', '컴플라이언스 낮음'],
+  },
+  {
+    summary: [
+      ['기회성', '고객 등급 B · 잠재력 중간 · 자료 요청 없음'],
+      ['반응성', '무반응 증가 · 접촉 성공률 40%'],
+      ['실행 가능성', '4주 콜 4회이나 후속조치 완료율 30%'],
+      ['리스크', '컴플라이언스 높음 · 시간 부족/피로감 표현'],
+    ],
+    signals: ['접촉 피로', '무반응 증가', '실행 품질 저하', '리스크 관리'],
+    full: ['고객 등급 B', '잠재력 중간', '관계 수준 낮음', '최근 방문일 5일 전', '4주 콜 횟수 4회', '접촉 성공률 40%', '최근 콜 반응 무반응 증가', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 시간 부족·피로감 표현', '후속조치 완료율 30%', 'CRM 기록 부족', '컴플라이언스 높음'],
+  },
+  {
+    summary: [
+      ['기회성', '고객 등급 A · 잠재력 높음 · 자료 요청 있음'],
+      ['반응성', '질문 증가 · 후속 미팅 동의'],
+      ['실행 가능성', '후속조치 완료율 70% · CRM 기록 보통'],
+      ['리스크', '컴플라이언스 높음 · 근거자료 확인 필요'],
+    ],
+    signals: ['기회 신호 큼', '질문 증가', '후속 가능', '표현 안전선 중요'],
+    full: ['고객 등급 A', '잠재력 높음', '관계 수준 낮음', '최근 방문일 14일 전', '4주 콜 횟수 1회', '접촉 성공률 70%', '최근 콜 반응 질문 증가', '자료 요청 있음', '후속 미팅 동의', '거절/보류 사유 근거자료 확인 필요', '후속조치 완료율 70%', 'CRM 기록 보통', '컴플라이언스 높음'],
+  },
+  {
+    summary: [
+      ['기회성', '고객 등급 C · 잠재력 낮음 · 자료 요청 없음'],
+      ['반응성', '최근 콜 반응 데이터 부족 · 4주 콜 0회'],
+      ['실행 가능성', '후속조치 완료율 20% · CRM 기록 부족'],
+      ['리스크', '컴플라이언스 중간 · 정보 없음'],
+    ],
+    signals: ['데이터 부족', '정보 보완', '판단 유보', '기록 정리'],
+    full: ['고객 등급 C', '잠재력 낮음', '관계 수준 높음', '최근 방문일 35일 전', '4주 콜 횟수 0회', '접촉 성공률 50%', '최근 콜 반응 데이터 부족', '자료 요청 없음', '후속 미팅 없음', '거절/보류 사유 정보 없음', '후속조치 완료율 20%', 'CRM 기록 부족', '컴플라이언스 중간'],
+  },
+];
+
 const signalTags = ['기회가 크다', '반응이 살아 있다', '후속 가능성이 있다', '관계는 안정적이다', '접촉 피로가 보인다', '데이터가 부족하다', '표현 안전선이 필요하다'];
 const judgmentAxes = [
   ['기회성', ['높음', '보통', '낮음']],
@@ -37,6 +100,34 @@ const judgmentAxes = [
   ['실행 가능성', ['높음', '보통', '낮음']],
   ['리스크', ['낮음', '중간', '높음']],
 ] as const;
+
+function buildCustomerDataPanel(index: number) {
+  const data = customerCardSummaries[index];
+  if (!data) return '';
+  return `
+    <div class="v37-customer-data-panel" data-v37-customer-data-panel="true">
+      <div class="v37-data-panel-head">
+        <span>판단용 Data 요약</span>
+        <b>이 카드 안에서 데이터 확인과 분류를 함께 하세요</b>
+      </div>
+      <div class="v37-data-summary-grid">
+        ${data.summary.map(([axis, text]) => `
+          <article>
+            <p>${escapeHtml(axis)}</p>
+            <div>${escapeHtml(text)}</div>
+          </article>
+        `).join('')}
+      </div>
+      <div class="v37-card-signal-row">
+        ${data.signals.map((signal) => `<span>#${escapeHtml(signal)}</span>`).join('')}
+      </div>
+      <details class="v37-full-data-details">
+        <summary>전체 13개 Data 다시 보기</summary>
+        <div>${data.full.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
+      </details>
+    </div>
+  `;
+}
 
 function enhanceClassificationSection() {
   const sections = Array.from(document.querySelectorAll('section'));
@@ -69,6 +160,13 @@ function enhanceClassificationSection() {
   }
 
   Array.from(section.querySelectorAll('div.rounded-2xl.border.p-4')).forEach((card, index) => {
+    if (!card.querySelector('[data-v37-customer-data-panel="true"]')) {
+      const panel = document.createElement('div');
+      panel.innerHTML = buildCustomerDataPanel(index);
+      const cardHead = card.querySelector('div.flex.flex-wrap');
+      cardHead?.insertAdjacentElement('afterend', panel.firstElementChild as Element);
+    }
+
     if (card.querySelector('[data-v37-judgment-ladder="true"]')) return;
     const ladder = document.createElement('div');
     ladder.setAttribute('data-v37-judgment-ladder', 'true');
