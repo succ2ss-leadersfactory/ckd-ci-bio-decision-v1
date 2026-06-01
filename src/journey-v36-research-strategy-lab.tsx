@@ -21,6 +21,8 @@ type ResearchResponse = {
   studioReportDraft: string;
   studioSlidePrompt: string;
   studioSlideOutline: string;
+  studioInfographicPrompt: string;
+  studioInfographicDraft: string;
   strategyMeetingMemo: string;
   expectedQuestions: string;
   complianceCaution: string;
@@ -43,6 +45,8 @@ const REVIEW_ITEMS = [
   '소스 패키지에 출처·링크·핵심 주장이 보존되어 있는가?',
   'NotebookLM 결과가 소스 기반 종합으로 정리되었는가?',
   'NotebookLM Studio 보고서 산출물 목적이 명확한가?',
+  '발표용 10장 슬라이드가 메시지 중심으로 구성되었는가?',
+  '인포그래픽이 한눈에 이해되는 요약형 구조인가?',
   '전략회의 발표 슬라이드 흐름이 잡혀 있는가?',
   '전략 이슈 3개가 팀 실행과 연결되어 있는가?',
   '민감정보나 단정적 표현을 제거했는가?',
@@ -67,6 +71,8 @@ const DEFAULT_RESPONSE: ResearchResponse = {
   studioReportDraft: '',
   studioSlidePrompt: '',
   studioSlideOutline: '',
+  studioInfographicPrompt: '',
+  studioInfographicDraft: '',
   strategyMeetingMemo: '',
   expectedQuestions: '',
   complianceCaution: '',
@@ -119,7 +125,12 @@ function buildStudioReportPrompt(response: ResearchResponse) {
 }
 
 function buildStudioSlidePrompt(response: ResearchResponse) {
-  return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적: 전략회의에서 5~7분 발표할 슬라이드 초안을 만든다.\n보고서 핵심 내용: ${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n요청:\n1. 5~6장 분량의 발표 슬라이드 구성안을 만들어줘.\n2. 각 장마다 제목, 핵심 메시지, 넣을 근거, 발표자 메모를 작성해줘.\n3. 전략 이슈 3개와 팀 실행 제안이 자연스럽게 연결되게 해줘.\n4. 마지막 장에는 회의에서 논의할 질문 2~3개를 넣어줘.\n5. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- Slide 1: 문제 제기\n- Slide 2: 외부 변화 신호\n- Slide 3: 전략 이슈 3개\n- Slide 4: 우리 팀 영향\n- Slide 5: 실행 제안\n- Slide 6: 회의 질문`;
+  return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적:\n전략회의에서 발표할 수 있는 발표용 슬라이드 초안을 만든다. 단순 요약 문서가 아니라, 실제 발표자가 설명하기 쉬운 발표 자료로 구성한다.\n\n활용할 핵심 내용:\n${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n반드시 반영할 전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n\n추가 맥락:\n- 우리 팀에 미치는 영향: ${response.teamImpact || '우리 팀에 미치는 영향'}\n- 실행전략으로 번역할 질문: ${response.executionTranslation || '실행전략으로 번역할 질문'}\n- 주의해야 할 표현: ${response.complianceCaution || '주의해야 할 표현'}\n\n요청:\n1. 발표용으로 최적화된 10장 슬라이드 구성안을 만들어줘.\n2. 각 슬라이드는 읽는 문서형이 아니라 발표형으로 구성해줘.\n3. 슬라이드마다 핵심 메시지는 1개만 분명하게 보이게 해줘.\n4. 본문 bullet은 3개 이내로 제한해줘.\n5. 시각자료(차트, 아이콘, 비교표, 흐름도 등) 제안도 함께 넣어줘.\n6. 마지막 슬라이드는 실행 제안과 회의 논의 질문으로 마무리해줘.\n7. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n각 슬라이드는 아래 형식을 따른다.\n\n- Slide 1. 제목\n  - 슬라이드 목적\n  - 핵심 메시지\n  - 본문 bullet 3개 이내\n  - 권장 시각자료\n  - 발표자 메모\n\n반드시 총 10장으로 작성해줘.\n\n권장 10장 구성 예시:\n- Slide 1: 전략회의 제목 / 문제 제기\n- Slide 2: 외부 변화 신호 요약\n- Slide 3: Source Check 요약\n- Slide 4: 전략 이슈 1\n- Slide 5: 전략 이슈 2\n- Slide 6: 전략 이슈 3\n- Slide 7: 우리 팀에 미치는 영향\n- Slide 8: 실행전략 제안\n- Slide 9: 실행 우선순위와 팀 적용 포인트\n- Slide 10: 회의 논의 질문 및 의사결정 요청`;
+}
+
+function buildStudioInfographicPrompt(response: ResearchResponse) {
+  const researchTheme = getResearchTheme(response);
+  return `NotebookLM Studio 인포그래픽 제작 요청\n\n목적:\n전략회의 핵심 내용을 한눈에 보여주는 1페이지 인포그래픽 초안을 만든다. 발표 보조자료나 회의 후 공유자료로 바로 활용할 수 있도록 시각적으로 정리한다.\n\n주제:\n${researchTheme}\n\n핵심 전략 이슈:\n1. ${response.issueOne || '전략 이슈 1'}\n2. ${response.issueTwo || '전략 이슈 2'}\n3. ${response.issueThree || '전략 이슈 3'}\n\n우리 팀에 미치는 영향:\n${response.teamImpact || '우리 팀에 미치는 영향'}\n\n추가 확인 질문:\n${response.nextQuestions || '추가 확인 질문'}\n\n실행전략으로 번역할 질문:\n${response.executionTranslation || '실행전략으로 번역할 질문'}\n\n주의해야 할 표현:\n${response.complianceCaution || '주의해야 할 표현'}\n\n요청:\n1. 1페이지 인포그래픽 구조로 정리해줘.\n2. 상단에는 핵심 제목과 핵심 메시지 1~2줄을 넣어줘.\n3. 중단에는 전략 이슈 3개를 아이콘/박스 중심으로 정리해줘.\n4. 하단에는 우리 팀 실행 제안과 다음 액션을 요약해줘.\n5. 오른쪽 또는 하단에는 추가 확인 질문과 주의 표현을 넣어줘.\n6. 텍스트는 짧고 명확하게, 시각 중심 구조로 제안해줘.\n7. 발표용 보조자료답게 과밀한 문장형 설명은 줄여줘.\n8. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- 인포그래픽 제목\n- 핵심 메시지\n- 섹션 1: 외부 변화 신호\n- 섹션 2: 전략 이슈 3개\n- 섹션 3: 우리 팀 영향\n- 섹션 4: 실행 제안\n- 섹션 5: 추가 확인 질문 / 주의 표현\n- 권장 시각 요소(아이콘, 흐름도, 강조 박스, 숫자 카드 등)`;
 }
 
 function sectionTitleToKey(title: string): ParsedKey | '' {
@@ -218,6 +229,7 @@ export function ResearchStrategyLab() {
   const notebookPrompt = useMemo(() => buildNotebookPrompt(response), [response]);
   const reportPrompt = useMemo(() => response.studioReportPrompt || buildStudioReportPrompt(response), [response]);
   const slidePrompt = useMemo(() => response.studioSlidePrompt || buildStudioSlidePrompt(response), [response]);
+  const infographicPrompt = useMemo(() => response.studioInfographicPrompt || buildStudioInfographicPrompt(response), [response]);
   const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks?.[item]).length;
 
   const update = (patch: Partial<ResearchResponse>) => {
@@ -250,13 +262,13 @@ export function ResearchStrategyLab() {
     }
   };
 
-  const outputText = `전략회의 산출물\n\n[주제]\n${activeResearchTheme}\n\n[전략 이슈 1]\n${response.issueOne}\n\n[전략 이슈 2]\n${response.issueTwo}\n\n[전략 이슈 3]\n${response.issueThree}\n\n[보고서 초안]\n${response.studioReportDraft}\n\n[슬라이드 구성안]\n${response.studioSlideOutline}\n\n[발표 메모]\n${response.strategyMeetingMemo}\n\n[예상 질문]\n${response.expectedQuestions}\n\n[주의 표현]\n${response.complianceCaution}`;
+  const outputText = `전략회의 산출물\n\n[주제]\n${activeResearchTheme}\n\n[전략 이슈 1]\n${response.issueOne}\n\n[전략 이슈 2]\n${response.issueTwo}\n\n[전략 이슈 3]\n${response.issueThree}\n\n[보고서 초안]\n${response.studioReportDraft}\n\n[슬라이드 구성안]\n${response.studioSlideOutline}\n\n[인포그래픽 초안]\n${response.studioInfographicDraft}\n\n[발표 메모]\n${response.strategyMeetingMemo}\n\n[예상 질문]\n${response.expectedQuestions}\n\n[주의 표현]\n${response.complianceCaution}`;
 
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
         <p className="font-bold">Perplexity + NotebookLM Studio 전략회의 Lab</p>
-        <p className="mt-1">최종 산출물은 전략회의에 사용할 보고서 초안과 발표 슬라이드 구성안입니다. Perplexity 결과를 바탕으로 NotebookLM 소스 패키지를 만들고, Studio에서 보고서와 슬라이드를 제작합니다.</p>
+        <p className="mt-1">최종 산출물은 전략회의에 사용할 보고서 초안, 발표용 10장 슬라이드, 1페이지 인포그래픽입니다. Perplexity 결과를 바탕으로 NotebookLM 소스 패키지를 만들고, Studio에서 발표 산출물을 제작합니다.</p>
       </div>
 
       <SectionCard title="1단계: Perplexity 최신 자료 탐색">
@@ -316,14 +328,21 @@ export function ResearchStrategyLab() {
         <TextArea value={response.studioReportDraft} onChange={(value) => update({ studioReportDraft: value })} placeholder="NotebookLM Studio에서 생성한 전략회의 보고서 초안을 붙여넣고 팀장 관점으로 수정하세요." />
       </SectionCard>
 
-      <SectionCard title="7단계: NotebookLM Studio 발표 슬라이드 제작">
-        <p className="text-sm text-slate-600">보고서 초안을 바탕으로 전략회의 발표 슬라이드 구성을 만듭니다.</p>
+      <SectionCard title="7단계: NotebookLM Studio 발표용 10장 슬라이드 제작">
+        <p className="text-sm text-slate-600">보고서 초안을 바탕으로 전략회의 발표용 10장 슬라이드 구성을 만듭니다.</p>
         <TextArea value={slidePrompt} onChange={(value) => update({ studioSlidePrompt: value })} />
         <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(slidePrompt, '슬라이드 제작 요청문')}>슬라이드 요청문 복사</button>
-        <TextArea value={response.studioSlideOutline} onChange={(value) => update({ studioSlideOutline: value })} placeholder="NotebookLM Studio에서 생성한 발표 슬라이드 구성안을 붙여넣고 수정하세요." />
+        <TextArea value={response.studioSlideOutline} onChange={(value) => update({ studioSlideOutline: value })} placeholder="NotebookLM Studio에서 생성한 발표용 10장 슬라이드 구성안을 붙여넣고 수정하세요." />
       </SectionCard>
 
-      <SectionCard title="8단계: 전략회의 발표 준비">
+      <SectionCard title="8단계: NotebookLM Studio 인포그래픽 제작">
+        <p className="text-sm text-slate-600">전략회의 핵심 내용을 1페이지 인포그래픽 형태로 정리합니다. 회의 후 공유용 요약자료로도 활용할 수 있습니다.</p>
+        <TextArea value={infographicPrompt} onChange={(value) => update({ studioInfographicPrompt: value })} />
+        <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(infographicPrompt, '인포그래픽 제작 요청문')}>인포그래픽 요청문 복사</button>
+        <TextArea value={response.studioInfographicDraft} onChange={(value) => update({ studioInfographicDraft: value })} placeholder="NotebookLM Studio에서 생성한 인포그래픽 초안을 붙여넣고 수정하세요." />
+      </SectionCard>
+
+      <SectionCard title="9단계: 전략회의 발표 준비">
         <label className="block space-y-1"><FieldLabel>발표 메모</FieldLabel><TextArea value={response.strategyMeetingMemo} onChange={(value) => update({ strategyMeetingMemo: value })} placeholder="전략회의에서 팀장이 설명할 핵심 발언을 작성하세요." /></label>
         <label className="block space-y-1"><FieldLabel>예상 질문과 답변 관점</FieldLabel><TextArea value={response.expectedQuestions} onChange={(value) => update({ expectedQuestions: value })} placeholder="상사, 본사, 팀원 관점에서 나올 질문과 답변 방향을 작성하세요." /></label>
         <label className="block space-y-1"><FieldLabel>주의해야 할 표현</FieldLabel><TextArea value={response.complianceCaution} onChange={(value) => update({ complianceCaution: value })} placeholder="발표자료에서 제거하거나 완화해야 할 표현을 작성하세요." /></label>
