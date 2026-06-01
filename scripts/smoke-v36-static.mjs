@@ -74,6 +74,10 @@ function stripComments(content) {
   return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 }
 
+function stripScriptTags(content) {
+  return content.replace(/<script\b[\s\S]*?<\/script>/gi, '');
+}
+
 function readCode(file) {
   return stripComments(readText(file));
 }
@@ -122,7 +126,10 @@ mustMatch('journey.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=
 mustMatch('journey-v35-preview.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-v35-app-preview\.tsx["'])[^>]*>/s, 'journey-v35-preview.html must keep loading /src/journey-v35-app-preview.tsx as module.', false);
 mustMatch('journey-v36-preview.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-v36-app-preview\.tsx["'])[^>]*>/s, 'journey-v36-preview.html must load /src/journey-v36-app-preview.tsx as module.', false);
 mustMatch('journey-v36-preview.html', /<title>C1바이오 영업팀장 AI 리더십 Lab Journey<\/title>/, 'journey-v36-preview.html must use customer-facing page title.', false);
-mustNotMatch('journey-v36-preview.html', /Preview|preview|v35|v36|검증|QA/, 'journey-v36-preview.html must not expose demo/debug wording in the page shell.', false);
+const v36PageShell = stripScriptTags(readText('journey-v36-preview.html'));
+if (/Preview|preview|v35|v36|검증|QA/.test(v36PageShell)) {
+  fail('journey-v36-preview.html must not expose demo/debug wording in the visible page shell.');
+}
 mustMatch('src/journey-active.tsx', /import\s+['"]\.\/full-flow-journey-v35['"];?/, 'journey-active.tsx must keep importing v35 staging entry.');
 mustMatch('src/full-flow-journey-v35.tsx', /import\s+['"]\.\/full-flow-journey-v34['"];?/, 'full-flow-journey-v35.tsx must still delegate to v34.');
 mustMatch('vite.config.ts', /journeyV36Preview\s*:/, 'vite.config.ts must include journeyV36Preview input.');
