@@ -108,7 +108,7 @@ function buildSourcePackage(response: ResearchResponse) {
 
 function buildNotebookPrompt(response: ResearchResponse) {
   const researchTheme = getResearchTheme(response);
-  return `NotebookLM 소스 기반 종합 질문\n\n전제: Perplexity에서 확인한 기사, 공개 보고서, 자료를 NotebookLM 소스로 넣은 뒤 사용합니다.\n\n주제: ${researchTheme}\n소스 패키지 메모:\n${response.notebookSourcePack || response.sourcePackMemo || 'Perplexity 결과를 바탕으로 소스 패키지를 먼저 생성하세요.'}\n\n우리 팀 관점의 리서치 질문: ${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n요청:\n1. 업로드한 소스에 근거한 핵심 변화만 정리해줘.\n2. 소스 간 공통 신호와 서로 다른 주장을 구분해줘.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해줘.\n4. 우리 팀 실행에 미치는 영향을 설명해줘.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해줘.\n6. 주의해야 할 표현을 정리해줘.\n\n출력 형식:\n- 소스 기반 핵심 변화\n- 전략 이슈 3개\n- 우리 팀에 미치는 영향\n- 추가 확인 질문\n- 실행전략 질문\n- 주의 표현`;
+  return `NotebookLM 소스 기반 종합 프롬프트\n\n역할(R):\n당신은 제약영업 팀장을 돕는 외부 환경 분석 파트너입니다.\n\n맥락(C):\n나는 C1바이오 영업팀장입니다. Perplexity로 찾은 공개 자료를 NotebookLM 소스로 넣었습니다. 업로드된 소스만 근거로, 우리 팀 실행에 영향을 줄 전략 이슈를 정리하려고 합니다.\n\n주제:\n${researchTheme}\n\n우리 팀 관점의 리서치 질문:\n${response.leaderQuestion || '소스 자료를 근거로 제약영업팀 실행에 중요한 전략 이슈를 정리해줘.'}\n\n지시사항(I):\n1. 업로드된 소스에 근거한 변화 신호만 정리해 주세요.\n2. 출처가 약하거나 추정이 필요한 내용은 구분해 주세요.\n3. 영업팀장 관점에서 전략 이슈 3개로 압축해 주세요.\n4. 각 이슈가 우리 팀 실행에 미치는 영향을 설명해 주세요.\n5. 추가 확인 질문과 실행전략으로 바꿀 질문을 제시해 주세요.\n6. 컴플라이언스상 주의해야 할 표현을 정리해 주세요.\n\n출력 형식(F):\n아래 제목을 그대로 사용해 주세요.\n\n[핵심 변화 신호]\n[출처/근거 요약]\n[전략 이슈 1]\n[전략 이슈 2]\n[전략 이슈 3]\n[우리 팀에 미치는 영향]\n[추가 확인 질문]\n[실행전략으로 번역할 질문]\n[주의해야 할 표현]`;
 }
 
 function buildStudioReportPrompt(response: ResearchResponse) {
@@ -118,6 +118,51 @@ function buildStudioReportPrompt(response: ResearchResponse) {
 
 function buildStudioSlidePrompt(response: ResearchResponse) {
   return `NotebookLM Studio 발표 슬라이드 제작 요청\n\n목적: 전략회의에서 5~7분 발표할 슬라이드 초안을 만든다.\n보고서 핵심 내용: ${response.studioReportDraft || 'NotebookLM Studio 보고서 초안 내용을 반영'}\n\n요청:\n1. 5~6장 분량의 발표 슬라이드 구성안을 만들어줘.\n2. 각 장마다 제목, 핵심 메시지, 넣을 근거, 발표자 메모를 작성해줘.\n3. 전략 이슈 3개와 팀 실행 제안이 자연스럽게 연결되게 해줘.\n4. 마지막 장에는 회의에서 논의할 질문 2~3개를 넣어줘.\n5. 민감정보나 단정적 표현은 제외해줘.\n\n출력 형식:\n- Slide 1: 문제 제기\n- Slide 2: 외부 변화 신호\n- Slide 3: 전략 이슈 3개\n- Slide 4: 우리 팀 영향\n- Slide 5: 실행 제안\n- Slide 6: 회의 질문`;
+}
+
+function sectionTitleToKey(title: string) {
+  const clean = title.replace(/[\[\]#:*\-]/g, '').trim();
+  if (clean.includes('핵심 변화') || clean.includes('출처') || clean.includes('근거')) return 'sourceReliabilityMemo';
+  if (clean.includes('전략 이슈 1')) return 'issueOne';
+  if (clean.includes('전략 이슈 2')) return 'issueTwo';
+  if (clean.includes('전략 이슈 3')) return 'issueThree';
+  if (clean.includes('우리 팀에 미치는 영향') || clean.includes('팀 영향')) return 'teamImpact';
+  if (clean.includes('추가 확인')) return 'nextQuestions';
+  if (clean.includes('실행전략')) return 'executionTranslation';
+  if (clean.includes('주의')) return 'complianceCaution';
+  return '';
+}
+
+function parseNotebookAnswer(answer: string): Partial<ResearchResponse> {
+  const lines = answer.split(/\r?\n/);
+  const buckets: Record<string, string[]> = {};
+  let currentKey = '';
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const headingMatch = trimmed.match(/^(?:#{1,6}\s*)?\[?([^\]:]+)\]?\s*:?\s*$/);
+    const nextKey = headingMatch ? sectionTitleToKey(headingMatch[1]) : '';
+
+    if (nextKey) {
+      currentKey = nextKey;
+      buckets[currentKey] = buckets[currentKey] || [];
+      continue;
+    }
+
+    if (currentKey) buckets[currentKey].push(line);
+  }
+
+  const sourceParts = [buckets.sourceReliabilityMemo?.join('\n').trim()].filter(Boolean);
+  const patch: Partial<ResearchResponse> = {};
+  if (sourceParts.length) patch.sourceReliabilityMemo = sourceParts.join('\n\n');
+  if (buckets.issueOne?.join('\n').trim()) patch.issueOne = buckets.issueOne.join('\n').trim();
+  if (buckets.issueTwo?.join('\n').trim()) patch.issueTwo = buckets.issueTwo.join('\n').trim();
+  if (buckets.issueThree?.join('\n').trim()) patch.issueThree = buckets.issueThree.join('\n').trim();
+  if (buckets.teamImpact?.join('\n').trim()) patch.teamImpact = buckets.teamImpact.join('\n').trim();
+  if (buckets.nextQuestions?.join('\n').trim()) patch.nextQuestions = buckets.nextQuestions.join('\n').trim();
+  if (buckets.executionTranslation?.join('\n').trim()) patch.executionTranslation = buckets.executionTranslation.join('\n').trim();
+  if (buckets.complianceCaution?.join('\n').trim()) patch.complianceCaution = buckets.complianceCaution.join('\n').trim();
+  return patch;
 }
 
 export function ResearchStrategyLab() {
@@ -138,7 +183,18 @@ export function ResearchStrategyLab() {
   const generateSourcePack = () => {
     const nextSourcePack = buildSourcePackage(response);
     update({ notebookSourcePack: nextSourcePack, sourcePackMemo: nextSourcePack });
-    setCopyMessage(nextSourcePack ? 'NotebookLM 소스 패키지를 생성했습니다.' : 'Perplexity 답변을 먼저 붙여넣으세요.');
+    setCopyMessage(nextSourcePack ? 'NotebookLM 소스 패키지를 생성했습니다. 내용을 검토한 뒤 복사하세요.' : 'Perplexity 답변을 먼저 붙여넣으세요.');
+  };
+
+  const splitNotebookAnswer = () => {
+    const patch = parseNotebookAnswer(response.notebookLmAnswer || '');
+    const count = Object.keys(patch).length;
+    if (!count) {
+      setCopyMessage('분리할 수 있는 제목을 찾지 못했습니다. NotebookLM 출력 형식의 대괄호 제목을 확인하세요.');
+      return;
+    }
+    update(patch);
+    setCopyMessage(`NotebookLM 결과를 ${count}개 항목의 초안으로 분리했습니다. 4단계 이후에서 반드시 검토·수정하세요.`);
   };
 
   const copyText = async (text: string, label: string) => {
@@ -181,15 +237,19 @@ export function ResearchStrategyLab() {
         <label className="block space-y-1"><FieldLabel>Perplexity 답변 붙여넣기</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.perplexityAnswer} onChange={(event) => update({ perplexityAnswer: event.target.value })} placeholder="Perplexity 답변을 붙여넣으세요. 출처, 링크, 근거 문장이 포함되어 있으면 좋습니다." /></label>
         <div className="flex flex-wrap gap-2">
           <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateSourcePack}>NotebookLM 소스 패키지 생성</button>
+        </div>
+        <label className="block space-y-1"><FieldLabel>NotebookLM 소스 패키지 검토·수정</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.notebookSourcePack || response.sourcePackMemo} onChange={(event) => update({ notebookSourcePack: event.target.value, sourcePackMemo: event.target.value })} placeholder="생성된 소스 패키지를 검토·수정하세요. 출처, 링크, 근거 문장, 제외할 표현을 확인한 뒤 복사합니다." /></label>
+        <div className="flex flex-wrap gap-2">
           <button className="rounded-xl border px-4 py-2 text-sm font-bold text-slate-700" onClick={() => copyText(response.notebookSourcePack || response.sourcePackMemo, 'NotebookLM 소스 패키지')}>소스 패키지 복사</button>
         </div>
-        <label className="block space-y-1"><FieldLabel>NotebookLM 소스 패키지</FieldLabel><textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.notebookSourcePack || response.sourcePackMemo} onChange={(event) => update({ notebookSourcePack: event.target.value, sourcePackMemo: event.target.value })} placeholder="자동 생성된 소스 패키지를 검토·수정하거나 직접 입력하세요." /></label>
       </SectionCard>
 
       <SectionCard title="3단계: NotebookLM 소스 기반 종합">
-        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">소스를 NotebookLM에 넣은 뒤 아래 질문을 사용합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(notebookPrompt, 'NotebookLM 프롬프트')}>NotebookLM 프롬프트 복사</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">NotebookLM에 소스 패키지를 넣은 뒤, 아래 R-C-I-F 프롬프트를 복사해 사용합니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={() => copyText(notebookPrompt, 'NotebookLM 프롬프트')}>NotebookLM 프롬프트 복사</button></div>
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{notebookPrompt}</pre>
-        <TextArea value={response.notebookLmAnswer} onChange={(value) => update({ notebookLmAnswer: value })} placeholder="NotebookLM의 소스 기반 종합 결과를 붙여넣으세요." />
+        <label className="block space-y-1"><FieldLabel>NotebookLM 소스 기반 종합 결과 붙여넣기</FieldLabel><TextArea value={response.notebookLmAnswer} onChange={(value) => update({ notebookLmAnswer: value })} placeholder="NotebookLM의 소스 기반 종합 결과를 붙여넣으세요." /></label>
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">자동 분리 결과는 초안입니다. 4단계 이후에서 팀장 관점으로 반드시 검토·수정하세요.</div>
+        <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={splitNotebookAnswer}>전략 이슈 초안으로 분리</button>
       </SectionCard>
 
       <SectionCard title="4단계: Source Check와 전략 이슈 3개">
