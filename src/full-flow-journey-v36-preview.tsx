@@ -9,6 +9,7 @@ import { OneOnOneCoachingLab } from './journey-v36-one-on-one-coaching-lab';
 import { PerformanceDialogueLab } from './journey-v36-performance-dialogue-lab';
 import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
+import { SafeStepBoundary } from './journey-v36-safe-step-boundary';
 import { StakeholderMessageLab } from './journey-v36-stakeholder-message-lab';
 import { WrapUpLab } from './journey-v36-wrap-up-lab';
 import { clampV36Step, V36_STORAGE_KEYS, V36_VISIBLE_APP_STEPS } from './journey-v36-preview-config';
@@ -123,6 +124,7 @@ export function FullFlowJourneyV36PreviewApp() {
   const [participant, setParticipant] = useStored<V36Participant>(V36_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V36Progress>(V36_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const safeStep = clampV36Step(progress.step);
+  const current = V36_VISIBLE_APP_STEPS[safeStep];
 
   return (
     <JourneyShell
@@ -134,7 +136,9 @@ export function FullFlowJourneyV36PreviewApp() {
       onNext={() => setProgress({ step: clampV36Step(safeStep + 1) })}
       onStepSelect={(step) => setProgress({ step: clampV36Step(step) })}
     >
-      {renderV36Step(safeStep, participant, setParticipant)}
+      <SafeStepBoundary stepTitle={current?.title || '현재 단계'} onSkip={() => setProgress({ step: clampV36Step(safeStep + 1) })}>
+        {renderV36Step(safeStep, participant, setParticipant)}
+      </SafeStepBoundary>
       <span className="sr-only">{SMOKE_MARKER}</span>
       {SHOW_QA_PANEL ? (
         <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
