@@ -12,6 +12,7 @@ import { V38ComplianceCleanupLab } from './journey-v38-compliance-cleanup-lab';
 import { V38CustomerJudgmentLab } from './journey-v38-customer-judgment-lab';
 import { V38CustomerPriorityLab } from './journey-v38-customer-priority-lab';
 import { V38FinalCallPlanCard } from './journey-v38-final-call-plan-card';
+import { V38InstructorDiscussionLab } from './journey-v38-instructor-discussion-lab';
 import { V38MemberRoleLab } from './journey-v38-member-role-lab';
 import { clampV38Step, V38_STORAGE_KEYS, V38_VISIBLE_APP_STEPS } from './journey-v38-preview-config';
 
@@ -99,6 +100,7 @@ function renderV38Step(step: number, participant: V38Participant, setParticipant
   if (current.id === 'ai-call-plan') return <V38AiCallPlanLab />;
   if (current.id === 'compliance-cleanup') return <V38ComplianceCleanupLab />;
   if (current.id === 'final-call-plan-card') return <V38FinalCallPlanCard />;
+  if (current.id === 'instructor-discussion') return <V38InstructorDiscussionLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 v38에서 준비 중입니다.</p></ShellCard>;
 }
