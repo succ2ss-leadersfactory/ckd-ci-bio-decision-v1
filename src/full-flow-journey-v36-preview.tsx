@@ -11,7 +11,7 @@ import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { StakeholderMessageLab } from './journey-v36-stakeholder-message-lab';
 import { WrapUpLab } from './journey-v36-wrap-up-lab';
-import { clampV36Step, V36_APP_STEPS, V36_STORAGE_KEYS } from './journey-v36-preview-config';
+import { clampV36Step, V36_STORAGE_KEYS, V36_VISIBLE_APP_STEPS } from './journey-v36-preview-config';
 import { useStored } from './journey-storage';
 
 type V36Participant = {
@@ -102,7 +102,7 @@ function PlaceholderStep({ stepTitle }: { stepTitle: string }) {
 }
 
 function renderV36Step(step: number, participant: V36Participant, setParticipant: (next: V36Participant) => void) {
-  const current = V36_APP_STEPS[step];
+  const current = V36_VISIBLE_APP_STEPS[step];
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
@@ -129,7 +129,7 @@ export function FullFlowJourneyV36PreviewApp() {
     <JourneyShell
       title="C1바이오 영업팀장 AI 리더십 Lab Journey"
       subtitle="영업현장 데이터를 바탕으로 판단하고, AI를 활용해 실행안을 구체화하는 실습 Journey입니다."
-      steps={V36_APP_STEPS}
+      steps={V36_VISIBLE_APP_STEPS}
       currentStep={safeStep}
       onPrev={() => setProgress({ step: clampV36Step(safeStep - 1) })}
       onNext={() => setProgress({ step: clampV36Step(safeStep + 1) })}
@@ -142,7 +142,7 @@ export function FullFlowJourneyV36PreviewApp() {
         <details className="mt-4 rounded-2xl border bg-white p-4 text-xs text-slate-500 shadow-sm">
           <summary className="cursor-pointer font-bold text-slate-700">QA 정보 보기 · {V36_SMOKE_MARKER}</summary>
           <p className="mt-2">storage: {Object.values(V36_STORAGE_KEYS).join(', ')}</p>
-          <p className="mt-1">current step: {safeStep + 1} / {V36_APP_STEPS.length}</p>
+          <p className="mt-1">current step: {safeStep + 1} / {V36_VISIBLE_APP_STEPS.length}</p>
         </details>
       ) : null}
     </JourneyShell>
