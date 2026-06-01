@@ -33,16 +33,10 @@ type DiagnosisResponse = {
   selectedResultVariables: string[];
   selectedDiffusionVariables: string[];
   selectedGuardrails: string[];
-  diagnosisStatement: string;
   selectedExperiments: string[];
   selectedCheckMetrics: string[];
   aiAnswerRaw: string;
-  aiProfileCheck: string;
-  aiPathCheck: string;
-  aiCounter: string;
-  aiQuestions: string;
-  aiExperiment: string;
-  aiCaution: string;
+  diagnosisStatement: string;
   confirmQuestion: string;
   finalActionSentence: string;
   reviewChecks: Record<string, boolean>;
@@ -55,8 +49,8 @@ type SignalItem = {
   note: string;
 };
 
-type HypothesisCandidate = {
-  hypothesis: string;
+type HypothesisHint = {
+  title: string;
   reason: string;
   metrics: string[];
   priority: number;
@@ -171,43 +165,6 @@ const COMPARISON_OPTIONS = [
   '아직 판단을 유보한다',
 ];
 
-const EXPERIMENT_OPTIONS = [
-  '콜 전 고객별 질문 2개와 대화 목적 1개 준비',
-  '핵심 고객군별 방문 목적과 우선순위 재정리',
-  '고객 니즈에 맞춘 안전 메시지 2문장 재작성',
-  '콜 이후 24시간 내 CRM에 고객 반응과 다음 행동 기록',
-  '고객 반응별 후속조치 1개 지정',
-  '2주 동안 후속 대화 연결 시도 기록',
-  '선배/동료와 콜 리뷰 1회 진행',
-  '성공·실패 인사이트 1개를 팀 회의에서 공유',
-  'AI 입력 전 고객명·병원명·민감정보 제거 체크',
-];
-
-const CHECK_METRIC_OPTIONS = [
-  '메시지-니즈 적합도',
-  'CRM 기록 품질',
-  '후속조치 실행률',
-  '고객 인게이지먼트 지수',
-  '후속 대화 연결지수',
-  '고객 대화 지속성',
-  '팀 학습 기여도',
-  '컴플라이언스 위험 점검',
-  'AI 입력 안전 점검',
-  '팀원 1on1 대화 내용',
-];
-
-const REVIEW_ITEMS = [
-  '지표를 보기 전 직관적 해석을 먼저 기록했는가?',
-  '데이터 신호 요약을 확인했는가?',
-  '진단 문장 작성 힌트를 참고했는가?',
-  '데이터를 근거로 나의 진단 가설을 직접 작성했는가?',
-  '직관과 데이터의 차이를 비교했는가?',
-  '선행지표·과정지표·결과지표·확산지표를 모두 확인했는가?',
-  '안전선 점검·가드레일을 별도로 확인했는가?',
-  '2주 동안 실행할 실험을 2개 이내로 정했는가?',
-  'AI로 반대 가능성과 확인 질문을 점검했는가?',
-];
-
 const DEFAULT_RESPONSE: DiagnosisResponse = {
   selectedMemberId: 'M01',
   observationIntuition: '',
@@ -219,16 +176,10 @@ const DEFAULT_RESPONSE: DiagnosisResponse = {
   selectedResultVariables: [],
   selectedDiffusionVariables: [],
   selectedGuardrails: [],
-  diagnosisStatement: '',
   selectedExperiments: [],
   selectedCheckMetrics: [],
   aiAnswerRaw: '',
-  aiProfileCheck: '',
-  aiPathCheck: '',
-  aiCounter: '',
-  aiQuestions: '',
-  aiExperiment: '',
-  aiCaution: '',
+  diagnosisStatement: '',
   confirmQuestion: '',
   finalActionSentence: '',
   reviewChecks: {},
@@ -302,153 +253,64 @@ function metricValue(member: Member, key: string) {
 }
 
 function makeSignalItem(member: Member, key: string): SignalItem {
-  const value = metricValue(member, key);
-  return { key, value, note: `${METRIC_META[key].group} · ${METRIC_META[key].expertLabel}` };
+  return { key, value: metricValue(member, key), note: `${METRIC_META[key].group} · ${METRIC_META[key].expertLabel}` };
 }
 
-function createCandidate(hypothesis: string, reason: string, metrics: string[], priority: number): HypothesisCandidate {
-  return { hypothesis, reason, metrics, priority };
+function createHint(title: string, reason: string, metrics: string[], priority: number): HypothesisHint {
+  return { title, reason, metrics, priority };
 }
 
 function buildDataSignalSummary(member: Member) {
-  const strong = CORE_METRIC_ORDER
-    .filter((key) => metricValue(member, key) >= 85)
-    .map((key) => makeSignalItem(member, key))
-    .slice(0, 5);
-
-  const weak = CORE_METRIC_ORDER
-    .filter((key) => metricValue(member, key) < 65)
-    .map((key) => makeSignalItem(member, key));
-
+  const strong = CORE_METRIC_ORDER.filter((key) => metricValue(member, key) >= 85).map((key) => makeSignalItem(member, key)).slice(0, 5);
+  const weak = CORE_METRIC_ORDER.filter((key) => metricValue(member, key) < 65).map((key) => makeSignalItem(member, key));
   const guardrailIssues = GUARDRAIL_ORDER
     .filter((key) => member.guardrails[key] !== '안전')
     .map((key) => ({ key, value: member.guardrails[key], note: '안전선 점검 · 가드레일' }));
 
-  const candidates: HypothesisCandidate[] = [];
-
-  if (metricValue(member, '계획 접점 실행률') < 75 || metricValue(member, '핵심 고객군 커버리지') < 75) {
-    candidates.push(createCandidate(
-      '접점 기회 부족 가능성',
-      '계획 접점 실행률 또는 핵심 고객군 커버리지가 낮아, 성과 가능성을 만드는 접점 기회부터 확인할 수 있습니다.',
-      ['계획 접점 실행률', '핵심 고객군 커버리지'],
-      70,
-    ));
-  }
-
-  if (metricValue(member, '사전 인사이트 준비도') < 70 && metricValue(member, '메시지-니즈 적합도') < 75) {
-    candidates.push(createCandidate(
-      '사전 준비 부족 가능성',
-      '사전 인사이트 준비도와 메시지-니즈 적합도가 함께 낮아, 방문 전 고객 맥락과 대화 목적 준비를 점검할 수 있습니다.',
-      ['사전 인사이트 준비도', '메시지-니즈 적합도'],
-      72,
-    ));
-  }
-
-  if (metricValue(member, '메시지-니즈 적합도') < 70 && metricValue(member, '고객 인게이지먼트 지수') < 75) {
-    candidates.push(createCandidate(
-      '메시지-니즈 불일치 가능성',
-      '메시지-니즈 적합도와 고객 인게이지먼트가 낮아, 고객에게 맞는 메시지였는지 확인할 필요가 있습니다.',
-      ['메시지-니즈 적합도', '고객 인게이지먼트 지수'],
-      76,
-    ));
-  }
-
-  const executionWeakCount = ['CRM 기록 품질', '후속조치 실행률', '실행 적시성'].filter((key) => metricValue(member, key) < 70).length;
-  if (executionWeakCount >= 2) {
-    candidates.push(createCandidate(
-      '기록·후속 실행 단절 가능성',
-      'CRM 기록 품질, 후속조치 실행률, 실행 적시성 중 두 개 이상이 낮아 접점 이후 다음 행동이 끊기는지 확인할 수 있습니다.',
-      ['CRM 기록 품질', '후속조치 실행률', '실행 적시성'],
-      80 + executionWeakCount,
-    ));
-  }
-
-  if (metricValue(member, '고객 인게이지먼트 지수') < 70 && metricValue(member, '고객 대화 지속성') < 70) {
-    candidates.push(createCandidate(
-      '고객 반응 저조 가능성',
-      '고객 인게이지먼트와 고객 대화 지속성이 모두 낮아 고객의 질문, 관심, 반복 대화 신호가 약한지 볼 필요가 있습니다.',
-      ['고객 인게이지먼트 지수', '고객 대화 지속성'],
-      74,
-    ));
-  }
-
-  if (metricValue(member, '고객 인게이지먼트 지수') >= 70 && metricValue(member, '후속 대화 연결지수') < 70) {
-    candidates.push(createCandidate(
-      '후속 대화 연결 병목 가능성',
-      '고객 반응은 있지만 후속 대화 연결지수가 낮아, 관심이 다음 설명·자료·미팅으로 이어지는지 점검할 수 있습니다.',
-      ['고객 인게이지먼트 지수', '후속 대화 연결지수'],
-      76,
-    ));
-  }
-
-  if (metricValue(member, '고객 대화 지속성') < 65) {
-    candidates.push(createCandidate(
-      '관계 지속 신호 약화 가능성',
-      '고객 대화 지속성이 낮아 반복 대화, 피드백, 후속 접점 수락 신호가 약한지 확인할 필요가 있습니다.',
-      ['고객 대화 지속성'],
-      68,
-    ));
-  }
-
-  if (metricValue(member, '팀 학습 기여도') < 65 || metricValue(member, '실행 인사이트 재사용도') < 65) {
-    candidates.push(createCandidate(
-      '팀 학습 확산 부족 가능성',
-      '팀 학습 기여도 또는 실행 인사이트 재사용도가 낮아, 개인 경험이 팀의 공유 자산으로 전환되는지 점검할 수 있습니다.',
-      ['팀 학습 기여도', '실행 인사이트 재사용도'],
-      82,
-    ));
-  }
-
-  if (guardrailIssues.length > 0) {
-    candidates.push(createCandidate(
-      '안전선 우선 점검 필요',
-      '컴플라이언스 또는 AI 입력 안전이 주의·점검 필요 상태이므로 실행 강화보다 안전선 확인을 먼저 해야 합니다.',
-      guardrailIssues.map((item) => item.key),
-      95,
-    ));
-  }
-
-  const sortedCandidates = candidates.sort((a, b) => b.priority - a.priority).slice(0, 3);
+  const hints: HypothesisHint[] = [];
+  if (metricValue(member, '계획 접점 실행률') < 75 || metricValue(member, '핵심 고객군 커버리지') < 75) hints.push(createHint('접점 기회 부족 가능성', '성과 가능성을 만드는 접점 기회부터 확인할 수 있습니다.', ['계획 접점 실행률', '핵심 고객군 커버리지'], 70));
+  if (metricValue(member, '사전 인사이트 준비도') < 70 && metricValue(member, '메시지-니즈 적합도') < 75) hints.push(createHint('사전 준비 부족 가능성', '방문 전 고객 맥락과 대화 목적 준비를 점검할 수 있습니다.', ['사전 인사이트 준비도', '메시지-니즈 적합도'], 72));
+  if (metricValue(member, '메시지-니즈 적합도') < 70 && metricValue(member, '고객 인게이지먼트 지수') < 75) hints.push(createHint('메시지-니즈 불일치 가능성', '고객에게 맞는 메시지였는지 확인할 필요가 있습니다.', ['메시지-니즈 적합도', '고객 인게이지먼트 지수'], 76));
+  if (['CRM 기록 품질', '후속조치 실행률', '실행 적시성'].filter((key) => metricValue(member, key) < 70).length >= 2) hints.push(createHint('기록·후속 실행 단절 가능성', '접점 이후 다음 행동이 끊기는지 확인할 수 있습니다.', ['CRM 기록 품질', '후속조치 실행률', '실행 적시성'], 83));
+  if (metricValue(member, '고객 인게이지먼트 지수') < 70 && metricValue(member, '고객 대화 지속성') < 70) hints.push(createHint('고객 반응 저조 가능성', '고객의 질문, 관심, 반복 대화 신호가 약한지 볼 필요가 있습니다.', ['고객 인게이지먼트 지수', '고객 대화 지속성'], 74));
+  if (metricValue(member, '고객 인게이지먼트 지수') >= 70 && metricValue(member, '후속 대화 연결지수') < 70) hints.push(createHint('후속 대화 연결 병목 가능성', '고객 관심이 다음 설명·자료·미팅으로 이어지는지 점검할 수 있습니다.', ['고객 인게이지먼트 지수', '후속 대화 연결지수'], 76));
+  if (metricValue(member, '고객 대화 지속성') < 65) hints.push(createHint('관계 지속 신호 약화 가능성', '반복 대화, 피드백, 후속 접점 수락 신호를 확인할 필요가 있습니다.', ['고객 대화 지속성'], 68));
+  if (metricValue(member, '팀 학습 기여도') < 65 || metricValue(member, '실행 인사이트 재사용도') < 65) hints.push(createHint('팀 학습 확산 부족 가능성', '개인 경험이 팀의 공유 자산으로 전환되는지 점검할 수 있습니다.', ['팀 학습 기여도', '실행 인사이트 재사용도'], 82));
+  if (guardrailIssues.length > 0) hints.push(createHint('안전선 우선 점검 필요', '실행 강화보다 컴플라이언스 또는 AI 입력 안전선을 먼저 확인해야 합니다.', guardrailIssues.map((item) => item.key), 95));
 
   return {
     strong,
     weak,
     guardrailIssues,
-    candidates: sortedCandidates.length > 0
-      ? sortedCandidates
-      : [createCandidate('판단 유보 필요', '강한 신호와 약한 신호가 뚜렷하게 한 방향으로 모이지 않아 추가 맥락 확인이 필요합니다.', [], 10)],
+    hints: hints.sort((a, b) => b.priority - a.priority).slice(0, 3),
   };
+}
+
+function buildRecommendedExperiments(member: Member) {
+  const items: string[] = [];
+  if (member.guardrails['컴플라이언스 위험 점검'] !== '안전' || member.guardrails['AI 입력 안전 점검'] !== '안전') items.push('AI 입력 전 고객명·병원명·민감정보 제거 체크');
+  if (metricValue(member, '팀 학습 기여도') < 65 || metricValue(member, '실행 인사이트 재사용도') < 65) items.push('성공·실패 인사이트 1개를 팀 회의에서 공유');
+  if (['CRM 기록 품질', '후속조치 실행률', '실행 적시성'].some((key) => metricValue(member, key) < 65)) items.push('콜 이후 24시간 내 CRM에 고객 반응과 다음 행동 기록');
+  if (metricValue(member, '메시지-니즈 적합도') < 70) items.push('고객 니즈에 맞춘 안전 메시지 2문장 재작성');
+  if (metricValue(member, '후속 대화 연결지수') < 70) items.push('2주 동안 후속 대화 연결 시도 기록');
+  if (metricValue(member, '사전 인사이트 준비도') < 70) items.push('콜 전 고객별 질문 2개와 대화 목적 1개 준비');
+  return Array.from(new Set(items)).slice(0, 3).concat(items.length === 0 ? ['팀원과 1on1로 데이터 해석 차이를 확인하고 2주 실행행동 1개 합의'] : []);
+}
+
+function buildRecommendedChecks(member: Member) {
+  return CORE_METRIC_ORDER.filter((key) => metricValue(member, key) < 70).slice(0, 3).concat(GUARDRAIL_ORDER.filter((key) => member.guardrails[key] !== '안전'));
 }
 
 function makeDiagnosisStatement(member: Member, response: DiagnosisResponse) {
-  const comparison = response.comparisonChoice || '직관과 데이터의 차이는 추가 확인이 필요하다';
-  const lead = listOrNone(response.selectedLeadVariables, '선행지표에서 결정적 신호는 아직 약함');
-  const process = listOrNone(response.selectedProcessVariables, '과정지표는 추가 확인 필요');
-  const result = listOrNone(response.selectedResultVariables, '결과지표는 추가 확인 필요');
-  const diffusion = listOrNone(response.selectedDiffusionVariables, '확산지표는 추가 확인 필요');
-  const guardrails = listOrNone(response.selectedGuardrails, '현재 선택한 가드레일 이슈 없음');
-  const experiments = response.selectedExperiments.length ? response.selectedExperiments.join(', ') : '2주 실행 실험 1개를 정한다';
-  const checks = response.selectedCheckMetrics.length ? response.selectedCheckMetrics.join(', ') : '핵심 지표 2~3개';
-
-  return `${member.name}에 대한 상황 기반 첫 해석은 “${response.observationIntuition || '미기록'}”이었다. 실제 데이터를 확인한 뒤 직접 작성한 진단 가설은 “${response.dataHypothesis || '미기록'}”이다. ${comparison}. 근거는 선행지표(${lead}), 과정지표(${process}), 결과지표(${result}), 확산지표(${diffusion}), 가드레일(${guardrails})이다. 따라서 2주 동안 ${experiments}을/를 실행하고, ${checks}의 변화를 확인한다.`;
-}
-
-function parseAi(raw: string) {
-  const text = (raw || '').trim();
-  const pick = (n: number) => text.match(new RegExp('##\\s*' + n + '[\\s\\S]*?(?=##\\s*' + (n + 1) + '|$)'))?.[0] || '';
-  return {
-    aiProfileCheck: pick(1),
-    aiPathCheck: pick(2),
-    aiCounter: pick(3),
-    aiQuestions: pick(4),
-    aiExperiment: pick(5),
-    aiCaution: pick(6),
-  };
+  const experiments = response.selectedExperiments.length ? response.selectedExperiments.join(', ') : '2주 실행 실험 1개';
+  const checks = response.selectedCheckMetrics.length ? response.selectedCheckMetrics.join(', ') : buildRecommendedChecks(member).join(', ') || '핵심 지표 2~3개';
+  return `${member.name}에 대한 상황 기반 첫 해석은 “${response.observationIntuition || '미기록'}”이었다. 데이터를 확인한 뒤 작성한 가설은 “${response.dataHypothesis || '미기록'}”이다. 직관과 데이터 비교 결과는 “${response.comparisonChoice || '미기록'}”이며, 이유는 “${response.changedReason || '미기록'}”이다. 따라서 2주 동안 ${experiments}을/를 실행하고, ${checks}의 변화를 확인한다.`;
 }
 
 function buildPrompt(member: Member, response: DiagnosisResponse) {
   const dataSummary = buildDataSignalSummary(member);
-  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n핵심 원칙:\n팀장이 먼저 상황만 보고 직관적 해석을 했고, 이후 실제 데이터를 보고 데이터 기반 진단 가설을 직접 작성했습니다. 이 둘이 어떻게 같고 다른지, 그리고 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 검토하세요.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.profile}\n\n[관찰 상황]\n${member.observation}\n\n[팀원 발언]\n${member.quote}\n\n[1단계: 상황만 보고 처음 든 생각]\n${response.observationIntuition || '-'}\n\n[2단계: 데이터를 보고 직접 작성한 진단 가설]\n${response.dataHypothesis || '-'}\n\n[데이터 신호 요약]\n강한 신호: ${dataSummary.strong.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n약한 신호: ${dataSummary.weak.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n안전선 이슈: ${dataSummary.guardrailIssues.map((item) => `${item.key} ${item.value}`).join(', ') || '현재 주요 이슈 없음'}\n진단 문장 작성 힌트: ${dataSummary.candidates.map((item) => `${item.hypothesis}(${item.reason})`).join(' / ')}\n\n[3단계: 직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n\n[판단이 유지/수정/유보된 이유]\n${response.changedReason || '-'}\n\n[진단 지표 데이터]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[안전선 점검]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]} - ${METRIC_META[key].description}`).join('\n')}\n\n[팀장이 선택한 근거 지표]\n- 기회 만들기·선행지표: ${listOrNone(response.selectedLeadVariables)}\n- 실행 품질·과정지표: ${listOrNone(response.selectedProcessVariables)}\n- 고객 반응·결과지표: ${listOrNone(response.selectedResultVariables)}\n- 팀 학습·확산지표: ${listOrNone(response.selectedDiffusionVariables)}\n- 안전선 점검·가드레일: ${listOrNone(response.selectedGuardrails)}\n\n[팀장이 작성한 인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(member, response)}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n검토 요청:\n1. 상황 기반 직관과 데이터 기반 가설이 섞이지 않았는지 점검하세요.\n2. 데이터 기반 진단 가설이 강한 신호, 약한 신호, 안전선 상태를 충분히 반영했는지 점검하세요.\n3. 선행지표→과정지표→결과지표→확산지표의 연결 경로가 타당한지 설명하세요.\n4. 이 진단이 틀렸을 가능성이나 빠진 변수를 지적하세요.\n5. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n6. 선택한 2주 실행 실험을 더 현실적으로 보완하세요.\n7. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.\n\n아래 제목을 그대로 사용해 답하세요.\n## 1. 직관과 데이터 가설 구분 점검\n## 2. 데이터 기반 가설의 근거 충실도\n## 3. 선행·과정·결과·확산지표 연결 점검\n## 4. 이 진단이 틀렸을 가능성\n## 5. 팀장이 확인해야 할 질문\n## 6. 2주 실행 실험 보완 제안\n## 7. 안전선 관점의 주의점`;
+  const checks = response.selectedCheckMetrics.length ? response.selectedCheckMetrics : buildRecommendedChecks(member);
+  return `당신은 제약영업팀장의 팀원 실행진단을 돕는 리더십 코치입니다.\n\n[팀원]\n${member.name}\n\n[관찰 프로필]\n${member.profile}\n\n[관찰 상황]\n${member.observation}\n\n[팀원 발언]\n${member.quote}\n\n[상황만 보고 처음 든 생각]\n${response.observationIntuition || '-'}\n\n[데이터를 보고 직접 작성한 진단 가설]\n${response.dataHypothesis || '-'}\n\n[직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n\n[판단 변화 이유]\n${response.changedReason || '-'}\n\n[데이터 신호 요약]\n강한 신호: ${dataSummary.strong.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n약한 신호: ${dataSummary.weak.map((item) => `${item.key} ${item.value}`).join(', ') || '-'}\n안전선 이슈: ${dataSummary.guardrailIssues.map((item) => `${item.key} ${item.value}`).join(', ') || '현재 주요 이슈 없음'}\n작성 힌트: ${dataSummary.hints.map((item) => `${item.title}(${item.metrics.join(', ')})`).join(' / ') || '-'}\n\n[상세 지표]\n${CORE_METRIC_ORDER.map((key) => `${key}(${METRIC_META[key].group}/${METRIC_META[key].expertLabel}): ${member.metrics[key]}`).join('\n')}\n\n[안전선]\n${GUARDRAIL_ORDER.map((key) => `${key}: ${member.guardrails[key]}`).join('\n')}\n\n[선택한 2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[확인할 지표]\n${checks.join(', ') || '-'}\n\n[최종 실행 문장]\n${response.finalActionSentence || '-'}\n\n검토 요청:\n1. 직관과 데이터 가설이 섞이지 않았는지 점검하세요.\n2. 데이터 기반 진단 가설이 강한 신호, 약한 신호, 안전선 상태를 충분히 반영했는지 점검하세요.\n3. 선행지표→과정지표→결과지표→확산지표의 연결 경로에서 빠진 부분을 짚어주세요.\n4. 팀장이 팀원에게 확인해야 할 질문을 제안하세요.\n5. 2주 실행 실험과 최종 실행 문장을 더 현실적으로 다듬어 주세요.\n6. 컴플라이언스와 AI 입력 안전선 관점의 주의점을 제안하세요.`;
 }
 
 export function DashboardAnalysisLab() {
@@ -466,13 +328,21 @@ export function DashboardAnalysisLab() {
     reviewChecks: storedResponse.reviewChecks ?? {},
   };
   const [copyMessage, setCopyMessage] = useState('');
+  const [showDetailMetrics, setShowDetailMetrics] = useState(false);
+  const [showEvidencePicker, setShowEvidencePicker] = useState(false);
   const currentMember = getMember(response.selectedMemberId);
   const dataSummary = useMemo(() => buildDataSignalSummary(currentMember), [currentMember]);
+  const recommendedExperiments = useMemo(() => buildRecommendedExperiments(currentMember), [currentMember]);
+  const recommendedChecks = useMemo(() => buildRecommendedChecks(currentMember), [currentMember]);
   const prompt = useMemo(() => buildPrompt(currentMember, response), [currentMember, response]);
-  const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
+  const checkedCount = Object.values(response.reviewChecks).filter(Boolean).length;
 
   const update = (patch: Partial<DiagnosisResponse>) => {
     setResponse({ ...response, ...patch, savedAt: new Date().toISOString() });
+  };
+
+  const selectExperiment = (experiment: string) => {
+    update({ selectedExperiments: [experiment] });
   };
 
   const generateDiagnosis = () => {
@@ -483,153 +353,75 @@ export function DashboardAnalysisLab() {
   const copyPrompt = async () => {
     try {
       await navigator.clipboard.writeText(prompt);
-      setCopyMessage('AI 검증 프롬프트를 복사했습니다. 직관, 데이터 가설, 근거 지표가 함께 포함되어 있습니다.');
+      setCopyMessage('AI 검증 프롬프트를 복사했습니다.');
     } catch {
       setCopyMessage('복사가 차단되었습니다. 프롬프트 영역을 직접 선택해 복사하세요.');
     }
   };
 
-  const applyAiAnswer = () => {
-    const parsed = parseAi(response.aiAnswerRaw);
-    update(parsed);
-    setCopyMessage('AI 답변을 7개 검토 영역으로 분리했습니다.');
-  };
-
-  const outputText = `[팀원 실행진단 결과]\n\n[선택 팀원]\n${currentMember.name}\n\n[관찰 프로필]\n${currentMember.profile}\n\n[상황 기반 첫 해석]\n${response.observationIntuition || '-'}\n\n[데이터 기반 진단 가설]\n${response.dataHypothesis || '-'}\n\n[직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n${response.changedReason || ''}\n\n[인과 진단문]\n${response.diagnosisStatement || makeDiagnosisStatement(currentMember, response)}\n\n[기회 만들기 · 선행지표]\n${listOrNone(response.selectedLeadVariables)}\n\n[실행 품질 · 과정지표]\n${listOrNone(response.selectedProcessVariables)}\n\n[고객 반응 · 결과지표]\n${listOrNone(response.selectedResultVariables)}\n\n[팀 학습 · 확산지표]\n${listOrNone(response.selectedDiffusionVariables)}\n\n[안전선 점검 · 가드레일]\n${listOrNone(response.selectedGuardrails)}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[2주 후 확인 지표]\n${response.selectedCheckMetrics.join(', ') || '-'}\n\n[팀원에게 던질 질문]\n${response.confirmQuestion}\n\n[최종 실행 문장]\n${response.finalActionSentence}`;
+  const outputText = `[팀원 실행진단 결과]\n\n[선택 팀원]\n${currentMember.name}\n\n[상황 기반 첫 해석]\n${response.observationIntuition || '-'}\n\n[데이터 기반 진단 가설]\n${response.dataHypothesis || '-'}\n\n[직관과 데이터 비교]\n${response.comparisonChoice || '-'}\n${response.changedReason || ''}\n\n[2주 실행 실험]\n${response.selectedExperiments.join(', ') || '-'}\n\n[확인할 지표]\n${(response.selectedCheckMetrics.length ? response.selectedCheckMetrics : recommendedChecks).join(', ') || '-'}\n\n[최종 실행 문장]\n${response.finalActionSentence || '-'}\n\n[AI 검토 후 보완]\n${response.aiAnswerRaw || '-'}`;
 
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
         <p className="font-bold">팀원 실행진단 Lab</p>
-        <p className="mt-1">상황만 보고 떠오르는 직관을 먼저 기록한 뒤, 실제 데이터를 근거로 가설을 직접 작성하고 검증합니다.</p>
+        <p className="mt-1">핵심 입력은 5개입니다. 처음 든 생각, 데이터 기반 가설, 판단 변화, 변화 이유, 최종 실행 문장만 남기고 나머지는 참고자료로 단순화했습니다.</p>
       </div>
 
-      <SectionCard title="1단계: 관찰 상황 읽기">
-        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">아직 지표를 보지 않습니다. 팀원의 말과 행동만 보고, 팀장으로서 처음 떠오르는 해석을 선택하세요. 이 판단은 정답이 아니라 이후 데이터로 검증할 첫 인상입니다.</div>
-        <label className="block space-y-1"><FieldLabel>관찰할 팀원 선택</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedMemberId} onChange={(event) => update({ selectedMemberId: event.target.value, observationIntuition: '', dataHypothesis: '', comparisonChoice: '', changedReason: '', diagnosisStatement: '' })}>{MEMBERS.map((member) => <option key={member.id} value={member.id}>{member.name} · {member.profile}</option>)}</select></label>
+      <SectionCard title="1단계: 관찰만 보고 판단하기">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">아직 지표를 보지 않습니다. 팀원의 말과 행동만 보고 팀장으로서 처음 떠오르는 해석을 선택하세요.</div>
+        <label className="block space-y-1"><FieldLabel>관찰할 팀원 선택</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedMemberId} onChange={(event) => update({ selectedMemberId: event.target.value, observationIntuition: '', dataHypothesis: '', comparisonChoice: '', changedReason: '', diagnosisStatement: '', selectedExperiments: [], selectedCheckMetrics: [], finalActionSentence: '' })}>{MEMBERS.map((member) => <option key={member.id} value={member.id}>{member.name} · {member.profile}</option>)}</select></label>
         <article className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-700"><div className="flex flex-wrap items-center gap-2"><h4 className="font-bold text-slate-900">{currentMember.name}</h4><span className="rounded-full border bg-white px-3 py-1 text-xs font-bold text-slate-600">관찰 프로필: {currentMember.profile}</span></div><p className="mt-3 leading-6">{currentMember.observation}</p><p className="mt-3 rounded-xl bg-white p-3 font-semibold text-slate-800">“{currentMember.quote}”</p></article>
         <label className="block space-y-1"><FieldLabel>상황만 보고 처음 든 생각</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.observationIntuition} onChange={(event) => update({ observationIntuition: event.target.value })}><option value="">선택하세요</option>{OBSERVATION_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
       </SectionCard>
 
-      <SectionCard title="2단계: 실제 지표 Data 확인과 데이터 기반 가설 작성">
-        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">이제 실제 실행 데이터를 확인합니다. 지표가 정답을 자동으로 말해주지는 않습니다. 강한 신호와 약한 신호를 비교해, 이 팀원의 핵심 병목을 자신의 문장으로 작성하세요.</div>
-        <div className="grid gap-3 md:grid-cols-5">
-          {(['기회 만들기', '실행 품질', '고객 반응', '팀 학습', '안전선 점검'] as MetricGroup[]).map((group) => (
-            <div key={group} className={`rounded-2xl border p-4 ${groupTone(group)}`}><div className="flex flex-wrap items-center gap-2"><h4 className="font-black">{group}</h4><span className="rounded-full border bg-white/70 px-2 py-0.5 text-[10px] font-black">{expertLabelForGroup(group)}</span></div><p className="mt-2 text-xs leading-5">{group === '기회 만들기' ? '성과 가능성을 만드는 사전 행동' : group === '실행 품질' ? '접점이 다음 행동으로 이어지는 과정 품질' : group === '고객 반응' ? '고객 질문·관심·후속 대화 신호' : group === '팀 학습' ? '개인 경험이 팀 실행 역량으로 퍼지는 정도' : '성과보다 먼저 확인해야 하는 안전 기준'}</p></div>
-          ))}
+      <SectionCard title="2단계: 데이터로 판단 수정하기">
+        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">전체 지표를 모두 해석하려고 애쓰지 않아도 됩니다. 강한 신호, 약한 신호, 안전선 상태만 먼저 확인하고 한 문장으로 진단 가설을 작성하세요.</div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className={`rounded-2xl border p-3 ${signalTone('strong')}`}><p className="font-bold">강한 신호</p><div className="mt-2 space-y-2 text-xs">{dataSummary.strong.length ? dataSummary.strong.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 강한 신호 없음</p>}</div></div>
+          <div className={`rounded-2xl border p-3 ${signalTone('weak')}`}><p className="font-bold">약한 신호</p><div className="mt-2 space-y-2 text-xs">{dataSummary.weak.length ? dataSummary.weak.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 약한 신호 없음</p>}</div></div>
+          <div className={`rounded-2xl border p-3 ${dataSummary.guardrailIssues.length ? signalTone('guardrail') : signalTone('strong')}`}><p className="font-bold">안전선 상태</p><div className="mt-2 space-y-2 text-xs">{dataSummary.guardrailIssues.length ? dataSummary.guardrailIssues.map((item) => <p key={item.key}><b>{item.key}</b> {item.value}</p>) : <p>현재 주요 안전선 이슈 없음</p>}</div></div>
         </div>
-        <div className="grid gap-3 md:grid-cols-4">
-          {CORE_METRIC_ORDER.map((key) => {
-            const meta = METRIC_META[key];
-            return <div key={key} className={`rounded-2xl border p-3 ${metricTone(currentMember.metrics[key])}`}><div className="flex items-center justify-between gap-2"><p className="text-xs font-bold text-slate-500">{key}</p><span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${groupTone(meta.group)}`}>{meta.group} · {meta.expertLabel}</span></div><p className="mt-1 text-2xl font-black text-slate-900">{currentMember.metrics[key]}</p><p className="mt-2 text-xs leading-5 text-slate-600">{meta.description}</p></div>;
-          })}
+        <div className="rounded-2xl border bg-slate-50 p-4 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><p className="font-black text-slate-900">진단 문장 작성 힌트</p><p className="mt-1 text-xs text-slate-500">힌트는 참고자료입니다. 최종 가설은 직접 작성합니다.</p></div>
+            <button className="rounded-xl border bg-white px-3 py-1.5 text-xs font-bold text-slate-700" onClick={() => setShowDetailMetrics((value) => !value)}>{showDetailMetrics ? '상세 지표 숨기기' : '상세 지표 보기'}</button>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">{dataSummary.hints.length ? dataSummary.hints.map((hint) => <div key={hint.title} className="rounded-xl border bg-white p-3"><p className="font-bold text-slate-900">{hint.title}</p><p className="mt-1 text-xs leading-5 text-slate-600">{hint.reason}</p>{hint.metrics.length ? <p className="mt-2 text-xs font-bold text-cyan-700">관련 지표: {hint.metrics.join(', ')}</p> : null}</div>) : <p className="text-xs text-slate-500">뚜렷한 힌트 없음</p>}</div>
+          {showDetailMetrics ? <div className="mt-4 grid gap-3 md:grid-cols-4">{CORE_METRIC_ORDER.map((key) => { const meta = METRIC_META[key]; return <div key={key} className={`rounded-2xl border p-3 ${metricTone(currentMember.metrics[key])}`}><p className="text-xs font-bold text-slate-500">{key}</p><p className="mt-1 text-2xl font-black text-slate-900">{currentMember.metrics[key]}</p><p className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-bold ${groupTone(meta.group)}`}>{meta.group} · {meta.expertLabel}</p><p className="mt-2 text-xs leading-5 text-slate-600">{meta.description}</p></div>; })}{GUARDRAIL_ORDER.map((key) => <div key={key} className={`rounded-2xl border p-3 ${guardrailTone(currentMember.guardrails[key])}`}><p className="text-xs font-bold">{key}</p><p className="mt-1 text-xl font-black">{currentMember.guardrails[key]}</p><p className="mt-2 text-xs leading-5">{METRIC_META[key].description}</p></div>)}</div> : null}
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {GUARDRAIL_ORDER.map((key) => {
-            const status = currentMember.guardrails[key];
-            return <div key={key} className={`rounded-2xl border p-4 ${guardrailTone(status)}`}><div className="flex items-center justify-between gap-2"><div><p className="text-sm font-black">{key}</p><p className="text-xs font-bold">안전선 점검 · 가드레일</p></div><span className="rounded-full bg-white/70 px-3 py-1 text-xs font-black">{status}</span></div><p className="mt-2 text-xs leading-5">{METRIC_META[key].description}</p></div>;
-          })}
-        </div>
-
-        <div className="rounded-2xl border bg-white p-4">
-          <div>
-            <h4 className="font-black text-slate-900">데이터 신호 요약</h4>
-            <p className="mt-1 text-sm text-slate-600">강한 신호와 약한 신호의 조합을 확인하세요. 아래 내용은 진단 문장 작성을 돕는 참고자료이며 정답이 아닙니다.</p>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className={`rounded-2xl border p-3 ${signalTone('strong')}`}>
-              <p className="font-bold">강한 신호</p>
-              <div className="mt-2 space-y-2 text-xs">
-                {dataSummary.strong.length ? dataSummary.strong.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 강한 신호 없음</p>}
-              </div>
-            </div>
-            <div className={`rounded-2xl border p-3 ${signalTone('weak')}`}>
-              <p className="font-bold">약한 신호</p>
-              <div className="mt-2 space-y-2 text-xs">
-                {dataSummary.weak.length ? dataSummary.weak.map((item) => <p key={item.key}><b>{item.key}</b> {item.value} · {item.note}</p>) : <p>뚜렷한 약한 신호 없음</p>}
-              </div>
-            </div>
-            <div className={`rounded-2xl border p-3 ${dataSummary.guardrailIssues.length ? signalTone('guardrail') : signalTone('strong')}`}>
-              <p className="font-bold">안전선 상태</p>
-              <div className="mt-2 space-y-2 text-xs">
-                {dataSummary.guardrailIssues.length ? dataSummary.guardrailIssues.map((item) => <p key={item.key}><b>{item.key}</b> {item.value}</p>) : <p>현재 주요 안전선 이슈 없음</p>}
-              </div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm font-black text-slate-900">진단 문장 작성 힌트</p>
-            <p className="mt-1 text-xs text-slate-500">힌트를 그대로 선택하지 말고, 강한 지표·약한 지표·추가 확인 필요성을 반영해 직접 문장화하세요.</p>
-            <div className="mt-2 grid gap-3 md:grid-cols-3">
-              {dataSummary.candidates.map((candidate) => (
-                <div key={candidate.hypothesis} className="rounded-2xl border bg-slate-50 p-4 text-sm">
-                  <p className="font-black text-slate-900">{candidate.hypothesis}</p>
-                  <p className="mt-2 leading-5 text-slate-600">{candidate.reason}</p>
-                  {candidate.metrics.length ? <p className="mt-2 text-xs font-bold text-cyan-700">관련 지표: {candidate.metrics.join(', ')}</p> : null}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border bg-white p-4">
-          <p className="font-black text-slate-900">데이터를 보고 다시 세운 나의 진단 가설</p>
-          <p className="mt-1 text-sm text-slate-600">지표를 근거로 이 팀원의 핵심 병목을 한 문장 이상으로 작성하세요. 강한 신호, 약한 신호, 안전선 상태, 아직 확인이 필요한 질문을 포함하면 좋습니다.</p>
-          <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-            작성 예시: 고객 반응과 후속 대화 연결은 강하지만, 팀 학습 기여도와 실행 인사이트 재사용도가 낮아 개인의 성공 경험이 팀 실행 역량으로 확산되지 않는 상황으로 보인다. 다만 공유를 꺼리는 이유가 시간 부족인지, 경쟁심인지, 공유 방식의 불편감인지는 1on1에서 확인해야 한다.
-          </div>
-          <textarea className="mt-3 min-h-32 w-full rounded-xl border px-3 py-2" value={response.dataHypothesis} onChange={(event) => update({ dataHypothesis: event.target.value })} placeholder="예: 강한 지표와 약한 지표를 근거로 이 팀원의 핵심 병목을 직접 작성하세요." />
-          <div className="mt-3 grid gap-2 md:grid-cols-2 text-xs text-slate-600">
-            <p>□ 강한 지표를 1개 이상 언급했는가?</p>
-            <p>□ 약한 지표를 1개 이상 언급했는가?</p>
-            <p>□ 선행/과정/결과/확산 중 어느 지표인지 구분했는가?</p>
-            <p>□ 안전선 상태와 추가 확인 질문을 남겼는가?</p>
-          </div>
-        </div>
+        <label className="block space-y-1"><FieldLabel>데이터를 보고 다시 세운 나의 진단 가설</FieldLabel><textarea className="min-h-32 w-full rounded-xl border px-3 py-2" value={response.dataHypothesis} onChange={(event) => update({ dataHypothesis: event.target.value })} placeholder="예: 고객 반응은 강하지만 팀 학습 지표가 낮아 개인 경험이 팀 자산으로 확산되지 않는 상황으로 보인다. 다만 그 이유는 1on1에서 확인해야 한다." /></label>
       </SectionCard>
 
-      <SectionCard title="3단계: 직관과 데이터 비교, 근거 지표 선택">
-        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">1단계의 직관과 2단계의 데이터 가설이 같은지 비교하세요. 판단이 바뀌었다면 어떤 지표 때문인지 기록합니다.</div>
-        <div className="grid gap-3 md:grid-cols-2"><div className="rounded-xl border p-3 text-sm"><p className="font-bold text-slate-500">상황 기반 첫 해석</p><p className="mt-1 text-slate-900">{response.observationIntuition || '아직 선택하지 않음'}</p></div><div className="rounded-xl border p-3 text-sm"><p className="font-bold text-slate-500">데이터 기반 진단 가설</p><p className="mt-1 whitespace-pre-wrap text-slate-900">{response.dataHypothesis || '아직 작성하지 않음'}</p></div></div>
+      <SectionCard title="3단계: 내 판단 변화 확인하기">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">여기서는 팀원을 다시 진단하지 않습니다. 내 처음 판단이 데이터로 유지됐는지, 수정됐는지, 유보됐는지만 짧게 확인합니다.</div>
+        <div className="grid gap-3 md:grid-cols-2"><div className="rounded-xl border p-3 text-sm"><p className="font-bold text-slate-500">처음 든 생각</p><p className="mt-1 text-slate-900">{response.observationIntuition || '아직 선택하지 않음'}</p></div><div className="rounded-xl border p-3 text-sm"><p className="font-bold text-slate-500">데이터 기반 가설</p><p className="mt-1 whitespace-pre-wrap text-slate-900">{response.dataHypothesis || '아직 작성하지 않음'}</p></div></div>
         <label className="block space-y-1"><FieldLabel>직관과 데이터 비교</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.comparisonChoice} onChange={(event) => update({ comparisonChoice: event.target.value })}><option value="">선택하세요</option>{COMPARISON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
-        <label className="block space-y-1"><FieldLabel>판단이 유지/수정/유보된 이유</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.changedReason} onChange={(event) => update({ changedReason: event.target.value })} placeholder="예: 처음에는 변화 저항으로 봤지만, 실제로는 CRM 기록 품질과 실행 인사이트 재사용도가 낮았다." /></label>
-        <div className="grid gap-4 md:grid-cols-5">
-          <div><FieldLabel>{groupLabel('기회 만들기')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('기회 만들기').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedLeadVariables.includes(metric)} onChange={() => update({ selectedLeadVariables: toggle(response.selectedLeadVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>{groupLabel('실행 품질')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('실행 품질').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProcessVariables.includes(metric)} onChange={() => update({ selectedProcessVariables: toggle(response.selectedProcessVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>{groupLabel('고객 반응')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('고객 반응').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>{groupLabel('팀 학습')}</FieldLabel><div className="mt-2 space-y-2">{metricOptions('팀 학습').map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metric}</label>)}</div></div>
-          <div><FieldLabel>{groupLabel('안전선 점검')}</FieldLabel><div className="mt-2 space-y-2">{GUARDRAIL_ORDER.map((metric) => <label key={metric} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedGuardrails.includes(metric)} onChange={() => update({ selectedGuardrails: toggle(response.selectedGuardrails, metric) })} />{metric}</label>)}</div></div>
-        </div>
-        <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateDiagnosis}>인과 진단문 생성</button>
-        <label className="block space-y-1"><FieldLabel>인과 진단문</FieldLabel><textarea className="min-h-28 w-full rounded-xl border px-3 py-2" value={response.diagnosisStatement} onChange={(event) => update({ diagnosisStatement: event.target.value })} /></label>
+        <label className="block space-y-1"><FieldLabel>판단이 유지/수정/유보된 이유 한 줄</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.changedReason} onChange={(event) => update({ changedReason: event.target.value })} placeholder="예: 처음에는 태도 문제로 봤지만, 데이터상으로는 팀 학습 확산의 문제로 보였다." /></label>
+        <button className="rounded-xl border bg-white px-3 py-1.5 text-xs font-bold text-slate-700" onClick={() => setShowEvidencePicker((value) => !value)}>{showEvidencePicker ? '근거 지표 선택 숨기기' : '근거 지표 직접 선택하기 선택사항'}</button>
+        {showEvidencePicker ? <div className="grid gap-4 md:grid-cols-5"><div><FieldLabel>{groupLabel('기회 만들기')}</FieldLabel>{metricOptions('기회 만들기').map((metric) => <label key={metric} className="mt-2 flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedLeadVariables.includes(metric)} onChange={() => update({ selectedLeadVariables: toggle(response.selectedLeadVariables, metric) })} />{metric}</label>)}</div><div><FieldLabel>{groupLabel('실행 품질')}</FieldLabel>{metricOptions('실행 품질').map((metric) => <label key={metric} className="mt-2 flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedProcessVariables.includes(metric)} onChange={() => update({ selectedProcessVariables: toggle(response.selectedProcessVariables, metric) })} />{metric}</label>)}</div><div><FieldLabel>{groupLabel('고객 반응')}</FieldLabel>{metricOptions('고객 반응').map((metric) => <label key={metric} className="mt-2 flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedResultVariables.includes(metric)} onChange={() => update({ selectedResultVariables: toggle(response.selectedResultVariables, metric) })} />{metric}</label>)}</div><div><FieldLabel>{groupLabel('팀 학습')}</FieldLabel>{metricOptions('팀 학습').map((metric) => <label key={metric} className="mt-2 flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedDiffusionVariables.includes(metric)} onChange={() => update({ selectedDiffusionVariables: toggle(response.selectedDiffusionVariables, metric) })} />{metric}</label>)}</div><div><FieldLabel>{groupLabel('안전선 점검')}</FieldLabel>{GUARDRAIL_ORDER.map((metric) => <label key={metric} className="mt-2 flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedGuardrails.includes(metric)} onChange={() => update({ selectedGuardrails: toggle(response.selectedGuardrails, metric) })} />{metric}</label>)}</div></div> : null}
       </SectionCard>
 
-      <SectionCard title="4단계: 2주 실행 실험과 확인 지표 선택">
-        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">복수 선택 가능 · 2주 동안 실제로 실행 가능한 실험은 2개 이내, 확인 지표는 2~3개를 권장합니다.</div>
-        <div><FieldLabel>2주 실행 실험</FieldLabel><div className="mt-2 grid gap-2 md:grid-cols-2">{EXPERIMENT_OPTIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedExperiments.includes(item)} onChange={() => update({ selectedExperiments: toggle(response.selectedExperiments, item) })} />{item}</label>)}</div><p className="mt-2 text-xs text-slate-500">현재 선택: {response.selectedExperiments.length}개 / 권장: 최대 2개</p></div>
-        <div><FieldLabel>2주 후 확인 지표</FieldLabel><div className="mt-2 grid gap-2 md:grid-cols-3">{CHECK_METRIC_OPTIONS.map((item) => <label key={item} className="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" checked={response.selectedCheckMetrics.includes(item)} onChange={() => update({ selectedCheckMetrics: toggle(response.selectedCheckMetrics, item) })} />{item}</label>)}</div><p className="mt-2 text-xs text-slate-500">현재 선택: {response.selectedCheckMetrics.length}개 / 권장: 2~3개</p></div>
+      <SectionCard title="4단계: 2주 실행안 만들기">
+        <div className="rounded-xl bg-cyan-50 p-3 text-sm text-cyan-900">추천 실행 실험 중 하나만 선택하고, 최종 실행 문장을 직접 다듬습니다.</div>
+        <div><FieldLabel>추천 실행 실험 하나 선택</FieldLabel><div className="mt-2 grid gap-2 md:grid-cols-3">{recommendedExperiments.map((item) => <button key={item} className={`rounded-xl border p-3 text-left text-sm font-semibold ${response.selectedExperiments.includes(item) ? 'border-cyan-500 bg-cyan-50 text-cyan-900' : 'bg-white text-slate-700'}`} onClick={() => selectExperiment(item)}>{item}</button>)}</div></div>
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700"><b>확인할 지표 추천:</b> {(response.selectedCheckMetrics.length ? response.selectedCheckMetrics : recommendedChecks).join(', ') || '팀원 1on1 대화 내용'}</div>
+        <label className="block space-y-1"><FieldLabel>최종 2주 실행 문장</FieldLabel><textarea className="min-h-28 w-full rounded-xl border px-3 py-2" value={response.finalActionSentence} onChange={(event) => update({ finalActionSentence: event.target.value })} placeholder="예: 2주 동안 성공 콜 사례 1개를 팀 회의에서 공유하게 하고, 실행 인사이트 재사용도와 팀원 반응을 확인한다." /></label>
       </SectionCard>
 
-      <SectionCard title="5단계: AI로 반대 가능성 점검">
-        <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-700"><p className="font-bold text-slate-900">AI 프롬프트에 반영되는 선택 요약</p><div className="mt-3 grid gap-2 md:grid-cols-2"><p><b>상황 기반 첫 해석:</b> {response.observationIntuition || '-'}</p><p><b>직관과 데이터 비교:</b> {response.comparisonChoice || '-'}</p><p className="md:col-span-2"><b>데이터 기반 진단 가설:</b><br />{response.dataHypothesis || '-'}</p><p><b>비교 이유:</b> {response.changedReason || '-'}</p><p><b>기회 만들기·선행지표:</b> {listOrNone(response.selectedLeadVariables)}</p><p><b>실행 품질·과정지표:</b> {listOrNone(response.selectedProcessVariables)}</p><p><b>고객 반응·결과지표:</b> {listOrNone(response.selectedResultVariables)}</p><p><b>팀 학습·확산지표:</b> {listOrNone(response.selectedDiffusionVariables)}</p><p><b>안전선 점검·가드레일:</b> {listOrNone(response.selectedGuardrails)}</p><p><b>2주 실험:</b> {response.selectedExperiments.join(', ') || '-'}</p></div></div>
-        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">AI는 진단을 대신 만드는 것이 아니라, 직관과 데이터 가설의 차이를 검증하고 놓친 가능성을 찾습니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={copyPrompt}>프롬프트 복사</button></div>
+      <SectionCard title="5단계: AI로 점검하기 선택사항">
+        <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">AI는 답을 대신 만드는 도구가 아니라, 내가 쓴 가설과 실행문장의 빠진 부분을 점검하는 보조 도구입니다.</div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600">프롬프트에는 상황, 데이터 요약, 내가 작성한 가설, 실행문장이 포함됩니다.</p><button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={copyPrompt}>프롬프트 복사</button></div>
         {copyMessage ? <p className="text-sm font-semibold text-cyan-700">{copyMessage}</p> : null}
-        <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
-        <textarea className="min-h-40 w-full rounded-xl border px-3 py-2" value={response.aiAnswerRaw} onChange={(event) => update({ aiAnswerRaw: event.target.value })} placeholder="AI 답변을 붙여넣으세요. ## 1~7 제목을 기준으로 자동 분리할 수 있습니다." />
-        <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white" onClick={applyAiAnswer}>AI 답변 7개 영역으로 분리</button>
-        <label className="block space-y-1"><FieldLabel>직관과 데이터 가설 구분 점검</FieldLabel><textarea className="min-h-20 w-full rounded-xl border px-3 py-2" value={response.aiProfileCheck} onChange={(event) => update({ aiProfileCheck: event.target.value })} /></label>
-        <label className="block space-y-1"><FieldLabel>선행·과정·결과·확산지표 연결 점검</FieldLabel><textarea className="min-h-20 w-full rounded-xl border px-3 py-2" value={response.aiPathCheck} onChange={(event) => update({ aiPathCheck: event.target.value })} /></label>
-        <label className="block space-y-1"><FieldLabel>이 진단이 틀렸을 가능성</FieldLabel><textarea className="min-h-20 w-full rounded-xl border px-3 py-2" value={response.aiCounter} onChange={(event) => update({ aiCounter: event.target.value })} /></label>
-        <label className="block space-y-1"><FieldLabel>팀장이 확인해야 할 질문</FieldLabel><textarea className="min-h-20 w-full rounded-xl border px-3 py-2" value={response.aiQuestions} onChange={(event) => update({ aiQuestions: event.target.value })} /></label>
+        <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
+        <label className="block space-y-1"><FieldLabel>AI 답변 붙여넣기</FieldLabel><textarea className="min-h-32 w-full rounded-xl border px-3 py-2" value={response.aiAnswerRaw} onChange={(event) => update({ aiAnswerRaw: event.target.value })} placeholder="AI가 제안한 보완점 중 실제 적용할 내용만 남기세요." /></label>
       </SectionCard>
 
-      <SectionCard title="6단계: 최종 실행 문장">
-        <label className="block space-y-1"><FieldLabel>팀원에게 던질 확인 질문</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.confirmQuestion} onChange={(event) => update({ confirmQuestion: event.target.value })} placeholder="예: 제가 처음 본 것과 데이터가 조금 다르게 보입니다. 실제로는 어느 지점이 가장 막히고 있나요?" /></label>
-        <label className="block space-y-1"><FieldLabel>최종 실행 문장</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.finalActionSentence} onChange={(event) => update({ finalActionSentence: event.target.value })} placeholder="예: 2주 동안 고객별 질문 2개와 안전 메시지 2문장을 준비하고, 후속 대화 연결지수와 CRM 기록 품질 변화를 확인한다." /></label>
-      </SectionCard>
-
-      <SectionCard title="최종 점검과 산출물">
+      <SectionCard title="최종 산출물">
         <div className="grid gap-2 md:grid-cols-2">{REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
         <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">점검 완료: {checkedCount} / {REVIEW_ITEMS.length}</div>
+        <button className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white" onClick={generateDiagnosis}>요약 문장 생성</button>
+        <label className="block space-y-1"><FieldLabel>요약 문장</FieldLabel><textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={response.diagnosisStatement} onChange={(event) => update({ diagnosisStatement: event.target.value })} /></label>
         <pre className="whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{outputText}</pre>
         <p className="text-xs text-slate-500">자동 저장 키: {V36_STORAGE_KEYS.dashboardAnalysis} / 마지막 저장: {response.savedAt || '아직 입력 전'}</p>
       </SectionCard>
