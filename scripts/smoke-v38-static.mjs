@@ -1,0 +1,78 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+
+function read(relativePath) {
+  const absolutePath = path.join(root, relativePath);
+  if (!fs.existsSync(absolutePath)) {
+    throw new Error(`Missing required file: ${relativePath}`);
+  }
+  return fs.readFileSync(absolutePath, 'utf8');
+}
+
+function assertIncludes(source, needle, label) {
+  if (!source.includes(needle)) {
+    throw new Error(`Missing ${label}: ${needle}`);
+  }
+}
+
+const html = read('journey-v38-preview.html');
+const app = read('src/journey-v38-app-preview.tsx');
+const config = read('src/journey-v38-preview-config.ts');
+const viteConfig = read('vite.config.ts');
+
+assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
+assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
+assertIncludes(viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
+
+const requiredSteps = [
+  ['entry', '입장·역할 부여'],
+  ['ai-safety', 'AI 안전선'],
+  ['prompt-practice', '프롬프트 기본 실습'],
+  ['research-strategy', '리서치·전략 해석'],
+  ['dashboard-analysis', '팀원 실행진단'],
+  ['customer-judgment', '고객군 판단'],
+  ['customer-priority', '집중/후순위 고객군 선택'],
+  ['member-role', '팀원별 역할 방향'],
+  ['ai-call-plan', 'AI 콜플랜 결과물 요청'],
+  ['compliance-cleanup', '컴플라이언스 위험 표현 제거'],
+  ['final-call-plan-card', '최종 2주 콜플랜 카드'],
+  ['instructor-discussion', '강사용 토의 질문'],
+];
+
+for (const [id, title] of requiredSteps) {
+  assertIncludes(config, `id: '${id}'`, `v38 step id ${id}`);
+  assertIncludes(config, `title: '${title}'`, `v38 step title ${title}`);
+}
+
+const requiredComponentImports = [
+  'V38CustomerJudgmentLab',
+  'V38CustomerPriorityLab',
+  'V38MemberRoleLab',
+  'V38AiCallPlanLab',
+  'V38ComplianceCleanupLab',
+  'V38FinalCallPlanCard',
+  'V38InstructorDiscussionLab',
+];
+
+for (const componentName of requiredComponentImports) {
+  assertIncludes(app, componentName, `v38 app component import/render ${componentName}`);
+}
+
+const requiredFiles = [
+  'src/journey-v38-customer-judgment-lab.tsx',
+  'src/journey-v38-customer-priority-lab.tsx',
+  'src/journey-v38-member-role-lab.tsx',
+  'src/journey-v38-ai-call-plan-lab.tsx',
+  'src/journey-v38-compliance-cleanup-lab.tsx',
+  'src/journey-v38-final-call-plan-card.tsx',
+  'src/journey-v38-instructor-discussion-lab.tsx',
+  'docs/v38-qa-checklist.md',
+];
+
+for (const file of requiredFiles) {
+  read(file);
+}
+
+console.log('v38 static smoke passed');
