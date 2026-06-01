@@ -75,6 +75,108 @@ pre[data-v37-source-call-plan='true'] {
   color: rgb(100 116 139);
 }
 
+.v37-customer-data-panel {
+  margin-top: 0.8rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 1.15rem;
+  background: linear-gradient(135deg, rgb(248 250 252), rgb(255 255 255));
+  padding: 0.9rem;
+}
+
+.v37-data-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.v37-data-panel-head span {
+  border-radius: 999px;
+  background: rgb(15 23 42);
+  padding: 0.24rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: white;
+}
+
+.v37-data-panel-head b {
+  font-size: 0.84rem;
+  color: rgb(15 23 42);
+}
+
+.v37-data-summary-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.v37-data-summary-grid article {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.95rem;
+  background: white;
+  padding: 0.7rem;
+}
+
+.v37-data-summary-grid p {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: rgb(14 116 144);
+}
+
+.v37-data-summary-grid div {
+  margin-top: 0.28rem;
+  font-size: 0.81rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: rgb(30 41 59);
+}
+
+.v37-card-signal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.v37-card-signal-row span {
+  border-radius: 999px;
+  background: rgb(236 254 255);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: rgb(14 116 144);
+}
+
+.v37-full-data-details {
+  margin-top: 0.7rem;
+  border-radius: 0.95rem;
+  background: white;
+  padding: 0.7rem;
+}
+
+.v37-full-data-details summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: rgb(71 85 105);
+}
+
+.v37-full-data-details div {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.v37-full-data-details span {
+  border-radius: 0.75rem;
+  background: rgb(248 250 252);
+  padding: 0.45rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgb(51 65 85);
+}
+
 .v37-judgment-ladder {
   margin-top: 0.9rem;
   border: 1px dashed rgb(14 165 233 / 0.45);
@@ -240,8 +342,13 @@ pre[data-v37-source-call-plan='true'] {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
+  .v37-data-summary-grid,
   .v37-axis-grid,
   .v37-call-plan-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .v37-full-data-details div {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
