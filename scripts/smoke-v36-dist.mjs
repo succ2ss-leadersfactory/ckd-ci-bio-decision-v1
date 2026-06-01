@@ -29,6 +29,14 @@ if (!distHtml.includes('journey-root')) {
   fail('dist/journey-v36-preview.html must include #journey-root.');
 }
 
+if (!distHtml.includes('<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>')) {
+  fail('dist/journey-v36-preview.html must include the customer-facing title.');
+}
+
+if (/Preview|preview|v35|v36|검증|QA/.test(distHtml)) {
+  fail('dist/journey-v36-preview.html must not expose demo/debug wording in the page shell.');
+}
+
 if (!/<script\b[^>]*type=["']module["'][^>]*src=["'][^"']+\.js["'][^>]*>/s.test(distHtml)) {
   fail('dist/journey-v36-preview.html must include a bundled module script.');
 }
@@ -43,7 +51,8 @@ if (assetFiles.length === 0) {
 const bundledJs = assetFiles.filter((file) => file.endsWith('.js')).map((file) => readText(file)).join('\n');
 
 for (const text of [
-  '종근당/C1바이오 영업팀장 AI 리더십 Lab Journey v36 Preview',
+  'C1바이오 영업팀장 AI 리더십 Lab Journey',
+  'Journey Smoke Marker',
   '고객군 판단',
   'AI 답변 붙여넣기',
   '컴플라이언스 위험 표현 제거',
@@ -52,6 +61,12 @@ for (const text of [
 ]) {
   if (!bundledJs.includes(text)) {
     fail(`v36 dist bundle must include ${text}.`);
+  }
+}
+
+for (const forbidden of ['v36 Preview Smoke', 'QA 정보 보기']) {
+  if (bundledJs.includes(forbidden)) {
+    fail(`v36 dist bundle must not include ${forbidden}.`);
   }
 }
 
