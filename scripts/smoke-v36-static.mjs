@@ -121,6 +121,8 @@ for (const file of [
 mustMatch('journey.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-active\.tsx["'])[^>]*>/s, 'journey.html must keep loading /src/journey-active.tsx as module.', false);
 mustMatch('journey-v35-preview.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-v35-app-preview\.tsx["'])[^>]*>/s, 'journey-v35-preview.html must keep loading /src/journey-v35-app-preview.tsx as module.', false);
 mustMatch('journey-v36-preview.html', /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/journey-v36-app-preview\.tsx["'])[^>]*>/s, 'journey-v36-preview.html must load /src/journey-v36-app-preview.tsx as module.', false);
+mustMatch('journey-v36-preview.html', /<title>C1바이오 영업팀장 AI 리더십 Lab Journey<\/title>/, 'journey-v36-preview.html must use customer-facing page title.', false);
+mustNotMatch('journey-v36-preview.html', /Preview|preview|v35|v36|검증|QA/, 'journey-v36-preview.html must not expose demo/debug wording in the page shell.', false);
 mustMatch('src/journey-active.tsx', /import\s+['"]\.\/full-flow-journey-v35['"];?/, 'journey-active.tsx must keep importing v35 staging entry.');
 mustMatch('src/full-flow-journey-v35.tsx', /import\s+['"]\.\/full-flow-journey-v34['"];?/, 'full-flow-journey-v35.tsx must still delegate to v34.');
 mustMatch('vite.config.ts', /journeyV36Preview\s*:/, 'vite.config.ts must include journeyV36Preview input.');
@@ -133,11 +135,17 @@ for (const id of requiredStepIds) {
 for (const key of requiredStorageKeys) {
   if (!config.includes(key)) fail(`V36_STORAGE_KEYS must include ${key}.`);
 }
+if (!/V36_VISIBLE_APP_STEPS[\s\S]*filter\(\(step\) => step\.id !== ['"]source-check['"]\)/.test(config)) {
+  fail('V36_VISIBLE_APP_STEPS must hide source-check from the visible journey.');
+}
 
 const v36App = readCode('src/full-flow-journey-v36-preview.tsx');
 if (!v36App.includes('CustomerCallPlanLab')) fail('full-flow-journey-v36-preview.tsx must render CustomerCallPlanLab.');
 if (!v36App.includes('AI 안전선')) fail('full-flow-journey-v36-preview.tsx must include AI safety notice text.');
-if (!v36App.includes('v36 Preview Smoke')) fail('full-flow-journey-v36-preview.tsx must include v36 Preview Smoke panel.');
+if (!v36App.includes('Journey Smoke Marker')) fail('full-flow-journey-v36-preview.tsx must include the neutral smoke marker.');
+for (const forbidden of ['v36 Preview Smoke', 'v36 Preview', 'QA 정보 보기']) {
+  if (v36App.includes(forbidden)) fail(`full-flow-journey-v36-preview.tsx must not include ${forbidden}.`);
+}
 
 const customerLab = readCode('src/journey-v36-customer-call-plan-lab.tsx');
 for (const text of [
