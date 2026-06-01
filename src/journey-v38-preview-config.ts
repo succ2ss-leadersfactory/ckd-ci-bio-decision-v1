@@ -46,6 +46,11 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
     title: '팀원별 역할 방향',
     description: '선택한 고객군 판단을 팀원별 실행 역할과 코칭 포인트로 전환합니다.',
   },
+  {
+    id: 'ai-call-plan',
+    title: 'AI 콜플랜 결과물 요청',
+    description: '앞 단계의 판단을 바탕으로 AI에 요청할 결과물을 선택하고 복사용 프롬프트를 생성합니다.',
+  },
 ];
 
 export function clampV38Step(step: number) {
