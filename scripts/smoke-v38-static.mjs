@@ -21,6 +21,7 @@ const html = read('journey-v38-preview.html');
 const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
+const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 
 assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
 assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
@@ -58,6 +59,18 @@ const requiredComponentImports = [
 
 for (const componentName of requiredComponentImports) {
   assertIncludes(app, componentName, `v38 app component import/render ${componentName}`);
+}
+
+for (const marker of [
+  'DataSignalCard',
+  'getDataSignal',
+  '긍정 신호',
+  '판단 유보',
+  '주의 신호',
+  '보완 필요',
+  '아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다.',
+]) {
+  assertIncludes(customerJudgment, marker, `customer judgment data signal marker ${marker}`);
 }
 
 const requiredFiles = [
