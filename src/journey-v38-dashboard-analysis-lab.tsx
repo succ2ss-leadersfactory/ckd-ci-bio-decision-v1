@@ -1,111 +1,16 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS,
+  V38_FORBIDDEN_ITEMS as FORBIDDEN_ITEMS,
+  V38_MAX_TEAM_SITUATIONS as MAX_TEAM_SITUATIONS,
+  V38_METRIC_OPTIONS as METRIC_OPTIONS,
+  V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID,
+  V38_TEAM_MEMBERS as TEAM_MEMBERS,
+  V38_TEAM_SITUATION_OPTIONS as TEAM_SITUATION_OPTIONS,
+  type V38TeamMember,
+} from './journey-v38-dashboard-analysis-data';
 
-const TEAM_MEMBERS = [
-  {
-    id: 'M06',
-    name: '김재호 차장',
-    profile: '현장 요청 대응 속도 강점',
-    observation:
-      '현장 요청에는 빠르게 대응하지만 사후 기록과 후속 실행 정리가 뒤로 밀리는 경향이 있다. 즉흥 대응은 강하지만 팀장 판단에 필요한 기록은 부족하다.',
-    signals: ['실행 적시성 88', '고객 대화 지속성 82', 'CRM 기록 품질 50', '후속조치 실행률 57', 'AI 입력 안전 점검: 안전'],
-  },
-  {
-    id: 'M05',
-    name: '김문호 차장',
-    profile: '최근 목표 압박을 크게 느낌',
-    observation:
-      '최근 목표 압박을 크게 느끼며 지역 상황과 외부 요인을 자주 언급한다. 실행 변수 중 자신이 바꿀 수 있는 것에 대해서는 말을 아끼는 편이다.',
-    signals: ['실행 적시성 59', '후속조치 실행률 52', '고객 인게이지먼트 지수 56', '사전 인사이트 준비도 60', '컴플라이언스 위험 점검: 안전'],
-  },
-  {
-    id: 'M04',
-    name: '유희관 과장',
-    profile: '장기 담당처 관계 보유',
-    observation:
-      '담당처와의 관계는 안정적이다. 그러나 새로운 기록 기준이나 실행 방식이 나오면 “현장에서는 그런 방식이 잘 안 맞는다”고 말하며 신중한 태도를 보인다.',
-    signals: ['핵심 고객군 커버리지 92%', '고객 대화 지속성 86', 'CRM 기록 품질 55', '팀 학습 기여도 58', '컴플라이언스 위험 점검: 주의'],
-  },
-  {
-    id: 'M02',
-    name: '이대은 대리',
-    profile: '담당처 자율 관리 성향',
-    observation:
-      '고객과의 관계와 후속 대화는 안정적이다. 다만 팀 회의에서는 자신의 방식 공유를 부담스러워하고, 동료의 질문에는 “각자 담당처는 본인이 책임지는 것”이라고 선을 긋는다.',
-    signals: ['후속 대화 연결지수 128', '고객 인게이지먼트 지수 84', '팀 학습 기여도 42', '실행 인사이트 재사용도 38', 'AI 입력 안전 점검: 안전'],
-  },
-  {
-    id: 'M01',
-    name: '신재영 대리',
-    profile: '접점 활동 적극 수행',
-    observation:
-      '고객 접점 활동이 많고 이동 동선도 넓다. 회의에서는 “저는 누구보다 많이 움직이고 있다”고 말하지만, 방문 이후 어떤 대화가 이어졌는지는 설명이 짧다.',
-    signals: ['계획 접점 실행률 112%', '핵심 고객군 커버리지 96%', '후속 대화 연결지수 54', 'CRM 기록 품질 64', '컴플라이언스 위험 점검: 주의'],
-  },
-  {
-    id: 'M03',
-    name: '박재욱 사원',
-    profile: '신규 역할 적응 중',
-    observation:
-      'CRM 기록은 꼼꼼하게 남기지만 고객 앞에서는 질문이 짧아진다. 방문 전 준비 자료는 많지만, 실제 대화에서 고객의 참여를 끌어내는 데 어려움을 느낀다.',
-    signals: ['CRM 기록 품질 90', '고객 인게이지먼트 지수 51', '후속 대화 연결지수 48', '팀 학습 기여도 70', '컴플라이언스 위험 점검: 안전'],
-  },
-  {
-    id: 'M07',
-    name: '문교원 사원',
-    profile: '신입·저연차 조직 적응 중',
-    observation:
-      '문교원 사원은 입사 초기에는 성실하게 배우려 했지만 최근 팀장의 지시에는 고개만 끄덕이고 질문을 거의 하지 않는다. 선배들이 당연하게 여기는 보고·동행·회식 문화에 부담을 느끼며, 피드백 후에는 “알겠습니다”라고만 답하고 대화가 이어지지 않는다. 동기에게 “이 일을 오래 할 수 있을지 모르겠다”고 말한 적이 있다.',
-    signals: ['지시 이해 확인 필요', '질문 회피 신호: 주의', '피드백 후 침묵', '고객 방문 자신감 46', '권위문화 적응 부담', '이탈 위험 점검: 주의'],
-  },
-];
-
-type TeamMember = (typeof TEAM_MEMBERS)[number];
-
-const TEAM_SITUATION_OPTIONS = [
-  '활동량은 충분한데 고객 반응이 약하다',
-  '방문 후 후속조치가 잘 이어지지 않는다',
-  'CRM 기록은 있지만 실행 판단에 도움이 부족하다',
-  '팀원별 실행 편차가 크다',
-  '기존 방식에 익숙해 새 실행 기준 적용이 느리다',
-  '컴플라이언스 안전선이 걱정된다',
-  '팀 학습과 노하우 공유가 부족하다',
-  '신입·저연차 팀원이 지시를 이해했는지 확인하기 어렵다',
-  'MZ세대 팀원과 소통 방식·일의 의미를 두고 갈등이 있다',
-  '팀원이 질문하지 않고 혼자 끙끙대거나 이탈 신호를 보인다',
-];
-const MAX_TEAM_SITUATIONS = 3;
-
-const METRIC_OPTIONS = [
-  { id: 'contact', name: '계획 접점 실행률', group: '활동 실행', meaning: '계획한 실행이 실제로 이루어졌는지 본다.', caution: '활동량이 높다고 성과가 좋다고 단정하지 않는다.', safety: false },
-  { id: 'coverage', name: '핵심 고객군 커버리지', group: '고객 커버리지', meaning: '우선순위 고객군을 놓치지 않았는지 본다.', caution: '커버리지가 높아도 대화 품질은 별도 확인한다.', safety: false },
-  { id: 'engagement', name: '고객 인게이지먼트 지수', group: '고객 반응', meaning: '고객의 질문·관심·후속 반응 신호를 본다.', caution: '낮다고 팀원 역량 부족으로 단정하지 않는다.', safety: false },
-  { id: 'followTalk', name: '후속 대화 연결지수', group: '후속 연결', meaning: '방문 이후 다음 대화로 이어졌는지 본다.', caution: '단기 숫자만으로 관계 품질을 판단하지 않는다.', safety: false },
-  { id: 'followAction', name: '후속조치 실행률', group: '실행 품질', meaning: '약속한 다음 행동이 실행됐는지 본다.', caution: '실행 지연의 외부 변수와 지원 필요성도 확인한다.', safety: false },
-  { id: 'crm', name: 'CRM 기록 품질', group: '기록 품질', meaning: '팀장 판단에 필요한 기록이 남았는지 본다.', caution: '기록 부족을 성의 부족으로 단정하지 않는다.', safety: false },
-  { id: 'learning', name: '팀 학습 기여도', group: '학습 확산', meaning: '개인 경험이 팀 학습으로 전환되는지 본다.', caution: '공유가 낮다고 협업 의지 부족으로 단정하지 않는다.', safety: false },
-  { id: 'reuse', name: '실행 인사이트 재사용도', group: '재사용성', meaning: '좋은 실행 방식이 동료에게 재사용 가능한지 본다.', caution: '개인 방식과 팀 표준화 가능성을 구분한다.', safety: false },
-  { id: 'compliance', name: '컴플라이언스 위험 점검', group: '안전선', meaning: '부적절한 표현이나 민감정보 사용 가능성을 점검한다.', caution: '주의 신호를 개인 문제로 낙인찍지 않는다.', safety: true },
-  { id: 'aiSafety', name: 'AI 입력 안전 점검', group: 'AI 활용 안전', meaning: 'AI에 입력하면 안 되는 정보가 걸러졌는지 본다.', caution: '안전 점검은 감시가 아니라 보호 장치로 설명한다.', safety: true },
-];
-
-const ACTION_OUTPUT_OPTIONS = [
-  '1on1 면담 질문',
-  '이번 주 코칭 포인트',
-  '실행 점검 기준',
-  '강점 활용 역할 제안',
-  '우려 신호 확인 질문',
-  '팀 회의 공유용 학습 포인트',
-  '컴플라이언스 안전선 점검 문장',
-  '후속 대화 연결 코칭 질문',
-  '방문 후 기록 점검표',
-  '고객 질문 연습 스크립트',
-  '통제 가능한 실행 변수 찾기 질문',
-  '작은 실행 약속 카드',
-  '지시 이해 확인 질문',
-  '이탈 위험 신호 확인 질문',
-  '일의 의미와 기대 조율 대화',
-];
-const FORBIDDEN_ITEMS = ['실제 고객명·병원명·의료진명', '제품명 또는 미승인 표현', '실제 매출·내부 전략 수치', '개인정보·민감정보', '부적절한 권유나 비교 우위처럼 보이는 표현', '팀원에 대한 단정적 낙인 표현'];
+type TeamMember = V38TeamMember;
 
 type MemberPrep = { observedSignal: string; strengthSignal: string; concernSignal: string; checkQuestion: string; doNotAssume: string; aiDraft: string; finalPrep: string };
 type PrepState = Record<string, MemberPrep>;
@@ -124,16 +29,7 @@ function metricNames(ids: string[]) {
 }
 
 function getSuggestedDeliverables(memberId: string) {
-  const map: Record<string, string[]> = {
-    M01: ['후속 대화 연결 코칭 질문', '방문 후 기록 점검표'],
-    M02: ['강점 활용 역할 제안', '팀 회의 공유용 학습 포인트'],
-    M03: ['고객 질문 연습 스크립트', '1on1 면담 질문'],
-    M04: ['컴플라이언스 안전선 점검 문장', '우려 신호 확인 질문'],
-    M05: ['통제 가능한 실행 변수 찾기 질문', '작은 실행 약속 카드'],
-    M06: ['실행 점검 기준', '방문 후 기록 점검표'],
-    M07: ['지시 이해 확인 질문', '일의 의미와 기대 조율 대화', '이탈 위험 신호 확인 질문'],
-  };
-  return map[memberId] ?? [];
+  return V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID[memberId] ?? [];
 }
 
 function cleanMarkdown(text: string) {
