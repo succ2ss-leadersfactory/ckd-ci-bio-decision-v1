@@ -150,6 +150,39 @@ const CUSTOMER_GROUPS = [
 ];
 
 type ClassificationState = Record<string, { segment: string; reason: string }>;
+type SignalLabel = '긍정 신호' | '판단 유보' | '주의 신호' | '보완 필요';
+
+function getDataSignal(item: string): { label: SignalLabel; note: string; className: string } {
+  if (/A|잠재력 높음|긍정 상승|질문 증가|자료 요청 있음|후속 미팅 동의|접촉 성공률 80%|접촉 성공률 90%|후속조치 완료율 90%|CRM 기록 충실|관계 수준 높음/.test(item)) {
+    return {
+      label: '긍정 신호',
+      note: '집중 또는 후속 행동을 검토할 근거입니다.',
+      className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+    };
+  }
+
+  if (/컴플라이언스 높음|무반응 증가|시간 부족|피로감|후속 미팅 보류|기존 치료 유지|접촉 성공률 40%|4주 콜 횟수 4회|관계 수준 낮음|근거자료 확인 필요/.test(item)) {
+    return {
+      label: '주의 신호',
+      note: '접근 강도, 표현, 고객 부담을 조절해야 합니다.',
+      className: 'border-amber-200 bg-amber-50 text-amber-900',
+    };
+  }
+
+  if (/데이터 부족|정보 없음|CRM 기록 부족|후속조치 완료율 20%|후속조치 완료율 30%|4주 콜 횟수 0회/.test(item)) {
+    return {
+      label: '보완 필요',
+      note: '분류 전에 정보 보완이나 기록 정리가 필요합니다.',
+      className: 'border-rose-200 bg-rose-50 text-rose-900',
+    };
+  }
+
+  return {
+    label: '판단 유보',
+    note: '단독 판단보다 다른 신호와 함께 봐야 합니다.',
+    className: 'border-slate-200 bg-slate-50 text-slate-700',
+  };
+}
 
 export function V38CustomerJudgmentLab() {
   const [classifications, setClassifications] = useState<ClassificationState>({});
@@ -231,9 +264,12 @@ export function V38CustomerJudgmentLab() {
 
               <details className="mt-4 rounded-2xl border bg-slate-50 p-4">
                 <summary className="cursor-pointer text-sm font-black text-slate-800">전체 13개 Data 다시 보기</summary>
-                <div className="mt-3 grid gap-2 md:grid-cols-3">
+                <p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">
+                  아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다. 최종 분류는 고객군 전체 신호를 함께 보고 결정하세요.
+                </p>
+                <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                   {group.fullData.map((item) => (
-                    <span key={item} className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700">{item}</span>
+                    <DataSignalCard key={item} item={item} />
                   ))}
                 </div>
               </details>
@@ -296,6 +332,19 @@ function DataBox({ title, text }: { title: string; text: string }) {
       <p className="text-xs font-black text-cyan-700">{title}</p>
       <p className="mt-1 text-sm font-bold leading-6 text-slate-800">{text}</p>
     </div>
+  );
+}
+
+function DataSignalCard({ item }: { item: string }) {
+  const signal = getDataSignal(item);
+  return (
+    <article className="rounded-2xl border bg-white p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-black text-slate-900">{item}</p>
+        <span className={`rounded-full border px-2 py-1 text-[11px] font-black ${signal.className}`}>{signal.label}</span>
+      </div>
+      <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{signal.note}</p>
+    </article>
   );
 }
 
