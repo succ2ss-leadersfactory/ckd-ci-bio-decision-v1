@@ -22,6 +22,7 @@ const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
+const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 
 assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
 assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
@@ -71,6 +72,18 @@ for (const marker of [
   '아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다.',
 ]) {
   assertIncludes(customerJudgment, marker, `customer judgment data signal marker ${marker}`);
+}
+
+for (const marker of [
+  'DECISION_GUIDES',
+  '선택 기준 먼저 잡기',
+  '집중 고객군으로 볼 때',
+  '후순위 고객군으로 볼 때',
+  '관찰/유지 고객군으로 볼 때',
+  '평가 라벨 조합',
+  '긍정 신호가 2개 이상',
+]) {
+  assertIncludes(customerPriority, marker, `customer priority decision guide marker ${marker}`);
 }
 
 const requiredFiles = [
