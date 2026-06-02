@@ -2,33 +2,36 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+const failures = [];
 
 function read(relativePath) {
   const absolutePath = path.join(root, relativePath);
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(`Missing required file: ${relativePath}`);
+    failures.push(`Missing required file: ${relativePath}`);
+    return '';
   }
   return fs.readFileSync(absolutePath, 'utf8');
 }
 
-function assertIncludes(source, needle, label) {
-  if (!source.includes(needle)) {
-    throw new Error(`Missing ${label}: ${needle}`);
-  }
+function checkIncludes(source, needle, label) {
+  if (!source.includes(needle)) failures.push(`Missing ${label}: ${needle}`);
 }
 
-function assertInOrder(source, needles, label) {
+function checkInOrder(source, needles, label) {
   let previousIndex = -1;
   for (const needle of needles) {
     const currentIndex = source.indexOf(needle);
     if (currentIndex === -1) {
-      throw new Error(`Missing ${label}: ${needle}`);
+      failures.push(`Missing ${label}: ${needle}`);
+      continue;
     }
-    if (currentIndex <= previousIndex) {
-      throw new Error(`Wrong order for ${label}: ${needle}`);
-    }
+    if (currentIndex <= previousIndex) failures.push(`Wrong order for ${label}: ${needle}`);
     previousIndex = currentIndex;
   }
+}
+
+function checkMany(source, label, markers) {
+  for (const marker of markers) checkIncludes(source, marker, label);
 }
 
 const files = {
@@ -55,9 +58,9 @@ const files = {
   instructorDiscussion: read('src/journey-v38-instructor-discussion-lab.tsx'),
 };
 
-assertIncludes(files.html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
-assertIncludes(files.viteConfig, 'journeyV38Preview', 'vite v38 input key');
-assertIncludes(files.viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
+checkIncludes(files.html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
+checkIncludes(files.viteConfig, 'journeyV38Preview', 'vite v38 input key');
+checkIncludes(files.viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
 
 for (const [id, title] of [
   ['entry', '입장·역할 부여'],
@@ -73,11 +76,11 @@ for (const [id, title] of [
   ['final-call-plan-card', '최종 2주 콜플랜 카드'],
   ['instructor-discussion', '강사용 토의 질문'],
 ]) {
-  assertIncludes(files.config, `id: '${id}'`, `v38 step id ${id}`);
-  assertIncludes(files.config, `title: '${title}'`, `v38 step title ${title}`);
+  checkIncludes(files.config, `id: '${id}'`, `v38 step id ${id}`);
+  checkIncludes(files.config, `title: '${title}'`, `v38 step title ${title}`);
 }
 
-for (const componentName of [
+checkMany(files.app, 'v38 app component', [
   'V38DashboardAnalysisLab',
   'V38CustomerJudgmentLab',
   'V38CustomerPriorityLab',
@@ -86,17 +89,15 @@ for (const componentName of [
   'V38ComplianceCleanupLab',
   'V38FinalCallPlanCard',
   'V38InstructorDiscussionLab',
-]) {
-  assertIncludes(files.app, componentName, `v38 app component ${componentName}`);
-}
+]);
 
-assertInOrder(
+checkInOrder(
   files.dashboardAnalysisData,
   ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'],
   'dashboard data member order',
 );
 
-for (const marker of [
+checkMany(files.dashboardAnalysis, 'dashboard analysis marker', [
   'V38DashboardAnalysisLab',
   'V38_TEAM_MEMBERS as TEAM_MEMBERS',
   'V38_TEAM_SITUATION_OPTIONS as TEAM_SITUATION_OPTIONS',
@@ -129,11 +130,9 @@ for (const marker of [
   'selectedMemberTypeIds',
   'selectedTeamMembers',
   'autoFillPrepDrafts',
-]) {
-  assertIncludes(files.dashboardAnalysis, marker, `dashboard analysis marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.dashboardAnalysisData, 'dashboard analysis data marker', [
   'V38_TEAM_MEMBERS',
   'V38_TEAM_SITUATION_OPTIONS',
   'V38_MAX_TEAM_SITUATIONS',
@@ -148,11 +147,9 @@ for (const marker of [
   '이탈 위험 점검: 주의',
   '지시 이해 확인 질문',
   '일의 의미와 기대 조율 대화',
-]) {
-  assertIncludes(files.dashboardAnalysisData, marker, `dashboard analysis data marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.dashboardAnalysisParsers, 'dashboard analysis parser marker', [
   'V38MemberPrep',
   'V38MetricParseResult',
   'V38SignalParseResult',
@@ -164,11 +161,9 @@ for (const marker of [
   'parseV38AiPrepDraftByMember',
   '팀원 이름을 자동으로 찾지 못했습니다',
   '선택한 유형 이름을 자동으로 찾지 못했습니다',
-]) {
-  assertIncludes(files.dashboardAnalysisParsers, marker, `dashboard analysis parser marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.dashboardAnalysisPrompts, 'dashboard analysis prompt marker', [
   'V38MetricPromptInput',
   'V38SignalPromptInput',
   'V38PrepPromptInput',
@@ -180,11 +175,9 @@ for (const marker of [
   '팀원 실행 Data:',
   '선택한 유형별 분리 정리와 팀장 행동 선택:',
   '문제 직원, 동기 부족, 변화 저항처럼 단정하지 마세요',
-]) {
-  assertIncludes(files.dashboardAnalysisPrompts, marker, `dashboard analysis prompt marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.dashboardAnalysisUi, 'dashboard analysis UI marker', [
   'V38MetricPicker',
   'V38ReviewTextarea',
   'V38PrepTextarea',
@@ -193,11 +186,9 @@ for (const marker of [
   '이 유형 선택',
   '선택됨',
   '단정 금지',
-]) {
-  assertIncludes(files.dashboardAnalysisUi, marker, `dashboard analysis UI marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.selectedMemberPrepPanel, 'selected member prep panel marker', [
   'V38SelectedMemberPrepPanel',
   'V38PrepTextarea as PrepTextarea',
   '팀원별 관찰 신호',
@@ -205,33 +196,27 @@ for (const marker of [
   '우려 또는 확인이 필요한 신호',
   '추가로 확인해야 할 질문',
   '성급하게 단정하면 안 되는 점',
-]) {
-  assertIncludes(files.selectedMemberPrepPanel, marker, `selected member prep panel marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.actionDeliverablePicker, 'action deliverable picker marker', [
   'V38ActionDeliverablePicker',
   'V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS',
   'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
   '추천 준비물 선택',
   'onToggleDeliverable',
   'ACTION_OUTPUT_OPTIONS.map',
-]) {
-  assertIncludes(files.actionDeliverablePicker, marker, `action deliverable picker marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.finalMemberPrepCard, 'final member prep card marker', [
   'V38FinalMemberPrepCard',
   'V38FinalPrepField',
   'AI가 제안한 준비물 초안',
   '최종 유형별 다음 행동 준비물',
   'onUpdate',
   'finalPrep',
-]) {
-  assertIncludes(files.finalMemberPrepCard, marker, `final member prep card marker ${marker}`);
-}
+]);
 
-for (const marker of [
+checkMany(files.dashboardRefactorMap, 'dashboard refactor map marker', [
   'v38 Dashboard Analysis Lab 리팩터링 맵',
   '현재 책임 분리 구조',
   'src/journey-v38-dashboard-analysis-ui.tsx',
@@ -243,22 +228,17 @@ for (const marker of [
   'V38FinalMemberPrepCard',
   'data, parsers, prompts, UI 컴포넌트 모듈 연결',
   '보호해야 할 사용자 경험 기준',
-]) {
-  assertIncludes(files.dashboardRefactorMap, marker, `dashboard refactor map marker ${marker}`);
-}
+]);
 
-for (const marker of ['Customer Data Analysis', '고객 Data 분석', '고객 유형 A', '고객 유형 F']) {
-  assertIncludes(files.customerJudgment, marker, `customer data analysis marker ${marker}`);
-}
+checkMany(files.customerJudgment, 'customer data analysis marker', ['v38 Customer Data Analysis', '고객 Data 분석', '고객 유형 A', '고객 유형 F']);
+checkMany(files.customerPriority, 'customer type strategy marker', ['v38 Customer Type Strategy Lab', '고객 유형별 대응 전략', 'AI 전략 점검 프롬프트 복사']);
+checkMany(files.memberRole, 'member role marker', ['ROLE_GUIDES', '신재영 대리', '이대은 대리', '박재욱 사원', '유희관 과장', '김문호 차장', '김재호 차장']);
+checkIncludes(files.qaChecklist, 'v38 QA Checklist', 'v38 QA checklist title');
 
-for (const marker of ['Customer Type Strategy Lab', '고객 유형별 대응 전략', 'AI 전략 점검 프롬프트 복사']) {
-  assertIncludes(files.customerPriority, marker, `customer type strategy marker ${marker}`);
+if (failures.length > 0) {
+  console.error('v38 static smoke failed with missing markers:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  throw new Error(`v38 static smoke failed: ${failures.length} issue(s)`);
 }
-
-for (const marker of ['ROLE_GUIDES', '신재영 대리', '이대은 대리', '박재욱 사원', '유희관 과장', '김문호 차장', '김재호 차장']) {
-  assertIncludes(files.memberRole, marker, `member role marker ${marker}`);
-}
-
-assertIncludes(files.qaChecklist, 'v38 QA Checklist', 'v38 QA checklist title');
 
 console.log('v38 static smoke passed');
