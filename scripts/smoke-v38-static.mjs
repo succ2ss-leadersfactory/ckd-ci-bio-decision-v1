@@ -17,6 +17,12 @@ function assertIncludes(source, needle, label) {
   }
 }
 
+function assertNotIncludes(source, needle, label) {
+  if (source.includes(needle)) {
+    throw new Error(`Forbidden ${label}: ${needle}`);
+  }
+}
+
 const html = read('journey-v38-preview.html');
 const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
@@ -118,6 +124,12 @@ for (const marker of [
 
 for (const marker of [
   'ROLE_GUIDES',
+  '신재영 대리',
+  '이대은 대리',
+  '박재욱 사원',
+  '유희관 과장',
+  '김문호 차장',
+  '김재호 차장',
   '7단계 판단을 팀원 역할로 바꾸는 기준',
   '집중 고객군 배정 기준',
   '후순위 고객군 배정 기준',
@@ -132,6 +144,10 @@ for (const marker of [
   '이 요약은 9단계 AI 콜플랜 결과물 요청에서 팀원별 실행 역할을 설명하는 기준으로 활용합니다.',
 ]) {
   assertIncludes(memberRole, marker, `member role connection marker ${marker}`);
+}
+
+for (const forbiddenName of ['김민재 프로', '이서연 프로', '정하늘 프로', '최도윤 프로']) {
+  assertNotIncludes(memberRole, forbiddenName, `legacy temporary member name ${forbiddenName}`);
 }
 
 const requiredFiles = [
