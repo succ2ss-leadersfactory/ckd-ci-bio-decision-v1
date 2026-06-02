@@ -40,6 +40,7 @@ const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts')
 const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
 const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
 const dashboardAnalysisUi = read('src/journey-v38-dashboard-analysis-ui.tsx');
+const selectedMemberPrepPanel = read('src/journey-v38-selected-member-prep-panel.tsx');
 const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
@@ -206,6 +207,19 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38SelectedMemberPrepPanel',
+  'type V38MemberPrep',
+  'V38PrepTextarea as PrepTextarea',
+  '팀원별 관찰 신호',
+  '강점으로 볼 수 있는 신호',
+  '우려 또는 확인이 필요한 신호',
+  '추가로 확인해야 할 질문',
+  '성급하게 단정하면 안 되는 점',
+]) {
+  assertIncludes(selectedMemberPrepPanel, marker, `selected member prep panel marker ${marker}`);
+}
+
+for (const marker of [
   'v38 Dashboard Analysis Lab 리팩터링 맵',
   '현재 책임 분리 구조',
   'src/journey-v38-dashboard-analysis-ui.tsx',
@@ -258,6 +272,7 @@ for (const file of [
   'src/journey-v38-dashboard-analysis-parsers.ts',
   'src/journey-v38-dashboard-analysis-prompts.ts',
   'src/journey-v38-dashboard-analysis-ui.tsx',
+  'src/journey-v38-selected-member-prep-panel.tsx',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
