@@ -64,7 +64,13 @@ for (const componentName of [
 for (const marker of [
   'V38DashboardAnalysisLab',
   'MetricParseResult',
+  'SignalParseResult',
   'parseAiMetricSuggestion',
+  'parseAiSignalResultByMember',
+  'memberSplitNotice',
+  'AI 결과 팀원별 자동 분리·채우기',
+  '자동 분리된 팀원별 내용은 초안입니다',
+  '각 팀원 이름을 제목으로 쓰고 아래 항목을 반드시 포함해 주세요',
   'parseNotice',
   'AI 추천 지표 자동 분리·채우기',
   '자동 분리·채우기는 초안입니다',
