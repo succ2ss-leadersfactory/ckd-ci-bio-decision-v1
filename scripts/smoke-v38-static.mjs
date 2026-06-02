@@ -36,6 +36,7 @@ const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
 const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
+const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 const memberRole = read('src/journey-v38-member-role-lab.tsx');
@@ -75,11 +76,9 @@ for (const componentName of [
   assertIncludes(app, componentName, `v38 app component ${componentName}`);
 }
 
-assertInOrder(
-  dashboardAnalysis,
-  ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'],
-  'dashboard member card order'
-);
+const expectedMemberOrder = ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'];
+assertInOrder(dashboardAnalysis, expectedMemberOrder, 'dashboard member card order');
+assertInOrder(dashboardAnalysisData, expectedMemberOrder, 'dashboard data member order');
 
 for (const marker of [
   'V38DashboardAnalysisLab',
@@ -130,6 +129,24 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38_TEAM_MEMBERS',
+  'V38_TEAM_SITUATION_OPTIONS',
+  'V38_MAX_TEAM_SITUATIONS',
+  'V38_METRIC_OPTIONS',
+  'V38_ACTION_OUTPUT_OPTIONS',
+  'V38_FORBIDDEN_ITEMS',
+  'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
+  'V38_MEMBER_CARD_ORDER',
+  '문교원 사원',
+  '신입·저연차 조직 적응 중',
+  '이탈 위험 점검: 주의',
+  '지시 이해 확인 질문',
+  '일의 의미와 기대 조율 대화',
+]) {
+  assertIncludes(dashboardAnalysisData, marker, `dashboard analysis data marker ${marker}`);
+}
+
+for (const marker of [
   'Customer Data Analysis',
   '고객 Data 분석',
   '고객 유형 A',
@@ -160,6 +177,7 @@ for (const marker of [
 
 for (const file of [
   'src/journey-v38-dashboard-analysis-lab.tsx',
+  'src/journey-v38-dashboard-analysis-data.ts',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
