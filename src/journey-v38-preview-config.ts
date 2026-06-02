@@ -33,18 +33,18 @@ export const V38_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'customer-judgment',
-    title: '고객군 판단',
-    description: '고객군 후보별 Data를 읽고 직접 분류한 뒤 후속 실행 판단의 근거를 만듭니다.',
+    title: '고객 Data 분석',
+    description: '고객 유형 A~F의 Data 신호를 읽고 기회·우려·추가 확인 정보를 정리합니다.',
   },
   {
     id: 'customer-priority',
-    title: '집중/후순위 고객군 선택',
-    description: '2주 실행 관점에서 집중할 고객군, 후순위 고객군, 관찰/유지 고객군을 선택합니다.',
+    title: '고객 유형별 대응 전략',
+    description: '고객 유형 A~F 각각에 대해 2주 대응 전략과 리스크 관리 방향을 설계합니다.',
   },
   {
     id: 'member-role',
     title: '팀원별 역할 방향',
-    description: '선택한 고객군 판단을 팀원별 실행 역할과 코칭 포인트로 전환합니다.',
+    description: '고객 유형별 대응 전략을 팀원별 실행 역할과 코칭 포인트로 전환합니다.',
   },
   {
     id: 'ai-call-plan',
