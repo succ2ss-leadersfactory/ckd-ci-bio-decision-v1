@@ -28,6 +28,7 @@ const CUSTOMER_OPTIONS = [
     hint: '반응 상승 · 자료 요청 · 후속 가능 · 표현 주의',
     signalMix: '긍정 신호 다수 + 표현 주의',
     recommendedRole: '2주 안에 후속 대화로 연결할 집중 후보',
+    reasonHint: '반응 상승, 자료 요청, 후속 미팅 동의가 있어 2주 안에 후속 대화로 연결할 가능성이 높다. 다만 표현 안전선을 먼저 확인해야 한다.',
   },
   {
     id: 'G2',
@@ -35,6 +36,7 @@ const CUSTOMER_OPTIONS = [
     hint: '관심 보류 · 니즈 재확인 · 속도 조절',
     signalMix: '긍정 신호 + 판단 유보/주의 신호',
     recommendedRole: '압박보다 니즈 재확인이 필요한 관리 후보',
+    reasonHint: '잠재력과 관심 신호는 있지만 후속 미팅이 보류되어 있어, 압박보다 니즈와 보류 이유를 먼저 확인해야 한다.',
   },
   {
     id: 'G3',
@@ -42,6 +44,7 @@ const CUSTOMER_OPTIONS = [
     hint: '관계 안정 · 변화 신호 낮음 · 유지 품질',
     signalMix: '관계 긍정 신호 + 변화 신호 낮음',
     recommendedRole: '관계 품질을 유지할 관찰 후보',
+    reasonHint: '관계와 접촉 기반은 안정적이지만 자료 요청이나 후속 미팅 같은 변화 신호가 낮아, 유지 품질과 반응 변화를 관찰하는 것이 적합하다.',
   },
   {
     id: 'G4',
@@ -49,6 +52,7 @@ const CUSTOMER_OPTIONS = [
     hint: '접촉 피로 · 무반응 증가 · 리스크 관리',
     signalMix: '주의 신호 다수 + 보완 필요',
     recommendedRole: '접근 강도와 표현을 줄일 후순위 후보',
+    reasonHint: '접촉은 많지만 무반응과 피로감이 커지고 실행 품질도 낮아, 지금은 접근 강도를 낮추고 기록과 메시지를 정비해야 한다.',
   },
   {
     id: 'G5',
@@ -56,6 +60,7 @@ const CUSTOMER_OPTIONS = [
     hint: '기회 신호 큼 · 후속 가능 · 표현 안전선 중요',
     signalMix: '강한 긍정 신호 + 높은 컴플라이언스 주의',
     recommendedRole: '집중 가능하지만 컴플라이언스 안전선이 중요한 후보',
+    reasonHint: '질문 증가와 후속 미팅 동의가 있어 집중 가능성이 높지만, 컴플라이언스 주의 신호가 강하므로 자료와 표현 안전선을 먼저 점검해야 한다.',
   },
   {
     id: 'G6',
@@ -63,6 +68,7 @@ const CUSTOMER_OPTIONS = [
     hint: '데이터 부족 · 정보 보완 · 판단 유보',
     signalMix: '보완 필요 + 판단 유보',
     recommendedRole: '분류보다 정보 보완이 먼저인 후보',
+    reasonHint: '최근 반응과 CRM 기록이 부족해 고객군을 단정하기 어렵다. 우선 정보 보완과 기록 정리를 통해 판단 근거를 확보해야 한다.',
   },
 ];
 
@@ -81,6 +87,8 @@ type PriorityState = {
   watchReason: string;
 };
 
+type CustomerOption = typeof CUSTOMER_OPTIONS[number];
+
 const INITIAL_STATE: PriorityState = {
   focus: '',
   deprioritized: '',
@@ -90,13 +98,17 @@ const INITIAL_STATE: PriorityState = {
   watchReason: '',
 };
 
+function findCustomerOption(value: string) {
+  return CUSTOMER_OPTIONS.find((item) => item.id === value);
+}
+
 export function V38CustomerPriorityLab() {
   const [state, setState] = useState<PriorityState>(INITIAL_STATE);
 
   const selectedLabels = useMemo(() => ({
-    focus: CUSTOMER_OPTIONS.find((item) => item.id === state.focus)?.label ?? '아직 선택되지 않았습니다',
-    deprioritized: CUSTOMER_OPTIONS.find((item) => item.id === state.deprioritized)?.label ?? '아직 선택되지 않았습니다',
-    watch: CUSTOMER_OPTIONS.find((item) => item.id === state.watch)?.label ?? '아직 선택되지 않았습니다',
+    focus: findCustomerOption(state.focus)?.label ?? '아직 선택되지 않았습니다',
+    deprioritized: findCustomerOption(state.deprioritized)?.label ?? '아직 선택되지 않았습니다',
+    watch: findCustomerOption(state.watch)?.label ?? '아직 선택되지 않았습니다',
   }), [state.focus, state.deprioritized, state.watch]);
 
   const update = (field: keyof PriorityState, value: string) => {
@@ -153,31 +165,37 @@ export function V38CustomerPriorityLab() {
           title="집중 고객군"
           description="2주 안에 후속 대화와 실행을 가장 먼저 설계할 고객군입니다."
           value={state.focus}
+          selectedOption={findCustomerOption(state.focus)}
           reason={state.focusReason}
           reasonPlaceholder="예: 반응 상승과 자료 요청이 있어 2주 안에 후속 대화로 연결할 가능성이 높다."
+          defaultReason={DEFAULT_REASONS.focus}
           onValueChange={(value) => update('focus', value)}
           onReasonChange={(value) => update('focusReason', value)}
-          onUseHint={() => applyReasonHint('focusReason', DEFAULT_REASONS.focus)}
+          onUseHint={(value) => applyReasonHint('focusReason', value)}
         />
         <PrioritySelector
           title="후순위 고객군"
           description="당장 밀어붙이기보다 접근 강도, 정보 보완, 리스크 관리가 먼저인 고객군입니다."
           value={state.deprioritized}
+          selectedOption={findCustomerOption(state.deprioritized)}
           reason={state.deprioritizedReason}
           reasonPlaceholder="예: 접촉 피로와 컴플라이언스 리스크가 있어 현재는 접근 강도를 낮춰야 한다."
+          defaultReason={DEFAULT_REASONS.deprioritized}
           onValueChange={(value) => update('deprioritized', value)}
           onReasonChange={(value) => update('deprioritizedReason', value)}
-          onUseHint={() => applyReasonHint('deprioritizedReason', DEFAULT_REASONS.deprioritized)}
+          onUseHint={(value) => applyReasonHint('deprioritizedReason', value)}
         />
         <PrioritySelector
           title="관찰/유지 고객군"
           description="관계는 유지하되 즉시 집중보다 반응 변화와 추가 데이터를 지켜볼 고객군입니다."
           value={state.watch}
+          selectedOption={findCustomerOption(state.watch)}
           reason={state.watchReason}
           reasonPlaceholder="예: 관계는 안정적이지만 변화 신호가 낮아 유지 품질 관리가 적합하다."
+          defaultReason={DEFAULT_REASONS.watch}
           onValueChange={(value) => update('watch', value)}
           onReasonChange={(value) => update('watchReason', value)}
-          onUseHint={() => applyReasonHint('watchReason', DEFAULT_REASONS.watch)}
+          onUseHint={(value) => applyReasonHint('watchReason', value)}
         />
       </div>
 
@@ -197,8 +215,10 @@ function PrioritySelector({
   title,
   description,
   value,
+  selectedOption,
   reason,
   reasonPlaceholder,
+  defaultReason,
   onValueChange,
   onReasonChange,
   onUseHint,
@@ -206,12 +226,16 @@ function PrioritySelector({
   title: string;
   description: string;
   value: string;
+  selectedOption?: CustomerOption;
   reason: string;
   reasonPlaceholder: string;
+  defaultReason: string;
   onValueChange: (value: string) => void;
   onReasonChange: (value: string) => void;
-  onUseHint: () => void;
+  onUseHint: (value: string) => void;
 }) {
+  const reasonHint = selectedOption?.reasonHint ?? defaultReason;
+
   return (
     <article className="rounded-3xl border bg-white p-5 shadow-sm">
       <h3 className="text-lg font-black text-slate-950">{title}</h3>
@@ -223,11 +247,26 @@ function PrioritySelector({
           {CUSTOMER_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
         </select>
       </label>
+
+      {selectedOption ? (
+        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
+          <p className="text-xs font-black text-cyan-800">선택한 고객군 신호</p>
+          <p className="mt-2 text-sm font-black text-slate-950">{selectedOption.hint}</p>
+          <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-black leading-5 text-slate-700">평가 라벨 조합: {selectedOption.signalMix}</p>
+          <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-cyan-800">추천 역할: {selectedOption.recommendedRole}</p>
+          <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-700">선택 이유 작성 힌트: {selectedOption.reasonHint}</p>
+        </div>
+      ) : (
+        <div className="mt-3 rounded-2xl border bg-slate-50 p-4 text-xs font-bold leading-5 text-slate-500">
+          고객군을 선택하면 6단계 Data 평가 라벨과 연결된 선택 이유 힌트가 표시됩니다.
+        </div>
+      )}
+
       <label className="mt-3 block space-y-1">
         <span className="text-xs font-black text-slate-500">선택 이유</span>
         <textarea className="min-h-32 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={reason} onChange={(event) => onReasonChange(event.target.value)} placeholder={reasonPlaceholder} />
       </label>
-      <button type="button" className="mt-3 rounded-2xl border px-4 py-2 text-xs font-black text-slate-700" onClick={onUseHint}>이유 문장 힌트 사용</button>
+      <button type="button" className="mt-3 rounded-2xl border px-4 py-2 text-xs font-black text-slate-700" onClick={() => onUseHint(reasonHint)}>선택 이유 힌트 사용</button>
     </article>
   );
 }
