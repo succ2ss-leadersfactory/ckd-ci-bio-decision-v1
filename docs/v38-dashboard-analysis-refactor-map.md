@@ -9,7 +9,10 @@
 | `src/journey-v38-dashboard-analysis-data.ts` | 교육 콘텐츠 데이터 | 팀원 유형 추가, 팀원 순서 변경, 상황 선택지 수정, 지표 후보 수정, 준비물 선택지 수정 |
 | `src/journey-v38-dashboard-analysis-parsers.ts` | AI 결과 자동분리 로직 | AI 추천 지표 파싱 개선, 팀원별 신호 분리 개선, 준비물 초안 분리 개선 |
 | `src/journey-v38-dashboard-analysis-prompts.ts` | 외부 AI에 복사할 프롬프트 생성 | 지표 추천 프롬프트 수정, 팀원 신호 정리 프롬프트 수정, 준비물 생성 프롬프트 수정 |
-| `src/journey-v38-dashboard-analysis-ui.tsx` | 반복 UI 하위 컴포넌트 | 지표 선택 카드, 검토 입력칸, 준비물 입력칸의 표시 방식 수정 |
+| `src/journey-v38-dashboard-analysis-ui.tsx` | 공통 반복 UI 하위 컴포넌트 | 지표 선택 카드, 검토 입력칸, 준비물 입력칸, 7명 유형 카드 표시 방식 수정 |
+| `src/journey-v38-selected-member-prep-panel.tsx` | 선택 유형별 신호 분리 정리 패널 | 팀원별 관찰 신호, 강점 신호, 우려 신호, 확인 질문, 단정 금지 입력칸 수정 |
+| `src/journey-v38-action-deliverable-picker.tsx` | 팀장 행동 선택 카드 | 추천 준비물 선택 버튼, 행동 결과물 체크박스, 선택 상태 표시 방식 수정 |
+| `src/journey-v38-final-member-prep-card.tsx` | 최종 유형별 다음 행동 준비물 카드 | AI 준비물 초안, 최종 준비물 입력칸 수정 |
 | `src/journey-v38-dashboard-analysis-lab.tsx` | 화면, 상태, 사용자 진행 흐름 | 입력 UI 배치, 버튼, 안내문, 화면 섹션 순서, 사용자 상호작용 수정 |
 | `scripts/smoke-v38-static.mjs` | 정적 보호 기준 | 주요 문구, import 구조, 데이터 순서, 모듈 존재 여부 보호 |
 | `scripts/smoke-v38-dist.mjs` | 빌드 결과 보호 기준 | 실제 bundle에 포함되어야 할 사용자 화면 문구와 금지 문구 확인 |
@@ -54,15 +57,16 @@
 
 컴포넌트 안에 긴 프롬프트 배열을 다시 만들지 않는다.
 
-### 2.4 반복 UI 수정은 ui 파일에서 먼저 검토한다
+### 2.4 공통 UI 수정은 해당 UI 컴포넌트 파일에서 먼저 검토한다
 
-아래 반복 UI는 `journey-v38-dashboard-analysis-ui.tsx`에서 관리한다.
+공통 UI는 다음 파일에서 관리한다.
 
-- `V38MetricPicker`
-- `V38ReviewTextarea`
-- `V38PrepTextarea`
+- `V38MetricPicker`, `V38ReviewTextarea`, `V38PrepTextarea`, `V38TeamMemberCard`: `journey-v38-dashboard-analysis-ui.tsx`
+- `V38SelectedMemberPrepPanel`: `journey-v38-selected-member-prep-panel.tsx`
+- `V38ActionDeliverablePicker`: `journey-v38-action-deliverable-picker.tsx`
+- `V38FinalMemberPrepCard`: `journey-v38-final-member-prep-card.tsx`
 
-지표 카드의 표현 방식, 입력칸 스타일, 공통 입력 컴포넌트의 클래스 수정은 먼저 ui 파일에서 처리한다.
+지표 카드의 표현 방식, 입력칸 스타일, 선택 카드, 최종 준비물 카드의 표시 방식은 먼저 해당 UI 컴포넌트 파일에서 처리한다.
 단, 특정 화면 흐름이나 섹션 배치 자체를 바꾸는 경우에는 `journey-v38-dashboard-analysis-lab.tsx`에서 처리한다.
 
 ### 2.5 컴포넌트는 사용자 흐름만 담당한다
@@ -75,7 +79,7 @@
 - 입력값 반영
 - 파서 결과를 입력칸에 채우기
 - 프롬프트 복사
-- data, parsers, prompts, ui 모듈 연결
+- data, parsers, prompts, UI 컴포넌트 모듈 연결
 
 ## 3. 보호해야 할 사용자 경험 기준
 
@@ -125,10 +129,14 @@ npm run smoke:v38
 
 ## 6. 앞으로의 권장 리팩터링 순서
 
-1. 5단계 UI 하위 컴포넌트 추가 분리
-   - `TeamMemberCard`
-   - `SelectedMemberPrepPanel`
-   - `ActionDeliverablePicker`
+1. 5단계 결과 저장 구조 점검
+   - 선택 상황
+   - AI 추천 지표 분리 결과
+   - 최종 실행지표
+   - 선택한 2명 유형
+   - 유형별 신호 정리
+   - 팀장 행동 선택
+   - 최종 다음 행동 준비물
 2. 상태 로직 hook 분리 검토
    - 단, 교육장 파일럿 전에는 과도한 hook 분리는 피한다.
 3. 자동분리 파서 단위 테스트 추가
@@ -140,9 +148,11 @@ npm run smoke:v38
 
 ## 7. 현재 안정 커밋 기준
 
-UI 모듈 import 전환 및 static smoke 보호 후 기준 커밋:
+반복 UI 컴포넌트 분리 전환 후 마지막 확인 기준은 CI 통과 커밋으로 갱신한다.
 
-- `2fdfeafc7a3d902f5d2c589e545261ee274d3cc5`
+최근 확인된 안정 기준:
+
+- `6f8fd1ccb4815b6ef201d8e1193dce95ae39044c`
 
 해당 커밋에서 확인된 CI:
 
@@ -150,3 +160,5 @@ UI 모듈 import 전환 및 static smoke 보호 후 기준 커밋:
 - `v35 Smoke`: success
 - `v36 Smoke`: success
 - `v38 Smoke`: success
+
+이후 `FinalMemberPrepCard` 실제 연결 커밋은 CI 확인 후 안정 기준으로 승격한다.
