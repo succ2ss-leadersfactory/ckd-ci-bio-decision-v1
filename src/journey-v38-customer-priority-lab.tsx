@@ -78,6 +78,23 @@ const DEFAULT_REASONS = {
   watch: '관계는 유지하되 즉시 집중하기보다 반응 변화와 추가 데이터를 관찰하는 편이 적절하기 때문이다.',
 };
 
+const AI_REVIEW_OPTIONS = [
+  '집중 고객군 선택 근거 점검',
+  '후순위 고객군 선택의 놓친 기회 확인',
+  '관찰/유지 고객군의 전환 기준 만들기',
+  '세 고객군 선택 조합의 균형 점검',
+  '선택 이유 문장 다듬기',
+  '컴플라이언스 리스크 재점검',
+];
+
+const FORBIDDEN_ITEMS = [
+  '실제 고객명·병원명·의료진명',
+  '제품명 또는 미승인 제품 표현',
+  '실제 매출·처방 수치·내부 전략 수치',
+  '개인정보·민감정보',
+  '처방 유도·비교 우위 단정 표현',
+];
+
 type PriorityState = {
   focus: string;
   deprioritized: string;
@@ -102,14 +119,76 @@ function findCustomerOption(value: string) {
   return CUSTOMER_OPTIONS.find((item) => item.id === value);
 }
 
+function formatCustomerSignal(option?: CustomerOption) {
+  if (!option) return '아직 선택되지 않았습니다.';
+  return `${option.label}: ${option.hint} / 평가 라벨 조합: ${option.signalMix} / 추천 역할: ${option.recommendedRole}`;
+}
+
 export function V38CustomerPriorityLab() {
   const [state, setState] = useState<PriorityState>(INITIAL_STATE);
+  const [selectedAiReviews, setSelectedAiReviews] = useState<string[]>([
+    AI_REVIEW_OPTIONS[0],
+    AI_REVIEW_OPTIONS[1],
+    AI_REVIEW_OPTIONS[3],
+    AI_REVIEW_OPTIONS[5],
+  ]);
+  const [copied, setCopied] = useState(false);
+
+  const selectedOptions = useMemo(() => ({
+    focus: findCustomerOption(state.focus),
+    deprioritized: findCustomerOption(state.deprioritized),
+    watch: findCustomerOption(state.watch),
+  }), [state.focus, state.deprioritized, state.watch]);
 
   const selectedLabels = useMemo(() => ({
-    focus: findCustomerOption(state.focus)?.label ?? '아직 선택되지 않았습니다',
-    deprioritized: findCustomerOption(state.deprioritized)?.label ?? '아직 선택되지 않았습니다',
-    watch: findCustomerOption(state.watch)?.label ?? '아직 선택되지 않았습니다',
-  }), [state.focus, state.deprioritized, state.watch]);
+    focus: selectedOptions.focus?.label ?? '아직 선택되지 않았습니다',
+    deprioritized: selectedOptions.deprioritized?.label ?? '아직 선택되지 않았습니다',
+    watch: selectedOptions.watch?.label ?? '아직 선택되지 않았습니다',
+  }), [selectedOptions.focus, selectedOptions.deprioritized, selectedOptions.watch]);
+
+  const aiReviewPrompt = useMemo(() => {
+    return [
+      '당신은 제약영업 팀장의 고객군 우선순위 판단을 돕는 리더십 코치입니다.',
+      '',
+      '아래 내용은 교육용 가상 고객군 판단 자료입니다.',
+      '실제 고객명, 병원명, 의료진명, 제품명, 매출/처방 수치, 내부 민감정보는 포함하지 않습니다.',
+      '',
+      'AI는 정답을 제시하지 말고, 내가 선택한 집중/후순위/관찰 고객군 판단을 점검해 주세요.',
+      '내 선택을 바꾸라고 단정하지 말고, 판단 근거·놓친 리스크·대안 가능성·추가 확인 질문을 제시해 주세요.',
+      '',
+      '반드시 지킬 안전선:',
+      ...FORBIDDEN_ITEMS.map((item) => `- ${item}은 입력하거나 생성하지 마세요.`),
+      '- 허가 범위를 벗어난 효능·비교·처방 유도 표현은 사용하지 마세요.',
+      '- 모든 표현은 교육용 가상 상황 기준으로 작성하세요.',
+      '',
+      '내 선택:',
+      `1. 집중 고객군: ${selectedLabels.focus}`,
+      `- 선택 이유: ${state.focusReason || '아직 작성하지 않았습니다.'}`,
+      '',
+      `2. 후순위 고객군: ${selectedLabels.deprioritized}`,
+      `- 선택 이유: ${state.deprioritizedReason || '아직 작성하지 않았습니다.'}`,
+      '',
+      `3. 관찰/유지 고객군: ${selectedLabels.watch}`,
+      `- 선택 이유: ${state.watchReason || '아직 작성하지 않았습니다.'}`,
+      '',
+      '선택한 고객군 신호 요약:',
+      `- 집중: ${formatCustomerSignal(selectedOptions.focus)}`,
+      `- 후순위: ${formatCustomerSignal(selectedOptions.deprioritized)}`,
+      `- 관찰/유지: ${formatCustomerSignal(selectedOptions.watch)}`,
+      '',
+      '점검 요청:',
+      ...(selectedAiReviews.length > 0 ? selectedAiReviews.map((item, index) => `${index + 1}. ${item}`) : ['1. 집중/후순위/관찰 선택의 판단 근거와 리스크를 점검해 주세요.']),
+      '',
+      '출력 형식:',
+      '1. 전체 판단 요약',
+      '2. 집중 고객군 선택 점검',
+      '3. 후순위 고객군 선택 점검',
+      '4. 관찰/유지 고객군 선택 점검',
+      '5. 놓친 리스크와 추가 확인 질문',
+      '6. 다듬은 선택 이유 문장',
+      '7. 최종 판단 전 팀장이 확인할 3가지',
+    ].join('\n');
+  }, [selectedAiReviews, selectedLabels.deprioritized, selectedLabels.focus, selectedLabels.watch, selectedOptions.deprioritized, selectedOptions.focus, selectedOptions.watch, state.deprioritizedReason, state.focusReason, state.watchReason]);
 
   const update = (field: keyof PriorityState, value: string) => {
     setState((current) => ({ ...current, [field]: value }));
@@ -117,6 +196,20 @@ export function V38CustomerPriorityLab() {
 
   const applyReasonHint = (field: 'focusReason' | 'deprioritizedReason' | 'watchReason', value: string) => {
     setState((current) => ({ ...current, [field]: current[field] || value }));
+  };
+
+  const toggleAiReview = (value: string) => {
+    setSelectedAiReviews((current) => current.includes(value) ? current.filter((item) => item !== value) : [...current, value]);
+  };
+
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(aiReviewPrompt);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
@@ -165,7 +258,7 @@ export function V38CustomerPriorityLab() {
           title="집중 고객군"
           description="2주 안에 후속 대화와 실행을 가장 먼저 설계할 고객군입니다."
           value={state.focus}
-          selectedOption={findCustomerOption(state.focus)}
+          selectedOption={selectedOptions.focus}
           reason={state.focusReason}
           reasonPlaceholder="예: 반응 상승과 자료 요청이 있어 2주 안에 후속 대화로 연결할 가능성이 높다."
           defaultReason={DEFAULT_REASONS.focus}
@@ -177,7 +270,7 @@ export function V38CustomerPriorityLab() {
           title="후순위 고객군"
           description="당장 밀어붙이기보다 접근 강도, 정보 보완, 리스크 관리가 먼저인 고객군입니다."
           value={state.deprioritized}
-          selectedOption={findCustomerOption(state.deprioritized)}
+          selectedOption={selectedOptions.deprioritized}
           reason={state.deprioritizedReason}
           reasonPlaceholder="예: 접촉 피로와 컴플라이언스 리스크가 있어 현재는 접근 강도를 낮춰야 한다."
           defaultReason={DEFAULT_REASONS.deprioritized}
@@ -189,7 +282,7 @@ export function V38CustomerPriorityLab() {
           title="관찰/유지 고객군"
           description="관계는 유지하되 즉시 집중보다 반응 변화와 추가 데이터를 지켜볼 고객군입니다."
           value={state.watch}
-          selectedOption={findCustomerOption(state.watch)}
+          selectedOption={selectedOptions.watch}
           reason={state.watchReason}
           reasonPlaceholder="예: 관계는 안정적이지만 변화 신호가 낮아 유지 품질 관리가 적합하다."
           defaultReason={DEFAULT_REASONS.watch}
@@ -207,6 +300,50 @@ export function V38CustomerPriorityLab() {
           <SummaryCard label="관찰/유지" value={selectedLabels.watch} reason={state.watchReason} />
         </div>
       </div>
+
+      <details className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5 shadow-sm md:p-6">
+        <summary className="cursor-pointer text-lg font-black text-slate-950">AI 우선순위 판단 점검</summary>
+        <p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">
+          AI는 고객군 선택의 정답을 정하지 않습니다. 내가 선택한 집중/후순위/관찰 판단의 근거, 리스크, 대안 가능성, 실행 전 확인 조건을 점검하는 용도로만 활용합니다.
+        </p>
+
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-black text-amber-950">입력 금지 기준</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {FORBIDDEN_ITEMS.map((item) => (
+              <div key={item} className="rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-amber-900">{item}</div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <h4 className="text-sm font-black text-slate-950">AI에 점검받을 항목 선택</h4>
+          <div className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+            {AI_REVIEW_OPTIONS.map((option) => {
+              const checked = selectedAiReviews.includes(option);
+              return (
+                <label key={option} className={`flex items-start gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${checked ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'bg-white text-slate-700'}`}>
+                  <input type="checkbox" className="mt-1" checked={checked} onChange={() => toggleAiReview(option)} />
+                  <span>{option}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h4 className="text-sm font-black text-slate-950">복사용 AI 점검 프롬프트</h4>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">외부 AI에 붙여넣기 전, 실제 고객정보나 제품명이 포함되지 않았는지 다시 확인하세요.</p>
+            </div>
+            <button type="button" className="rounded-2xl bg-indigo-700 px-4 py-3 text-sm font-black text-white" onClick={copyPrompt}>
+              {copied ? '복사 완료' : 'AI 점검 프롬프트 복사'}
+            </button>
+          </div>
+          <pre className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{aiReviewPrompt}</pre>
+        </div>
+      </details>
     </section>
   );
 }
