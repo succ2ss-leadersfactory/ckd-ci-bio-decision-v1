@@ -24,10 +24,10 @@ import {
 } from './journey-v38-dashboard-analysis-prompts';
 import {
   V38MetricPicker as MetricPicker,
-  V38PrepTextarea as PrepTextarea,
   V38ReviewTextarea as ReviewTextarea,
   V38TeamMemberCard as TeamMemberCard,
 } from './journey-v38-dashboard-analysis-ui';
+import { V38SelectedMemberPrepPanel as SelectedMemberPrepPanel } from './journey-v38-selected-member-prep-panel';
 
 type TeamMember = V38TeamMember;
 type MemberPrep = V38MemberPrep;
@@ -374,21 +374,13 @@ export function V38DashboardAnalysisLab() {
             {selectedTeamMembers.map((member, index) => {
               const current = memberPreps[member.id] ?? emptyPrep();
               return (
-                <details key={member.id} className="rounded-3xl border bg-slate-50 shadow-sm" open={index === 0}>
-                  <summary className="cursor-pointer list-none p-4">
-                    <p className="font-black text-slate-950">{member.name}</p>
-                    <p className="mt-1 text-xs font-bold text-slate-600">{member.profile}</p>
-                  </summary>
-                  <div className="border-t p-4">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <PrepTextarea label="팀원별 관찰 신호" value={current.observedSignal} onChange={(value) => updatePrep(member.id, 'observedSignal', value)} />
-                      <PrepTextarea label="강점으로 볼 수 있는 신호" value={current.strengthSignal} onChange={(value) => updatePrep(member.id, 'strengthSignal', value)} />
-                      <PrepTextarea label="우려 또는 확인이 필요한 신호" value={current.concernSignal} onChange={(value) => updatePrep(member.id, 'concernSignal', value)} />
-                      <PrepTextarea label="추가로 확인해야 할 질문" value={current.checkQuestion} onChange={(value) => updatePrep(member.id, 'checkQuestion', value)} />
-                      <PrepTextarea label="성급하게 단정하면 안 되는 점" value={current.doNotAssume} onChange={(value) => updatePrep(member.id, 'doNotAssume', value)} />
-                    </div>
-                  </div>
-                </details>
+                <SelectedMemberPrepPanel
+                  key={member.id}
+                  member={member}
+                  current={current}
+                  defaultOpen={index === 0}
+                  onUpdate={(field, value) => updatePrep(member.id, field, value)}
+                />
               );
             })}
           </div>
