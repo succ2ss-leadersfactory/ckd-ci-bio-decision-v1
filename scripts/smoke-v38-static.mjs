@@ -38,6 +38,7 @@ const viteConfig = read('vite.config.ts');
 const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
 const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
 const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
+const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 const memberRole = read('src/journey-v38-member-role-lab.tsx');
@@ -164,6 +165,22 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38MetricPromptInput',
+  'V38SignalPromptInput',
+  'V38PrepPromptInput',
+  'buildV38MetricPrompt',
+  'buildV38SignalPrompt',
+  'buildV38PrepPrompt',
+  '우리 팀 상황:',
+  '아래 섹션 제목을 반드시 그대로 사용해 주세요',
+  '팀원 실행 Data:',
+  '선택한 유형별 분리 정리와 팀장 행동 선택:',
+  '문제 직원, 동기 부족, 변화 저항처럼 단정하지 마세요',
+]) {
+  assertIncludes(dashboardAnalysisPrompts, marker, `dashboard analysis prompt marker ${marker}`);
+}
+
+for (const marker of [
   'Customer Data Analysis',
   '고객 Data 분석',
   '고객 유형 A',
@@ -196,6 +213,7 @@ for (const file of [
   'src/journey-v38-dashboard-analysis-lab.tsx',
   'src/journey-v38-dashboard-analysis-data.ts',
   'src/journey-v38-dashboard-analysis-parsers.ts',
+  'src/journey-v38-dashboard-analysis-prompts.ts',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
