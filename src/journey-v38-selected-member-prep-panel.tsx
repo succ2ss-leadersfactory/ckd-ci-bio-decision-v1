@@ -2,6 +2,8 @@ import type { V38TeamMember } from './journey-v38-dashboard-analysis-data';
 import type { V38MemberPrep } from './journey-v38-dashboard-analysis-parsers';
 import { V38PrepTextarea as PrepTextarea } from './journey-v38-dashboard-analysis-ui';
 
+type V38MemberPrepField = keyof V38MemberPrep;
+
 export function V38SelectedMemberPrepPanel({
   member,
   current,
@@ -11,7 +13,7 @@ export function V38SelectedMemberPrepPanel({
   member: V38TeamMember;
   current: V38MemberPrep;
   defaultOpen: boolean;
-  onUpdate: (field: keyof V38MemberPrep, value: string) => void;
+  onUpdate: (field: V38MemberPrepField, value: string) => void;
 }) {
   return (
     <details className="rounded-3xl border bg-slate-50 shadow-sm" open={defaultOpen}>
