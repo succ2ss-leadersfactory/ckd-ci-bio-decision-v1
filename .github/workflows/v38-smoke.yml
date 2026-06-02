@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - feature/v37-preview-shell
   pull_request:
     branches:
       - main
