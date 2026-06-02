@@ -1,17 +1,78 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 const TEAM_MEMBERS = [
-  { id: 'M01', name: '신재영 대리', profile: '접점 활동 적극 수행', observation: '고객 접점 활동이 많고 이동 동선도 넓다. 회의에서는 “저는 누구보다 많이 움직이고 있다”고 말하지만, 방문 이후 어떤 대화가 이어졌는지는 설명이 짧다.', signals: ['계획 접점 실행률 112%', '핵심 고객군 커버리지 96%', '후속 대화 연결지수 54', 'CRM 기록 품질 64', '컴플라이언스 위험 점검: 주의'] },
-  { id: 'M02', name: '이대은 대리', profile: '담당처 자율 관리 성향', observation: '고객과의 관계와 후속 대화는 안정적이다. 다만 팀 회의에서는 자신의 방식 공유를 부담스러워하고, 동료의 질문에는 “각자 담당처는 본인이 책임지는 것”이라고 선을 긋는다.', signals: ['후속 대화 연결지수 128', '고객 인게이지먼트 지수 84', '팀 학습 기여도 42', '실행 인사이트 재사용도 38', 'AI 입력 안전 점검: 안전'] },
-  { id: 'M03', name: '박재욱 사원', profile: '신규 역할 적응 중', observation: 'CRM 기록은 꼼꼼하게 남기지만 고객 앞에서는 질문이 짧아진다. 방문 전 준비 자료는 많지만, 실제 대화에서 고객의 참여를 끌어내는 데 어려움을 느낀다.', signals: ['CRM 기록 품질 90', '고객 인게이지먼트 지수 51', '후속 대화 연결지수 48', '팀 학습 기여도 70', '컴플라이언스 위험 점검: 안전'] },
-  { id: 'M04', name: '유희관 과장', profile: '장기 담당처 관계 보유', observation: '담당처와의 관계는 안정적이다. 그러나 새로운 기록 기준이나 실행 방식이 나오면 “현장에서는 그런 방식이 잘 안 맞는다”고 말하며 신중한 태도를 보인다.', signals: ['핵심 고객군 커버리지 92%', '고객 대화 지속성 86', 'CRM 기록 품질 55', '팀 학습 기여도 58', '컴플라이언스 위험 점검: 주의'] },
-  { id: 'M05', name: '김문호 차장', profile: '최근 목표 압박을 크게 느낌', observation: '최근 목표 압박을 크게 느끼며 지역 상황과 외부 요인을 자주 언급한다. 실행 변수 중 자신이 바꿀 수 있는 것에 대해서는 말을 아끼는 편이다.', signals: ['실행 적시성 59', '후속조치 실행률 52', '고객 인게이지먼트 지수 56', '사전 인사이트 준비도 60', '컴플라이언스 위험 점검: 안전'] },
-  { id: 'M06', name: '김재호 차장', profile: '현장 요청 대응 속도 강점', observation: '현장 요청에는 빠르게 대응하지만 사후 기록과 후속 실행 정리가 뒤로 밀리는 경향이 있다. 즉흥 대응은 강하지만 팀장 판단에 필요한 기록은 부족하다.', signals: ['실행 적시성 88', '고객 대화 지속성 82', 'CRM 기록 품질 50', '후속조치 실행률 57', 'AI 입력 안전 점검: 안전'] },
+  {
+    id: 'M01',
+    name: '신재영 대리',
+    profile: '접점 활동 적극 수행',
+    observation:
+      '고객 접점 활동이 많고 이동 동선도 넓다. 회의에서는 “저는 누구보다 많이 움직이고 있다”고 말하지만, 방문 이후 어떤 대화가 이어졌는지는 설명이 짧다.',
+    signals: ['계획 접점 실행률 112%', '핵심 고객군 커버리지 96%', '후속 대화 연결지수 54', 'CRM 기록 품질 64', '컴플라이언스 위험 점검: 주의'],
+  },
+  {
+    id: 'M02',
+    name: '이대은 대리',
+    profile: '담당처 자율 관리 성향',
+    observation:
+      '고객과의 관계와 후속 대화는 안정적이다. 다만 팀 회의에서는 자신의 방식 공유를 부담스러워하고, 동료의 질문에는 “각자 담당처는 본인이 책임지는 것”이라고 선을 긋는다.',
+    signals: ['후속 대화 연결지수 128', '고객 인게이지먼트 지수 84', '팀 학습 기여도 42', '실행 인사이트 재사용도 38', 'AI 입력 안전 점검: 안전'],
+  },
+  {
+    id: 'M03',
+    name: '박재욱 사원',
+    profile: '신규 역할 적응 중',
+    observation:
+      'CRM 기록은 꼼꼼하게 남기지만 고객 앞에서는 질문이 짧아진다. 방문 전 준비 자료는 많지만, 실제 대화에서 고객의 참여를 끌어내는 데 어려움을 느낀다.',
+    signals: ['CRM 기록 품질 90', '고객 인게이지먼트 지수 51', '후속 대화 연결지수 48', '팀 학습 기여도 70', '컴플라이언스 위험 점검: 안전'],
+  },
+  {
+    id: 'M04',
+    name: '유희관 과장',
+    profile: '장기 담당처 관계 보유',
+    observation:
+      '담당처와의 관계는 안정적이다. 그러나 새로운 기록 기준이나 실행 방식이 나오면 “현장에서는 그런 방식이 잘 안 맞는다”고 말하며 신중한 태도를 보인다.',
+    signals: ['핵심 고객군 커버리지 92%', '고객 대화 지속성 86', 'CRM 기록 품질 55', '팀 학습 기여도 58', '컴플라이언스 위험 점검: 주의'],
+  },
+  {
+    id: 'M05',
+    name: '김문호 차장',
+    profile: '최근 목표 압박을 크게 느낌',
+    observation:
+      '최근 목표 압박을 크게 느끼며 지역 상황과 외부 요인을 자주 언급한다. 실행 변수 중 자신이 바꿀 수 있는 것에 대해서는 말을 아끼는 편이다.',
+    signals: ['실행 적시성 59', '후속조치 실행률 52', '고객 인게이지먼트 지수 56', '사전 인사이트 준비도 60', '컴플라이언스 위험 점검: 안전'],
+  },
+  {
+    id: 'M06',
+    name: '김재호 차장',
+    profile: '현장 요청 대응 속도 강점',
+    observation:
+      '현장 요청에는 빠르게 대응하지만 사후 기록과 후속 실행 정리가 뒤로 밀리는 경향이 있다. 즉흥 대응은 강하지만 팀장 판단에 필요한 기록은 부족하다.',
+    signals: ['실행 적시성 88', '고객 대화 지속성 82', 'CRM 기록 품질 50', '후속조치 실행률 57', 'AI 입력 안전 점검: 안전'],
+  },
+  {
+    id: 'M07',
+    name: '문교원 사원',
+    profile: '신입·저연차 조직 적응 중',
+    observation:
+      '문교원 사원은 입사 초기에는 성실하게 배우려 했지만 최근 팀장의 지시에는 고개만 끄덕이고 질문을 거의 하지 않는다. 선배들이 당연하게 여기는 보고·동행·회식 문화에 부담을 느끼며, 피드백 후에는 “알겠습니다”라고만 답하고 대화가 이어지지 않는다. 동기에게 “이 일을 오래 할 수 있을지 모르겠다”고 말한 적이 있다.',
+    signals: ['지시 이해 확인 필요', '질문 회피 신호: 주의', '피드백 후 침묵', '고객 방문 자신감 46', '권위문화 적응 부담', '이탈 위험 점검: 주의'],
+  },
 ];
 
 type TeamMember = (typeof TEAM_MEMBERS)[number];
 
-const TEAM_SITUATION_OPTIONS = ['활동량은 충분한데 고객 반응이 약하다', '방문 후 후속조치가 잘 이어지지 않는다', 'CRM 기록은 있지만 실행 판단에 도움이 부족하다', '팀원별 실행 편차가 크다', '기존 방식에 익숙해 새 실행 기준 적용이 느리다', '컴플라이언스 안전선이 걱정된다', '팀 학습과 노하우 공유가 부족하다'];
+const TEAM_SITUATION_OPTIONS = [
+  '활동량은 충분한데 고객 반응이 약하다',
+  '방문 후 후속조치가 잘 이어지지 않는다',
+  'CRM 기록은 있지만 실행 판단에 도움이 부족하다',
+  '팀원별 실행 편차가 크다',
+  '기존 방식에 익숙해 새 실행 기준 적용이 느리다',
+  '컴플라이언스 안전선이 걱정된다',
+  '팀 학습과 노하우 공유가 부족하다',
+  '신입·저연차 팀원이 지시를 이해했는지 확인하기 어렵다',
+  'MZ세대 팀원과 소통 방식·일의 의미를 두고 갈등이 있다',
+  '팀원이 질문하지 않고 혼자 끙끙대거나 이탈 신호를 보인다',
+];
 const MAX_TEAM_SITUATIONS = 3;
 
 const METRIC_OPTIONS = [
@@ -27,7 +88,23 @@ const METRIC_OPTIONS = [
   { id: 'aiSafety', name: 'AI 입력 안전 점검', group: 'AI 활용 안전', meaning: 'AI에 입력하면 안 되는 정보가 걸러졌는지 본다.', caution: '안전 점검은 감시가 아니라 보호 장치로 설명한다.', safety: true },
 ];
 
-const ACTION_OUTPUT_OPTIONS = ['1on1 면담 질문', '이번 주 코칭 포인트', '실행 점검 기준', '강점 활용 역할 제안', '우려 신호 확인 질문', '팀 회의 공유용 학습 포인트', '컴플라이언스 안전선 점검 문장', '후속 대화 연결 코칭 질문', '방문 후 기록 점검표', '고객 질문 연습 스크립트', '통제 가능한 실행 변수 찾기 질문', '작은 실행 약속 카드'];
+const ACTION_OUTPUT_OPTIONS = [
+  '1on1 면담 질문',
+  '이번 주 코칭 포인트',
+  '실행 점검 기준',
+  '강점 활용 역할 제안',
+  '우려 신호 확인 질문',
+  '팀 회의 공유용 학습 포인트',
+  '컴플라이언스 안전선 점검 문장',
+  '후속 대화 연결 코칭 질문',
+  '방문 후 기록 점검표',
+  '고객 질문 연습 스크립트',
+  '통제 가능한 실행 변수 찾기 질문',
+  '작은 실행 약속 카드',
+  '지시 이해 확인 질문',
+  '이탈 위험 신호 확인 질문',
+  '일의 의미와 기대 조율 대화',
+];
 const FORBIDDEN_ITEMS = ['실제 고객명·병원명·의료진명', '제품명 또는 미승인 표현', '실제 매출·내부 전략 수치', '개인정보·민감정보', '부적절한 권유나 비교 우위처럼 보이는 표현', '팀원에 대한 단정적 낙인 표현'];
 
 type MemberPrep = { observedSignal: string; strengthSignal: string; concernSignal: string; checkQuestion: string; doNotAssume: string; aiDraft: string; finalPrep: string };
@@ -38,15 +115,113 @@ type MetricParseResult = Record<MetricSectionKey, string> & { warnings: string[]
 type SignalParseResult = { preps: PrepState; warnings: string[] };
 type PrepDraftParseResult = { drafts: Record<string, string>; warnings: string[] };
 
-function emptyPrep(): MemberPrep { return { observedSignal: '', strengthSignal: '', concernSignal: '', checkQuestion: '', doNotAssume: '', aiDraft: '', finalPrep: '' }; }
-function metricNames(ids: string[]) { return ids.map((id) => METRIC_OPTIONS.find((item) => item.id === id)?.name ?? id); }
-function getSuggestedDeliverables(memberId: string) { const map: Record<string, string[]> = { M01: ['후속 대화 연결 코칭 질문', '방문 후 기록 점검표'], M02: ['강점 활용 역할 제안', '팀 회의 공유용 학습 포인트'], M03: ['고객 질문 연습 스크립트', '1on1 면담 질문'], M04: ['컴플라이언스 안전선 점검 문장', '우려 신호 확인 질문'], M05: ['통제 가능한 실행 변수 찾기 질문', '작은 실행 약속 카드'], M06: ['실행 점검 기준', '방문 후 기록 점검표'] }; return map[memberId] ?? []; }
-function cleanMarkdown(text: string) { return text.replace(/<[^>]+>/g, '').replace(/[*`>#]/g, '').replace(/&nbsp;/g, ' ').trim(); }
-function isTableSeparator(line: string) { return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim()); }
-function parseTableCells(line: string) { return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cleanMarkdown(cell)); }
-function classifyMetricHeading(line: string): MetricSectionKey | null { const title = cleanMarkdown(line).replace(/^\d+\.?\s*/, ''); if (!title) return null; if (/질문|면담/.test(title)) return 'questions'; if (/맞지|제외|채택|역효과/.test(title)) return 'excluded'; if (/추가|중장기|생각해볼/.test(title)) return 'additional'; if (/안전선|컴플라이언스|리스크/.test(title)) return 'safety'; if (/보완|보조|함께/.test(title)) return 'support'; if (/핵심|직접 연결|우선/.test(title)) return 'core'; return null; }
-function formatMetricSection(lines: string[], key: MetricSectionKey) { const output: string[] = []; let previousWasQuestionGroup = false; for (const rawLine of lines) { const line = rawLine.trim(); if (!line || line === '---' || line.startsWith('>') || isTableSeparator(line)) continue; if (line.startsWith('|')) { const cells = parseTableCells(line).filter(Boolean); if (cells.length === 0 || /지표|관찰|확인|후보|이유|포인트|방법/.test(cells[0])) continue; const [name, ...details] = cells; const detailText = details.filter(Boolean).map((detail) => `  - ${detail}`).join('\n'); output.push(`- ${name}${detailText ? `\n${detailText}` : ''}`); previousWasQuestionGroup = false; continue; } if (/^[-*]\s+/.test(line)) { output.push(`- ${cleanMarkdown(line.replace(/^[-*]\s+/, ''))}`); previousWasQuestionGroup = false; continue; } if (/^\*\*.+\*\*$/.test(line) || (key === 'questions' && !line.includes('|') && !line.startsWith('#'))) { const clean = cleanMarkdown(line); if (clean && !previousWasQuestionGroup) { output.push(`${output.length > 0 ? '\n' : ''}${clean}`); previousWasQuestionGroup = true; } continue; } const clean = cleanMarkdown(line); if (clean && !/^\d+\./.test(clean)) output.push(clean); previousWasQuestionGroup = false; } return output.join('\n').trim(); }
-function parseAiMetricSuggestion(rawText: string): MetricParseResult { const buckets: Record<MetricSectionKey, string[]> = { core: [], support: [], safety: [], excluded: [], additional: [], questions: [] }; const warnings: string[] = []; let current: MetricSectionKey | null = null; for (const line of rawText.split(/\r?\n/)) { const headingCandidate = /^#{1,6}\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim()) || /^##\s*\d+\./.test(line.trim()); const classified = headingCandidate ? classifyMetricHeading(line) : null; if (classified) { current = classified; continue; } if (current) buckets[current].push(line); } const result: MetricParseResult = { core: formatMetricSection(buckets.core, 'core'), support: formatMetricSection(buckets.support, 'support'), safety: formatMetricSection(buckets.safety, 'safety'), excluded: formatMetricSection(buckets.excluded, 'excluded'), additional: formatMetricSection(buckets.additional, 'additional'), questions: formatMetricSection(buckets.questions, 'questions'), warnings }; for (const [key, label] of [['core', '핵심 지표'], ['support', '보완 지표'], ['safety', '안전선 지표'], ['excluded', '제외 지표'], ['additional', '추가 지표'], ['questions', '확인 질문']] as const) { if (!result[key]) warnings.push(`${label} 섹션을 자동으로 찾지 못했습니다.`); } return result; }
+function emptyPrep(): MemberPrep {
+  return { observedSignal: '', strengthSignal: '', concernSignal: '', checkQuestion: '', doNotAssume: '', aiDraft: '', finalPrep: '' };
+}
+
+function metricNames(ids: string[]) {
+  return ids.map((id) => METRIC_OPTIONS.find((item) => item.id === id)?.name ?? id);
+}
+
+function getSuggestedDeliverables(memberId: string) {
+  const map: Record<string, string[]> = {
+    M01: ['후속 대화 연결 코칭 질문', '방문 후 기록 점검표'],
+    M02: ['강점 활용 역할 제안', '팀 회의 공유용 학습 포인트'],
+    M03: ['고객 질문 연습 스크립트', '1on1 면담 질문'],
+    M04: ['컴플라이언스 안전선 점검 문장', '우려 신호 확인 질문'],
+    M05: ['통제 가능한 실행 변수 찾기 질문', '작은 실행 약속 카드'],
+    M06: ['실행 점검 기준', '방문 후 기록 점검표'],
+    M07: ['지시 이해 확인 질문', '일의 의미와 기대 조율 대화', '이탈 위험 신호 확인 질문'],
+  };
+  return map[memberId] ?? [];
+}
+
+function cleanMarkdown(text: string) {
+  return text.replace(/<[^>]+>/g, '').replace(/[*`>#]/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
+function isTableSeparator(line: string) {
+  return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim());
+}
+
+function parseTableCells(line: string) {
+  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cleanMarkdown(cell));
+}
+
+function classifyMetricHeading(line: string): MetricSectionKey | null {
+  const title = cleanMarkdown(line).replace(/^\d+\.?\s*/, '');
+  if (!title) return null;
+  if (/질문|면담/.test(title)) return 'questions';
+  if (/맞지|제외|채택|역효과/.test(title)) return 'excluded';
+  if (/추가|중장기|생각해볼/.test(title)) return 'additional';
+  if (/안전선|컴플라이언스|리스크/.test(title)) return 'safety';
+  if (/보완|보조|함께/.test(title)) return 'support';
+  if (/핵심|직접 연결|우선/.test(title)) return 'core';
+  return null;
+}
+
+function formatMetricSection(lines: string[], key: MetricSectionKey) {
+  const output: string[] = [];
+  let previousWasQuestionGroup = false;
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line === '---' || line.startsWith('>') || isTableSeparator(line)) continue;
+    if (line.startsWith('|')) {
+      const cells = parseTableCells(line).filter(Boolean);
+      if (cells.length === 0 || /지표|관찰|확인|후보|이유|포인트|방법/.test(cells[0])) continue;
+      const [name, ...details] = cells;
+      const detailText = details.filter(Boolean).map((detail) => `  - ${detail}`).join('\n');
+      output.push(`- ${name}${detailText ? `\n${detailText}` : ''}`);
+      previousWasQuestionGroup = false;
+      continue;
+    }
+    if (/^[-*]\s+/.test(line)) {
+      output.push(`- ${cleanMarkdown(line.replace(/^[-*]\s+/, ''))}`);
+      previousWasQuestionGroup = false;
+      continue;
+    }
+    if (/^\*\*.+\*\*$/.test(line) || (key === 'questions' && !line.includes('|') && !line.startsWith('#'))) {
+      const clean = cleanMarkdown(line);
+      if (clean && !previousWasQuestionGroup) {
+        output.push(`${output.length > 0 ? '\n' : ''}${clean}`);
+        previousWasQuestionGroup = true;
+      }
+      continue;
+    }
+    const clean = cleanMarkdown(line);
+    if (clean && !/^\d+\./.test(clean)) output.push(clean);
+    previousWasQuestionGroup = false;
+  }
+  return output.join('\n').trim();
+}
+
+function parseAiMetricSuggestion(rawText: string): MetricParseResult {
+  const buckets: Record<MetricSectionKey, string[]> = { core: [], support: [], safety: [], excluded: [], additional: [], questions: [] };
+  const warnings: string[] = [];
+  let current: MetricSectionKey | null = null;
+  for (const line of rawText.split(/\r?\n/)) {
+    const headingCandidate = /^#{1,6}\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim()) || /^##\s*\d+\./.test(line.trim());
+    const classified = headingCandidate ? classifyMetricHeading(line) : null;
+    if (classified) {
+      current = classified;
+      continue;
+    }
+    if (current) buckets[current].push(line);
+  }
+  const result: MetricParseResult = {
+    core: formatMetricSection(buckets.core, 'core'),
+    support: formatMetricSection(buckets.support, 'support'),
+    safety: formatMetricSection(buckets.safety, 'safety'),
+    excluded: formatMetricSection(buckets.excluded, 'excluded'),
+    additional: formatMetricSection(buckets.additional, 'additional'),
+    questions: formatMetricSection(buckets.questions, 'questions'),
+    warnings,
+  };
+  for (const [key, label] of [['core', '핵심 지표'], ['support', '보완 지표'], ['safety', '안전선 지표'], ['excluded', '제외 지표'], ['additional', '추가 지표'], ['questions', '확인 질문']] as const) {
+    if (!result[key]) warnings.push(`${label} 섹션을 자동으로 찾지 못했습니다.`);
+  }
+  return result;
+}
 
 const MEMBER_FIELD_GROUPS: { field: keyof MemberPrep; labels: string[] }[] = [
   { field: 'observedSignal', labels: ['팀원별 관찰 신호', '관찰 신호', '관찰 가능한 신호'] },
@@ -55,13 +230,91 @@ const MEMBER_FIELD_GROUPS: { field: keyof MemberPrep; labels: string[] }[] = [
   { field: 'checkQuestion', labels: ['추가로 확인해야 할 질문', '추가 확인 질문', '확인 질문'] },
   { field: 'doNotAssume', labels: ['성급하게 단정하면 안 되는 점', '단정하면 안 되는 점', '단정 금지', '성급하게 단정'] },
 ];
-function findMemberField(line: string) { const clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim(); return MEMBER_FIELD_GROUPS.find((group) => group.labels.some((label) => clean.includes(label))) ?? null; }
-function stripMemberFieldLabel(line: string, labels: string[]) { let clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim(); for (const label of labels) clean = clean.replace(label, ''); return clean.replace(/^\s*[:：\-–—]\s*/, '').trim(); }
-function appendPrepField(target: Partial<MemberPrep>, field: keyof MemberPrep, value: string) { if (!value) return; target[field] = [target[field], value].filter(Boolean).join('\n'); }
-function parseMemberSection(section: string, memberName: string): Partial<MemberPrep> { const result: Partial<MemberPrep> = {}; let currentField: keyof MemberPrep | null = null; for (const rawLine of section.split(/\r?\n/)) { const clean = cleanMarkdown(rawLine).replace(/^[-*]\s*/, '').trim(); if (!clean || clean === memberName || /^\d+\.?\s*$/.test(clean)) continue; const fieldGroup = findMemberField(rawLine); if (fieldGroup) { currentField = fieldGroup.field; appendPrepField(result, currentField, stripMemberFieldLabel(rawLine, fieldGroup.labels)); continue; } if (currentField) appendPrepField(result, currentField, clean); else appendPrepField(result, 'observedSignal', clean); } return result; }
-function parseAiSignalResultByMember(rawText: string): SignalParseResult { const preps: PrepState = {}; const warnings: string[] = []; const starts = TEAM_MEMBERS.map((member) => ({ member, index: rawText.indexOf(member.name) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index); if (starts.length === 0) { warnings.push('팀원 이름을 자동으로 찾지 못했습니다. AI 결과에 신재영 대리, 이대은 대리 등 팀원 이름이 포함되어 있는지 확인해 주세요.'); return { preps, warnings }; } starts.forEach((item, order) => { const end = starts[order + 1]?.index ?? rawText.length; const section = rawText.slice(item.index, end); const parsed = parseMemberSection(section, item.member.name); preps[item.member.id] = { ...emptyPrep(), ...parsed }; }); for (const member of TEAM_MEMBERS) { if (!preps[member.id]) warnings.push(`${member.name} 섹션을 자동으로 찾지 못했습니다.`); } return { preps, warnings }; }
-function cleanMemberDraftSection(section: string, memberName: string) { return section.split(/\r?\n/).map((line) => line.trim()).filter((line) => { const clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim(); return clean && clean !== memberName && !new RegExp(`^\\d+\\.?\\s*${memberName}`).test(clean); }).join('\n').trim(); }
-function parseAiPrepDraftByMember(rawText: string, members: TeamMember[]): PrepDraftParseResult { const drafts: Record<string, string> = {}; const warnings: string[] = []; const starts = members.map((member) => ({ member, index: rawText.indexOf(member.name) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index); if (starts.length === 0) { warnings.push('선택한 유형 이름을 자동으로 찾지 못했습니다. AI 2차 결과에 선택한 유형 이름이 포함되어 있는지 확인해 주세요.'); return { drafts, warnings }; } starts.forEach((item, order) => { const end = starts[order + 1]?.index ?? rawText.length; const section = rawText.slice(item.index, end); drafts[item.member.id] = cleanMemberDraftSection(section, item.member.name); }); for (const member of members) { if (!drafts[member.id]) warnings.push(`${member.name} 준비물 초안을 자동으로 찾지 못했습니다.`); } return { drafts, warnings }; }
+
+function findMemberField(line: string) {
+  const clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim();
+  return MEMBER_FIELD_GROUPS.find((group) => group.labels.some((label) => clean.includes(label))) ?? null;
+}
+
+function stripMemberFieldLabel(line: string, labels: string[]) {
+  let clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim();
+  for (const label of labels) clean = clean.replace(label, '');
+  return clean.replace(/^\s*[:：\-–—]\s*/, '').trim();
+}
+
+function appendPrepField(target: Partial<MemberPrep>, field: keyof MemberPrep, value: string) {
+  if (!value) return;
+  target[field] = [target[field], value].filter(Boolean).join('\n');
+}
+
+function parseMemberSection(section: string, memberName: string): Partial<MemberPrep> {
+  const result: Partial<MemberPrep> = {};
+  let currentField: keyof MemberPrep | null = null;
+  for (const rawLine of section.split(/\r?\n/)) {
+    const clean = cleanMarkdown(rawLine).replace(/^[-*]\s*/, '').trim();
+    if (!clean || clean === memberName || /^\d+\.?\s*$/.test(clean)) continue;
+    const fieldGroup = findMemberField(rawLine);
+    if (fieldGroup) {
+      currentField = fieldGroup.field;
+      appendPrepField(result, currentField, stripMemberFieldLabel(rawLine, fieldGroup.labels));
+      continue;
+    }
+    if (currentField) appendPrepField(result, currentField, clean);
+    else appendPrepField(result, 'observedSignal', clean);
+  }
+  return result;
+}
+
+function parseAiSignalResultByMember(rawText: string): SignalParseResult {
+  const preps: PrepState = {};
+  const warnings: string[] = [];
+  const starts = TEAM_MEMBERS.map((member) => ({ member, index: rawText.indexOf(member.name) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index);
+  if (starts.length === 0) {
+    warnings.push('팀원 이름을 자동으로 찾지 못했습니다. AI 결과에 신재영 대리, 문교원 사원 등 팀원 이름이 포함되어 있는지 확인해 주세요.');
+    return { preps, warnings };
+  }
+  starts.forEach((item, order) => {
+    const end = starts[order + 1]?.index ?? rawText.length;
+    const section = rawText.slice(item.index, end);
+    const parsed = parseMemberSection(section, item.member.name);
+    preps[item.member.id] = { ...emptyPrep(), ...parsed };
+  });
+  for (const member of TEAM_MEMBERS) {
+    if (!preps[member.id]) warnings.push(`${member.name} 섹션을 자동으로 찾지 못했습니다.`);
+  }
+  return { preps, warnings };
+}
+
+function cleanMemberDraftSection(section: string, memberName: string) {
+  return section
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => {
+      const clean = cleanMarkdown(line).replace(/^[-*]\s*/, '').trim();
+      return clean && clean !== memberName && !new RegExp(`^\\d+\\.?\\s*${memberName}`).test(clean);
+    })
+    .join('\n')
+    .trim();
+}
+
+function parseAiPrepDraftByMember(rawText: string, members: TeamMember[]): PrepDraftParseResult {
+  const drafts: Record<string, string> = {};
+  const warnings: string[] = [];
+  const starts = members.map((member) => ({ member, index: rawText.indexOf(member.name) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index);
+  if (starts.length === 0) {
+    warnings.push('선택한 유형 이름을 자동으로 찾지 못했습니다. AI 2차 결과에 선택한 유형 이름이 포함되어 있는지 확인해 주세요.');
+    return { drafts, warnings };
+  }
+  starts.forEach((item, order) => {
+    const end = starts[order + 1]?.index ?? rawText.length;
+    const section = rawText.slice(item.index, end);
+    drafts[item.member.id] = cleanMemberDraftSection(section, item.member.name);
+  });
+  for (const member of members) {
+    if (!drafts[member.id]) warnings.push(`${member.name} 준비물 초안을 자동으로 찾지 못했습니다.`);
+  }
+  return { drafts, warnings };
+}
 
 export function V38DashboardAnalysisLab() {
   const [teamSituations, setTeamSituations] = useState<string[]>([]);
@@ -95,7 +348,7 @@ export function V38DashboardAnalysisLab() {
   const completedFinalCount = useMemo(() => selectedTeamMembers.filter((member) => memberPreps[member.id]?.finalPrep).length, [memberPreps, selectedTeamMembers]);
 
   const metricPrompt = useMemo(() => ['당신은 제약영업 팀장의 실행관리 교육을 돕는 리더십 코치입니다.', '이 지표는 팀원을 평가하기 위한 점수표가 아니라, 팀장이 무엇을 확인하고 어떤 대화를 준비할지 정하기 위한 관찰 기준입니다.', '우리 팀 상황:', ...(teamSituations.length > 0 ? teamSituations.map((item) => `- ${item}`) : ['- 아직 선택하지 않았습니다. 참여자가 선택한 실제 팀 상황을 우선 기준으로 삼아야 합니다.']), '요청: 우리 팀 상황에 맞는 안전한 실행 관찰 지표 후보를 제안해 주세요.', '아래 섹션 제목을 반드시 그대로 사용해 주세요.', '## 1. 핵심 지표 후보', '## 2. 보완 지표 후보', '## 3. 안전선 지표 후보', '## 4. 우리 팀에는 맞지 않을 수 있는 지표', '## 5. 추가로 생각해볼 지표', '## 6. 팀장이 던질 수 있는 확인 질문', '각 지표는 표보다 아래 불릿 형식으로 작성해 주세요.', '- 지표명:', '  - 관찰 포인트:', '  - 필요한 이유:', '  - 단정 금지:', '주의:', ...FORBIDDEN_ITEMS.map((item) => `- ${item}`), '- 지표는 실행 코칭과 다음 행동 준비에 연결될 수 있어야 합니다.', '- AI 추천은 최종 선택이 아니라 후보입니다. 팀장이 우리 팀 맥락에 맞게 다시 분리하고 걸러낼 수 있게 작성해 주세요.'].join('\n'), [teamSituations]);
-  const signalPrompt = useMemo(() => ['당신은 제약영업 팀장의 팀원 실행 Data 해석을 돕는 리더십 코치입니다.', '아래 팀원 유형 중 참여자가 우리 팀에 실제로 존재하거나 비슷하다고 선택한 유형을 중심으로 정리해 주세요.', '우리 팀이 최종 선택한 실행 관찰 지표:', ...selectedMetricSummary.map((item) => `- ${item}`), metricRationale ? `지표 선택 이유: ${metricRationale}` : '지표 선택 이유: 아직 작성하지 않았습니다.', aiRecommendedQuestions ? `참고 가능한 AI 추천 확인 질문:\n${aiRecommendedQuestions}` : '참고 가능한 AI 추천 확인 질문: 아직 정리하지 않았습니다.', '이 지표를 우선 렌즈로 사용하되, 팀원을 평가하거나 낙인찍지 마세요.', '반드시 피할 것:', ...FORBIDDEN_ITEMS.map((item) => `- ${item}`), selectedTeamMembers.length > 0 ? `선택한 우리 팀 유사 유형: ${selectedTeamMembers.map((member) => member.name).join(' / ')}` : '선택한 우리 팀 유사 유형: 아직 선택하지 않았습니다. 아래 6명 전체를 참고용으로만 훑어보세요.', '팀원 실행 Data:', ...signalPromptMembers.flatMap((member, index) => [`${index + 1}. ${member.name}`, `- 프로필: ${member.profile}`, `- 관찰 장면: ${member.observation}`, `- 주요 실행 Data: ${member.signals.join(' / ')}`, '']), '출력 형식:', '각 팀원 이름을 제목으로 쓰고 아래 항목을 반드시 포함해 주세요.', '- 팀원별 관찰 신호:', '- 강점으로 볼 수 있는 신호:', '- 우려 또는 확인이 필요한 신호:', '- 추가로 확인해야 할 질문:', '- 성급하게 단정하면 안 되는 점:', '문제 직원, 동기 부족, 변화 저항처럼 단정하지 마세요.'].join('\n'), [selectedMetricSummary, metricRationale, aiRecommendedQuestions, selectedTeamMembers, signalPromptMembers]);
+  const signalPrompt = useMemo(() => ['당신은 제약영업 팀장의 팀원 실행 Data 해석을 돕는 리더십 코치입니다.', '아래 팀원 유형 중 참여자가 우리 팀에 실제로 존재하거나 비슷하다고 선택한 유형을 중심으로 정리해 주세요.', '우리 팀이 최종 선택한 실행 관찰 지표:', ...selectedMetricSummary.map((item) => `- ${item}`), metricRationale ? `지표 선택 이유: ${metricRationale}` : '지표 선택 이유: 아직 작성하지 않았습니다.', aiRecommendedQuestions ? `참고 가능한 AI 추천 확인 질문:\n${aiRecommendedQuestions}` : '참고 가능한 AI 추천 확인 질문: 아직 정리하지 않았습니다.', '이 지표를 우선 렌즈로 사용하되, 팀원을 평가하거나 낙인찍지 마세요.', '반드시 피할 것:', ...FORBIDDEN_ITEMS.map((item) => `- ${item}`), selectedTeamMembers.length > 0 ? `선택한 우리 팀 유사 유형: ${selectedTeamMembers.map((member) => member.name).join(' / ')}` : '선택한 우리 팀 유사 유형: 아직 선택하지 않았습니다. 아래 7명 전체를 참고용으로만 훑어보세요.', '팀원 실행 Data:', ...signalPromptMembers.flatMap((member, index) => [`${index + 1}. ${member.name}`, `- 프로필: ${member.profile}`, `- 관찰 장면: ${member.observation}`, `- 주요 실행 Data: ${member.signals.join(' / ')}`, '']), '출력 형식:', '각 팀원 이름을 제목으로 쓰고 아래 항목을 반드시 포함해 주세요.', '- 팀원별 관찰 신호:', '- 강점으로 볼 수 있는 신호:', '- 우려 또는 확인이 필요한 신호:', '- 추가로 확인해야 할 질문:', '- 성급하게 단정하면 안 되는 점:', '문제 직원, 동기 부족, 변화 저항처럼 단정하지 마세요.'].join('\n'), [selectedMetricSummary, metricRationale, aiRecommendedQuestions, selectedTeamMembers, signalPromptMembers]);
   const prepPrompt = useMemo(() => ['당신은 제약영업 팀장이 팀원별 다음 행동 준비물을 만들도록 돕는 리더십 코치입니다.', 'AI가 판단을 대신 확정하지 않도록, 관찰 신호와 선택한 팀장 행동 결과물에 맞춰 실무 준비물을 만들어 주세요.', '이번 실습에서 선택한 우리 팀 유사 유형:', ...(selectedTeamMembers.length > 0 ? selectedTeamMembers.map((member) => `- ${member.name}: ${member.profile}`) : ['- 아직 선택하지 않았습니다.']), '선택한 우리 팀 실행지표:', ...selectedMetricSummary.map((item) => `- ${item}`), '반드시 피할 것:', ...FORBIDDEN_ITEMS.map((item) => `- ${item}`), 'AI 1차 결과 붙여넣기 내용:', aiSignalResult || '아직 붙여넣지 않았습니다.', '선택한 유형별 분리 정리와 팀장 행동 선택:', ...selectedTeamMembers.flatMap((member, index) => { const current = memberPreps[member.id] ?? emptyPrep(); const choices = selectedDeliverables[member.id] ?? []; return [`${index + 1}. ${member.name}`, `- 팀원별 관찰 신호: ${current.observedSignal || '미작성'}`, `- 강점으로 볼 수 있는 신호: ${current.strengthSignal || '미작성'}`, `- 우려 또는 확인이 필요한 신호: ${current.concernSignal || '미작성'}`, `- 추가로 확인해야 할 질문: ${current.checkQuestion || '미작성'}`, `- 성급하게 단정하면 안 되는 점: ${current.doNotAssume || '미작성'}`, `- 팀장 행동 선택: ${choices.length > 0 ? choices.join(' / ') : '미선택'}`, '']; }), '선택 가능한 준비물:', ...ACTION_OUTPUT_OPTIONS.map((item, index) => `${index + 1}. ${item}`), '출력 형식: 선택한 유형별로 선택된 준비물만 작성해 주세요. 각 유형 이름을 제목으로 쓰고 문장과 체크리스트 중심으로 작성해 주세요.'].join('\n'), [selectedMetricSummary, aiSignalResult, memberPreps, selectedDeliverables, selectedTeamMembers]);
 
   const toggleTeamSituation = (value: string) => setTeamSituations((current) => current.includes(value) ? current.filter((item) => item !== value) : current.length >= MAX_TEAM_SITUATIONS ? current : [...current, value]);
@@ -112,10 +365,10 @@ export function V38DashboardAnalysisLab() {
     <section className="space-y-4">
       <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-xs font-black uppercase tracking-wide text-cyan-700">v38 Dashboard Analysis Lab</p><h2 className="mt-2 text-2xl font-black text-slate-950">우리 팀 지표로 다음 행동 준비하기</h2><p className="mt-2 text-sm leading-6 text-slate-600">이 단계는 <span className="font-black text-slate-950">우리 팀 상황 선택 → AI 추천 결과 붙여넣기 → 자동 분리·채우기 → 최종 실행지표 선택 → 우리 팀에 존재하는 유형 2명 선택 → 선택한 2명 상세 분석 → AI 2차 결과 자동 채우기</span> 흐름으로, 팀장이 사용할 <span className="font-black text-slate-950">다음 행동 준비물</span>을 만듭니다.</p></div><div className="grid gap-2 text-sm font-black text-cyan-800 md:text-right"><div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">상황 선택 {teamSituations.length} / {MAX_TEAM_SITUATIONS}</div><div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">지표 선택 {selectedCoreMetrics.length + selectedSupportMetrics.length + selectedSafetyMetrics.length} / 6</div><div className="rounded-2xl bg-cyan-50 px-4 py-3">유형 선택 {selectedMemberTypeIds.length} / 2</div><div className="rounded-2xl bg-cyan-50 px-4 py-3">신호 분리 {completedSignalCount} / {selectedTeamMembers.length || 2}</div><div className="rounded-2xl bg-indigo-50 px-4 py-3 text-indigo-800">행동 선택 {completedActionChoiceCount} / {selectedTeamMembers.length || 2}</div><div className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-800">준비물 완성 {completedFinalCount} / {selectedTeamMembers.length || 2}</div></div></div></div>
       <div className="rounded-3xl border border-amber-100 bg-amber-50 p-5 shadow-sm md:p-6"><p className="text-xs font-black uppercase tracking-wide text-amber-700">Block 0</p><h3 className="text-lg font-black text-slate-950">우리 팀 지표 정하기</h3><p className="mt-2 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">우리 팀 상황은 처음부터 선택되어 있지 않습니다. 우리 팀에 가장 가까운 상황을 최대 3개까지 선택하세요. 이번 실습에서는 모든 문제를 다루기보다, 먼저 볼 실행 이슈를 좁히는 것이 중요합니다.</p><div className="mt-4 grid gap-4 lg:grid-cols-2"><div className="rounded-2xl border bg-white p-4"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-black text-slate-950">우리 팀 상황 선택</h4><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-800">상황 선택 {teamSituations.length} / {MAX_TEAM_SITUATIONS}</span></div><p className="mt-2 text-xs font-bold leading-5 text-slate-600">1~3개를 선택하세요. 최대 3개 선택 후에는 기존 선택을 해제해야 다른 상황을 선택할 수 있습니다.</p><div className="mt-3 grid gap-2">{TEAM_SITUATION_OPTIONS.map((option) => { const selected = teamSituations.includes(option); const disabled = !selected && teamSituations.length >= MAX_TEAM_SITUATIONS; return <label key={option} className={`flex gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${selected ? 'border-amber-700 bg-amber-50 text-amber-950' : disabled ? 'bg-slate-100 text-slate-400' : 'bg-white text-slate-700'}`}><input type="checkbox" disabled={disabled} checked={selected} onChange={() => toggleTeamSituation(option)} /><span>{option}</span></label>; })}</div></div><div className="rounded-2xl border bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h4 className="text-sm font-black text-slate-950">AI 지표 추천 프롬프트</h4><p className="mt-1 text-xs font-bold leading-5 text-slate-600">자동분리가 잘 되도록 섹션 제목과 불릿 구조를 지정합니다.</p></div><button type="button" className="rounded-2xl bg-amber-700 px-4 py-3 text-sm font-black text-white" onClick={() => copyPrompt('metric')}>{copiedPrompt === 'metric' ? '복사 완료' : 'AI 지표 추천 프롬프트 복사'}</button></div><pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{metricPrompt}</pre></div></div><label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 추천 지표 붙여넣기</span><textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="클로드, ChatGPT 등에서 생성한 지표 추천 결과를 붙여넣으세요. 표 형식도 자동분리를 시도합니다." /></label><div className="mt-3"><button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 추천 지표 자동 분리·채우기</button><p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동 채우기 후에도 각 입력칸에서 자유롭게 수정할 수 있습니다.</p>{parseNotice && <div className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-amber-800">{parseNotice}</div>}</div><div className="mt-4 rounded-2xl border bg-white p-4"><h4 className="text-sm font-black text-slate-950">AI 추천 지표 분리정리</h4><p className="mt-1 text-xs font-bold leading-5 text-slate-600">자동분리 결과는 아래 입력칸에 바로 채워집니다. 팀장 판단으로 수정한 뒤 최종 선택으로 이동합니다.</p><div className="mt-3 grid gap-3 md:grid-cols-2"><ReviewTextarea label="AI 추천 핵심 지표 후보" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} /><ReviewTextarea label="AI 추천 보완 지표 후보" value={aiRecommendedSupportMetrics} onChange={setAiRecommendedSupportMetrics} /><ReviewTextarea label="AI 추천 안전선 지표 후보" value={aiRecommendedSafetyMetrics} onChange={setAiRecommendedSafetyMetrics} /><ReviewTextarea label="우리 팀에 맞는 지표" value={fitForOurTeam} onChange={setFitForOurTeam} /><ReviewTextarea label="제외할 지표" value={excludedMetrics} onChange={setExcludedMetrics} /><ReviewTextarea label="추가하고 싶은 지표" value={additionalMetricIdea} onChange={setAdditionalMetricIdea} /><ReviewTextarea label="AI 추천 확인 질문" value={aiRecommendedQuestions} onChange={setAiRecommendedQuestions} /></div></div><div className="mt-4 rounded-2xl border bg-white p-4"><h4 className="text-sm font-black text-slate-950">우리 팀 핵심 실행지표 최종 선택</h4><p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI 추천 지표 분리정리와 기본 안전 지표를 참고해 최종 실행지표를 선택하세요. 핵심 지표 3개, 보완 지표 2개, 안전선 지표 1개를 선택합니다.</p><MetricPicker title="핵심 지표 3개" selected={selectedCoreMetrics} setter={setSelectedCoreMetrics} max={3} safetyOnly={false} /><MetricPicker title="보완 지표 2개" selected={selectedSupportMetrics} setter={setSelectedSupportMetrics} max={2} safetyOnly={false} /><MetricPicker title="안전선 지표 1개" selected={selectedSafetyMetrics} setter={setSelectedSafetyMetrics} max={1} safetyOnly={true} /><label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">지표 선택 이유</span><textarea className="min-h-20 w-full rounded-2xl border bg-slate-50 px-3 py-2 text-sm leading-6" value={metricRationale} onChange={(event) => setMetricRationale(event.target.value)} placeholder="예: AI 추천 중 후속 대화 연결과 고객 반응 지표가 우리 팀 상황에 가장 맞다고 판단했다." /></label></div></div>
-      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-xs font-black uppercase tracking-wide text-slate-500">Block 1</p><h3 className="text-lg font-black text-slate-950">6명 유형 카드 보기와 우리 팀 유사 유형 2명 선택</h3><p className="mt-2 rounded-2xl bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-900">아래 6명은 교육용 가상 인물입니다. 이 중 우리 팀에 실제로 존재하거나 비슷한 행동 신호를 보이는 유형 2명을 선택하세요. 실명보다 행동 신호와 관리 고민을 기준으로 선택하십시오.</p><div className="mt-3 flex flex-wrap gap-2">{selectedMetricSummary.map((item) => <span key={item} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">{item}</span>)}</div><div className="mt-4 grid gap-4 lg:grid-cols-2">{TEAM_MEMBERS.map((member) => { const selected = selectedMemberTypeIds.includes(member.id); const disabled = !selected && selectedMemberTypeIds.length >= 2; return <article key={member.id} className={`rounded-3xl border p-4 ${selected ? 'border-cyan-700 bg-cyan-50' : 'bg-slate-50'}`}><div className="flex items-start justify-between gap-3"><div><p className="font-black text-slate-950">{member.name}</p><p className="mt-1 text-xs font-bold text-slate-600">{member.profile}</p></div><button type="button" disabled={disabled} className={`rounded-2xl px-3 py-2 text-xs font-black ${selected ? 'bg-cyan-700 text-white' : disabled ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-700 border'}`} onClick={() => toggleMemberType(member.id)}>{selected ? '선택됨' : '이 유형 선택'}</button></div><p className="mt-3 text-sm font-bold leading-6 text-slate-700">{member.observation}</p><div className="mt-3 flex flex-wrap gap-2">{member.signals.map((signal) => <span key={signal} className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">{signal}</span>)}</div></article>; })}</div></div>
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-xs font-black uppercase tracking-wide text-slate-500">Block 1</p><h3 className="text-lg font-black text-slate-950">7명 유형 카드 보기와 우리 팀 유사 유형 2명 선택</h3><p className="mt-2 rounded-2xl bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-900">아래 7명은 교육용 가상 인물입니다. 이 중 우리 팀에 실제로 존재하거나 비슷한 행동 신호를 보이는 유형 2명을 선택하세요. 실명보다 행동 신호와 관리 고민을 기준으로 선택하십시오.</p><div className="mt-3 flex flex-wrap gap-2">{selectedMetricSummary.map((item) => <span key={item} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">{item}</span>)}</div><div className="mt-4 grid gap-4 lg:grid-cols-2">{TEAM_MEMBERS.map((member) => { const selected = selectedMemberTypeIds.includes(member.id); const disabled = !selected && selectedMemberTypeIds.length >= 2; return <article key={member.id} className={`rounded-3xl border p-4 ${selected ? 'border-cyan-700 bg-cyan-50' : 'bg-slate-50'}`}><div className="flex items-start justify-between gap-3"><div><p className="font-black text-slate-950">{member.name}</p><p className="mt-1 text-xs font-bold text-slate-600">{member.profile}</p></div><button type="button" disabled={disabled} className={`rounded-2xl px-3 py-2 text-xs font-black ${selected ? 'bg-cyan-700 text-white' : disabled ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-700 border'}`} onClick={() => toggleMemberType(member.id)}>{selected ? '선택됨' : '이 유형 선택'}</button></div><p className="mt-3 text-sm font-bold leading-6 text-slate-700">{member.observation}</p><div className="mt-3 flex flex-wrap gap-2">{member.signals.map((signal) => <span key={signal} className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">{signal}</span>)}</div></article>; })}</div></div>
       <details className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5 shadow-sm md:p-6" open><summary className="cursor-pointer text-lg font-black text-slate-950">Block 2. AI로 선택한 유형에서 보이는 신호 정리</summary><p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">AI 1차 활용은 진단 확정이 아니라 이슈 후보를 넓히는 단계입니다. 선택한 우리 팀 유사 유형 2명만 상세 분석 대상으로 사용합니다.</p><div className="mt-4 rounded-2xl border bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h3 className="text-sm font-black text-slate-950">복사용 AI 1차 신호 정리 프롬프트</h3><p className="mt-1 text-xs font-bold leading-5 text-slate-600">선택한 유형에서 보이는 신호를 관찰 가능한 표현과 확인 질문 중심으로 뽑아냅니다.</p></div><button type="button" className="rounded-2xl bg-indigo-700 px-4 py-3 text-sm font-black text-white" onClick={() => copyPrompt('signal')}>{copiedPrompt === 'signal' ? '복사 완료' : 'AI 신호 정리 프롬프트 복사'}</button></div><pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{signalPrompt}</pre></div></details>
       <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><h3 className="text-lg font-black text-slate-950">AI 결과 붙여넣기</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-600">AI가 뽑은 신호를 붙여넣은 뒤, 선택한 2명 유형만 자동 분리·채우기로 아래 입력칸에 초안을 채웁니다.</p><textarea className="mt-4 min-h-40 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm leading-6" value={aiSignalResult} onChange={(event) => setAiSignalResult(event.target.value)} placeholder="AI 1차 결과를 여기에 붙여넣으세요. 선택한 팀원 유형 이름이 포함되어 있으면 자동분리가 더 잘 됩니다." /><div className="mt-3"><button type="button" className="rounded-2xl bg-indigo-700 px-4 py-3 text-sm font-black text-white" onClick={autoFillMemberSignals}>AI 결과 선택 유형 자동 분리·채우기</button><p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동 분리된 선택 유형별 내용은 초안입니다. 각 입력칸에서 반드시 수정하십시오.</p>{memberSplitNotice && <div className="mt-3 rounded-2xl bg-indigo-50 p-3 text-xs font-bold leading-5 text-indigo-800">{memberSplitNotice}</div>}</div></div>
-      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><h3 className="text-lg font-black text-slate-950">선택한 유형별 신호 분리 정리</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-600">선택한 2명에 대해서만 신호를 분리하고 다음 행동을 준비합니다. 나머지 4명은 전체 맥락을 이해하기 위한 참고 자료로만 사용합니다.</p>{selectedTeamMembers.length === 0 ? <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">먼저 위 유형 카드에서 우리 팀에 존재하거나 비슷한 유형 2명을 선택하세요.</div> : <div className="mt-4 grid gap-4 lg:grid-cols-2">{selectedTeamMembers.map((member, index) => { const current = memberPreps[member.id] ?? emptyPrep(); return <details key={member.id} className="rounded-3xl border bg-slate-50 shadow-sm" open={index === 0}><summary className="cursor-pointer list-none p-4"><p className="font-black text-slate-950">{member.name}</p><p className="mt-1 text-xs font-bold text-slate-600">{member.profile}</p></summary><div className="border-t p-4"><div className="grid gap-3 md:grid-cols-2"><PrepTextarea label="팀원별 관찰 신호" value={current.observedSignal} onChange={(value) => updatePrep(member.id, 'observedSignal', value)} /><PrepTextarea label="강점으로 볼 수 있는 신호" value={current.strengthSignal} onChange={(value) => updatePrep(member.id, 'strengthSignal', value)} /><PrepTextarea label="우려 또는 확인이 필요한 신호" value={current.concernSignal} onChange={(value) => updatePrep(member.id, 'concernSignal', value)} /><PrepTextarea label="추가로 확인해야 할 질문" value={current.checkQuestion} onChange={(value) => updatePrep(member.id, 'checkQuestion', value)} /><PrepTextarea label="성급하게 단정하면 안 되는 점" value={current.doNotAssume} onChange={(value) => updatePrep(member.id, 'doNotAssume', value)} /></div></div></details>; })}</div>}</div>
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><h3 className="text-lg font-black text-slate-950">선택한 유형별 신호 분리 정리</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-600">선택한 2명에 대해서만 신호를 분리하고 다음 행동을 준비합니다. 나머지 5명은 전체 맥락을 이해하기 위한 참고 자료로만 사용합니다.</p>{selectedTeamMembers.length === 0 ? <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">먼저 위 유형 카드에서 우리 팀에 존재하거나 비슷한 유형 2명을 선택하세요.</div> : <div className="mt-4 grid gap-4 lg:grid-cols-2">{selectedTeamMembers.map((member, index) => { const current = memberPreps[member.id] ?? emptyPrep(); return <details key={member.id} className="rounded-3xl border bg-slate-50 shadow-sm" open={index === 0}><summary className="cursor-pointer list-none p-4"><p className="font-black text-slate-950">{member.name}</p><p className="mt-1 text-xs font-bold text-slate-600">{member.profile}</p></summary><div className="border-t p-4"><div className="grid gap-3 md:grid-cols-2"><PrepTextarea label="팀원별 관찰 신호" value={current.observedSignal} onChange={(value) => updatePrep(member.id, 'observedSignal', value)} /><PrepTextarea label="강점으로 볼 수 있는 신호" value={current.strengthSignal} onChange={(value) => updatePrep(member.id, 'strengthSignal', value)} /><PrepTextarea label="우려 또는 확인이 필요한 신호" value={current.concernSignal} onChange={(value) => updatePrep(member.id, 'concernSignal', value)} /><PrepTextarea label="추가로 확인해야 할 질문" value={current.checkQuestion} onChange={(value) => updatePrep(member.id, 'checkQuestion', value)} /><PrepTextarea label="성급하게 단정하면 안 되는 점" value={current.doNotAssume} onChange={(value) => updatePrep(member.id, 'doNotAssume', value)} /></div></div></details>; })}</div>}</div>
       <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><h3 className="text-lg font-black text-slate-950">팀장 행동 선택</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-600">선택한 유형별 신호에 따라 지금 필요한 준비물을 선택합니다.</p>{selectedTeamMembers.length === 0 ? <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">유형 2명을 선택하면 행동 선택 영역이 표시됩니다.</div> : <div className="mt-4 grid gap-4">{selectedTeamMembers.map((member) => { const checkedItems = selectedDeliverables[member.id] ?? []; return <article key={member.id} className="rounded-3xl border bg-slate-50 p-4"><div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"><div><p className="font-black text-slate-950">{member.name}</p><p className="mt-1 text-xs font-bold text-slate-600">추천: {getSuggestedDeliverables(member.id).join(' / ')}</p></div><button type="button" className="rounded-2xl border bg-white px-4 py-2 text-xs font-black text-slate-700" onClick={() => applySuggestedDeliverables(member.id)}>추천 준비물 선택</button></div><div className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-3">{ACTION_OUTPUT_OPTIONS.map((option) => <label key={option} className={`flex items-start gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${checkedItems.includes(option) ? 'border-cyan-700 bg-white text-cyan-950' : 'bg-white/70 text-slate-700'}`}><input type="checkbox" className="mt-1" checked={checkedItems.includes(option)} onChange={() => toggleDeliverable(member.id, option)} /><span>{option}</span></label>)}</div></article>; })}</div>}</div>
       <details className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6"><summary className="cursor-pointer text-lg font-black text-slate-950">AI 2차 활용: 선택한 준비물 생성</summary><p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">AI 2차 활용은 선택한 유형의 팀장 행동 결과물만 생성하는 단계입니다.</p><div className="mt-4 rounded-2xl border bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h3 className="text-sm font-black text-slate-950">복사용 AI 준비물 생성 프롬프트</h3><p className="mt-1 text-xs font-bold leading-5 text-slate-600">선택한 유형별 분리 정리와 팀장 행동 선택 결과를 바탕으로 실무 준비물 초안을 만듭니다.</p></div><button type="button" className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-black text-white" onClick={() => copyPrompt('prep')}>{copiedPrompt === 'prep' ? '복사 완료' : 'AI 준비물 생성 프롬프트 복사'}</button></div><pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{prepPrompt}</pre></div></details>
       <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><h3 className="text-lg font-black text-slate-950">AI 2차 결과 붙여넣기</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-600">외부 AI가 생성한 준비물 결과를 전체로 붙여넣은 뒤, 선택한 2명 유형별 준비물 초안 칸에 자동으로 채웁니다.</p><textarea className="mt-4 min-h-40 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm leading-6" value={aiPrepResult} onChange={(event) => setAiPrepResult(event.target.value)} placeholder="AI 2차 결과를 여기에 붙여넣으세요. 선택한 유형 이름이 포함되어 있으면 자동분리가 더 잘 됩니다." /><div className="mt-3"><button type="button" className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-black text-white" onClick={autoFillPrepDrafts}>AI 2차 결과를 선택 유형별로 채우기</button><p className="mt-2 text-xs font-bold leading-5 text-slate-600">AI가 제안한 준비물은 초안입니다. 실제 팀원에게 사용할 문장과 행동은 팀장이 수정해 확정하십시오.</p>{prepSplitNotice && <div className="mt-3 rounded-2xl bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-800">{prepSplitNotice}</div>}</div></div>
@@ -124,6 +377,15 @@ export function V38DashboardAnalysisLab() {
   );
 }
 
-function MetricPicker({ title, selected, setter, max, safetyOnly }: { title: string; selected: string[]; setter: Dispatch<SetStateAction<string[]>>; max: number; safetyOnly: boolean }) { const options = METRIC_OPTIONS.filter((item) => safetyOnly ? item.safety : !item.safety); return <div className="mt-4"><p className="text-xs font-black text-slate-700">{title}</p><div className="mt-2 grid gap-2 md:grid-cols-2">{options.map((metric) => { const checked = selected.includes(metric.id); return <label key={metric.id} className={`rounded-2xl border p-3 text-xs font-bold leading-5 ${checked ? 'border-cyan-700 bg-cyan-50 text-cyan-950' : 'bg-white text-slate-700'}`}><div className="flex gap-2"><input type="checkbox" checked={checked} onChange={() => setter((current) => current.includes(metric.id) ? current.filter((item) => item !== metric.id) : current.length >= max ? current : [...current, metric.id])} /><span className="font-black">{metric.name}</span></div><p className="mt-1 text-slate-600">{metric.group} · {metric.meaning}</p><p className="mt-1 text-slate-500">단정 금지: {metric.caution}</p></label>; })}</div></div>; }
-function ReviewTextarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label className="space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea className="min-h-24 w-full rounded-2xl border bg-slate-50 px-3 py-2 text-sm leading-6" value={value} onChange={(event) => onChange(event.target.value)} /></label>; }
-function PrepTextarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label className="space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea className="min-h-24 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={value} onChange={(event) => onChange(event.target.value)} /></label>; }
+function MetricPicker({ title, selected, setter, max, safetyOnly }: { title: string; selected: string[]; setter: Dispatch<SetStateAction<string[]>>; max: number; safetyOnly: boolean }) {
+  const options = METRIC_OPTIONS.filter((item) => (safetyOnly ? item.safety : !item.safety));
+  return <div className="mt-4"><p className="text-xs font-black text-slate-700">{title}</p><div className="mt-2 grid gap-2 md:grid-cols-2">{options.map((metric) => { const checked = selected.includes(metric.id); return <label key={metric.id} className={`rounded-2xl border p-3 text-xs font-bold leading-5 ${checked ? 'border-cyan-700 bg-cyan-50 text-cyan-950' : 'bg-white text-slate-700'}`}><div className="flex gap-2"><input type="checkbox" checked={checked} onChange={() => setter((current) => current.includes(metric.id) ? current.filter((item) => item !== metric.id) : current.length >= max ? current : [...current, metric.id])} /><span className="font-black">{metric.name}</span></div><p className="mt-1 text-slate-600">{metric.group} · {metric.meaning}</p><p className="mt-1 text-slate-500">단정 금지: {metric.caution}</p></label>; })}</div></div>;
+}
+
+function ReviewTextarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <label className="space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea className="min-h-24 w-full rounded-2xl border bg-slate-50 px-3 py-2 text-sm leading-6" value={value} onChange={(event) => onChange(event.target.value)} /></label>;
+}
+
+function PrepTextarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <label className="space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea className="min-h-24 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={value} onChange={(event) => onChange(event.target.value)} /></label>;
+}
