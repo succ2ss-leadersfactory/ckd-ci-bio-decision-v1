@@ -98,6 +98,7 @@ for (const marker of [
   'V38MetricPicker as MetricPicker',
   'V38ReviewTextarea as ReviewTextarea',
   'V38PrepTextarea as PrepTextarea',
+  'V38TeamMemberCard as TeamMemberCard',
   'toggleTeamSituation',
   '상황 선택',
   '우리 팀 상황은 처음부터 선택되어 있지 않습니다',
