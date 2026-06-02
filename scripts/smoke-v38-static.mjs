@@ -41,6 +41,7 @@ const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parser
 const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
 const dashboardAnalysisUi = read('src/journey-v38-dashboard-analysis-ui.tsx');
 const selectedMemberPrepPanel = read('src/journey-v38-selected-member-prep-panel.tsx');
+const actionDeliverablePicker = read('src/journey-v38-action-deliverable-picker.tsx');
 const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
@@ -220,6 +221,18 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38ActionDeliverablePicker',
+  'V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS',
+  'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
+  'type V38TeamMember',
+  '추천 준비물 선택',
+  'onToggleDeliverable',
+  'ACTION_OUTPUT_OPTIONS.map',
+]) {
+  assertIncludes(actionDeliverablePicker, marker, `action deliverable picker marker ${marker}`);
+}
+
+for (const marker of [
   'v38 Dashboard Analysis Lab 리팩터링 맵',
   '현재 책임 분리 구조',
   'src/journey-v38-dashboard-analysis-ui.tsx',
@@ -273,6 +286,7 @@ for (const file of [
   'src/journey-v38-dashboard-analysis-prompts.ts',
   'src/journey-v38-dashboard-analysis-ui.tsx',
   'src/journey-v38-selected-member-prep-panel.tsx',
+  'src/journey-v38-action-deliverable-picker.tsx',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
