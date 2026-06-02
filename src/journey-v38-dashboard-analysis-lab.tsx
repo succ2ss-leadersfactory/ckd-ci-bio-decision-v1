@@ -52,9 +52,9 @@ export function V38DashboardAnalysisLab() {
   const [excludedMetrics, setExcludedMetrics] = useState('');
   const [additionalMetricIdea, setAdditionalMetricIdea] = useState('');
   const [aiRecommendedQuestions, setAiRecommendedQuestions] = useState('');
-  const [selectedCoreMetrics, setSelectedCoreMetrics] = useState<string[]>(['followTalk', 'engagement', 'crm']);
-  const [selectedSupportMetrics, setSelectedSupportMetrics] = useState<string[]>(['followAction', 'learning']);
-  const [selectedSafetyMetrics, setSelectedSafetyMetrics] = useState<string[]>(['compliance']);
+  const [selectedCoreMetrics, setSelectedCoreMetrics] = useState<string[]>([]);
+  const [selectedSupportMetrics, setSelectedSupportMetrics] = useState<string[]>([]);
+  const [selectedSafetyMetrics, setSelectedSafetyMetrics] = useState<string[]>([]);
   const [metricRationale, setMetricRationale] = useState('');
   const [memberPreps, setMemberPreps] = useState<PrepState>({});
   const [aiSignalResult, setAiSignalResult] = useState('');
