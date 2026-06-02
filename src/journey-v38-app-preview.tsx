@@ -40,6 +40,12 @@ const DEFAULT_PROGRESS: V38Progress = {
 
 const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
 
+function scrollV38ToTop() {
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
 function ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -124,12 +130,17 @@ function V38PreviewApp() {
   const [progress, setProgress] = useStored<V38Progress>(V38_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const safeStep = clampV38Step(progress.step);
 
+  const goToStep = (nextStep: number) => {
+    setProgress({ step: clampV38Step(nextStep) });
+    scrollV38ToTop();
+  };
+
   const resetV38Progress = () => {
     window.localStorage.removeItem(V38_STORAGE_KEYS.participant);
     window.localStorage.removeItem(V38_STORAGE_KEYS.progress);
     setParticipant(DEFAULT_PARTICIPANT);
     setProgress(DEFAULT_PROGRESS);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollV38ToTop();
   };
 
   return (
@@ -139,9 +150,9 @@ function V38PreviewApp() {
         subtitle="v38은 DOM 후처리 없이 정식 React 컴포넌트 방식으로 복구·확장하는 미리보기 Journey입니다."
         steps={V38_VISIBLE_APP_STEPS}
         currentStep={safeStep}
-        onPrev={() => setProgress({ step: clampV38Step(safeStep - 1) })}
-        onNext={() => setProgress({ step: clampV38Step(safeStep + 1) })}
-        onStepSelect={(step) => setProgress({ step: clampV38Step(step) })}
+        onPrev={() => goToStep(safeStep - 1)}
+        onNext={() => goToStep(safeStep + 1)}
+        onStepSelect={(step) => goToStep(step)}
       >
         {renderV38Step(safeStep, participant, setParticipant)}
       </JourneyShell>
