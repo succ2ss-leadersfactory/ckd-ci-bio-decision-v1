@@ -27,6 +27,7 @@ import {
   V38ReviewTextarea as ReviewTextarea,
   V38TeamMemberCard as TeamMemberCard,
 } from './journey-v38-dashboard-analysis-ui';
+import { V38ActionDeliverablePicker as ActionDeliverablePicker } from './journey-v38-action-deliverable-picker';
 import { V38SelectedMemberPrepPanel as SelectedMemberPrepPanel } from './journey-v38-selected-member-prep-panel';
 
 type TeamMember = V38TeamMember;
@@ -394,28 +395,15 @@ export function V38DashboardAnalysisLab() {
           <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">유형 2명을 선택하면 행동 선택 영역이 표시됩니다.</div>
         ) : (
           <div className="mt-4 grid gap-4">
-            {selectedTeamMembers.map((member) => {
-              const checkedItems = selectedDeliverables[member.id] ?? [];
-              return (
-                <article key={member.id} className="rounded-3xl border bg-slate-50 p-4">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="font-black text-slate-950">{member.name}</p>
-                      <p className="mt-1 text-xs font-bold text-slate-600">추천: {getSuggestedDeliverables(member.id).join(' / ')}</p>
-                    </div>
-                    <button type="button" className="rounded-2xl border bg-white px-4 py-2 text-xs font-black text-slate-700" onClick={() => applySuggestedDeliverables(member.id)}>추천 준비물 선택</button>
-                  </div>
-                  <div className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                    {ACTION_OUTPUT_OPTIONS.map((option) => (
-                      <label key={option} className={`flex items-start gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${checkedItems.includes(option) ? 'border-cyan-700 bg-white text-cyan-950' : 'bg-white/70 text-slate-700'}`}>
-                        <input type="checkbox" className="mt-1" checked={checkedItems.includes(option)} onChange={() => toggleDeliverable(member.id, option)} />
-                        <span>{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                </article>
-              );
-            })}
+            {selectedTeamMembers.map((member) => (
+              <ActionDeliverablePicker
+                key={member.id}
+                member={member}
+                checkedItems={selectedDeliverables[member.id] ?? []}
+                onApplySuggested={() => applySuggestedDeliverables(member.id)}
+                onToggleDeliverable={(label) => toggleDeliverable(member.id, label)}
+              />
+            ))}
           </div>
         )}
       </div>
