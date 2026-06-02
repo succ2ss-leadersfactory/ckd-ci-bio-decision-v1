@@ -103,6 +103,12 @@ for (const text of [
   '관찰/유지 고객군으로 볼 때',
   '평가 라벨 조합',
   '긍정 신호가 2개 이상',
+  '신재영 대리',
+  '이대은 대리',
+  '박재욱 사원',
+  '유희관 과장',
+  '김문호 차장',
+  '김재호 차장',
   '7단계 판단을 팀원 역할로 바꾸는 기준',
   '집중 고객군 배정 기준',
   '후순위 고객군 배정 기준',
@@ -121,9 +127,9 @@ for (const text of [
   }
 }
 
-for (const forbidden of ['MutationObserver', 'querySelectorAll', 'innerHTML']) {
+for (const forbidden of ['MutationObserver', 'querySelectorAll', 'innerHTML', '김민재 프로', '이서연 프로', '정하늘 프로', '최도윤 프로']) {
   if (v38BundledJs.includes(forbidden)) {
-    fail(`v38 entry bundle must not include DOM post-processing marker: ${forbidden}.`);
+    fail(`v38 entry bundle must not include forbidden marker: ${forbidden}.`);
   }
 }
 
