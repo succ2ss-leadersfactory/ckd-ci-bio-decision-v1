@@ -28,6 +28,7 @@ import {
   V38TeamMemberCard as TeamMemberCard,
 } from './journey-v38-dashboard-analysis-ui';
 import { V38ActionDeliverablePicker as ActionDeliverablePicker } from './journey-v38-action-deliverable-picker';
+import { V38FinalMemberPrepCard as FinalMemberPrepCard } from './journey-v38-final-member-prep-card';
 import { V38SelectedMemberPrepPanel as SelectedMemberPrepPanel } from './journey-v38-selected-member-prep-panel';
 
 type TeamMember = V38TeamMember;
@@ -444,17 +445,12 @@ export function V38DashboardAnalysisLab() {
             {selectedTeamMembers.map((member) => {
               const current = memberPreps[member.id] ?? emptyPrep();
               return (
-                <article key={member.id} className="rounded-3xl border bg-slate-50 p-4">
-                  <p className="font-black text-slate-950">{member.name}</p>
-                  <label className="mt-3 block space-y-1">
-                    <span className="text-xs font-black text-slate-500">AI가 제안한 준비물 초안</span>
-                    <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.aiDraft} onChange={(event) => updatePrep(member.id, 'aiDraft', event.target.value)} />
-                  </label>
-                  <label className="mt-3 block space-y-1">
-                    <span className="text-xs font-black text-slate-500">최종 유형별 다음 행동 준비물</span>
-                    <textarea className="min-h-36 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.finalPrep} onChange={(event) => updatePrep(member.id, 'finalPrep', event.target.value)} />
-                  </label>
-                </article>
+                <FinalMemberPrepCard
+                  key={member.id}
+                  member={member}
+                  current={current}
+                  onUpdate={(field, value) => updatePrep(member.id, field, value)}
+                />
               );
             })}
           </div>
