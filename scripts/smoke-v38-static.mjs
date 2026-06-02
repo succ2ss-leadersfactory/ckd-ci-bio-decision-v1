@@ -17,6 +17,20 @@ function assertIncludes(source, needle, label) {
   }
 }
 
+function assertInOrder(source, needles, label) {
+  let previousIndex = -1;
+  for (const needle of needles) {
+    const currentIndex = source.indexOf(needle);
+    if (currentIndex === -1) {
+      throw new Error(`Missing ${label}: ${needle}`);
+    }
+    if (currentIndex <= previousIndex) {
+      throw new Error(`Wrong order for ${label}: ${needle}`);
+    }
+    previousIndex = currentIndex;
+  }
+}
+
 const html = read('journey-v38-preview.html');
 const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
@@ -60,6 +74,12 @@ for (const componentName of [
 ]) {
   assertIncludes(app, componentName, `v38 app component ${componentName}`);
 }
+
+assertInOrder(
+  dashboardAnalysis,
+  ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'],
+  'dashboard member card order'
+);
 
 for (const marker of [
   'V38DashboardAnalysisLab',
