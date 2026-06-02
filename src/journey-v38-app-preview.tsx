@@ -108,7 +108,7 @@ function renderV38Step(step: number, participant: V38Participant, setParticipant
   if (current.id === 'final-call-plan-card') return <V38FinalCallPlanCard />;
   if (current.id === 'instructor-discussion') return <V38InstructorDiscussionLab />;
 
-  return <ShellCard title={current.title}><p>이 단계는 v38에서 준비 중입니다.</p></ShellCard>;
+  return <ShellCard title={current.title}><p>이 단계는 준비 중입니다.</p></ShellCard>;
 }
 
 function V38ResetControl({ onReset }: { onReset: () => void }) {
@@ -119,7 +119,7 @@ function V38ResetControl({ onReset }: { onReset: () => void }) {
         className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm hover:bg-slate-50"
         onClick={onReset}
       >
-        v38 진행 초기화
+        진행 초기화
       </button>
     </div>
   );
@@ -146,8 +146,8 @@ function V38PreviewApp() {
   return (
     <>
       <JourneyShell
-        title="C1바이오 영업팀장 AI 리더십 Lab Journey v38"
-        subtitle="v38은 DOM 후처리 없이 정식 React 컴포넌트 방식으로 복구·확장하는 미리보기 Journey입니다."
+        title="C1바이오 영업팀장 AI 리더십 Lab Journey"
+        subtitle="영업팀장이 AI를 활용해 고객·팀원·실행 데이터를 해석하고 2주 실행전략을 설계하는 실습 과정입니다."
         steps={V38_VISIBLE_APP_STEPS}
         currentStep={safeStep}
         onPrev={() => goToStep(safeStep - 1)}
