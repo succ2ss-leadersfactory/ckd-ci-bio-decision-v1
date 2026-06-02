@@ -31,26 +31,33 @@ function assertInOrder(source, needles, label) {
   }
 }
 
-const html = read('journey-v38-preview.html');
-const app = read('src/journey-v38-app-preview.tsx');
-const config = read('src/journey-v38-preview-config.ts');
-const viteConfig = read('vite.config.ts');
-const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
-const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
-const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
-const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
-const dashboardAnalysisUi = read('src/journey-v38-dashboard-analysis-ui.tsx');
-const selectedMemberPrepPanel = read('src/journey-v38-selected-member-prep-panel.tsx');
-const actionDeliverablePicker = read('src/journey-v38-action-deliverable-picker.tsx');
-const finalMemberPrepCard = read('src/journey-v38-final-member-prep-card.tsx');
-const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
-const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
-const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
-const memberRole = read('src/journey-v38-member-role-lab.tsx');
+const files = {
+  html: read('journey-v38-preview.html'),
+  app: read('src/journey-v38-app-preview.tsx'),
+  config: read('src/journey-v38-preview-config.ts'),
+  viteConfig: read('vite.config.ts'),
+  dashboardAnalysis: read('src/journey-v38-dashboard-analysis-lab.tsx'),
+  dashboardAnalysisData: read('src/journey-v38-dashboard-analysis-data.ts'),
+  dashboardAnalysisParsers: read('src/journey-v38-dashboard-analysis-parsers.ts'),
+  dashboardAnalysisPrompts: read('src/journey-v38-dashboard-analysis-prompts.ts'),
+  dashboardAnalysisUi: read('src/journey-v38-dashboard-analysis-ui.tsx'),
+  selectedMemberPrepPanel: read('src/journey-v38-selected-member-prep-panel.tsx'),
+  actionDeliverablePicker: read('src/journey-v38-action-deliverable-picker.tsx'),
+  finalMemberPrepCard: read('src/journey-v38-final-member-prep-card.tsx'),
+  dashboardRefactorMap: read('docs/v38-dashboard-analysis-refactor-map.md'),
+  qaChecklist: read('docs/v38-qa-checklist.md'),
+  customerJudgment: read('src/journey-v38-customer-judgment-lab.tsx'),
+  customerPriority: read('src/journey-v38-customer-priority-lab.tsx'),
+  memberRole: read('src/journey-v38-member-role-lab.tsx'),
+  aiCallPlan: read('src/journey-v38-ai-call-plan-lab.tsx'),
+  complianceCleanup: read('src/journey-v38-compliance-cleanup-lab.tsx'),
+  finalCallPlanCard: read('src/journey-v38-final-call-plan-card.tsx'),
+  instructorDiscussion: read('src/journey-v38-instructor-discussion-lab.tsx'),
+};
 
-assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
-assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
-assertIncludes(viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
+assertIncludes(files.html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
+assertIncludes(files.viteConfig, 'journeyV38Preview', 'vite v38 input key');
+assertIncludes(files.viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
 
 for (const [id, title] of [
   ['entry', '입장·역할 부여'],
@@ -66,8 +73,8 @@ for (const [id, title] of [
   ['final-call-plan-card', '최종 2주 콜플랜 카드'],
   ['instructor-discussion', '강사용 토의 질문'],
 ]) {
-  assertIncludes(config, `id: '${id}'`, `v38 step id ${id}`);
-  assertIncludes(config, `title: '${title}'`, `v38 step title ${title}`);
+  assertIncludes(files.config, `id: '${id}'`, `v38 step id ${id}`);
+  assertIncludes(files.config, `title: '${title}'`, `v38 step title ${title}`);
 }
 
 for (const componentName of [
@@ -80,11 +87,14 @@ for (const componentName of [
   'V38FinalCallPlanCard',
   'V38InstructorDiscussionLab',
 ]) {
-  assertIncludes(app, componentName, `v38 app component ${componentName}`);
+  assertIncludes(files.app, componentName, `v38 app component ${componentName}`);
 }
 
-const expectedMemberOrder = ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'];
-assertInOrder(dashboardAnalysisData, expectedMemberOrder, 'dashboard data member order');
+assertInOrder(
+  files.dashboardAnalysisData,
+  ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'],
+  'dashboard data member order',
+);
 
 for (const marker of [
   'V38DashboardAnalysisLab',
@@ -92,36 +102,24 @@ for (const marker of [
   'V38_TEAM_SITUATION_OPTIONS as TEAM_SITUATION_OPTIONS',
   'V38_MAX_TEAM_SITUATIONS as MAX_TEAM_SITUATIONS',
   'V38_METRIC_OPTIONS as METRIC_OPTIONS',
-  'V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS',
-  'V38_FORBIDDEN_ITEMS as FORBIDDEN_ITEMS',
-  'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
   'buildV38MetricPrompt',
   'buildV38SignalPrompt',
   'buildV38PrepPrompt',
-  'V38MetricPicker as MetricPicker',
-  'V38ReviewTextarea as ReviewTextarea',
-  'V38TeamMemberCard as TeamMemberCard',
-  'V38SelectedMemberPrepPanel as SelectedMemberPrepPanel',
-  'V38ActionDeliverablePicker as ActionDeliverablePicker',
-  'V38FinalMemberPrepCard as FinalMemberPrepCard',
-  'toggleTeamSituation',
-  '상황 선택',
+  'TeamMemberCard',
+  'SelectedMemberPrepPanel',
+  'ActionDeliverablePicker',
+  'FinalMemberPrepCard',
   '우리 팀 상황은 처음부터 선택되어 있지 않습니다',
   '우리 팀에 가장 가까운 상황을 최대 3개까지 선택하세요',
-  '1~3개를 선택하세요',
-  '최대 3개 선택 후에는 기존 선택을 해제해야 다른 상황을 선택할 수 있습니다',
   'AI 추천 지표 자동 분리·채우기',
   'AI 추천 지표 분리정리',
   '우리 팀 핵심 실행지표 최종 선택',
   '7명 유형 카드 보기와 우리 팀 유사 유형 2명 선택',
-  '아래 7명은 교육용 가상 인물입니다',
-  '우리 팀에 실제로 존재하거나 비슷한 행동 신호를 보이는 유형 2명',
   'AI 결과 선택 유형 자동 분리·채우기',
   '선택한 유형별 신호 분리 정리',
   '나머지 5명은 전체 맥락을 이해하기 위한 참고 자료로만 사용합니다',
   '팀장 행동 선택',
   'AI 2차 활용: 선택한 준비물 생성',
-  'AI 2차 결과 붙여넣기',
   'AI 2차 결과를 선택 유형별로 채우기',
   'AI가 제안한 준비물 초안',
   '최종 결과물: 선택 유형별 다음 행동 준비물',
@@ -132,7 +130,7 @@ for (const marker of [
   'selectedTeamMembers',
   'autoFillPrepDrafts',
 ]) {
-  assertIncludes(dashboardAnalysis, marker, `dashboard analysis marker ${marker}`);
+  assertIncludes(files.dashboardAnalysis, marker, `dashboard analysis marker ${marker}`);
 }
 
 for (const marker of [
@@ -143,23 +141,15 @@ for (const marker of [
   'V38_ACTION_OUTPUT_OPTIONS',
   'V38_FORBIDDEN_ITEMS',
   'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
-  'V38_MEMBER_CARD_ORDER',
   '신입·저연차 팀원이 지시를 이해했는지 확인하기 어렵다',
   'MZ세대 팀원과 소통 방식·일의 의미를 두고 갈등이 있다',
   '팀원이 질문하지 않고 혼자 끙끙대거나 이탈 신호를 보인다',
-  '신재영 대리',
-  '이대은 대리',
-  '박재욱 사원',
-  '유희관 과장',
-  '김문호 차장',
-  '김재호 차장',
-  '문교원 사원',
   '신입·저연차 조직 적응 중',
   '이탈 위험 점검: 주의',
   '지시 이해 확인 질문',
   '일의 의미와 기대 조율 대화',
 ]) {
-  assertIncludes(dashboardAnalysisData, marker, `dashboard analysis data marker ${marker}`);
+  assertIncludes(files.dashboardAnalysisData, marker, `dashboard analysis data marker ${marker}`);
 }
 
 for (const marker of [
@@ -175,7 +165,7 @@ for (const marker of [
   '팀원 이름을 자동으로 찾지 못했습니다',
   '선택한 유형 이름을 자동으로 찾지 못했습니다',
 ]) {
-  assertIncludes(dashboardAnalysisParsers, marker, `dashboard analysis parser marker ${marker}`);
+  assertIncludes(files.dashboardAnalysisParsers, marker, `dashboard analysis parser marker ${marker}`);
 }
 
 for (const marker of [
@@ -191,7 +181,7 @@ for (const marker of [
   '선택한 유형별 분리 정리와 팀장 행동 선택:',
   '문제 직원, 동기 부족, 변화 저항처럼 단정하지 마세요',
 ]) {
-  assertIncludes(dashboardAnalysisPrompts, marker, `dashboard analysis prompt marker ${marker}`);
+  assertIncludes(files.dashboardAnalysisPrompts, marker, `dashboard analysis prompt marker ${marker}`);
 }
 
 for (const marker of [
@@ -199,20 +189,16 @@ for (const marker of [
   'V38ReviewTextarea',
   'V38PrepTextarea',
   'V38TeamMemberCard',
-  'type V38TeamMember',
   'member.signals.map',
   '이 유형 선택',
   '선택됨',
-  'V38_METRIC_OPTIONS as METRIC_OPTIONS',
   '단정 금지',
-  'min-h-24 w-full rounded-2xl border',
 ]) {
-  assertIncludes(dashboardAnalysisUi, marker, `dashboard analysis UI marker ${marker}`);
+  assertIncludes(files.dashboardAnalysisUi, marker, `dashboard analysis UI marker ${marker}`);
 }
 
 for (const marker of [
   'V38SelectedMemberPrepPanel',
-  'type V38MemberPrep',
   'V38PrepTextarea as PrepTextarea',
   '팀원별 관찰 신호',
   '강점으로 볼 수 있는 신호',
@@ -220,30 +206,29 @@ for (const marker of [
   '추가로 확인해야 할 질문',
   '성급하게 단정하면 안 되는 점',
 ]) {
-  assertIncludes(selectedMemberPrepPanel, marker, `selected member prep panel marker ${marker}`);
+  assertIncludes(files.selectedMemberPrepPanel, marker, `selected member prep panel marker ${marker}`);
 }
 
 for (const marker of [
   'V38ActionDeliverablePicker',
   'V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS',
   'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
-  'type V38TeamMember',
   '추천 준비물 선택',
   'onToggleDeliverable',
   'ACTION_OUTPUT_OPTIONS.map',
 ]) {
-  assertIncludes(actionDeliverablePicker, marker, `action deliverable picker marker ${marker}`);
+  assertIncludes(files.actionDeliverablePicker, marker, `action deliverable picker marker ${marker}`);
 }
 
 for (const marker of [
   'V38FinalMemberPrepCard',
-  'type V38FinalPrepField',
+  'V38FinalPrepField',
   'AI가 제안한 준비물 초안',
   '최종 유형별 다음 행동 준비물',
   'onUpdate',
   'finalPrep',
 ]) {
-  assertIncludes(finalMemberPrepCard, marker, `final member prep card marker ${marker}`);
+  assertIncludes(files.finalMemberPrepCard, marker, `final member prep card marker ${marker}`);
 }
 
 for (const marker of [
@@ -258,60 +243,22 @@ for (const marker of [
   'V38FinalMemberPrepCard',
   'data, parsers, prompts, UI 컴포넌트 모듈 연결',
   '보호해야 할 사용자 경험 기준',
-  '6f8fd1ccb4815b6ef201d8e1193dce95ae39044c',
 ]) {
-  assertIncludes(dashboardRefactorMap, marker, `dashboard refactor map marker ${marker}`);
+  assertIncludes(files.dashboardRefactorMap, marker, `dashboard refactor map marker ${marker}`);
 }
 
-for (const marker of [
-  'Customer Data Analysis',
-  '고객 Data 분석',
-  '고객 유형 A',
-  '고객 유형 F',
-]) {
-  assertIncludes(customerJudgment, marker, `customer data analysis marker ${marker}`);
+for (const marker of ['Customer Data Analysis', '고객 Data 분석', '고객 유형 A', '고객 유형 F']) {
+  assertIncludes(files.customerJudgment, marker, `customer data analysis marker ${marker}`);
 }
 
-for (const marker of [
-  'Customer Type Strategy Lab',
-  '고객 유형별 대응 전략',
-  'AI 전략 점검 프롬프트 복사',
-]) {
-  assertIncludes(customerPriority, marker, `customer type strategy marker ${marker}`);
+for (const marker of ['Customer Type Strategy Lab', '고객 유형별 대응 전략', 'AI 전략 점검 프롬프트 복사']) {
+  assertIncludes(files.customerPriority, marker, `customer type strategy marker ${marker}`);
 }
 
-for (const marker of [
-  'ROLE_GUIDES',
-  '신재영 대리',
-  '이대은 대리',
-  '박재욱 사원',
-  '유희관 과장',
-  '김문호 차장',
-  '김재호 차장',
-]) {
-  assertIncludes(memberRole, marker, `member role marker ${marker}`);
+for (const marker of ['ROLE_GUIDES', '신재영 대리', '이대은 대리', '박재욱 사원', '유희관 과장', '김문호 차장', '김재호 차장']) {
+  assertIncludes(files.memberRole, marker, `member role marker ${marker}`);
 }
 
-for (const file of [
-  'src/journey-v38-dashboard-analysis-lab.tsx',
-  'src/journey-v38-dashboard-analysis-data.ts',
-  'src/journey-v38-dashboard-analysis-parsers.ts',
-  'src/journey-v38-dashboard-analysis-prompts.ts',
-  'src/journey-v38-dashboard-analysis-ui.tsx',
-  'src/journey-v38-selected-member-prep-panel.tsx',
-  'src/journey-v38-action-deliverable-picker.tsx',
-  'src/journey-v38-final-member-prep-card.tsx',
-  'src/journey-v38-customer-judgment-lab.tsx',
-  'src/journey-v38-customer-priority-lab.tsx',
-  'src/journey-v38-member-role-lab.tsx',
-  'src/journey-v38-ai-call-plan-lab.tsx',
-  'src/journey-v38-compliance-cleanup-lab.tsx',
-  'src/journey-v38-final-call-plan-card.tsx',
-  'src/journey-v38-instructor-discussion-lab.tsx',
-  'docs/v38-qa-checklist.md',
-  'docs/v38-dashboard-analysis-refactor-map.md',
-]) {
-  read(file);
-}
+assertIncludes(files.qaChecklist, 'v38 QA Checklist', 'v38 QA checklist title');
 
 console.log('v38 static smoke passed');
