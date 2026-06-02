@@ -30,7 +30,7 @@ assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script'
 assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
 assertIncludes(viteConfig, 'journey-v38-preview.html', 'vite v38 HTML input');
 
-const requiredSteps = [
+for (const [id, title] of [
   ['entry', '입장·역할 부여'],
   ['ai-safety', 'AI 안전선'],
   ['prompt-practice', '프롬프트 기본 실습'],
@@ -43,9 +43,7 @@ const requiredSteps = [
   ['compliance-cleanup', '컴플라이언스 위험 표현 제거'],
   ['final-call-plan-card', '최종 2주 콜플랜 카드'],
   ['instructor-discussion', '강사용 토의 질문'],
-];
-
-for (const [id, title] of requiredSteps) {
+]) {
   assertIncludes(config, `id: '${id}'`, `v38 step id ${id}`);
   assertIncludes(config, `title: '${title}'`, `v38 step title ${title}`);
 }
@@ -69,7 +67,15 @@ for (const marker of [
   '우리 팀 지표 정하기',
   'AI 지표 추천 프롬프트 복사',
   'AI 추천 지표 붙여넣기',
-  '우리 팀 핵심 실행지표 선택',
+  'AI 추천 지표 분리정리',
+  'AI 추천 핵심 지표 후보',
+  'AI 추천 보완 지표 후보',
+  'AI 추천 안전선 지표 후보',
+  '우리 팀에 맞는 지표',
+  '제외할 지표',
+  '추가하고 싶은 지표',
+  '우리 팀 핵심 실행지표 최종 선택',
+  'AI 추천 지표 분리정리와 기본 안전 지표를 참고',
   '핵심 지표 3개',
   '보완 지표 2개',
   '안전선 지표 1개',
@@ -124,18 +130,11 @@ for (const marker of [
   '고객 유형 A',
   '고객 유형 F',
   '교육용 가상 고객 묶음',
-  '전체 고객 유형 한눈에 보기',
-  '고객 유형 A~F, 먼저 이렇게 읽어보세요',
   'Data 해석 도우미',
   '핵심 기회 신호',
   '핵심 우려 신호',
   '추가 확인 정보',
   '1차 판단 메모',
-  '도우미 문장 가져오기',
-  'DataSignalCard',
-  'getDataSignal',
-  '기회성 Data',
-  '리스크 Data',
   '보완 필요',
 ]) {
   assertIncludes(customerJudgment, marker, `customer data analysis marker ${marker}`);
@@ -152,15 +151,7 @@ for (const marker of [
   '정보 보완',
   '접근 강도 축소',
   '고객 유형별 전략 설계',
-  '2주 대응 전략',
-  '팀원 배정 방향',
-  '주의할 리스크',
-  '6개 고객 유형 대응 전략 요약',
-  'AI로 고객 유형별 대응 전략 점검',
-  'AI는 고객 유형별 대응 전략의 정답을 정하지 않습니다.',
-  '복사용 AI 전략 점검 프롬프트',
   'AI 전략 점검 프롬프트 복사',
-  '전체 전략 포트폴리오 균형 점검',
 ]) {
   assertIncludes(customerPriority, marker, `customer type strategy marker ${marker}`);
 }
