@@ -148,11 +148,9 @@ npm run smoke:v38
 
 ## 7. 현재 안정 커밋 기준
 
-반복 UI 컴포넌트 분리 전환 후 마지막 확인 기준은 CI 통과 커밋으로 갱신한다.
+반복 UI 컴포넌트 분리, QA 체크리스트 갱신, static smoke 안정화, dist smoke 보강을 포함한 최신 안정 기준은 다음 커밋이다.
 
-최근 확인된 안정 기준:
-
-- `6f8fd1ccb4815b6ef201d8e1193dce95ae39044c`
+- `324614b996601286e3550817b47974fe962b6d6c`
 
 해당 커밋에서 확인된 CI:
 
@@ -161,4 +159,12 @@ npm run smoke:v38
 - `v36 Smoke`: success
 - `v38 Smoke`: success
 
-이후 `FinalMemberPrepCard` 실제 연결 커밋은 CI 확인 후 안정 기준으로 승격한다.
+이 안정 기준에는 다음 변경이 포함된다.
+
+- `V38TeamMemberCard` 실제 연결
+- `V38SelectedMemberPrepPanel` 실제 연결
+- `V38ActionDeliverablePicker` 실제 연결
+- `V38FinalMemberPrepCard` 실제 연결
+- 5단계 최신 구조 기준 QA 체크리스트 갱신
+- `smoke-v38-static.mjs` 진단형 구조로 안정화
+- `smoke-v38-dist.mjs` 5단계 핵심 흐름 보호 marker 보강
