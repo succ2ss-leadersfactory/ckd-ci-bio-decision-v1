@@ -1,0 +1,85 @@
+name: v38 Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v38:
+    name: Run v38 smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v38 static smoke check
+        run: npm run smoke:v38:static
+
+      - name: Run v38 scoped TypeScript check
+        run: npm run typecheck:v38
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Run integrated v38 smoke check
+        run: npm run smoke:v38
+
+      - name: Write v38 smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v38 Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v38:static"
+            echo "- npm run typecheck:v38"
+            echo "- npm run build"
+            echo "- npm run smoke:v38"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains the v34 operating route."
+            echo "- /journey-v36-preview.html remains preserved for customer demo review."
+            echo "- /journey-v38-preview.html is the only v38 development route."
+            echo "- v38 must not use DOM post-processing or MutationObserver-based screen rewriting."
+            echo ""
+            echo "## v38 scope"
+            echo ""
+            echo "- 12-step Journey shell"
+            echo "- Entry and role assignment"
+            echo "- AI safety, prompt practice, research strategy, team execution diagnosis"
+            echo "- Customer judgment integrated card lab"
+            echo "- Customer priority selection"
+            echo "- Member role direction"
+            echo "- AI call plan request prompt"
+            echo "- Compliance cleanup"
+            echo "- Final two-week call plan card"
+            echo "- Instructor discussion questions"
+            echo "- v38 localStorage reset control"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Open /journey-v38-preview.html in the browser."
+            echo "2. Confirm all 12 steps are visible in the step bar."
+            echo "3. Move from Step 1 to Step 12 using Next."
+            echo "4. Confirm v38 reset control clears only v38 localStorage keys."
+            echo "5. Confirm /journey.html and /journey-v36-preview.html are unchanged."
+          } >> "$GITHUB_STEP_SUMMARY"
