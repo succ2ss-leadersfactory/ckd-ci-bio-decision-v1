@@ -77,21 +77,23 @@ for (const componentName of [
 }
 
 const expectedMemberOrder = ['김재호 차장', '김문호 차장', '유희관 과장', '이대은 대리', '신재영 대리', '박재욱 사원', '문교원 사원'];
-assertInOrder(dashboardAnalysis, expectedMemberOrder, 'dashboard member card order');
 assertInOrder(dashboardAnalysisData, expectedMemberOrder, 'dashboard data member order');
 
 for (const marker of [
   'V38DashboardAnalysisLab',
-  'MAX_TEAM_SITUATIONS',
+  'V38_TEAM_MEMBERS as TEAM_MEMBERS',
+  'V38_TEAM_SITUATION_OPTIONS as TEAM_SITUATION_OPTIONS',
+  'V38_MAX_TEAM_SITUATIONS as MAX_TEAM_SITUATIONS',
+  'V38_METRIC_OPTIONS as METRIC_OPTIONS',
+  'V38_ACTION_OUTPUT_OPTIONS as ACTION_OUTPUT_OPTIONS',
+  'V38_FORBIDDEN_ITEMS as FORBIDDEN_ITEMS',
+  'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
   'toggleTeamSituation',
   '상황 선택',
   '우리 팀 상황은 처음부터 선택되어 있지 않습니다',
   '우리 팀에 가장 가까운 상황을 최대 3개까지 선택하세요',
   '1~3개를 선택하세요',
   '최대 3개 선택 후에는 기존 선택을 해제해야 다른 상황을 선택할 수 있습니다',
-  '신입·저연차 팀원이 지시를 이해했는지 확인하기 어렵다',
-  'MZ세대 팀원과 소통 방식·일의 의미를 두고 갈등이 있다',
-  '팀원이 질문하지 않고 혼자 끙끙대거나 이탈 신호를 보인다',
   'AI 추천 지표 자동 분리·채우기',
   'AI 추천 지표 분리정리',
   '우리 팀 핵심 실행지표 최종 선택',
@@ -113,17 +115,6 @@ for (const marker of [
   'selectedMemberTypeIds',
   'selectedTeamMembers',
   'autoFillPrepDrafts',
-  '신재영 대리',
-  '이대은 대리',
-  '박재욱 사원',
-  '유희관 과장',
-  '김문호 차장',
-  '김재호 차장',
-  '문교원 사원',
-  '신입·저연차 조직 적응 중',
-  '이탈 위험 점검: 주의',
-  '지시 이해 확인 질문',
-  '일의 의미와 기대 조율 대화',
 ]) {
   assertIncludes(dashboardAnalysis, marker, `dashboard analysis marker ${marker}`);
 }
@@ -137,6 +128,15 @@ for (const marker of [
   'V38_FORBIDDEN_ITEMS',
   'V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID',
   'V38_MEMBER_CARD_ORDER',
+  '신입·저연차 팀원이 지시를 이해했는지 확인하기 어렵다',
+  'MZ세대 팀원과 소통 방식·일의 의미를 두고 갈등이 있다',
+  '팀원이 질문하지 않고 혼자 끙끙대거나 이탈 신호를 보인다',
+  '신재영 대리',
+  '이대은 대리',
+  '박재욱 사원',
+  '유희관 과장',
+  '김문호 차장',
+  '김재호 차장',
   '문교원 사원',
   '신입·저연차 조직 적응 중',
   '이탈 위험 점검: 주의',
