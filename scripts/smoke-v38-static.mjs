@@ -21,6 +21,7 @@ const html = read('journey-v38-preview.html');
 const app = read('src/journey-v38-app-preview.tsx');
 const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
+const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 const memberRole = read('src/journey-v38-member-role-lab.tsx');
@@ -50,6 +51,7 @@ for (const [id, title] of requiredSteps) {
 }
 
 for (const componentName of [
+  'V38DashboardAnalysisLab',
   'V38CustomerJudgmentLab',
   'V38CustomerPriorityLab',
   'V38MemberRoleLab',
@@ -59,6 +61,25 @@ for (const componentName of [
   'V38InstructorDiscussionLab',
 ]) {
   assertIncludes(app, componentName, `v38 app component ${componentName}`);
+}
+
+for (const marker of [
+  'V38DashboardAnalysisLab',
+  'AI 1차 활용: 실행 Data 관찰 질문 만들기',
+  '참여자 1차 결과물: 팀원 실행 신호 메모 초안',
+  'AI 2차 활용: 초안을 팀원 실행 신호 메모로 다듬기',
+  '최종 결과물: 팀원 실행 신호 메모',
+  'AI 관찰 질문 프롬프트 복사',
+  'AI 메모 다듬기 프롬프트 복사',
+  '팀원 실행 신호 메모 완성본',
+  '신재영 대리',
+  '이대은 대리',
+  '박재욱 사원',
+  '유희관 과장',
+  '김문호 차장',
+  '김재호 차장',
+]) {
+  assertIncludes(dashboardAnalysis, marker, `dashboard analysis marker ${marker}`);
 }
 
 for (const marker of [
@@ -123,6 +144,7 @@ for (const marker of [
 }
 
 for (const file of [
+  'src/journey-v38-dashboard-analysis-lab.tsx',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
