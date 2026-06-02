@@ -86,14 +86,21 @@ for (const marker of [
 
 for (const marker of [
   'DECISION_GUIDES',
+  'findCustomerOption',
+  'selectedOption',
+  'reasonHint',
   '선택 기준 먼저 잡기',
+  '선택한 고객군 신호',
+  '추천 역할',
+  '선택 이유 작성 힌트',
+  '고객군을 선택하면 6단계 Data 평가 라벨과 연결된 선택 이유 힌트가 표시됩니다.',
   '집중 고객군으로 볼 때',
   '후순위 고객군으로 볼 때',
   '관찰/유지 고객군으로 볼 때',
   '평가 라벨 조합',
   '긍정 신호가 2개 이상',
 ]) {
-  assertIncludes(customerPriority, marker, `customer priority decision guide marker ${marker}`);
+  assertIncludes(customerPriority, marker, `customer priority selected signal marker ${marker}`);
 }
 
 const requiredFiles = [
