@@ -50,6 +50,7 @@ const files = {
   dashboardRefactorMap: read('docs/v38-dashboard-analysis-refactor-map.md'),
   qaChecklist: read('docs/v38-qa-checklist.md'),
   screenQaGuide: read('docs/v38-screen-qa-guide.md'),
+  finalReadinessSummary: read('docs/v38-final-readiness-summary.md'),
   customerJudgment: read('src/journey-v38-customer-judgment-lab.tsx'),
   customerPriority: read('src/journey-v38-customer-priority-lab.tsx'),
   memberRole: read('src/journey-v38-member-role-lab.tsx'),
@@ -237,6 +238,16 @@ checkMany(files.screenQaGuide, 'screen QA guide marker', [
   'AI 자동분리 3종',
   '문교원 사원 카드가 표시되지 않는다',
   '고객사 시연 또는 파일럿용으로 사용 가능하다',
+]);
+
+checkMany(files.finalReadinessSummary, 'final readiness summary marker', [
+  'v38 Final Readiness Summary',
+  '현재 결론',
+  '완료된 핵심 개발 범위',
+  '완료된 리팩터링 범위',
+  '완료된 보호 기준',
+  '고객사 시연 전 남은 작업',
+  '최종 판정 문장',
 ]);
 
 checkMany(files.customerJudgment, 'customer data analysis marker', ['v38 Customer Data Analysis', '고객 Data 분석', '고객 유형 A', '고객 유형 F']);
