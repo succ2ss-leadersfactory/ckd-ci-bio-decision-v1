@@ -63,6 +63,19 @@ for (const componentName of requiredComponentImports) {
 }
 
 for (const marker of [
+  'FEATURE_SUMMARIES',
+  '6개 고객군, 먼저 이렇게 읽어보세요',
+  '아래 요약은 정답이 아니라 고객군을 읽기 위한 첫 인상입니다.',
+  '핵심 특징',
+  '강한 신호',
+  '주의 신호',
+  '판단 질문',
+  '반응 상승과 후속 가능성이 뚜렷하게 보이는 고객군입니다.',
+  '기회성은 높지만 고객이 아직 결정을 보류하는 고객군입니다.',
+  '관계는 안정적이지만 변화 신호는 약한 고객군입니다.',
+  '접촉은 많지만 반응이 낮고 피로 신호가 보이는 고객군입니다.',
+  '기회 신호가 강하지만 컴플라이언스 안전선 관리가 중요한 고객군입니다.',
+  '관계는 있으나 최근 판단 Data가 부족한 고객군입니다.',
   'DataSignalCard',
   'getDataSignal',
   'getGroupedData',
@@ -72,7 +85,6 @@ for (const marker of [
   '리스크 Data',
   '긍정 신호',
   '판단 유보',
-  '주의 신호',
   '보완 필요',
   '아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다.',
   '우선 검토할 가치가 높은 고객군입니다.',
@@ -81,7 +93,7 @@ for (const marker of [
   '고객 부담과 접촉 피로를 점검합니다.',
   '분류 전에 기록 정리가 필요합니다.',
 ]) {
-  assertIncludes(customerJudgment, marker, `customer judgment data interpretation marker ${marker}`);
+  assertIncludes(customerJudgment, marker, `customer judgment feature summary marker ${marker}`);
 }
 
 for (const marker of [
