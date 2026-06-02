@@ -65,13 +65,23 @@ for (const componentName of requiredComponentImports) {
 for (const marker of [
   'DataSignalCard',
   'getDataSignal',
+  'getGroupedData',
+  '기회성 Data',
+  '반응성 Data',
+  '실행 가능성 Data',
+  '리스크 Data',
   '긍정 신호',
   '판단 유보',
   '주의 신호',
   '보완 필요',
   '아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다.',
+  '우선 검토할 가치가 높은 고객군입니다.',
+  '방문 자체보다 이후 반응과 후속 행동 여부가 더 중요합니다.',
+  '실행은 가능하지만 표현과 자료 활용 안전선을 먼저 확인해야 합니다.',
+  '고객 부담과 접촉 피로를 점검합니다.',
+  '분류 전에 기록 정리가 필요합니다.',
 ]) {
-  assertIncludes(customerJudgment, marker, `customer judgment data signal marker ${marker}`);
+  assertIncludes(customerJudgment, marker, `customer judgment data interpretation marker ${marker}`);
 }
 
 for (const marker of [
