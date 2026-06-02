@@ -7,7 +7,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 최신 안정 기준 커밋:
 
 ```text
-ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d
+4474ef9e3d27d6f2b00ae2039ecdac0c552d4272
 ```
 
 해당 커밋 기준 확인된 CI:
@@ -17,6 +17,12 @@ ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d
 - `v36 Smoke`: success
 - `v38 Smoke`: success
 
+실제 v38 Preview 확인 URL:
+
+```text
+https://ckd-ci-bio-decision-v1-r714a1aen.vercel.app/journey-v38-preview.html
+```
+
 이 안정 기준은 다음 범위를 포함한다.
 
 - v38 5단계 팀원 실행진단 UI 분리
@@ -25,6 +31,7 @@ ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d
 - QA 체크리스트 최신화
 - 화면 QA 가이드 추가 및 보호
 - 화면 QA 결과 기록지 추가 및 보호
+- 실제 v38 Preview URL 기록
 - 최종 준비 상태 요약 추가 및 보호
 - static smoke 진단형 구조 안정화
 - dist smoke 5단계 핵심 흐름 보호 강화
@@ -147,7 +154,8 @@ ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d
 | 문교원 사원 추가 | 구현 완료 |
 | smoke 보호 | static/dist 모두 최신화 |
 | QA 문서 | 최신화 완료 |
-| 고객사 시연 가능성 | 화면 QA 통과 시 가능 |
+| Vercel 배포 상태 | GitHub commit status 기준 success |
+| 고객사 시연 가능성 | 실제 화면 QA 통과 시 가능 |
 
 ---
 
