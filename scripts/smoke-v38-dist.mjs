@@ -34,8 +34,8 @@ if (!distHtml.includes('journey-root')) {
   fail('dist/journey-v38-preview.html must include #journey-root.');
 }
 
-if (!distHtml.includes('<title>C1바이오 v38 Preview</title>')) {
-  fail('dist/journey-v38-preview.html must include the v38 title.');
+if (!distHtml.includes('<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>')) {
+  fail('dist/journey-v38-preview.html must include the client-facing v38 title.');
 }
 
 const v38ScriptPaths = extractModuleScriptPaths(distHtml);
@@ -53,7 +53,8 @@ if (assetFiles.length === 0) {
 const v38BundledJs = v38ScriptPaths.map((file) => readText(file)).join('\n');
 
 for (const text of [
-  'C1바이오 영업팀장 AI 리더십 Lab Journey v38',
+  'C1바이오 영업팀장 AI 리더십 Lab Journey',
+  '영업팀장이 AI를 활용해 고객·팀원·실행 데이터를 해석하고 2주 실행전략을 설계하는 실습 과정입니다.',
   '입장·역할 부여',
   'AI 안전선',
   '프롬프트 기본 실습',
@@ -66,7 +67,7 @@ for (const text of [
   '컴플라이언스 위험 표현 제거',
   '최종 2주 콜플랜 카드',
   '강사용 토의 질문',
-  'v38 진행 초기화',
+  '진행 초기화',
   '우리 팀 지표로 다음 행동 준비하기',
   '우리 팀 상황은 처음부터 선택되어 있지 않습니다',
   '우리 팀에 가장 가까운 상황을 최대 3개까지 선택하세요',
@@ -121,9 +122,9 @@ for (const text of [
   }
 }
 
-for (const forbidden of ['MutationObserver', 'querySelectorAll', 'innerHTML', '김민재 프로', '이서연 프로', '정하늘 프로', '최도윤 프로']) {
-  if (v38BundledJs.includes(forbidden)) {
-    fail(`v38 entry bundle must not include forbidden marker: ${forbidden}.`);
+for (const forbidden of ['김민재 프로', '이서연 프로', '정하늘 프로', '최도윤 프로', 'v38 진행 초기화', 'C1바이오 v38 Preview']) {
+  if (v38BundledJs.includes(forbidden) || distHtml.includes(forbidden)) {
+    fail(`v38 client-facing bundle must not include forbidden marker: ${forbidden}.`);
   }
 }
 
