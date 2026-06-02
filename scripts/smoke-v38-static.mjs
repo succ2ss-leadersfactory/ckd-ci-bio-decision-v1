@@ -23,6 +23,7 @@ const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
+const memberRole = read('src/journey-v38-member-role-lab.tsx');
 
 assertIncludes(html, '/src/journey-v38-app-preview.tsx', 'v38 HTML entry script');
 assertIncludes(viteConfig, 'journeyV38Preview', 'vite v38 input key');
@@ -113,6 +114,24 @@ for (const marker of [
   '긍정 신호가 2개 이상',
 ]) {
   assertIncludes(customerPriority, marker, `customer priority selected signal marker ${marker}`);
+}
+
+for (const marker of [
+  'ROLE_GUIDES',
+  '7단계 판단을 팀원 역할로 바꾸는 기준',
+  '집중 고객군 배정 기준',
+  '후순위 고객군 배정 기준',
+  '관찰/유지 고객군 배정 기준',
+  '고객군 우선순위는 팀원 배정으로 이어질 때 실행력이 생깁니다.',
+  '강점:',
+  '코칭 초점:',
+  '선택한 고객군 배정 힌트',
+  '우선순위 성격:',
+  '배정 방향:',
+  '담당 고객군을 선택하면 7단계 우선순위 판단과 연결된 배정 힌트가 표시됩니다.',
+  '이 요약은 9단계 AI 콜플랜 결과물 요청에서 팀원별 실행 역할을 설명하는 기준으로 활용합니다.',
+]) {
+  assertIncludes(memberRole, marker, `member role connection marker ${marker}`);
 }
 
 const requiredFiles = [
