@@ -122,7 +122,6 @@ checkMany(files.dashboardAnalysis, 'dashboard analysis marker', [
   '팀장 행동 선택',
   'AI 2차 활용: 선택한 준비물 생성',
   'AI 2차 결과를 선택 유형별로 채우기',
-  'AI가 제안한 준비물 초안',
   '최종 결과물: 선택 유형별 다음 행동 준비물',
   'parseAiMetricSuggestion',
   'parseAiSignalResultByMember',
