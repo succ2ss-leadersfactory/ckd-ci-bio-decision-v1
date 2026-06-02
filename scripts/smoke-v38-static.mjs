@@ -103,6 +103,7 @@ for (const marker of [
   'V38TeamMemberCard as TeamMemberCard',
   'V38SelectedMemberPrepPanel as SelectedMemberPrepPanel',
   'V38ActionDeliverablePicker as ActionDeliverablePicker',
+  'V38FinalMemberPrepCard as FinalMemberPrepCard',
   'toggleTeamSituation',
   '상황 선택',
   '우리 팀 상황은 처음부터 선택되어 있지 않습니다',
