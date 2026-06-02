@@ -18,6 +18,7 @@
 | `scripts/smoke-v38-dist.mjs` | 빌드 결과 보호 기준 | 실제 bundle에 포함되어야 할 사용자 화면 문구와 금지 문구 확인 |
 | `docs/v38-qa-checklist.md` | 개발자·검증자용 QA 체크리스트 | 5단계 기능 QA, 6~8단계 연결 QA, 모바일/컴플라이언스 QA |
 | `docs/v38-screen-qa-guide.md` | 강사·운영자용 화면 QA 가이드 | 고객사 시연 전 15~30분 화면 점검 순서, 통과/보류 판정 기준 |
+| `docs/v38-screen-qa-result.md` | 강사·운영자용 화면 QA 결과 기록지 | 실제 화면 점검 결과, 발견 이슈, 최종 판정 기록 |
 | `docs/v38-final-readiness-summary.md` | 최종 준비 상태 요약 | 완료 범위, 안정 커밋, 시연 전 남은 작업, 후속 고도화 후보 정리 |
 
 ## 2. 수정 원칙
@@ -151,9 +152,9 @@ npm run smoke:v38
 
 ## 7. 현재 안정 커밋 기준
 
-반복 UI 컴포넌트 분리, QA 체크리스트 갱신, 화면 QA 가이드 추가·보호, 최종 준비 상태 요약, static smoke 안정화, dist smoke 보강, 최종 준비 상태 요약의 안정 기준 갱신을 포함한 최신 안정 기준은 다음 커밋이다.
+반복 UI 컴포넌트 분리, QA 체크리스트 갱신, 화면 QA 가이드 추가·보호, 화면 QA 결과 기록지 추가·보호, 최종 준비 상태 요약, static smoke 안정화, dist smoke 보강, 최종 준비 상태 요약의 안정 기준 갱신을 포함한 최신 안정 기준은 다음 커밋이다.
 
-- `cf7a0e3c062c229a4db3d71292ac4f26160f1d0b`
+- `ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d`
 
 해당 커밋에서 확인된 CI:
 
@@ -170,8 +171,9 @@ npm run smoke:v38
 - `V38FinalMemberPrepCard` 실제 연결
 - 5단계 최신 구조 기준 QA 체크리스트 갱신
 - 강사·운영자용 `v38-screen-qa-guide.md` 추가
+- 강사·운영자용 `v38-screen-qa-result.md` 추가
 - 최종 준비 상태 요약 `v38-final-readiness-summary.md` 추가
 - `v38-final-readiness-summary.md` 안정 기준 갱신
 - `smoke-v38-static.mjs` 진단형 구조로 안정화
-- `smoke-v38-static.mjs`에서 화면 QA 가이드와 최종 준비 상태 요약 보호
+- `smoke-v38-static.mjs`에서 화면 QA 가이드, QA 결과 기록지, 최종 준비 상태 요약 보호
 - `smoke-v38-dist.mjs` 5단계 핵심 흐름 보호 marker 보강
