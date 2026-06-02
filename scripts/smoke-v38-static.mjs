@@ -49,6 +49,7 @@ const files = {
   finalMemberPrepCard: read('src/journey-v38-final-member-prep-card.tsx'),
   dashboardRefactorMap: read('docs/v38-dashboard-analysis-refactor-map.md'),
   qaChecklist: read('docs/v38-qa-checklist.md'),
+  screenQaGuide: read('docs/v38-screen-qa-guide.md'),
   customerJudgment: read('src/journey-v38-customer-judgment-lab.tsx'),
   customerPriority: read('src/journey-v38-customer-priority-lab.tsx'),
   memberRole: read('src/journey-v38-member-role-lab.tsx'),
@@ -227,6 +228,15 @@ checkMany(files.dashboardRefactorMap, 'dashboard refactor map marker', [
   'V38FinalMemberPrepCard',
   'data, parsers, prompts, UI 컴포넌트 모듈 연결',
   '보호해야 할 사용자 경험 기준',
+]);
+
+checkMany(files.screenQaGuide, 'screen QA guide marker', [
+  'v38 화면 QA 가이드',
+  '5분 빠른 정상성 확인',
+  '5단계 핵심 흐름 QA',
+  'AI 자동분리 3종',
+  '문교원 사원 카드가 표시되지 않는다',
+  '고객사 시연 또는 파일럿용으로 사용 가능하다',
 ]);
 
 checkMany(files.customerJudgment, 'customer data analysis marker', ['v38 Customer Data Analysis', '고객 Data 분석', '고객 유형 A', '고객 유형 F']);
