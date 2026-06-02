@@ -7,7 +7,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 최신 안정 기준 커밋:
 
 ```text
-5a1ce224db1ee3a62dacf2f2d7aa03779fcab20e
+ec34d8e3e9ac8fe40cf961148ae513ccbe84bd9d
 ```
 
 해당 커밋 기준 확인된 CI:
@@ -24,6 +24,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 - AI 자동분리 3종
 - QA 체크리스트 최신화
 - 화면 QA 가이드 추가 및 보호
+- 화면 QA 결과 기록지 추가 및 보호
 - 최종 준비 상태 요약 추가 및 보호
 - static smoke 진단형 구조 안정화
 - dist smoke 5단계 핵심 흐름 보호 강화
@@ -102,6 +103,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 - 리팩터링 맵
 - QA 체크리스트
 - 화면 QA 가이드
+- 화면 QA 결과 기록지
 - 최종 준비 상태 요약
 
 ### 4.2 Dist smoke
@@ -128,6 +130,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 | `docs/v38-dashboard-analysis-refactor-map.md` | 5단계 리팩터링 구조와 유지보수 기준 |
 | `docs/v38-qa-checklist.md` | 개발자·검증자용 상세 QA 체크리스트 |
 | `docs/v38-screen-qa-guide.md` | 강사·운영자용 15~30분 화면 QA 가이드 |
+| `docs/v38-screen-qa-result.md` | 강사·운영자용 화면 QA 결과 기록지 |
 | `docs/v38-final-readiness-summary.md` | 현재 최종 준비 상태 요약 |
 
 ---
@@ -157,10 +160,11 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 1. 최신 Vercel 배포 URL 접속
 2. `/journey-v38-preview.html` 경로 확인
 3. `docs/v38-screen-qa-guide.md` 기준 15~30분 화면 QA 수행
-4. P0/P1/P2/P3 이슈 기록
-5. P0/P1만 우선 수정
-6. 수정 후 `npm run smoke:v38` 및 GitHub Actions 확인
-7. 고객사 시연용 안정 버전 확정
+4. `docs/v38-screen-qa-result.md`에 결과 기록
+5. P0/P1/P2/P3 이슈 기록
+6. P0/P1만 우선 수정
+7. 수정 후 `npm run smoke:v38` 및 GitHub Actions 확인
+8. 고객사 시연용 안정 버전 확정
 
 ---
 
