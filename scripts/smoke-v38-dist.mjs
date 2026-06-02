@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, normalize } from 'node:path';
 
 const failures = [];
 
@@ -23,6 +23,11 @@ function listFiles(dir) {
   });
 }
 
+function extractModuleScriptPaths(html) {
+  const matches = [...html.matchAll(/<script\b[^>]*type=["']module["'][^>]*src=["']([^"']+\.js)["'][^>]*>/gs)];
+  return matches.map((match) => normalize(join('dist', match[1].replace(/^\//, ''))));
+}
+
 const distHtml = readText('dist/journey-v38-preview.html');
 
 if (!distHtml.includes('journey-root')) {
@@ -33,7 +38,8 @@ if (!distHtml.includes('<title>C1바이오 v38 Preview</title>')) {
   fail('dist/journey-v38-preview.html must include the v38 title.');
 }
 
-if (!/<script\b[^>]*type=["']module["'][^>]*src=["'][^"']+\.js["'][^>]*>/s.test(distHtml)) {
+const v38ScriptPaths = extractModuleScriptPaths(distHtml);
+if (v38ScriptPaths.length === 0) {
   fail('dist/journey-v38-preview.html must include a bundled module script.');
 }
 
@@ -44,7 +50,7 @@ if (assetFiles.length === 0) {
   fail('dist/assets must include bundled assets.');
 }
 
-const bundledJs = assetFiles.filter((file) => file.endsWith('.js')).map((file) => readText(file)).join('\n');
+const v38BundledJs = v38ScriptPaths.map((file) => readText(file)).join('\n');
 
 for (const text of [
   'C1바이오 영업팀장 AI 리더십 Lab Journey v38',
@@ -62,14 +68,14 @@ for (const text of [
   '강사용 토의 질문',
   'v38 진행 초기화',
 ]) {
-  if (!bundledJs.includes(text)) {
-    fail(`v38 dist bundle must include ${text}.`);
+  if (!v38BundledJs.includes(text)) {
+    fail(`v38 entry bundle must include ${text}.`);
   }
 }
 
 for (const forbidden of ['MutationObserver', 'querySelectorAll', 'innerHTML']) {
-  if (bundledJs.includes(forbidden)) {
-    fail(`v38 dist bundle must not include DOM post-processing marker: ${forbidden}.`);
+  if (v38BundledJs.includes(forbidden)) {
+    fail(`v38 entry bundle must not include DOM post-processing marker: ${forbidden}.`);
   }
 }
 
