@@ -151,9 +151,9 @@ npm run smoke:v38
 
 ## 7. 현재 안정 커밋 기준
 
-반복 UI 컴포넌트 분리, QA 체크리스트 갱신, 화면 QA 가이드 추가·보호, 최종 준비 상태 요약, static smoke 안정화, dist smoke 보강을 포함한 최신 안정 기준은 다음 커밋이다.
+반복 UI 컴포넌트 분리, QA 체크리스트 갱신, 화면 QA 가이드 추가·보호, 최종 준비 상태 요약, static smoke 안정화, dist smoke 보강, 최종 준비 상태 요약의 안정 기준 갱신을 포함한 최신 안정 기준은 다음 커밋이다.
 
-- `a952e2a9d4c633463e4b4c4240a44c9f8c306dd0`
+- `cf7a0e3c062c229a4db3d71292ac4f26160f1d0b`
 
 해당 커밋에서 확인된 CI:
 
@@ -171,6 +171,7 @@ npm run smoke:v38
 - 5단계 최신 구조 기준 QA 체크리스트 갱신
 - 강사·운영자용 `v38-screen-qa-guide.md` 추가
 - 최종 준비 상태 요약 `v38-final-readiness-summary.md` 추가
+- `v38-final-readiness-summary.md` 안정 기준 갱신
 - `smoke-v38-static.mjs` 진단형 구조로 안정화
 - `smoke-v38-static.mjs`에서 화면 QA 가이드와 최종 준비 상태 요약 보호
 - `smoke-v38-dist.mjs` 5단계 핵심 흐름 보호 marker 보강
