@@ -46,12 +46,30 @@ const TEAM_MEMBERS = [
 ];
 
 const AI_LENS_OPTIONS = [
-  '활동량과 실행 품질을 구분해 볼 질문',
-  '고객 반응과 후속 대화 연결을 확인할 질문',
-  'CRM 기록과 실제 실행의 차이를 확인할 질문',
-  '팀 학습 공유와 개인 성과의 균형을 확인할 질문',
-  '컴플라이언스·AI 입력 안전선을 확인할 질문',
-  '팀장 편향과 성급한 단정을 점검할 질문',
+  {
+    title: '열심히만 한 건 아닐까?',
+    promptGuide: '활동량, 방문 횟수, 콜 횟수와 실제 고객 반응, 후속 대화, 다음 행동 연결 여부를 구분할 수 있는 관찰 질문을 만들어 주세요.',
+  },
+  {
+    title: '고객이 실제로 반응했나?',
+    promptGuide: '고객이 단순히 만남에 응한 것인지, 실제 관심·질문·자료 요청·후속 미팅·추가 확인 행동으로 이어졌는지 확인할 질문을 만들어 주세요.',
+  },
+  {
+    title: '약속한 다음 행동을 했나?',
+    promptGuide: '방문이나 콜 이후 약속한 후속조치, CRM 기록, 자료 전달, 다음 미팅 준비, 고객 반응 기록이 실제로 남아 있는지 확인할 질문을 만들어 주세요.',
+  },
+  {
+    title: '왜 잘 안 되고 있을까?',
+    promptGuide: '팀원의 실행 부진을 성급하게 태도 문제로 보지 않도록 역량 부족, 동기 저하, 목표 이해 부족, 실행 환경 제약, 고객 상황 변화 중 무엇과 관련되는지 확인할 질문을 만들어 주세요.',
+  },
+  {
+    title: '위험한 말이나 행동은 없나?',
+    promptGuide: '제약영업 맥락에서 무리한 표현, 처방 유도처럼 보일 수 있는 표현, 승인되지 않은 자료 활용, 과잉 접촉, 실제 고객정보나 민감정보의 AI 입력 위험을 확인할 질문을 만들어 주세요.',
+  },
+  {
+    title: '내가 오해하고 있진 않나?',
+    promptGuide: '팀장이 활동량, 최근 사건, 선호하는 팀원, 조용한 팀원, 성과 수치 하나만 보고 성급하게 판단하지 않도록 편향 점검 질문을 만들어 주세요.',
+  },
 ];
 
 const AI_REFINEMENT_OPTIONS = [
@@ -112,9 +130,9 @@ function formatMemberInput(member: typeof TEAM_MEMBERS[number], memo?: SignalMem
 
 export function V38DashboardAnalysisLab() {
   const [selectedLensOptions, setSelectedLensOptions] = useState<string[]>([
-    AI_LENS_OPTIONS[0],
-    AI_LENS_OPTIONS[1],
-    AI_LENS_OPTIONS[5],
+    AI_LENS_OPTIONS[0].title,
+    AI_LENS_OPTIONS[1].title,
+    AI_LENS_OPTIONS[5].title,
   ]);
   const [selectedRefinementOptions, setSelectedRefinementOptions] = useState<string[]>([
     AI_REFINEMENT_OPTIONS[0],
@@ -135,28 +153,36 @@ export function V38DashboardAnalysisLab() {
     [memos],
   );
 
+  const selectedLensDetails = useMemo(
+    () => AI_LENS_OPTIONS.filter((option) => selectedLensOptions.includes(option.title)),
+    [selectedLensOptions],
+  );
+
   const lensPrompt = useMemo(() => [
     '당신은 제약영업 팀장의 팀원 실행 Data 해석을 돕는 리더십 코치입니다.',
     '',
     '아래 자료는 교육용 가상 팀원 실행 Data입니다. 실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 내부 민감정보는 포함하지 않습니다.',
     '',
     'AI는 팀원에 대한 평가나 정답 진단을 제시하지 마세요.',
-    '대신 팀장이 Data를 볼 때 놓치지 말아야 할 관찰 질문과 확인 관점만 제안해 주세요.',
+    '대신 팀장이 1차 메모를 작성하기 전에 확인해야 할 관찰 질문과 확인 관점만 제안해 주세요.',
     '',
     '반드시 피할 것:',
     ...FORBIDDEN_ITEMS.map((item) => `- ${item}`),
     '',
-    '점검받고 싶은 관점:',
-    ...(selectedLensOptions.length > 0 ? selectedLensOptions.map((item, index) => `${index + 1}. ${item}`) : ['1. 팀원 실행 Data를 볼 때 필요한 관찰 질문을 제안해 주세요.']),
+    '선택한 화면 질문과 AI용 세부 지시:',
+    ...(selectedLensDetails.length > 0
+      ? selectedLensDetails.map((item, index) => `${index + 1}. ${item.title}\n   - ${item.promptGuide}`)
+      : ['1. 팀원 실행 Data를 볼 때 필요한 관찰 질문을 제안해 주세요.']),
     '',
     '팀원 실행 Data:',
     ...TEAM_MEMBERS.flatMap((member, index) => [`${index + 1}. ${member.name}`, `- 프로필: ${member.profile}`, `- 관찰 장면: ${member.observation}`, `- 주요 실행 Data: ${member.signals.join(' / ')}`, '']),
     '출력 형식:',
-    '1. 팀원이 아니라 Data를 먼저 보게 하는 질문 5개',
-    '2. 활동량·실행 품질·고객 반응·팀 학습·안전선 관점별 확인 질문',
-    '3. 팀장이 성급하게 단정하지 않기 위해 확인할 질문',
-    '4. 1on1에서 추가로 확인할 질문 예시',
-  ].join('\n'), [selectedLensOptions]);
+    '선택한 각 관점별로 아래 형식을 반복해 주세요.',
+    '- 핵심 질문 3개',
+    '- 이 관점이 필요한 이유 1줄',
+    '- 1on1에서 바로 쓸 수 있는 질문 문장 1개',
+    '- 성급하게 단정하지 말아야 할 점 1개',
+  ].join('\n'), [selectedLensDetails]);
 
   const refinementPrompt = useMemo(() => [
     '당신은 제약영업 팀장의 팀원 실행 신호 메모를 다듬는 리더십 코치입니다.',
@@ -298,11 +324,11 @@ export function V38DashboardAnalysisLab() {
         </p>
         <div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {AI_LENS_OPTIONS.map((option) => {
-            const checked = selectedLensOptions.includes(option);
+            const checked = selectedLensOptions.includes(option.title);
             return (
-              <label key={option} className={`flex items-start gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${checked ? 'border-indigo-700 bg-white text-indigo-950' : 'bg-white/70 text-slate-700'}`}>
-                <input type="checkbox" className="mt-1" checked={checked} onChange={() => toggleLensOption(option)} />
-                <span>{option}</span>
+              <label key={option.title} className={`flex items-start gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${checked ? 'border-indigo-700 bg-white text-indigo-950' : 'bg-white/70 text-slate-700'}`}>
+                <input type="checkbox" className="mt-1" checked={checked} onChange={() => toggleLensOption(option.title)} />
+                <span>{option.title}</span>
               </label>
             );
           })}
@@ -311,7 +337,7 @@ export function V38DashboardAnalysisLab() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-sm font-black text-slate-950">복사용 AI 관찰 질문 프롬프트</h3>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">프롬프트에는 교육용 가상 팀원 Data만 포함됩니다. 실제 고객정보나 제품명은 입력하지 않습니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">화면에는 쉬운 질문이 보이지만, 프롬프트에는 AI가 깊이 이해할 수 있도록 세부 지시가 함께 들어갑니다.</p>
             </div>
             <button type="button" className="rounded-2xl bg-indigo-700 px-4 py-3 text-sm font-black text-white" onClick={() => copyPrompt('lens')}>{copiedPrompt === 'lens' ? '복사 완료' : 'AI 관찰 질문 프롬프트 복사'}</button>
           </div>
