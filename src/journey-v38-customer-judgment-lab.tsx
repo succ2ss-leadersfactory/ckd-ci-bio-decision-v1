@@ -177,7 +177,7 @@ export function V38CustomerJudgmentLab() {
             <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v38 Customer Judgment Lab</p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">고객군 후보별 Data 읽기와 분류하기</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              고객군 후보 하나를 보고, 같은 카드 안에서 Data 확인·분류 도우미·최종 분류·분류 이유 작성을 완료합니다.
+              고객군 후보 하나를 펼쳐서 Data 확인·분류 도우미·최종 분류·분류 이유 작성을 완료합니다. 모바일에서는 필요한 고객군만 열어 판단할 수 있습니다.
             </p>
           </div>
           <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-black text-cyan-800">
@@ -198,88 +198,92 @@ export function V38CustomerJudgmentLab() {
         </div>
       </div>
 
-      {CUSTOMER_GROUPS.map((group) => {
+      {CUSTOMER_GROUPS.map((group, index) => {
         const selectedSegment = classifications[group.id]?.segment ?? '';
         const reason = classifications[group.id]?.reason ?? '';
         return (
-          <article key={group.id} className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs font-black text-cyan-700">Data 기반 분류</p>
-                <h3 className="mt-1 text-xl font-black text-slate-950">{group.label}</h3>
-              </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
-                {selectedSegment || '미분류'}
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <DataBox title="기회성" text={group.summary.opportunity} />
-              <DataBox title="반응성" text={group.summary.response} />
-              <DataBox title="실행 가능성" text={group.summary.feasibility} />
-              <DataBox title="리스크" text={group.summary.risk} />
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {group.signals.map((signal) => (
-                <span key={signal} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">#{signal}</span>
-              ))}
-            </div>
-
-            <details className="mt-4 rounded-2xl border bg-slate-50 p-4">
-              <summary className="cursor-pointer text-sm font-black text-slate-800">전체 13개 Data 다시 보기</summary>
-              <div className="mt-3 grid gap-2 md:grid-cols-3">
-                {group.fullData.map((item) => (
-                  <span key={item} className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700">{item}</span>
-                ))}
-              </div>
-            </details>
-
-            <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-              <p className="text-sm font-black text-emerald-900">분류 도우미</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-3">
-                <HelperBox title="Q1. 가장 강한 신호는?" text={group.helper.q1} />
-                <HelperBox title="Q2. 2주 행동 방향은?" text={group.helper.q2} />
-                <HelperBox title="Q3. 가장 큰 주의점은?" text={group.helper.q3} />
-              </div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl bg-white p-4">
-                  <p className="text-xs font-black text-slate-500">가까운 후보</p>
-                  <p className="mt-1 font-black text-emerald-800">{group.helper.primary}</p>
+          <details key={group.id} className="rounded-3xl border bg-white shadow-sm" open={index === 0}>
+            <summary className="cursor-pointer list-none p-5 md:p-6">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-xs font-black text-cyan-700">Data 기반 분류</p>
+                  <h3 className="mt-1 text-xl font-black text-slate-950">{group.label}</h3>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{group.signals.join(' · ')}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-4">
-                  <p className="text-xs font-black text-slate-500">함께 검토할 후보</p>
-                  <p className="mt-1 font-black text-emerald-800">{group.helper.secondary}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
+                    {selectedSegment || '미분류'}
+                  </span>
+                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">
+                    펼쳐서 판단하기
+                  </span>
                 </div>
               </div>
-              <p className="mt-3 rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-slate-700">
-                <span className="font-black text-slate-950">분류 이유 초안: </span>{group.helper.reason}
-              </p>
-            </div>
+            </summary>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <label className="space-y-1">
-                <span className="text-xs font-black text-slate-500">최종 고객군 분류</span>
-                <select
-                  className="min-h-12 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold text-slate-900"
-                  value={selectedSegment}
-                  onChange={(event) => updateClassification(group.id, 'segment', event.target.value)}
-                >
-                  <option value="">선택하세요</option>
-                  {SEGMENT_TYPES.map((segment) => <option key={segment} value={segment}>{segment}</option>)}
-                </select>
-              </label>
-              <label className="space-y-1">
-                <span className="text-xs font-black text-slate-500">내 분류 이유</span>
-                <textarea
-                  className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
-                  value={reason}
-                  onChange={(event) => updateClassification(group.id, 'reason', event.target.value)}
-                  placeholder="예: 후속 미팅 가능성은 높지만 표현 리스크가 있어 안전선 확인 후 집중해야 한다."
-                />
-              </label>
+            <div className="border-t px-5 pb-5 md:px-6 md:pb-6">
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <DataBox title="기회성" text={group.summary.opportunity} />
+                <DataBox title="반응성" text={group.summary.response} />
+                <DataBox title="실행 가능성" text={group.summary.feasibility} />
+                <DataBox title="리스크" text={group.summary.risk} />
+              </div>
+
+              <details className="mt-4 rounded-2xl border bg-slate-50 p-4">
+                <summary className="cursor-pointer text-sm font-black text-slate-800">전체 13개 Data 다시 보기</summary>
+                <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  {group.fullData.map((item) => (
+                    <span key={item} className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700">{item}</span>
+                  ))}
+                </div>
+              </details>
+
+              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                <p className="text-sm font-black text-emerald-900">분류 도우미</p>
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  <HelperBox title="Q1. 가장 강한 신호는?" text={group.helper.q1} />
+                  <HelperBox title="Q2. 2주 행동 방향은?" text={group.helper.q2} />
+                  <HelperBox title="Q3. 가장 큰 주의점은?" text={group.helper.q3} />
+                </div>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl bg-white p-4">
+                    <p className="text-xs font-black text-slate-500">가까운 후보</p>
+                    <p className="mt-1 font-black text-emerald-800">{group.helper.primary}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4">
+                    <p className="text-xs font-black text-slate-500">함께 검토할 후보</p>
+                    <p className="mt-1 font-black text-emerald-800">{group.helper.secondary}</p>
+                  </div>
+                </div>
+                <p className="mt-3 rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-slate-700">
+                  <span className="font-black text-slate-950">분류 이유 초안: </span>{group.helper.reason}
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">최종 고객군 분류</span>
+                  <select
+                    className="min-h-12 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold text-slate-900"
+                    value={selectedSegment}
+                    onChange={(event) => updateClassification(group.id, 'segment', event.target.value)}
+                  >
+                    <option value="">선택하세요</option>
+                    {SEGMENT_TYPES.map((segment) => <option key={segment} value={segment}>{segment}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">내 분류 이유</span>
+                  <textarea
+                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                    value={reason}
+                    onChange={(event) => updateClassification(group.id, 'reason', event.target.value)}
+                    placeholder="예: 후속 미팅 가능성은 높지만 표현 리스크가 있어 안전선 확인 후 집중해야 한다."
+                  />
+                </label>
+              </div>
             </div>
-          </article>
+          </details>
         );
       })}
     </section>
