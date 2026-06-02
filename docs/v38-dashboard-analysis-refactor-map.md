@@ -9,7 +9,8 @@
 | `src/journey-v38-dashboard-analysis-data.ts` | 교육 콘텐츠 데이터 | 팀원 유형 추가, 팀원 순서 변경, 상황 선택지 수정, 지표 후보 수정, 준비물 선택지 수정 |
 | `src/journey-v38-dashboard-analysis-parsers.ts` | AI 결과 자동분리 로직 | AI 추천 지표 파싱 개선, 팀원별 신호 분리 개선, 준비물 초안 분리 개선 |
 | `src/journey-v38-dashboard-analysis-prompts.ts` | 외부 AI에 복사할 프롬프트 생성 | 지표 추천 프롬프트 수정, 팀원 신호 정리 프롬프트 수정, 준비물 생성 프롬프트 수정 |
-| `src/journey-v38-dashboard-analysis-lab.tsx` | 화면, 상태, 사용자 진행 흐름 | 입력 UI, 버튼, 안내문, 화면 배치, 사용자 상호작용 수정 |
+| `src/journey-v38-dashboard-analysis-ui.tsx` | 반복 UI 하위 컴포넌트 | 지표 선택 카드, 검토 입력칸, 준비물 입력칸의 표시 방식 수정 |
+| `src/journey-v38-dashboard-analysis-lab.tsx` | 화면, 상태, 사용자 진행 흐름 | 입력 UI 배치, 버튼, 안내문, 화면 섹션 순서, 사용자 상호작용 수정 |
 | `scripts/smoke-v38-static.mjs` | 정적 보호 기준 | 주요 문구, import 구조, 데이터 순서, 모듈 존재 여부 보호 |
 | `scripts/smoke-v38-dist.mjs` | 빌드 결과 보호 기준 | 실제 bundle에 포함되어야 할 사용자 화면 문구와 금지 문구 확인 |
 
@@ -53,7 +54,18 @@
 
 컴포넌트 안에 긴 프롬프트 배열을 다시 만들지 않는다.
 
-### 2.4 컴포넌트는 사용자 흐름만 담당한다
+### 2.4 반복 UI 수정은 ui 파일에서 먼저 검토한다
+
+아래 반복 UI는 `journey-v38-dashboard-analysis-ui.tsx`에서 관리한다.
+
+- `V38MetricPicker`
+- `V38ReviewTextarea`
+- `V38PrepTextarea`
+
+지표 카드의 표현 방식, 입력칸 스타일, 공통 입력 컴포넌트의 클래스 수정은 먼저 ui 파일에서 처리한다.
+단, 특정 화면 흐름이나 섹션 배치 자체를 바꾸는 경우에는 `journey-v38-dashboard-analysis-lab.tsx`에서 처리한다.
+
+### 2.5 컴포넌트는 사용자 흐름만 담당한다
 
 `journey-v38-dashboard-analysis-lab.tsx`는 다음만 담당한다.
 
@@ -63,6 +75,7 @@
 - 입력값 반영
 - 파서 결과를 입력칸에 채우기
 - 프롬프트 복사
+- data, parsers, prompts, ui 모듈 연결
 
 ## 3. 보호해야 할 사용자 경험 기준
 
@@ -112,12 +125,10 @@ npm run smoke:v38
 
 ## 6. 앞으로의 권장 리팩터링 순서
 
-1. 5단계 UI 하위 컴포넌트 분리
-   - `MetricPicker`
-   - `ReviewTextarea`
-   - `PrepTextarea`
+1. 5단계 UI 하위 컴포넌트 추가 분리
    - `TeamMemberCard`
    - `SelectedMemberPrepPanel`
+   - `ActionDeliverablePicker`
 2. 상태 로직 hook 분리 검토
    - 단, 교육장 파일럿 전에는 과도한 hook 분리는 피한다.
 3. 자동분리 파서 단위 테스트 추가
@@ -129,9 +140,9 @@ npm run smoke:v38
 
 ## 7. 현재 안정 커밋 기준
 
-프롬프트 모듈 import 전환 및 static smoke 보호 후 기준 커밋:
+UI 모듈 import 전환 및 static smoke 보호 후 기준 커밋:
 
-- `a814b9fd38d3cab76bdaf1e0c398611f5f7042ce`
+- `2fdfeafc7a3d902f5d2c589e545261ee274d3cc5`
 
 해당 커밋에서 확인된 CI:
 
