@@ -37,6 +37,7 @@ const config = read('src/journey-v38-preview-config.ts');
 const viteConfig = read('vite.config.ts');
 const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
 const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
+const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 const memberRole = read('src/journey-v38-member-role-lab.tsx');
@@ -147,6 +148,22 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38MemberPrep',
+  'V38MetricParseResult',
+  'V38SignalParseResult',
+  'V38PrepDraftParseResult',
+  'createEmptyV38MemberPrep',
+  'cleanV38Markdown',
+  'parseV38AiMetricSuggestion',
+  'parseV38AiSignalResultByMember',
+  'parseV38AiPrepDraftByMember',
+  '팀원 이름을 자동으로 찾지 못했습니다',
+  '선택한 유형 이름을 자동으로 찾지 못했습니다',
+]) {
+  assertIncludes(dashboardAnalysisParsers, marker, `dashboard analysis parser marker ${marker}`);
+}
+
+for (const marker of [
   'Customer Data Analysis',
   '고객 Data 분석',
   '고객 유형 A',
@@ -178,6 +195,7 @@ for (const marker of [
 for (const file of [
   'src/journey-v38-dashboard-analysis-lab.tsx',
   'src/journey-v38-dashboard-analysis-data.ts',
+  'src/journey-v38-dashboard-analysis-parsers.ts',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
