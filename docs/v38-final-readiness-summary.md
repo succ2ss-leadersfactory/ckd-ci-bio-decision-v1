@@ -7,7 +7,7 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 최신 안정 기준 커밋:
 
 ```text
-65b9e8ae776ebe85ea8323224121c8e9524344ad
+5a1ce224db1ee3a62dacf2f2d7aa03779fcab20e
 ```
 
 해당 커밋 기준 확인된 CI:
@@ -17,18 +17,17 @@ v38 Preview는 고객사 시연 전 코드·문서·자동 검증 기준에서 �
 - `v36 Smoke`: success
 - `v38 Smoke`: success
 
-이후 문서 안정 기준 갱신 커밋:
+이 안정 기준은 다음 범위를 포함한다.
 
-```text
-e4e441444b7acb2a293aff7ca28f585c90a075f5
-```
-
-해당 커밋 기준 확인된 CI:
-
-- `C1Bio MVP CI`: success
-- `v35 Smoke`: success
-- `v36 Smoke`: success
-- `v38 Smoke`: success
+- v38 5단계 팀원 실행진단 UI 분리
+- 7명 유형 카드와 문교원 사원 추가
+- AI 자동분리 3종
+- QA 체크리스트 최신화
+- 화면 QA 가이드 추가 및 보호
+- 최종 준비 상태 요약 추가 및 보호
+- static smoke 진단형 구조 안정화
+- dist smoke 5단계 핵심 흐름 보호 강화
+- 리팩터링 맵 최신화
 
 ---
 
@@ -103,6 +102,7 @@ e4e441444b7acb2a293aff7ca28f585c90a075f5
 - 리팩터링 맵
 - QA 체크리스트
 - 화면 QA 가이드
+- 최종 준비 상태 요약
 
 ### 4.2 Dist smoke
 
