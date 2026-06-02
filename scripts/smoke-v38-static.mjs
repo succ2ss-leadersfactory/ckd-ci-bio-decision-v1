@@ -51,6 +51,7 @@ const files = {
   qaChecklist: read('docs/v38-qa-checklist.md'),
   screenQaGuide: read('docs/v38-screen-qa-guide.md'),
   screenQaResult: read('docs/v38-screen-qa-result.md'),
+  functionalQaSamples: read('docs/v38-functional-qa-test-samples.md'),
   finalReadinessSummary: read('docs/v38-final-readiness-summary.md'),
   customerJudgment: read('src/journey-v38-customer-judgment-lab.tsx'),
   customerPriority: read('src/journey-v38-customer-priority-lab.tsx'),
@@ -251,6 +252,17 @@ checkMany(files.screenQaResult, 'screen QA result marker', [
   'AI 2차 준비물 자동 채우기',
   '발견 이슈 기록',
   '최종 판정',
+]);
+
+checkMany(files.functionalQaSamples, 'functional QA sample marker', [
+  'v38 기능 클릭 QA 테스트 샘플',
+  'AI 추천 지표 자동 분리·채우기',
+  'AI 결과 선택 유형 자동 분리·채우기',
+  'AI 2차 결과를 선택 유형별로 채우기',
+  '박재욱 사원',
+  '문교원 사원',
+  '빠른 판정 기준',
+  'docs/v38-screen-qa-result.md',
 ]);
 
 checkMany(files.finalReadinessSummary, 'final readiness summary marker', [
