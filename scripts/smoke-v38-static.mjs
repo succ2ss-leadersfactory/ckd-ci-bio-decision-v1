@@ -39,6 +39,7 @@ const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
 const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
 const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
 const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
+const dashboardAnalysisUi = read('src/journey-v38-dashboard-analysis-ui.tsx');
 const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
@@ -185,6 +186,17 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38MetricPicker',
+  'V38ReviewTextarea',
+  'V38PrepTextarea',
+  'V38_METRIC_OPTIONS as METRIC_OPTIONS',
+  '단정 금지',
+  'min-h-24 w-full rounded-2xl border',
+]) {
+  assertIncludes(dashboardAnalysisUi, marker, `dashboard analysis UI marker ${marker}`);
+}
+
+for (const marker of [
   'v38 Dashboard Analysis Lab 리팩터링 맵',
   '현재 책임 분리 구조',
   '수정 원칙',
@@ -231,6 +243,7 @@ for (const file of [
   'src/journey-v38-dashboard-analysis-data.ts',
   'src/journey-v38-dashboard-analysis-parsers.ts',
   'src/journey-v38-dashboard-analysis-prompts.ts',
+  'src/journey-v38-dashboard-analysis-ui.tsx',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
