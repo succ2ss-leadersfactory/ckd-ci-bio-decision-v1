@@ -63,6 +63,15 @@ for (const componentName of [
 
 for (const marker of [
   'V38DashboardAnalysisLab',
+  'MetricParseResult',
+  'parseAiMetricSuggestion',
+  'metricParsePreview',
+  '분리 결과 미리보기',
+  'AI 추천 지표 자동 분리',
+  '분리 결과 적용',
+  '자동 분리는 초안입니다',
+  'AI 추천 확인 질문',
+  'PreviewBox',
   '우리 팀 지표로 다음 행동 준비하기',
   '우리 팀 지표 정하기',
   'AI 지표 추천 프롬프트 복사',
