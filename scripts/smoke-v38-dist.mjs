@@ -67,6 +67,12 @@ for (const text of [
   '최종 2주 콜플랜 카드',
   '강사용 토의 질문',
   'v38 진행 초기화',
+  '전체 13개 Data 다시 보기',
+  '긍정 신호',
+  '판단 유보',
+  '주의 신호',
+  '보완 필요',
+  '아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다.',
 ]) {
   if (!v38BundledJs.includes(text)) {
     fail(`v38 entry bundle must include ${text}.`);
