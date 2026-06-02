@@ -149,6 +149,57 @@ const CUSTOMER_GROUPS = [
   },
 ];
 
+const FEATURE_SUMMARIES = [
+  {
+    id: 'G1',
+    label: '고객군 후보 1',
+    feature: '반응 상승과 후속 가능성이 뚜렷하게 보이는 고객군입니다.',
+    strongSignal: '고객 등급 A, 잠재력 높음, 자료 요청, 후속 미팅 동의가 함께 나타납니다.',
+    caution: '컴플라이언스 중간 신호가 있어 실행 전 표현과 자료 활용 안전선을 확인해야 합니다.',
+    question: '2주 안에 안전하게 후속 대화로 연결할 수 있는가?',
+  },
+  {
+    id: 'G2',
+    label: '고객군 후보 2',
+    feature: '기회성은 높지만 고객이 아직 결정을 보류하는 고객군입니다.',
+    strongSignal: '고객 등급 A, 잠재력 높음, 관계 수준 높음, 자료 요청이 있습니다.',
+    caution: '후속 미팅 보류와 기존 치료 유지 선호가 있어 속도 조절이 필요합니다.',
+    question: '지금 밀어붙일 것인가, 보류 이유와 니즈를 먼저 확인할 것인가?',
+  },
+  {
+    id: 'G3',
+    label: '고객군 후보 3',
+    feature: '관계는 안정적이지만 변화 신호는 약한 고객군입니다.',
+    strongSignal: '관계 수준 높음, 접촉 성공률 높음, CRM 기록 충실이 있습니다.',
+    caution: '자료 요청과 후속 미팅이 없어 즉시 실행 신호는 약합니다.',
+    question: '집중보다 유지 품질과 반응 변화 관찰이 더 적합한가?',
+  },
+  {
+    id: 'G4',
+    label: '고객군 후보 4',
+    feature: '접촉은 많지만 반응이 낮고 피로 신호가 보이는 고객군입니다.',
+    strongSignal: '최근 접촉은 많지만 긍정 반응이나 후속 행동으로 이어지지 않았습니다.',
+    caution: '무반응 증가, 접촉 성공률 저하, 후속조치 완료율 저하, 컴플라이언스 높음이 있습니다.',
+    question: '더 접촉하기보다 접근 강도와 메시지를 줄여야 하는가?',
+  },
+  {
+    id: 'G5',
+    label: '고객군 후보 5',
+    feature: '기회 신호가 강하지만 컴플라이언스 안전선 관리가 중요한 고객군입니다.',
+    strongSignal: '고객 등급 A, 잠재력 높음, 질문 증가, 후속 미팅 동의가 있습니다.',
+    caution: '컴플라이언스 높음과 근거자료 확인 필요가 있어 표현 안전선 관리가 중요합니다.',
+    question: '집중하되 어떤 표현과 자료 범위 안에서 움직여야 하는가?',
+  },
+  {
+    id: 'G6',
+    label: '고객군 후보 6',
+    feature: '관계는 있으나 최근 판단 Data가 부족한 고객군입니다.',
+    strongSignal: '관계 수준은 높지만 실행 판단 근거는 제한적입니다.',
+    caution: '4주 콜 0회, CRM 기록 부족, 후속조치 완료율 낮음이 있습니다.',
+    question: '분류보다 정보 보완과 기록 정리가 먼저 필요한가?',
+  },
+];
+
 type ClassificationState = Record<string, { segment: string; reason: string }>;
 type SignalLabel = '긍정 신호' | '판단 유보' | '주의 신호' | '보완 필요';
 type DataCategory = '기회성 Data' | '반응성 Data' | '실행 가능성 Data' | '리스크 Data';
@@ -366,6 +417,24 @@ export function V38CustomerJudgmentLab() {
           ))}
         </div>
       </div>
+
+      <details className="rounded-3xl border border-cyan-100 bg-cyan-50 p-5 shadow-sm md:p-6">
+        <summary className="cursor-pointer text-lg font-black text-slate-950">6개 고객군, 먼저 이렇게 읽어보세요</summary>
+        <p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">
+          아래 요약은 정답이 아니라 고객군을 읽기 위한 첫 인상입니다. 최종 분류는 13개 Data와 분류 도우미를 함께 보고 결정하세요.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {FEATURE_SUMMARIES.map((summary) => (
+            <article key={summary.id} className="rounded-2xl border bg-white p-4">
+              <p className="font-black text-slate-950">{summary.label}</p>
+              <p className="mt-2 text-xs font-bold leading-5 text-slate-700"><span className="font-black text-cyan-700">핵심 특징: </span>{summary.feature}</p>
+              <p className="mt-2 text-xs font-bold leading-5 text-emerald-800"><span className="font-black">강한 신호: </span>{summary.strongSignal}</p>
+              <p className="mt-2 text-xs font-bold leading-5 text-amber-800"><span className="font-black">주의 신호: </span>{summary.caution}</p>
+              <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold leading-5 text-slate-700"><span className="font-black">판단 질문: </span>{summary.question}</p>
+            </article>
+          ))}
+        </div>
+      </details>
 
       {CUSTOMER_GROUPS.map((group, index) => {
         const selectedSegment = classifications[group.id]?.segment ?? '';
