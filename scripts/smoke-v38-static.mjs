@@ -42,6 +42,7 @@ const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompt
 const dashboardAnalysisUi = read('src/journey-v38-dashboard-analysis-ui.tsx');
 const selectedMemberPrepPanel = read('src/journey-v38-selected-member-prep-panel.tsx');
 const actionDeliverablePicker = read('src/journey-v38-action-deliverable-picker.tsx');
+const finalMemberPrepCard = read('src/journey-v38-final-member-prep-card.tsx');
 const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
@@ -234,6 +235,17 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V38FinalMemberPrepCard',
+  'type V38FinalPrepField',
+  'AI가 제안한 준비물 초안',
+  '최종 유형별 다음 행동 준비물',
+  'onUpdate',
+  'finalPrep',
+]) {
+  assertIncludes(finalMemberPrepCard, marker, `final member prep card marker ${marker}`);
+}
+
+for (const marker of [
   'v38 Dashboard Analysis Lab 리팩터링 맵',
   '현재 책임 분리 구조',
   'src/journey-v38-dashboard-analysis-ui.tsx',
@@ -288,6 +300,7 @@ for (const file of [
   'src/journey-v38-dashboard-analysis-ui.tsx',
   'src/journey-v38-selected-member-prep-panel.tsx',
   'src/journey-v38-action-deliverable-picker.tsx',
+  'src/journey-v38-final-member-prep-card.tsx',
   'src/journey-v38-customer-judgment-lab.tsx',
   'src/journey-v38-customer-priority-lab.tsx',
   'src/journey-v38-member-role-lab.tsx',
