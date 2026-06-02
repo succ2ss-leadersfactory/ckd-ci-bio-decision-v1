@@ -39,6 +39,7 @@ const dashboardAnalysis = read('src/journey-v38-dashboard-analysis-lab.tsx');
 const dashboardAnalysisData = read('src/journey-v38-dashboard-analysis-data.ts');
 const dashboardAnalysisParsers = read('src/journey-v38-dashboard-analysis-parsers.ts');
 const dashboardAnalysisPrompts = read('src/journey-v38-dashboard-analysis-prompts.ts');
+const dashboardRefactorMap = read('docs/v38-dashboard-analysis-refactor-map.md');
 const customerJudgment = read('src/journey-v38-customer-judgment-lab.tsx');
 const customerPriority = read('src/journey-v38-customer-priority-lab.tsx');
 const memberRole = read('src/journey-v38-member-role-lab.tsx');
@@ -184,6 +185,19 @@ for (const marker of [
 }
 
 for (const marker of [
+  'v38 Dashboard Analysis Lab 리팩터링 맵',
+  '현재 책임 분리 구조',
+  '수정 원칙',
+  '데이터 수정은 data 파일에서만 한다',
+  '자동분리 로직 수정은 parsers 파일에서만 한다',
+  '프롬프트 문구 수정은 prompts 파일에서만 한다',
+  '컴포넌트는 사용자 흐름만 담당한다',
+  '보호해야 할 사용자 경험 기준',
+]) {
+  assertIncludes(dashboardRefactorMap, marker, `dashboard refactor map marker ${marker}`);
+}
+
+for (const marker of [
   'Customer Data Analysis',
   '고객 Data 분석',
   '고객 유형 A',
@@ -225,6 +239,7 @@ for (const file of [
   'src/journey-v38-final-call-plan-card.tsx',
   'src/journey-v38-instructor-discussion-lab.tsx',
   'docs/v38-qa-checklist.md',
+  'docs/v38-dashboard-analysis-refactor-map.md',
 ]) {
   read(file);
 }
