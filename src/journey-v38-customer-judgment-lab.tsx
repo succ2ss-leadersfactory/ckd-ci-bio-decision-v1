@@ -151,37 +151,173 @@ const CUSTOMER_GROUPS = [
 
 type ClassificationState = Record<string, { segment: string; reason: string }>;
 type SignalLabel = '긍정 신호' | '판단 유보' | '주의 신호' | '보완 필요';
+type DataCategory = '기회성 Data' | '반응성 Data' | '실행 가능성 Data' | '리스크 Data';
 
-function getDataSignal(item: string): { label: SignalLabel; note: string; className: string } {
-  if (/A|잠재력 높음|긍정 상승|질문 증가|자료 요청 있음|후속 미팅 동의|접촉 성공률 80%|접촉 성공률 90%|후속조치 완료율 90%|CRM 기록 충실|관계 수준 높음/.test(item)) {
-    return {
-      label: '긍정 신호',
-      note: '집중 또는 후속 행동을 검토할 근거입니다.',
-      className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-    };
+type DataSignal = {
+  label: SignalLabel;
+  category: DataCategory;
+  note: string;
+  className: string;
+};
+
+const SIGNAL_STYLES: Record<SignalLabel, string> = {
+  '긍정 신호': 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  '판단 유보': 'border-slate-200 bg-slate-50 text-slate-700',
+  '주의 신호': 'border-amber-200 bg-amber-50 text-amber-900',
+  '보완 필요': 'border-rose-200 bg-rose-50 text-rose-900',
+};
+
+function makeSignal(label: SignalLabel, category: DataCategory, note: string): DataSignal {
+  return { label, category, note, className: SIGNAL_STYLES[label] };
+}
+
+function getDataSignal(item: string): DataSignal {
+  if (item.includes('고객 등급 A')) {
+    return makeSignal('긍정 신호', '기회성 Data', '우선 검토할 가치가 높은 고객군입니다. 단, 반응성과 리스크를 함께 봐야 합니다.');
+  }
+  if (item.includes('고객 등급 B')) {
+    return makeSignal('판단 유보', '기회성 Data', '기회가 없는 고객군은 아닙니다. 다른 반응 신호가 따라오는지 함께 확인합니다.');
+  }
+  if (item.includes('고객 등급 C')) {
+    return makeSignal('판단 유보', '기회성 Data', '우선순위는 낮을 수 있지만 관계나 정보 보완 필요성과 함께 봐야 합니다.');
+  }
+  if (item.includes('잠재력 높음')) {
+    return makeSignal('긍정 신호', '기회성 Data', '2주 실행 우선순위 후보가 될 수 있습니다. 실제 반응 신호가 따라오는지 확인합니다.');
+  }
+  if (item.includes('잠재력 중간')) {
+    return makeSignal('판단 유보', '기회성 Data', '잠재력만으로 집중 여부를 정하기 어렵습니다. 반응성과 실행 가능성을 함께 봅니다.');
+  }
+  if (item.includes('잠재력 낮음')) {
+    return makeSignal('판단 유보', '기회성 Data', '집중 후보로 보기에는 약하지만, 정보 보완이나 관계 유지 필요성은 남아 있을 수 있습니다.');
+  }
+  if (item.includes('자료 요청 있음')) {
+    return makeSignal('긍정 신호', '기회성 Data', '고객의 정보 니즈가 확인된 상태입니다. 승인된 자료 범위 안에서 대응해야 합니다.');
+  }
+  if (item.includes('자료 요청 없음')) {
+    return makeSignal('판단 유보', '기회성 Data', '현재 정보 니즈가 드러나지 않은 상태입니다. 다른 반응 신호가 있는지 확인합니다.');
   }
 
-  if (/컴플라이언스 높음|무반응 증가|시간 부족|피로감|후속 미팅 보류|기존 치료 유지|접촉 성공률 40%|4주 콜 횟수 4회|관계 수준 낮음|근거자료 확인 필요/.test(item)) {
-    return {
-      label: '주의 신호',
-      note: '접근 강도, 표현, 고객 부담을 조절해야 합니다.',
-      className: 'border-amber-200 bg-amber-50 text-amber-900',
-    };
+  if (item.includes('긍정 상승')) {
+    return makeSignal('긍정 신호', '반응성 Data', '관심이 살아나는 신호입니다. 후속 질문과 자료 준비가 필요합니다.');
+  }
+  if (item.includes('질문 증가')) {
+    return makeSignal('긍정 신호', '반응성 Data', '고객이 구체적으로 탐색하기 시작한 신호입니다. 근거자료와 답변 범위를 준비합니다.');
+  }
+  if (item.includes('관심 있으나 보류')) {
+    return makeSignal('주의 신호', '반응성 Data', '관심은 있으나 결정 속도가 느립니다. 압박보다 보류 이유를 먼저 확인합니다.');
+  }
+  if (item.includes('안정적 유지')) {
+    return makeSignal('판단 유보', '반응성 Data', '관계는 안정적이지만 변화 신호로 보기는 어렵습니다. 유지 품질을 관리합니다.');
+  }
+  if (item.includes('무반응 증가')) {
+    return makeSignal('주의 신호', '반응성 Data', '반복 접촉보다 원인 확인이 필요합니다. 고객 부담과 접촉 피로를 점검합니다.');
+  }
+  if (item.includes('데이터 부족')) {
+    return makeSignal('보완 필요', '반응성 Data', '최근 반응을 판단할 근거가 부족합니다. 추가 접촉보다 기록과 정보 보완이 먼저입니다.');
+  }
+  if (item.includes('후속 미팅 동의')) {
+    return makeSignal('긍정 신호', '반응성 Data', '2주 안에 실행으로 연결할 수 있는 강한 신호입니다. 준비 품질과 안전선을 함께 봅니다.');
+  }
+  if (item.includes('후속 미팅 보류')) {
+    return makeSignal('주의 신호', '반응성 Data', '후속 행동의 문은 열려 있지만 속도 조절이 필요합니다. 보류 이유를 먼저 확인합니다.');
+  }
+  if (item.includes('후속 미팅 없음')) {
+    return makeSignal('판단 유보', '반응성 Data', '즉시 실행 신호는 약합니다. 자료 요청이나 최근 반응과 함께 판단합니다.');
+  }
+  if (item.includes('거절/보류 사유 없음')) {
+    return makeSignal('판단 유보', '반응성 Data', '뚜렷한 저항은 없지만 적극적 관심 신호로 단정하기는 어렵습니다.');
+  }
+  if (item.includes('기존 치료 유지 선호')) {
+    return makeSignal('주의 신호', '반응성 Data', '현재 선택을 유지하려는 이유가 있습니다. 설득보다 니즈와 판단 기준을 확인합니다.');
+  }
+  if (item.includes('추가 필요성 낮음')) {
+    return makeSignal('판단 유보', '반응성 Data', '변화 필요성이 낮게 표현된 상태입니다. 관계 유지와 관찰이 더 적합할 수 있습니다.');
+  }
+  if (item.includes('시간 부족') || item.includes('피로감')) {
+    return makeSignal('주의 신호', '반응성 Data', '고객 부담이 드러난 신호입니다. 접촉 강도와 메시지 길이를 줄여야 합니다.');
+  }
+  if (item.includes('근거자료 확인 필요')) {
+    return makeSignal('주의 신호', '반응성 Data', '관심은 있지만 근거 검토가 선행되어야 합니다. 승인 자료 범위 안에서 대응합니다.');
+  }
+  if (item.includes('정보 없음')) {
+    return makeSignal('보완 필요', '반응성 Data', '보류 이유나 반응을 해석할 정보가 없습니다. CRM 기록과 현장 확인이 먼저입니다.');
   }
 
-  if (/데이터 부족|정보 없음|CRM 기록 부족|후속조치 완료율 20%|후속조치 완료율 30%|4주 콜 횟수 0회/.test(item)) {
-    return {
-      label: '보완 필요',
-      note: '분류 전에 정보 보완이나 기록 정리가 필요합니다.',
-      className: 'border-rose-200 bg-rose-50 text-rose-900',
-    };
+  if (item.includes('최근 방문일')) {
+    if (item.includes('35일')) {
+      return makeSignal('보완 필요', '실행 가능성 Data', '최근 접촉 공백이 큽니다. 바로 집중하기보다 최신 반응 정보를 먼저 확보합니다.');
+    }
+    if (item.includes('5일')) {
+      return makeSignal('주의 신호', '실행 가능성 Data', '최근 접촉은 있었지만 과잉 접촉이나 피로감 가능성을 함께 점검합니다.');
+    }
+    return makeSignal('판단 유보', '실행 가능성 Data', '최근 접촉은 있었지만, 방문 자체보다 이후 반응과 후속 행동 여부가 더 중요합니다.');
+  }
+  if (item.includes('4주 콜 횟수 4회')) {
+    return makeSignal('주의 신호', '실행 가능성 Data', '접촉이 많지만 반응이 낮다면 접촉 피로일 수 있습니다. 접근 방식을 재검토합니다.');
+  }
+  if (item.includes('4주 콜 횟수 0회')) {
+    return makeSignal('보완 필요', '실행 가능성 Data', '최근 실행 데이터가 부족합니다. 우선 정보 보완과 접촉 계획을 세워야 합니다.');
+  }
+  if (item.includes('4주 콜 횟수')) {
+    return makeSignal('판단 유보', '실행 가능성 Data', '접촉 빈도만으로는 판단하기 어렵습니다. 반응성과 후속조치를 함께 봅니다.');
+  }
+  if (item.includes('접촉 성공률 90%') || item.includes('접촉 성공률 80%')) {
+    return makeSignal('긍정 신호', '실행 가능성 Data', '대화 연결 가능성이 높은 편입니다. 후속 행동 설계가 가능합니다.');
+  }
+  if (item.includes('접촉 성공률 70%') || item.includes('접촉 성공률 60%') || item.includes('접촉 성공률 50%')) {
+    return makeSignal('판단 유보', '실행 가능성 Data', '접촉은 가능하지만 충분한 실행 신호로 보기는 어렵습니다. 반응 품질을 함께 봅니다.');
+  }
+  if (item.includes('접촉 성공률 40%')) {
+    return makeSignal('주의 신호', '실행 가능성 Data', '접촉 연결성이 낮습니다. 방문 빈도보다 접근 방식과 메시지를 조정해야 합니다.');
+  }
+  if (item.includes('후속조치 완료율 90%') || item.includes('후속조치 완료율 80%')) {
+    return makeSignal('긍정 신호', '실행 가능성 Data', '실행 품질이 좋습니다. 다음 행동으로 이어질 기반이 있습니다.');
+  }
+  if (item.includes('후속조치 완료율 70%') || item.includes('후속조치 완료율 60%')) {
+    return makeSignal('판단 유보', '실행 가능성 Data', '기본 실행은 되고 있지만, 우선순위 판단에는 반응 신호를 더 확인해야 합니다.');
+  }
+  if (item.includes('후속조치 완료율 30%') || item.includes('후속조치 완료율 20%')) {
+    return makeSignal('보완 필요', '실행 가능성 Data', '실행 품질 보완이 필요합니다. 집중보다 실행 루틴과 기록 정리가 먼저입니다.');
+  }
+  if (item.includes('CRM 기록 충실')) {
+    return makeSignal('긍정 신호', '실행 가능성 Data', '판단 근거가 남아 있어 팀장 코칭과 실행 점검이 가능합니다.');
+  }
+  if (item.includes('CRM 기록 보통')) {
+    return makeSignal('판단 유보', '실행 가능성 Data', '기본 기록은 있으나 다음 행동을 정할 만큼 충분한지 확인해야 합니다.');
+  }
+  if (item.includes('CRM 기록 부족')) {
+    return makeSignal('보완 필요', '실행 가능성 Data', '분류 전에 기록 정리가 필요합니다. 고객 반응과 후속조치 근거를 보완합니다.');
   }
 
-  return {
-    label: '판단 유보',
-    note: '단독 판단보다 다른 신호와 함께 봐야 합니다.',
-    className: 'border-slate-200 bg-slate-50 text-slate-700',
-  };
+  if (item.includes('관계 수준 높음')) {
+    return makeSignal('긍정 신호', '리스크 Data', '대화 기반은 좋습니다. 다만 관계 안정이 곧 변화 신호는 아닙니다.');
+  }
+  if (item.includes('관계 수준 중간')) {
+    return makeSignal('판단 유보', '리스크 Data', '관계가 약하지는 않지만, 추가 신뢰 형성이 필요한 상태입니다.');
+  }
+  if (item.includes('관계 수준 낮음')) {
+    return makeSignal('주의 신호', '리스크 Data', '관계 기반이 약합니다. 강한 메시지보다 신뢰 회복과 질문 중심 접근이 필요합니다.');
+  }
+  if (item.includes('컴플라이언스 높음')) {
+    return makeSignal('주의 신호', '리스크 Data', '후속 행동 전에 표현, 자료 활용, 메시지 안전선을 반드시 확인해야 합니다.');
+  }
+  if (item.includes('컴플라이언스 중간')) {
+    return makeSignal('주의 신호', '리스크 Data', '실행은 가능하지만 표현과 자료 활용 안전선을 먼저 확인해야 합니다.');
+  }
+  if (item.includes('컴플라이언스 낮음')) {
+    return makeSignal('판단 유보', '리스크 Data', '큰 위험 신호는 낮지만, 실제 대화 표현은 항상 승인 범위 안에서 점검해야 합니다.');
+  }
+
+  return makeSignal('판단 유보', '실행 가능성 Data', '단독 판단보다 다른 신호와 함께 봐야 합니다.');
+}
+
+const DATA_CATEGORIES: DataCategory[] = ['기회성 Data', '반응성 Data', '실행 가능성 Data', '리스크 Data'];
+
+function getGroupedData(items: string[]) {
+  return DATA_CATEGORIES.map((category) => ({
+    category,
+    items: items.filter((item) => getDataSignal(item).category === category),
+  })).filter((group) => group.items.length > 0);
 }
 
 export function V38CustomerJudgmentLab() {
@@ -234,6 +370,7 @@ export function V38CustomerJudgmentLab() {
       {CUSTOMER_GROUPS.map((group, index) => {
         const selectedSegment = classifications[group.id]?.segment ?? '';
         const reason = classifications[group.id]?.reason ?? '';
+        const groupedData = getGroupedData(group.fullData);
         return (
           <details key={group.id} className="rounded-3xl border bg-white shadow-sm" open={index === 0}>
             <summary className="cursor-pointer list-none p-5 md:p-6">
@@ -267,9 +404,16 @@ export function V38CustomerJudgmentLab() {
                 <p className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">
                   아래 평가는 정답이 아니라 판단을 돕기 위한 해석 힌트입니다. 최종 분류는 고객군 전체 신호를 함께 보고 결정하세요.
                 </p>
-                <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                  {group.fullData.map((item) => (
-                    <DataSignalCard key={item} item={item} />
+                <div className="mt-3 space-y-4">
+                  {groupedData.map((dataGroup) => (
+                    <section key={dataGroup.category} className="rounded-2xl border bg-white p-3">
+                      <h4 className="text-xs font-black text-cyan-700">{dataGroup.category}</h4>
+                      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                        {dataGroup.items.map((item) => (
+                          <DataSignalCard key={item} item={item} />
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               </details>
