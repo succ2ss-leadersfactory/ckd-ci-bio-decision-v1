@@ -105,6 +105,11 @@ for (const marker of [
 
 for (const marker of [
   'DECISION_GUIDES',
+  'AI_REVIEW_OPTIONS',
+  'FORBIDDEN_ITEMS',
+  'aiReviewPrompt',
+  'selectedAiReviews',
+  'copyPrompt',
   'findCustomerOption',
   'selectedOption',
   'reasonHint',
@@ -113,13 +118,24 @@ for (const marker of [
   '추천 역할',
   '선택 이유 작성 힌트',
   '고객군을 선택하면 6단계 Data 평가 라벨과 연결된 선택 이유 힌트가 표시됩니다.',
+  'AI 우선순위 판단 점검',
+  'AI는 고객군 선택의 정답을 정하지 않습니다.',
+  'AI에 점검받을 항목 선택',
+  '복사용 AI 점검 프롬프트',
+  'AI 점검 프롬프트 복사',
+  '집중 고객군 선택 근거 점검',
+  '후순위 고객군 선택의 놓친 기회 확인',
+  '관찰/유지 고객군의 전환 기준 만들기',
+  '세 고객군 선택 조합의 균형 점검',
+  '컴플라이언스 리스크 재점검',
+  '실제 고객명·병원명·의료진명',
   '집중 고객군으로 볼 때',
   '후순위 고객군으로 볼 때',
   '관찰/유지 고객군으로 볼 때',
   '평가 라벨 조합',
   '긍정 신호가 2개 이상',
 ]) {
-  assertIncludes(customerPriority, marker, `customer priority selected signal marker ${marker}`);
+  assertIncludes(customerPriority, marker, `customer priority AI review marker ${marker}`);
 }
 
 for (const marker of [
