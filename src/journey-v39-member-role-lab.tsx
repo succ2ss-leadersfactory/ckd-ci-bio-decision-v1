@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 import { V38MemberRoleLab } from './journey-v38-member-role-lab';
 import { loadV39DashboardResult, type V39DashboardResult } from './journey-v39-dashboard-result-store';
+import {
+  type V39CustomerStrategyResult,
+  loadV39CustomerStrategyResult,
+} from './journey-v39-customer-strategy-result-store';
 
 function joinOrEmpty(items: string[]) {
   return items.length > 0 ? items.join(' / ') : '아직 저장된 값이 없습니다';
@@ -11,6 +15,14 @@ type RoleRecommendationDraft = {
   roleCandidate: string;
   coachingFocus: string;
   caution: string;
+};
+
+type StrategyRoleHint = {
+  memberRole: string;
+  customerLabels: string[];
+  priorities: string[];
+  strategyCount: number;
+  risks: string[];
 };
 
 function readableMemberLabel(memberId: string) {
@@ -61,8 +73,115 @@ function buildRoleRecommendationDrafts(result: V39DashboardResult): RoleRecommen
   });
 }
 
+function buildStrategyRoleHints(strategyResult: V39CustomerStrategyResult): StrategyRoleHint[] {
+  const hintsByRole = new Map<string, StrategyRoleHint>();
+
+  for (const strategy of Object.values(strategyResult.strategies)) {
+    if (!strategy.memberRole || !strategy.strategy.trim()) continue;
+    const current = hintsByRole.get(strategy.memberRole) ?? {
+      memberRole: strategy.memberRole,
+      customerLabels: [],
+      priorities: [],
+      strategyCount: 0,
+      risks: [],
+    };
+
+    current.customerLabels.push(strategy.customerLabel);
+    if (strategy.priority && !current.priorities.includes(strategy.priority)) current.priorities.push(strategy.priority);
+    if (strategy.risk && current.risks.length < 2) current.risks.push(strategy.risk);
+    current.strategyCount += 1;
+    hintsByRole.set(strategy.memberRole, current);
+  }
+
+  return Array.from(hintsByRole.values()).slice(0, 6);
+}
+
+function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strategyResult: V39CustomerStrategyResult; onRefresh: () => void }) {
+  const savedStrategies = Object.values(strategyResult.strategies).filter((strategy) => strategy.strategy.trim());
+  const roleHints = buildStrategyRoleHints(strategyResult);
+
+  return (
+    <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Strategy Bridge</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">7단계 고객 대응 전략을 팀원 역할 배정에 연결</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            7단계에서 저장한 고객 유형별 우선순위, 2주 대응 전략, 팀원 배정 방향, 리스크를 8단계 역할 배정 전에 다시 확인합니다.
+            이 연결은 자동 배정이 아니라 팀장이 실행 책임과 코칭 초점을 정교화하기 위한 참고 자료입니다.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800"
+          onClick={onRefresh}
+        >
+          7단계 전략 결과 새로고침
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-xs font-black text-slate-500">저장 상태</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{strategyResult.updatedAt ? '저장 결과 있음' : '저장 결과 없음'}</p>
+          {strategyResult.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{strategyResult.updatedAt}</p> : null}
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-xs font-black text-slate-500">저장된 고객 전략</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{savedStrategies.length}개</p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-xs font-black text-slate-500">팀원 배정 방향</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{roleHints.length > 0 ? `${roleHints.length}개 방향` : '아직 저장된 방향 없음'}</p>
+        </div>
+      </div>
+
+      {savedStrategies.length === 0 ? (
+        <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
+          7단계에서 고객 유형별 2주 대응 전략을 저장하면, 이곳에 팀원 역할 배정 참고 자료가 표시됩니다.
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 xl:grid-cols-3">
+          {savedStrategies.slice(0, 6).map((strategy) => (
+            <article key={strategy.customerTypeId} className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-black text-slate-950">{strategy.customerLabel}</p>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">{strategy.priority || '우선순위 미정'}</span>
+              </div>
+              <p className="mt-2 text-xs font-black text-emerald-700">팀원 배정 방향</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.memberRole || '아직 선택되지 않았습니다.'}</p>
+              <p className="mt-2 text-xs font-black text-slate-500">2주 대응 전략</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.strategy}</p>
+              <p className="mt-2 text-xs font-black text-amber-700">주의 리스크</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.risk || '표현·자료·접촉 강도 안전선을 확인하세요.'}</p>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {roleHints.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <h3 className="text-sm font-black text-slate-950">팀원 역할 배정 참고 초안</h3>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 7단계 고객 전략에서 반복적으로 등장한 팀원 배정 방향을 묶은 참고 자료입니다.</p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {roleHints.map((hint) => (
+              <article key={hint.memberRole} className="rounded-2xl border bg-emerald-50 p-4">
+                <p className="text-sm font-black text-slate-950">{hint.memberRole}</p>
+                <p className="mt-2 text-xs font-bold leading-5 text-slate-700">연결 고객 유형: {hint.customerLabels.join(' · ')}</p>
+                <p className="mt-1 text-xs font-bold leading-5 text-slate-700">우선순위: {hint.priorities.length > 0 ? hint.priorities.join(' · ') : '미정'}</p>
+                <p className="mt-2 text-xs font-bold leading-5 text-amber-900">주의 리스크: {hint.risks.length > 0 ? hint.risks.join(' / ') : '표현·자료·접촉 강도 안전선 확인'}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function V39MemberRoleLab() {
   const [dashboardResult, setDashboardResult] = useState(() => loadV39DashboardResult());
+  const [customerStrategyResult, setCustomerStrategyResult] = useState(() => loadV39CustomerStrategyResult());
 
   const summary = useMemo(() => {
     const selectedMetricCount =
@@ -90,12 +209,18 @@ export function V39MemberRoleLab() {
     setDashboardResult(loadV39DashboardResult());
   };
 
+  const refreshCustomerStrategyResult = () => {
+    setCustomerStrategyResult(loadV39CustomerStrategyResult());
+  };
+
   return (
     <div className="space-y-4">
+      <V39CustomerStrategyBridgePanel strategyResult={customerStrategyResult} onRefresh={refreshCustomerStrategyResult} />
+
       <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">v39 Step 5 → Step 8 Bridge</p>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Step 5 → Step 8 Bridge</p>
             <h2 className="mt-2 text-xl font-black text-slate-950">5단계 저장 결과를 팀원 역할 방향에 연결</h2>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               이 패널은 5단계에서 저장한 팀 상황, 실행지표, 선택 유형, 다음 행동 준비물을 8단계 역할 배정 전에 다시 보여줍니다.
@@ -156,7 +281,7 @@ export function V39MemberRoleLab() {
 
         <div className="mt-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-1">
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">v39 역할 추천 초안</p>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">역할 추천 초안</p>
             <h3 className="text-lg font-black text-slate-950">저장 결과 기반 역할 추천 초안</h3>
             <p className="text-xs font-bold leading-5 text-slate-600">추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 아래 역할 후보, 코칭 초점, 주의할 점을 실제 팀원 맥락에 맞게 수정하십시오.</p>
           </div>
