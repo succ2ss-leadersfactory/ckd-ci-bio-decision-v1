@@ -8,11 +8,11 @@ import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
 import { V38AiCallPlanLab } from './journey-v38-ai-call-plan-lab';
 import { V38ComplianceCleanupLab } from './journey-v38-compliance-cleanup-lab';
-import { V38CustomerPriorityLab } from './journey-v38-customer-priority-lab';
 import { V38FinalCallPlanCard } from './journey-v38-final-call-plan-card';
 import { V38InstructorDiscussionLab } from './journey-v38-instructor-discussion-lab';
 import { clampV38Step, V38_STORAGE_KEYS, V38_VISIBLE_APP_STEPS } from './journey-v38-preview-config';
 import { V39CustomerJudgmentLab } from './journey-v39-customer-judgment-lab';
+import { V39CustomerPriorityLab } from './journey-v39-customer-priority-lab';
 import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
 import { V39MemberRoleLab } from './journey-v39-member-role-lab';
 
@@ -106,7 +106,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
   if (current.id === 'dashboard-analysis') return <V39DashboardAnalysisLab />;
   if (current.id === 'customer-judgment') return <V39CustomerJudgmentLab />;
-  if (current.id === 'customer-priority') return <V38CustomerPriorityLab />;
+  if (current.id === 'customer-priority') return <V39CustomerPriorityLab />;
   if (current.id === 'member-role') return <V39MemberRoleLab />;
   if (current.id === 'ai-call-plan') return <V38AiCallPlanLab />;
   if (current.id === 'compliance-cleanup') return <V38ComplianceCleanupLab />;
