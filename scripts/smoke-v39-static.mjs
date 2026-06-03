@@ -25,6 +25,7 @@ const files = {
   html: read('journey-v39-preview.html'),
   app: read('src/journey-v39-app-preview.tsx'),
   dashboardWrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
+  dashboardCore: read('src/journey-v38-dashboard-analysis-lab.tsx'),
   customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
   customerJudgmentStore: read('src/journey-v39-customer-judgment-result-store.ts'),
   customerPriorityBridge: read('src/journey-v39-customer-priority-lab.tsx'),
@@ -72,7 +73,8 @@ for (const [label, source, markers] of [
 }
 
 for (const [label, source, markers] of [
-  ['dashboard wrapper', files.dashboardWrapper, ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab', 'saveV39DashboardResult']],
+  ['dashboard wrapper', files.dashboardWrapper, ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab', 'heroVariant="customer"']],
+  ['dashboard customer hero', files.dashboardCore, ['heroVariant?: DashboardHeroVariant', 'heroVariant === \'customer\'', '5단계 팀 실행진단', '우리 팀 지표로 다음 행동 준비하기', 'CustomerProgressItem']],
   ['customer judgment wrapper', files.customerJudgmentWrapper, ['V39CustomerJudgmentLab', 'V38CustomerJudgmentLab', '고객 Data 판단 프레임', '고객별 우선순위 선택', 'AI 분석 프롬프트 생성']],
   ['customer judgment store', files.customerJudgmentStore, ['ckd.v39.customerJudgment.result.v1', 'saveV39CustomerJudgmentResult', 'loadV39CustomerJudgmentResult']],
   ['customer priority bridge', files.customerPriorityBridge, ['V39CustomerPriorityLab', 'V38CustomerPriorityLab', '6단계 고객 판단 결과 연결', '8단계 연결용 2주 대응 전략', 'saveV39CustomerStrategyResult']],
@@ -95,6 +97,7 @@ for (const [label, source, markers] of [
   ['html title', files.html, ['v39 Preview', 'C1바이오 v39 Preview']],
   ['app old side effect', files.app, ["import './journey-v38-app-preview';"]],
   ['customer judgment internal wording', files.customerJudgmentWrapper, ['v39 Customer Priority Selection', 'v39 Customer Data']],
+  ['dashboard wrapper removed memo panel', files.dashboardWrapper, ['팀 실행진단 메모', 'Team Execution Memo', '입력 내용 저장', '저장 내용 비우기', 'saveV39DashboardResult']],
 ]) {
   for (const marker of markers) checkNotIncludes(source, marker, label);
 }
