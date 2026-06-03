@@ -5,6 +5,7 @@
     "src/journey-v39-app-preview.tsx",
     "src/journey-v39-dashboard-analysis-lab.tsx",
     "src/journey-v39-customer-judgment-lab.tsx",
+    "src/journey-v39-customer-judgment-result-store.ts",
     "src/journey-v39-member-role-lab.tsx",
     "src/journey-v39-dashboard-result-store.ts",
     "src/journey-v38-preview-config.ts",
