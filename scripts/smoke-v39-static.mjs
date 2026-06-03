@@ -24,6 +24,7 @@ function checkNotIncludes(source, needle, label) {
 const files = {
   html: read('journey-v39-preview.html'),
   app: read('src/journey-v39-app-preview.tsx'),
+  store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
   packageJson: read('package.json'),
   tsconfig: read('tsconfig.v39-smoke.json'),
@@ -39,6 +40,23 @@ checkIncludes(files.packageJson, 'smoke:v39', 'package v39 smoke script');
 checkIncludes(files.packageJson, 'typecheck:v39', 'package v39 typecheck script');
 checkIncludes(files.tsconfig, 'src/journey-v39-app-preview.tsx', 'v39 tsconfig entry');
 checkIncludes(files.tsconfig, 'src/journey-v38-app-preview.tsx', 'v39 tsconfig stable wrapper dependency');
+checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
+
+for (const marker of [
+  'V39_DASHBOARD_RESULT_SCHEMA_VERSION',
+  'V39_DASHBOARD_RESULT_STORAGE_KEY',
+  'V39DashboardResult',
+  'V39DashboardMetricResult',
+  'V39DashboardMetricSelection',
+  'V39DashboardMemberResult',
+  'createEmptyV39DashboardResult',
+  'normalizeV39DashboardResult',
+  'saveV39DashboardResult',
+  'loadV39DashboardResult',
+  'clearV39DashboardResult',
+]) {
+  checkIncludes(files.store, marker, 'v39 dashboard result store marker');
+}
 
 checkNotIncludes(files.html, 'v39 Preview', 'internal v39 preview wording in HTML title');
 checkNotIncludes(files.html, 'C1바이오 v39 Preview', 'internal v39 preview title');
