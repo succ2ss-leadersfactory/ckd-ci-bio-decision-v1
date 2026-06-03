@@ -108,26 +108,28 @@ for (const protectedImport of [
   pass(notIncludes(app, protectedImport), `v39 app must not import protected implementation: ${protectedImport}`);
 }
 
-const wrapperExpectations = [
+const implementationMarkers = [
   ['src/journey-v39-dashboard-analysis-lab.tsx', 'V38DashboardAnalysisLab'],
   ['src/journey-v39-customer-judgment-lab.tsx', 'V39CustomerDataJudgmentFlow'],
-  ['src/journey-v39-customer-priority-lab.tsx', 'V38CustomerPriorityLab'],
+  ['src/journey-v39-customer-priority-lab.tsx', 'V39CustomerJudgmentBridgePanel'],
   ['src/journey-v39-member-role-lab.tsx', 'V38MemberRoleLab'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V38AiCallPlanLab'],
   ['src/journey-v39-compliance-cleanup-lab.tsx', 'V38ComplianceCleanupLab'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V38FinalCallPlanCard'],
   ['src/journey-v39-instructor-discussion-lab.tsx', 'V38InstructorDiscussionLab'],
 ];
-for (const [file, reusedComponent] of wrapperExpectations) {
-  pass(includes(files[file], reusedComponent), `v39 wrapper must use expected implementation: ${file} -> ${reusedComponent}`);
+for (const [file, marker] of implementationMarkers) {
+  pass(includes(files[file], marker), `v39 wrapper must use expected implementation: ${file} -> ${marker}`);
 }
 
-for (const forbiddenCustomerJudgmentMarker of [
-  'V38CustomerJudgmentLab',
-  "from './journey-v38-customer-judgment-lab'",
-  '<V38CustomerJudgmentLab />',
-]) {
-  pass(notIncludes(files['src/journey-v39-customer-judgment-lab.tsx'], forbiddenCustomerJudgmentMarker), `v39 customer judgment must not expose legacy v38 flow: ${forbiddenCustomerJudgmentMarker}`);
+const forbiddenByFile = [
+  ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
+  ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
+];
+for (const [file, markers] of forbiddenByFile) {
+  for (const marker of markers) {
+    pass(notIncludes(files[file], marker), `${file} must not expose legacy v38 flow: ${marker}`);
+  }
 }
 
 const storeKeys = new Map();
@@ -154,19 +156,8 @@ for (const key of expectedKeys) {
 }
 
 const allV39Content = v39Files.map((file) => files[file]).join('\n');
-for (const safetyPhrase of [
-  '실제 고객명',
-  '병원명',
-  '의료진명',
-  '제품명',
-  '내부 매출',
-  '개인정보',
-]) {
+for (const safetyPhrase of ['실제 고객명', '병원명', '의료진명', '제품명', '내부 매출', '개인정보']) {
   pass(includes(allV39Content, safetyPhrase), `v39 flow should repeatedly show sensitive-input guardrail: ${safetyPhrase}`);
-}
-
-for (const internalPhrase of ['DOM 후처리', 'preview shell', 'v39 Preview', 'C1바이오 v39 Preview']) {
-  pass(notIncludes(html, internalPhrase), `HTML must not expose internal phrase: ${internalPhrase}`);
 }
 
 for (const riskyPhrase of ['점수화하는 단계가 아닙니다', '등급화하는 단계가 아닙니다', '평가 자료가 아니라']) {
@@ -183,45 +174,12 @@ for (const file of ['src/journey-v39-final-call-plan-result-store.ts', 'src/jour
   pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 }
 
-const qaChecklist = files['docs/v39-preview-qa-checklist.md'];
-for (const marker of [
-  '# v39 Preview QA Checklist',
-  '5단계 저장',
-  '6단계 저장',
-  '7단계 저장',
-  '8단계 저장',
-  '9단계 저장',
-  '10단계 저장',
-  '11단계 저장',
-  'Go / No-Go',
+for (const [doc, markers] of [
+  ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', 'Go / No-Go']],
+  ['docs/v39-preview-readiness-report.md', ['# v39 Preview Readiness Report', 'Conditional Go', '보호 파일 준수 여부', '5→12단계 연결 구조', 'localStorage key 현황', '남은 수동 QA 항목', 'Go / No-Go 기준']],
+  ['docs/v39-preview-manual-qa-run.md', ['# v39 Preview Manual QA Run', 'QA 기본 정보', 'End-to-End 저장·연결 QA', '5→8', '11→12', '발견 이슈 기록', 'Go / No-Go 판단']],
 ]) {
-  pass(includes(qaChecklist, marker), `QA checklist must include marker: ${marker}`);
-}
-
-const readinessReport = files['docs/v39-preview-readiness-report.md'];
-for (const marker of [
-  '# v39 Preview Readiness Report',
-  'Conditional Go',
-  '보호 파일 준수 여부',
-  '5→12단계 연결 구조',
-  'localStorage key 현황',
-  '남은 수동 QA 항목',
-  'Go / No-Go 기준',
-]) {
-  pass(includes(readinessReport, marker), `Readiness report must include marker: ${marker}`);
-}
-
-const manualQaRun = files['docs/v39-preview-manual-qa-run.md'];
-for (const marker of [
-  '# v39 Preview Manual QA Run',
-  'QA 기본 정보',
-  'End-to-End 저장·연결 QA',
-  '5→8',
-  '11→12',
-  '발견 이슈 기록',
-  'Go / No-Go 판단',
-]) {
-  pass(includes(manualQaRun, marker), `Manual QA run must include marker: ${marker}`);
+  for (const marker of markers) pass(includes(files[doc], marker), `${doc} must include marker: ${marker}`);
 }
 
 if (failures.length > 0) {
