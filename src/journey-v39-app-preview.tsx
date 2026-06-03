@@ -6,7 +6,6 @@ import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
-import { V38FinalCallPlanCard } from './journey-v38-final-call-plan-card';
 import { V38InstructorDiscussionLab } from './journey-v38-instructor-discussion-lab';
 import { clampV38Step, V38_STORAGE_KEYS, V38_VISIBLE_APP_STEPS } from './journey-v38-preview-config';
 import { V39AiCallPlanLab } from './journey-v39-ai-call-plan-lab';
@@ -14,6 +13,7 @@ import { V39ComplianceCleanupLab } from './journey-v39-compliance-cleanup-lab';
 import { V39CustomerJudgmentLab } from './journey-v39-customer-judgment-lab';
 import { V39CustomerPriorityLab } from './journey-v39-customer-priority-lab';
 import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
+import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
 import { V39MemberRoleLab } from './journey-v39-member-role-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
@@ -110,7 +110,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'member-role') return <V39MemberRoleLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupLab />;
-  if (current.id === 'final-call-plan-card') return <V38FinalCallPlanCard />;
+  if (current.id === 'final-call-plan-card') return <V39FinalCallPlanCard />;
   if (current.id === 'instructor-discussion') return <V38InstructorDiscussionLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 준비 중입니다.</p></ShellCard>;
