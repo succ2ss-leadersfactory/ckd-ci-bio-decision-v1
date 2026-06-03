@@ -168,22 +168,22 @@ function V39CustomerJudgmentBridgePanel() {
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Judgment Bridge</p>
-          <h2 className="mt-2 text-2xl font-black text-slate-950">6단계 고객 판단 결과 연결</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Strategy Review</p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">고객 판단을 대응 전략으로 정리하기</h2>
           <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
-            6단계에서 남긴 고객별 우선순위 판단을 7단계 대응 전략 설계의 출발점으로 가져옵니다. 이 요약은 자동 결정이 아니라,
-            팀장이 전략 강도와 안전선을 다시 검토하기 위한 참고 자료입니다.
+            이전 단계에서 남긴 고객별 우선순위 판단을 바탕으로 대응 강도, 팀원 배정 방향, 2주 실행 전략, 안전선을 정리합니다.
+            이 요약은 자동 결정이 아니라 팀장이 현장 맥락에 맞게 다시 검토하기 위한 참고 자료입니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
-            연결된 판단 {selectedCount} / {CUSTOMER_BRIDGE_ITEMS.length}
+            판단 정리 {selectedCount} / {CUSTOMER_BRIDGE_ITEMS.length}
           </div>
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
-            저장된 전략 {savedStrategyCount} / {CUSTOMER_BRIDGE_ITEMS.length}
+            전략 작성 {savedStrategyCount} / {CUSTOMER_BRIDGE_ITEMS.length}
           </div>
           <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={refreshCustomerJudgmentBridge}>
-            6단계 판단 새로고침
+            이전 판단 새로고침
           </button>
         </div>
       </div>
@@ -202,39 +202,39 @@ function V39CustomerJudgmentBridgePanel() {
                   {getPriorityLabel(current.priorityDecision)}
                 </span>
               </div>
-              <p className="mt-3 text-xs font-black text-emerald-700">7단계 전략 작성 방향</p>
+              <p className="mt-3 text-xs font-black text-emerald-700">전략 작성 방향</p>
               <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{getStrategyGuide(current, item.defaultGuide)}</p>
               <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
-                <p><span className="font-black text-slate-950">판단 이유: </span>{current.reason || '6단계 판단 이유가 아직 저장되지 않았습니다.'}</p>
-                <p className="mt-2"><span className="font-black text-slate-950">다음 확인 질문: </span>{current.nextCheck || '추가 확인 질문을 7단계에서 보완하세요.'}</p>
+                <p><span className="font-black text-slate-950">판단 이유: </span>{current.reason || '이전 단계의 판단 이유가 아직 저장되지 않았습니다.'}</p>
+                <p className="mt-2"><span className="font-black text-slate-950">다음 확인 질문: </span>{current.nextCheck || '추가 확인 질문을 이번 단계에서 보완하세요.'}</p>
                 <p className="mt-2"><span className="font-black text-slate-950">안전선 메모: </span>{current.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인하세요.'}</p>
               </div>
 
               <div className="mt-4 grid gap-3">
                 <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">8단계 연결용 우선순위</span>
+                  <span className="text-xs font-black text-slate-500">고객 대응 우선순위</span>
                   <select className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold" value={strategy.priority} onChange={(event) => updateStrategy(item.id, { priority: event.target.value })}>
                     <option value="">선택하세요</option>
                     {STRATEGY_PRIORITY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">8단계 연결용 팀원 배정 방향</span>
+                  <span className="text-xs font-black text-slate-500">팀원 배정 방향</span>
                   <select className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold" value={strategy.memberRole} onChange={(event) => updateStrategy(item.id, { memberRole: event.target.value })}>
                     <option value="">선택하세요</option>
                     {MEMBER_ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">8단계 연결용 2주 대응 전략</span>
+                  <span className="text-xs font-black text-slate-500">2주 대응 전략</span>
                   <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.strategy} onChange={(event) => updateStrategy(item.id, { strategy: event.target.value })} placeholder="예: 후속 대화 가능성을 살리되, 자료·표현 안전선을 먼저 확인한다." />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">8단계 연결용 주의 리스크</span>
+                  <span className="text-xs font-black text-slate-500">주의 리스크</span>
                   <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.risk} onChange={(event) => updateStrategy(item.id, { risk: event.target.value })} placeholder="예: 고객 부담, 과잉 접촉, 컴플라이언스 표현 리스크." />
                 </label>
                 <button type="button" className="rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyStrategyDraft(item, current)}>
-                  8단계 연결 초안 가져오기
+                  전략 초안 가져오기
                 </button>
               </div>
             </article>
