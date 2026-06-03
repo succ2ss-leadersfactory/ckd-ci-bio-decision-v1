@@ -1,0 +1,80 @@
+name: v39 Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/v37-preview-shell
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v39:
+    name: Run v39 smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v39 static smoke check
+        run: npm run smoke:v39:static
+
+      - name: Run v39 scoped TypeScript check
+        run: npm run typecheck:v39
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Run integrated v39 smoke check
+        run: npm run smoke:v39
+
+      - name: Write v39 smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v39 Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v39:static"
+            echo "- npm run typecheck:v39"
+            echo "- npm run build"
+            echo "- npm run smoke:v39"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains the v34 operating route."
+            echo "- /journey-v35-preview.html remains preserved."
+            echo "- /journey-v36-preview.html remains preserved."
+            echo "- /journey-v38-preview.html remains the latest stable preview route."
+            echo "- /journey-v39-preview.html is the only v39 development route."
+            echo ""
+            echo "## v39 scope"
+            echo ""
+            echo "- v39 preview shell"
+            echo "- v39 independent storage keys"
+            echo "- v39 dashboard analysis wrapper"
+            echo "- v39 dashboard result localStorage helper"
+            echo "- v38 stable components reused except the v39 5-step wrapper"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Open /journey-v39-preview.html in the browser."
+            echo "2. Confirm Step 5 shows the v39 dashboard result bridge panel."
+            echo "3. Confirm v39 storage initialization and clear buttons work."
+            echo "4. Confirm /journey-v38-preview.html remains unchanged."
+          } >> "$GITHUB_STEP_SUMMARY"
