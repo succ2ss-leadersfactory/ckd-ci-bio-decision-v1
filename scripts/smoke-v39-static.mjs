@@ -81,6 +81,15 @@ for (const marker of [
   '최종 다음 행동 준비물',
   '저장 결과 있음',
   '저장 결과 없음',
+  'RoleRecommendationDraft',
+  'buildRoleRecommendationDrafts',
+  'readableMemberLabel',
+  'v39 역할 추천 초안',
+  '저장 결과 기반 역할 추천 초안',
+  '역할 후보',
+  '코칭 초점',
+  '주의할 점',
+  '추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다',
 ]) {
   checkIncludes(files.memberRoleBridge, marker, 'v39 member role bridge marker');
 }
