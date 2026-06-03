@@ -112,7 +112,7 @@ for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarO
   pass(includes(files['src/journey-v39-people-dialogue-result-store.ts'], marker), `people dialogue store missing field: ${marker}`);
 }
 
-for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '선택한 대화 목적 ID', '목적에 맞게 바꾼 첫마디', '팀원 실행 대화 포인트', '실행 대화 새로고침']) {
+for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '선택한 대화 목적 ID', '목적에 맞게 바꾼 첫마디', '팀원 실행 대화 포인트', '9단계 저장 결과 다시 불러오기']) {
   pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan missing people dialogue marker: ${marker}`);
 }
 
