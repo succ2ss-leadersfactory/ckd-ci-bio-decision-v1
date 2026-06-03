@@ -141,13 +141,27 @@ function V39FinalExecutionCardPanel({
             8단계 팀원 역할, 9단계 실행 대화, 11단계 컴플라이언스 안전 문장을 함께 반영해 최종 2주 실행 카드를 작성합니다.
             최종 카드는 고객 실행만 정리하는 문서가 아니라, 팀원이 납득하고 실행할 수 있는 역할 기준과 안전한 첫마디까지 포함하는 실행 약속입니다.
           </p>
+          <div className="mt-4 grid gap-2 md:grid-cols-3">
+            <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+              <p className="font-black text-emerald-700">이 단계에서 하는 일</p>
+              <p className="mt-1">고객 실행, 팀원 역할, 실행 대화, 안전선을 하나의 카드로 통합합니다.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+              <p className="font-black text-emerald-700">이전 단계에서 가져온 것</p>
+              <p className="mt-1">8단계 역할, 9단계 대화, 11단계 안전 문장입니다.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+              <p className="font-black text-emerald-700">다음 단계로 넘길 것</p>
+              <p className="mt-1">13단계 강사용 토의 질문의 기준 자료입니다.</p>
+            </div>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefresh}>
-            이전 단계 결과 새로고침
+            8·9·11단계 저장 결과 다시 불러오기
           </button>
           <button type="button" className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800" onClick={copyFinalCardSummary}>
-            {copied ? '최종 카드 요약 복사 완료' : '최종 카드 요약 복사'}
+            {copied ? '최종 카드 요약 복사 완료' : '강사용 토의에 넘길 최종 카드 요약 복사'}
           </button>
         </div>
       </div>
@@ -169,9 +183,9 @@ function V39FinalExecutionCardPanel({
           <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">11단계 결과 기준</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">최종 카드</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{finalCardResult.updatedAt ? '요약 있음' : '요약 없음'}</p>
-          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">강사용 토의 연결</p>
+          <p className="text-xs font-black text-slate-500">이 단계 최소 결과물</p>
+          <p className="mt-1 text-sm font-black text-slate-900">2주 실행 카드</p>
+          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">13단계 토의 기준으로 사용합니다.</p>
         </div>
       </div>
 
@@ -205,34 +219,37 @@ function V39FinalExecutionCardPanel({
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-cyan-50 px-4 py-2 text-xs font-black text-cyan-800" onClick={applyFinalCardDraft}>
-            최종 실행 카드 초안 가져오기
+            저장된 결과로 최종 실행 카드 채우기
           </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="space-y-1">
-            <span className="text-xs font-black text-slate-500">집중 고객군 요약</span>
+            <span className="text-xs font-black text-slate-500">[필수] 집중 고객군 요약</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.focusCustomers} onChange={(event) => updateFinalCardResult({ focusCustomers: event.target.value })} />
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-black text-slate-500">팀원별 역할 요약</span>
+            <span className="text-xs font-black text-slate-500">[필수] 팀원별 역할 요약</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.memberRoles} onChange={(event) => updateFinalCardResult({ memberRoles: event.target.value })} />
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-black text-slate-500">2주 실행 우선순위</span>
+            <span className="text-xs font-black text-slate-500">[필수] 2주 실행 우선순위</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.twoWeekAction} onChange={(event) => updateFinalCardResult({ twoWeekAction: event.target.value })} />
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-black text-slate-500">컴플라이언스 포인트</span>
+            <span className="text-xs font-black text-slate-500">[필수] 컴플라이언스 포인트</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.compliancePoint} onChange={(event) => updateFinalCardResult({ compliancePoint: event.target.value })} />
           </label>
           <label className="space-y-1 md:col-span-2">
-            <span className="text-xs font-black text-slate-500">팀원에게 말할 첫 문장</span>
+            <span className="text-xs font-black text-slate-500">[필수] 팀원에게 말할 첫 문장</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.firstMessage} onChange={(event) => updateFinalCardResult({ firstMessage: event.target.value })} />
           </label>
           <label className="space-y-1 md:col-span-2">
-            <span className="text-xs font-black text-slate-500">강사용 토의 메모</span>
+            <span className="text-xs font-black text-slate-500">[선택] 강사용 토의 메모</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.discussionMemo} onChange={(event) => updateFinalCardResult({ discussionMemo: event.target.value })} />
           </label>
+        </div>
+        <div className="mt-3 rounded-2xl bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-900">
+          입력 내용은 자동으로 저장됩니다. 13단계에서 이 최종 실행 카드를 바탕으로 강사용 토의 질문을 확인합니다.
         </div>
       </div>
 
