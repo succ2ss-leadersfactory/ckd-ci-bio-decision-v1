@@ -28,6 +28,7 @@ const files = {
   customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
   customerJudgmentStore: read('src/journey-v39-customer-judgment-result-store.ts'),
   customerPriorityBridge: read('src/journey-v39-customer-priority-lab.tsx'),
+  customerStrategyStore: read('src/journey-v39-customer-strategy-result-store.ts'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
@@ -53,6 +54,7 @@ checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-analysis-lab.tsx', 'v39
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-lab.tsx', 'v39 tsconfig customer judgment wrapper');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-result-store.ts', 'v39 tsconfig customer judgment result store');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-priority-lab.tsx', 'v39 tsconfig customer priority bridge');
+checkIncludes(files.tsconfig, 'src/journey-v39-customer-strategy-result-store.ts', 'v39 tsconfig customer strategy result store');
 checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
@@ -149,8 +151,18 @@ for (const marker of [
   '6단계 판단 새로고침',
   '연결된 판단',
   '7단계 전략 작성 방향',
+  '8단계 연결용 우선순위',
+  '8단계 연결용 팀원 배정 방향',
+  '8단계 연결용 2주 대응 전략',
+  '8단계 연결용 주의 리스크',
+  '8단계 연결 초안 가져오기',
+  '저장된 전략',
+  'defaultStrategyPriority',
+  'defaultMemberRole',
   'getStrategyGuide',
   'loadBridgeDecisions',
+  'loadStrategyState',
+  'saveV39CustomerStrategyResult',
   '자동 결정이 아니라',
   '실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다',
 ]) {
@@ -158,10 +170,27 @@ for (const marker of [
 }
 
 for (const marker of [
+  'V39_CUSTOMER_STRATEGY_RESULT_SCHEMA_VERSION',
+  'V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY',
+  'ckd.v39.customerStrategy.result.v1',
+  'V39CustomerStrategyResultItem',
+  'V39CustomerStrategyResult',
+  'createEmptyV39CustomerStrategyItem',
+  'createEmptyV39CustomerStrategyResult',
+  'normalizeV39CustomerStrategyItem',
+  'normalizeV39CustomerStrategyResult',
+  'saveV39CustomerStrategyResult',
+  'loadV39CustomerStrategyResult',
+  'clearV39CustomerStrategyResult',
+]) {
+  checkIncludes(files.customerStrategyStore, marker, 'v39 customer strategy result store marker');
+}
+
+for (const marker of [
   'V39MemberRoleLab',
   'V38MemberRoleLab',
   'loadV39DashboardResult',
-  'v39 Step 5 → Step 8 Bridge',
+  'Step 5 → Step 8 Bridge',
   '5단계 저장 결과를 팀원 역할 방향에 연결',
   '5단계 저장 결과 새로고침',
   '선택 유형 신호 요약',
@@ -171,12 +200,18 @@ for (const marker of [
   'RoleRecommendationDraft',
   'buildRoleRecommendationDrafts',
   'readableMemberLabel',
-  'v39 역할 추천 초안',
+  '역할 추천 초안',
   '저장 결과 기반 역할 추천 초안',
   '역할 후보',
   '코칭 초점',
   '주의할 점',
   '추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다',
+  'V39CustomerStrategyBridgePanel',
+  'Customer Strategy Bridge',
+  '7단계 고객 대응 전략을 팀원 역할 배정에 연결',
+  '7단계 전략 결과 새로고침',
+  'buildStrategyRoleHints',
+  '팀원 역할 배정 참고 초안',
 ]) {
   checkIncludes(files.memberRoleBridge, marker, 'v39 member role bridge marker');
 }
