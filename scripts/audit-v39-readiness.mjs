@@ -134,6 +134,10 @@ for (const [file, marker] of implementationMarkers) {
   pass(includes(files[file], marker), `v39 wrapper must use expected implementation: ${file} -> ${marker}`);
 }
 
+for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '팀원 실행 대화 포인트', '실행 대화 새로고침']) {
+  pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan must include people dialogue bridge marker: ${marker}`);
+}
+
 const forbiddenByFile = [
   ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
   ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
