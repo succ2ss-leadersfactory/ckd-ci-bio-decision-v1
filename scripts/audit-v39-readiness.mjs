@@ -112,7 +112,7 @@ const implementationMarkers = [
   ['src/journey-v39-dashboard-analysis-lab.tsx', 'V38DashboardAnalysisLab'],
   ['src/journey-v39-customer-judgment-lab.tsx', 'V39CustomerDataJudgmentFlow'],
   ['src/journey-v39-customer-priority-lab.tsx', 'V39CustomerJudgmentBridgePanel'],
-  ['src/journey-v39-member-role-lab.tsx', 'V38MemberRoleLab'],
+  ['src/journey-v39-member-role-lab.tsx', 'V39CustomerRolePlanningPanel'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V38AiCallPlanLab'],
   ['src/journey-v39-compliance-cleanup-lab.tsx', 'V38ComplianceCleanupLab'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V38FinalCallPlanCard'],
@@ -125,6 +125,7 @@ for (const [file, marker] of implementationMarkers) {
 const forbiddenByFile = [
   ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
   ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
+  ['src/journey-v39-member-role-lab.tsx', ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />']],
 ];
 for (const [file, markers] of forbiddenByFile) {
   for (const marker of markers) {
