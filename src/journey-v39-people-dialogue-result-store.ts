@@ -1,4 +1,4 @@
-export const V39_PEOPLE_DIALOGUE_RESULT_SCHEMA_VERSION = 1;
+export const V39_PEOPLE_DIALOGUE_RESULT_SCHEMA_VERSION = 2;
 
 export const V39_PEOPLE_DIALOGUE_RESULT_STORAGE_KEY = 'ckd.v39.peopleDialogue.result.v1';
 
@@ -11,6 +11,14 @@ export type V39PeopleDialogueResult = {
   existingMemberSignalSelections: string[];
   conflictTypeSelections: string[];
   dialogueStrategySelections: string[];
+  conversationSituationId: string;
+  dialoguePurposeId: string;
+  familiarOpeningId: string;
+  familiarOpeningCustom: string;
+  perceivedByNewGen: string;
+  perceivedByExistingMember: string;
+  missingInformation: string;
+  purposeFitOpening: string;
   rawAiDialogueResult: string;
   dialogueCard: {
     targetMember: string;
@@ -52,6 +60,14 @@ export function createEmptyV39PeopleDialogueResult(): V39PeopleDialogueResult {
     existingMemberSignalSelections: [],
     conflictTypeSelections: [],
     dialogueStrategySelections: [],
+    conversationSituationId: '',
+    dialoguePurposeId: '',
+    familiarOpeningId: '',
+    familiarOpeningCustom: '',
+    perceivedByNewGen: '',
+    perceivedByExistingMember: '',
+    missingInformation: '',
+    purposeFitOpening: '',
     rawAiDialogueResult: '',
     dialogueCard: { ...EMPTY_DIALOGUE_CARD },
     teamNorms: '',
@@ -97,6 +113,14 @@ export function normalizeV39PeopleDialogueResult(value: unknown): V39PeopleDialo
     existingMemberSignalSelections: normalizeStringArray(source.existingMemberSignalSelections),
     conflictTypeSelections: normalizeStringArray(source.conflictTypeSelections),
     dialogueStrategySelections: normalizeStringArray(source.dialogueStrategySelections),
+    conversationSituationId: normalizeText(source.conversationSituationId),
+    dialoguePurposeId: normalizeText(source.dialoguePurposeId),
+    familiarOpeningId: normalizeText(source.familiarOpeningId),
+    familiarOpeningCustom: normalizeText(source.familiarOpeningCustom),
+    perceivedByNewGen: normalizeText(source.perceivedByNewGen),
+    perceivedByExistingMember: normalizeText(source.perceivedByExistingMember),
+    missingInformation: normalizeText(source.missingInformation),
+    purposeFitOpening: normalizeText(source.purposeFitOpening),
     rawAiDialogueResult: normalizeText(source.rawAiDialogueResult),
     dialogueCard: normalizeDialogueCard(source.dialogueCard),
     teamNorms: normalizeText(source.teamNorms),
