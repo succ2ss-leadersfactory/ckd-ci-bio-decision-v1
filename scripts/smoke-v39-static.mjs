@@ -100,6 +100,18 @@ for (const marker of [
   '판단 초안 가져오기',
   '선택 완료',
   '고객 판단 선택 초기화',
+  'buildCustomerAiAnalysisPrompt',
+  'AI 분석 프롬프트 생성',
+  '프롬프트 복사',
+  '프롬프트 복사 완료',
+  '복사해서 사용할 AI 분석 프롬프트',
+  '기회 신호',
+  '리스크 신호',
+  '부족한 정보',
+  '다음 확인 질문',
+  '2주 실행 방향',
+  '컴플라이언스 주의점',
+  '실제 고객명·병원명·의료진명·제품명·내부 수치가 들어가지 않도록 안전선 문구를 포함했습니다',
   '실제 고객명·병원명·의료진명·제품명·내부 수치는 입력하지 않습니다',
 ]) {
   checkIncludes(files.customerJudgmentWrapper, marker, 'v39 customer judgment wrapper marker');
@@ -166,6 +178,8 @@ for (const marker of [
 checkNotIncludes(files.html, 'v39 Preview', 'internal v39 preview wording in HTML title');
 checkNotIncludes(files.html, 'C1바이오 v39 Preview', 'internal v39 preview title');
 checkNotIncludes(files.app, "import './journey-v38-app-preview';", 'old v39 side-effect wrapper import');
+checkNotIncludes(files.customerJudgmentWrapper, 'v39 Customer Priority Selection', 'internal v39 customer priority wording');
+checkNotIncludes(files.customerJudgmentWrapper, 'v39 Customer Data', 'internal v39 customer data wording');
 
 if (failures.length > 0) {
   console.error('v39 static smoke failed:');
