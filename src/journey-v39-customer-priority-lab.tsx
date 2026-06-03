@@ -6,6 +6,12 @@ import {
   loadV39CustomerJudgmentResult,
   normalizeV39CustomerDecisionResult,
 } from './journey-v39-customer-judgment-result-store';
+import {
+  type V39CustomerStrategyResultItem,
+  loadV39CustomerStrategyResult,
+  normalizeV39CustomerStrategyItem,
+  saveV39CustomerStrategyResult,
+} from './journey-v39-customer-strategy-result-store';
 
 type CustomerBridgeItem = {
   id: string;
@@ -53,6 +59,18 @@ const PRIORITY_BADGE_CLASS: Record<V39CustomerPriorityDecision, string> = {
   supplement: 'border-slate-200 bg-slate-50 text-slate-800',
 };
 
+const STRATEGY_PRIORITY_OPTIONS = ['적극 집중', '조건부 집중', '속도 조절', '관찰/유지', '정보 보완', '접근 강도 축소'];
+
+const MEMBER_ROLE_OPTIONS = [
+  '신재영 대리 · 후속 대화 연결',
+  '이대은 대리 · 관계 유지 품질 관리',
+  '박재욱 사원 · CRM·정보 보완',
+  '유희관 과장 · 변화 신호 관찰',
+  '김문호 차장 · 접근 강도 조절',
+  '김재호 차장 · 현장 대응 후 기록 정리',
+  '팀장 직접 점검 필요',
+];
+
 function getPriorityLabel(priorityDecision: V39CustomerPriorityDecision | '') {
   if (priorityDecision === 'focus') return '집중';
   if (priorityDecision === 'maintain') return '유지';
@@ -69,6 +87,22 @@ function getStrategyGuide(decision: V39CustomerDecisionResult, fallbackGuide: st
   return fallbackGuide;
 }
 
+function defaultStrategyPriority(decision: V39CustomerDecisionResult) {
+  if (decision.priorityDecision === 'focus') return '조건부 집중';
+  if (decision.priorityDecision === 'maintain') return '관찰/유지';
+  if (decision.priorityDecision === 'defer') return '접근 강도 축소';
+  if (decision.priorityDecision === 'supplement') return '정보 보완';
+  return '';
+}
+
+function defaultMemberRole(decision: V39CustomerDecisionResult) {
+  if (decision.priorityDecision === 'focus') return '신재영 대리 · 후속 대화 연결';
+  if (decision.priorityDecision === 'maintain') return '이대은 대리 · 관계 유지 품질 관리';
+  if (decision.priorityDecision === 'defer') return '김문호 차장 · 접근 강도 조절';
+  if (decision.priorityDecision === 'supplement') return '박재욱 사원 · CRM·정보 보완';
+  return '';
+}
+
 function loadBridgeDecisions(): Record<string, V39CustomerDecisionResult> {
   if (typeof window === 'undefined') return {};
 
@@ -82,12 +116,52 @@ function loadBridgeDecisions(): Record<string, V39CustomerDecisionResult> {
   return decisions;
 }
 
+function loadStrategyState(): Record<string, V39CustomerStrategyResultItem> {
+  if (typeof window === 'undefined') return {};
+
+  const saved = loadV39CustomerStrategyResult();
+  const strategies: Record<string, V39CustomerStrategyResultItem> = {};
+
+  for (const item of CUSTOMER_BRIDGE_ITEMS) {
+    strategies[item.id] = normalizeV39CustomerStrategyItem(saved.strategies[item.id], item.id, item.label);
+  }
+
+  return strategies;
+}
+
 function V39CustomerJudgmentBridgePanel() {
   const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(loadBridgeDecisions);
+  const [strategies, setStrategies] = useState<Record<string, V39CustomerStrategyResultItem>>(loadStrategyState);
   const selectedCount = CUSTOMER_BRIDGE_ITEMS.filter((item) => decisions[item.id]?.priorityDecision).length;
+  const savedStrategyCount = CUSTOMER_BRIDGE_ITEMS.filter((item) => strategies[item.id]?.strategy?.trim()).length;
 
   const refreshCustomerJudgmentBridge = () => {
     setDecisions(loadBridgeDecisions());
+  };
+
+  const updateStrategy = (customerTypeId: string, patch: Partial<V39CustomerStrategyResultItem>) => {
+    setStrategies((current) => {
+      const item = CUSTOMER_BRIDGE_ITEMS.find((bridgeItem) => bridgeItem.id === customerTypeId);
+      if (!item) return current;
+      const next = {
+        ...current,
+        [customerTypeId]: {
+          ...normalizeV39CustomerStrategyItem(current[customerTypeId], item.id, item.label),
+          ...patch,
+        },
+      };
+      saveV39CustomerStrategyResult({ schemaVersion: 1, updatedAt: '', strategies: next });
+      return next;
+    });
+  };
+
+  const applyStrategyDraft = (item: CustomerBridgeItem, decision: V39CustomerDecisionResult) => {
+    updateStrategy(item.id, {
+      priority: strategies[item.id]?.priority || defaultStrategyPriority(decision),
+      memberRole: strategies[item.id]?.memberRole || defaultMemberRole(decision),
+      strategy: strategies[item.id]?.strategy || getStrategyGuide(decision, item.defaultGuide),
+      risk: strategies[item.id]?.risk || decision.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인합니다.',
+    });
   };
 
   return (
@@ -105,6 +179,9 @@ function V39CustomerJudgmentBridgePanel() {
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
             연결된 판단 {selectedCount} / {CUSTOMER_BRIDGE_ITEMS.length}
           </div>
+          <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
+            저장된 전략 {savedStrategyCount} / {CUSTOMER_BRIDGE_ITEMS.length}
+          </div>
           <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={refreshCustomerJudgmentBridge}>
             6단계 판단 새로고침
           </button>
@@ -114,6 +191,7 @@ function V39CustomerJudgmentBridgePanel() {
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {CUSTOMER_BRIDGE_ITEMS.map((item) => {
           const current = decisions[item.id] ?? normalizeV39CustomerDecisionResult(undefined, item.id, item.label);
+          const strategy = strategies[item.id] ?? normalizeV39CustomerStrategyItem(undefined, item.id, item.label);
           const badgeClass = current.priorityDecision ? PRIORITY_BADGE_CLASS[current.priorityDecision] : 'border-slate-200 bg-white text-slate-500';
 
           return (
@@ -130,6 +208,34 @@ function V39CustomerJudgmentBridgePanel() {
                 <p><span className="font-black text-slate-950">판단 이유: </span>{current.reason || '6단계 판단 이유가 아직 저장되지 않았습니다.'}</p>
                 <p className="mt-2"><span className="font-black text-slate-950">다음 확인 질문: </span>{current.nextCheck || '추가 확인 질문을 7단계에서 보완하세요.'}</p>
                 <p className="mt-2"><span className="font-black text-slate-950">안전선 메모: </span>{current.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인하세요.'}</p>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">8단계 연결용 우선순위</span>
+                  <select className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold" value={strategy.priority} onChange={(event) => updateStrategy(item.id, { priority: event.target.value })}>
+                    <option value="">선택하세요</option>
+                    {STRATEGY_PRIORITY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">8단계 연결용 팀원 배정 방향</span>
+                  <select className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm font-bold" value={strategy.memberRole} onChange={(event) => updateStrategy(item.id, { memberRole: event.target.value })}>
+                    <option value="">선택하세요</option>
+                    {MEMBER_ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">8단계 연결용 2주 대응 전략</span>
+                  <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.strategy} onChange={(event) => updateStrategy(item.id, { strategy: event.target.value })} placeholder="예: 후속 대화 가능성을 살리되, 자료·표현 안전선을 먼저 확인한다." />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">8단계 연결용 주의 리스크</span>
+                  <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.risk} onChange={(event) => updateStrategy(item.id, { risk: event.target.value })} placeholder="예: 고객 부담, 과잉 접촉, 컴플라이언스 표현 리스크." />
+                </label>
+                <button type="button" className="rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyStrategyDraft(item, current)}>
+                  8단계 연결 초안 가져오기
+                </button>
               </div>
             </article>
           );
