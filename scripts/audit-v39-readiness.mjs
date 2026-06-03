@@ -162,9 +162,9 @@ const staticSmoke = files['scripts/smoke-v39-static.mjs'];
 for (const file of ['src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 
 for (const [doc, markers] of [
-  ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', 'Go / No-Go']],
-  ['docs/v39-preview-readiness-report.md', ['# v39 Preview Readiness Report', 'Conditional Go', '보호 파일 준수 여부', '5→12단계 연결 구조', 'localStorage key 현황', '남은 수동 QA 항목', 'Go / No-Go 기준']],
-  ['docs/v39-preview-manual-qa-run.md', ['# v39 Preview Manual QA Run', 'QA 기본 정보', 'End-to-End 저장·연결 QA', '5→8', '11→12', '발견 이슈 기록', 'Go / No-Go 판단']],
+  ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', '12단계 저장', '13단계: 강사용 토의 질문', '5→13단계 저장·연결 흐름 정상']],
+  ['docs/v39-preview-readiness-report.md', ['# v39 Preview Readiness Report', 'Go 후보', '보호 파일 준수 여부', '5→13단계 연결 구조', 'localStorage key 현황', '남은 수동 QA 항목', 'Go / No-Go 기준']],
+  ['docs/v39-preview-manual-qa-run.md', ['# v39 Preview Manual QA Run', 'QA 기본 정보', 'End-to-End 저장·연결 QA', '5→8', '12→13', '발견 이슈 기록', 'Go / No-Go 판단']],
 ]) for (const marker of markers) pass(includes(files[doc], marker), `${doc} must include marker: ${marker}`);
 
 if (failures.length > 0) {
