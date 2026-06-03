@@ -51,6 +51,7 @@ const v39Files = [
   'src/journey-v39-member-role-lab.tsx',
   'src/journey-v39-member-role-result-store.ts',
   'src/journey-v39-people-dialogue-lab.tsx',
+  'src/journey-v39-people-dialogue-ux-lab.tsx',
   'src/journey-v39-people-dialogue-result-store.ts',
   'src/journey-v39-ai-call-plan-lab.tsx',
   'src/journey-v39-ai-call-plan-result-store.ts',
@@ -83,7 +84,7 @@ pass(includes(html, '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</t
 for (const marker of ['v39 Preview', 'C1바이오 v39 Preview', 'preview shell', 'DOM 후처리']) pass(notIncludes(html, marker), `Client-facing HTML must not expose internal wording: ${marker}`);
 
 const app = files['src/journey-v39-app-preview.tsx'];
-for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39PeopleDialogueLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) {
+for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) {
   pass(includes(app, marker), `v39 app missing route/component marker: ${marker}`);
 }
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step', "import './journey-v38-app-preview';", "from './journey-active'"]) pass(notIncludes(app, marker), `v39 app must not expose old route marker: ${marker}`);
@@ -97,6 +98,7 @@ const expectedImplementationMarkers = [
   ['src/journey-v39-customer-priority-lab.tsx', 'V39CustomerJudgmentBridgePanel'],
   ['src/journey-v39-member-role-lab.tsx', 'V39CustomerRolePlanningPanel'],
   ['src/journey-v39-people-dialogue-lab.tsx', 'V39PeopleDialogueLab'],
+  ['src/journey-v39-people-dialogue-ux-lab.tsx', 'V39PeopleDialogueUxLab'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V39MemberRoleCallPlanPanel'],
   ['src/journey-v39-compliance-cleanup-lab.tsx', 'V39AiCallPlanCleanupPanel'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V39FinalExecutionCardPanel'],
@@ -106,6 +108,10 @@ for (const [file, marker] of expectedImplementationMarkers) pass(includes(files[
 
 for (const marker of ['팀장의 첫마디를 목적에 맞게 바꾸기', '나 때는 말이야', '지금은 말이야', '왜 대화의 시작을 바꿔야 할까', '지금 필요한 대화는 무엇인가', '평소라면 어떻게 시작하시겠습니까', '팀원은 이렇게 들을 수 있습니다', '내가 실제로 사용할 실행 대화 저장', 'DIALOGUE_PURPOSES', 'CONVERSATION_SITUATIONS']) {
   pass(includes(files['src/journey-v39-people-dialogue-lab.tsx'], marker), `people dialogue missing purpose-based marker: ${marker}`);
+}
+
+for (const marker of ['9단계 진행 가이드', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물', '10단계 AI 실행계획 프롬프트']) {
+  pass(includes(files['src/journey-v39-people-dialogue-ux-lab.tsx'], marker), `people dialogue UX wrapper missing marker: ${marker}`);
 }
 
 for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarOpeningId', 'perceivedByNewGen', 'perceivedByExistingMember', 'missingInformation', 'purposeFitOpening']) {
@@ -137,6 +143,7 @@ const forbiddenByFile = [
   ['src/journey-v39-final-call-plan-card.tsx', ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']],
   ['src/journey-v39-instructor-discussion-lab.tsx', ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']],
   ['src/journey-v39-people-dialogue-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
+  ['src/journey-v39-people-dialogue-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
 ];
 for (const [file, markers] of forbiddenByFile) for (const marker of markers) pass(notIncludes(files[file], marker), `${file} must not expose forbidden marker: ${marker}`);
 
@@ -159,7 +166,7 @@ const tsconfig = files['tsconfig.v39-smoke.json'];
 for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsWith('.ts'))) pass(includes(tsconfig, file), `tsconfig.v39-smoke.json must include ${file}`);
 
 const staticSmoke = files['scripts/smoke-v39-static.mjs'];
-for (const file of ['src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
+for (const file of ['src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 
 for (const [doc, markers] of [
   ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', '12단계 저장', '13단계: 강사용 토의 질문', '5→13단계 저장·연결 흐름 정상']],
