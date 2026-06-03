@@ -48,17 +48,17 @@ export const V39_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'ai-call-plan',
-    title: 'AI 콜플랜 결과물 요청',
-    description: '앞 단계의 판단과 팀원 대화 맥락을 바탕으로 AI에 요청할 결과물을 선택하고 복사용 프롬프트를 생성합니다.',
+    title: 'AI 실행계획 프롬프트 준비',
+    description: '앞 단계의 판단, 팀원 역할, 실행 대화 맥락을 바탕으로 AI에 요청할 실행계획 프롬프트를 준비합니다.',
   },
   {
     id: 'compliance-cleanup',
     title: '컴플라이언스 위험 표현 제거',
-    description: 'AI 초안과 콜플랜 문장에서 위험 표현을 찾아 안전한 대체 표현으로 수정합니다.',
+    description: 'AI 초안과 실행계획 문장에서 위험 표현을 찾아 안전한 대체 표현으로 수정합니다.',
   },
   {
     id: 'final-call-plan-card',
-    title: '최종 2주 콜플랜 카드',
+    title: '최종 2주 실행 카드',
     description: '앞 단계의 판단과 수정 내용을 교육 후 가져갈 수 있는 실행 카드로 정리합니다.',
   },
   {
