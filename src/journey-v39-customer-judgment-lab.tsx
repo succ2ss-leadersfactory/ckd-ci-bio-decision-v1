@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { V38CustomerJudgmentLab } from './journey-v38-customer-judgment-lab';
 import {
   type V39CustomerDecisionResult,
   type V39CustomerPriorityDecision,
@@ -547,10 +546,5 @@ function V39CustomerDataJudgmentFlow() {
 }
 
 export function V39CustomerJudgmentLab() {
-  return (
-    <section className="space-y-4">
-      <V39CustomerDataJudgmentFlow />
-      <V38CustomerJudgmentLab />
-    </section>
-  );
+  return <V39CustomerDataJudgmentFlow />;
 }
