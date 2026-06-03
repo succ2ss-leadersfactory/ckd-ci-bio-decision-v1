@@ -4,6 +4,11 @@ import {
   type V39ComplianceCleanupResult,
   loadV39ComplianceCleanupResult,
 } from './journey-v39-compliance-cleanup-result-store';
+import {
+  type V39FinalCallPlanResult,
+  loadV39FinalCallPlanResult,
+  saveV39FinalCallPlanResult,
+} from './journey-v39-final-call-plan-result-store';
 
 function buildFinalCardSummary(result: V39ComplianceCleanupResult) {
   if (!result.updatedAt) {
@@ -27,8 +32,20 @@ function buildFinalCardSummary(result: V39ComplianceCleanupResult) {
   ].join('\n');
 }
 
+function buildDefaultFinalCallPlanResult(cleanup: V39ComplianceCleanupResult, current: V39FinalCallPlanResult): Partial<V39FinalCallPlanResult> {
+  return {
+    focusCustomers: current.focusCustomers || '기회 신호와 실행 가능성이 함께 확인된 고객군을 우선 검토합니다.',
+    memberRoles: current.memberRoles || '팀원별 역할은 고객군 특성, 실행 강점, 코칭 필요점을 기준으로 조정합니다.',
+    twoWeekAction: current.twoWeekAction || '1주차에는 확인 질문과 사용 가능한 자료 범위를 정리하고, 2주차에는 후속 반응과 실행 기록을 점검합니다.',
+    compliancePoint: current.compliancePoint || cleanup.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치 입력을 금지하고, 처방 유도·비교 우위 단정·허가 외 표현을 제거합니다.',
+    firstMessage: current.firstMessage || '이번 2주는 많이 방문하는 것보다 고객군별 반응 신호를 읽고 안전한 다음 행동을 정하는 데 집중합시다.',
+    discussionMemo: current.discussionMemo || cleanup.finalCardMemo || '강사용 토의에서는 AI 초안이 아니라 팀장이 어떤 기준으로 문장을 수정했는지 확인합니다.',
+  };
+}
+
 function V39ComplianceFinalCardBridgePanel({ result, onRefresh }: { result: V39ComplianceCleanupResult; onRefresh: () => void }) {
   const [copied, setCopied] = useState(false);
+  const [finalCardResult, setFinalCardResult] = useState(() => loadV39FinalCallPlanResult());
   const summary = buildFinalCardSummary(result);
 
   const copyFinalCardSummary = async () => {
@@ -39,6 +56,18 @@ function V39ComplianceFinalCardBridgePanel({ result, onRefresh }: { result: V39C
     } catch {
       setCopied(false);
     }
+  };
+
+  const updateFinalCardResult = (patch: Partial<V39FinalCallPlanResult>) => {
+    setFinalCardResult((current) => {
+      const next = { ...current, ...patch };
+      saveV39FinalCallPlanResult(next);
+      return next;
+    });
+  };
+
+  const applyFinalCardDraft = () => {
+    updateFinalCardResult(buildDefaultFinalCallPlanResult(result, finalCardResult));
   };
 
   return (
@@ -73,8 +102,8 @@ function V39ComplianceFinalCardBridgePanel({ result, onRefresh }: { result: V39C
           <p className="mt-1 text-sm font-black text-slate-900">{result.safeExpression.trim() ? '저장됨' : '미작성'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">최종 체크리스트</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.finalChecklist.trim() ? '저장됨' : '미작성'}</p>
+          <p className="text-xs font-black text-slate-500">12단계 연결</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{finalCardResult.updatedAt ? '최종 카드 요약 있음' : '최종 카드 요약 없음'}</p>
         </div>
       </div>
 
@@ -107,6 +136,47 @@ function V39ComplianceFinalCardBridgePanel({ result, onRefresh }: { result: V39C
         <span className="text-sm font-black text-slate-950">최종 실행 카드에 반영할 요약</span>
         <textarea className="mt-3 min-h-64 w-full rounded-2xl border bg-slate-50 px-4 py-3 font-mono text-xs leading-6 text-slate-900" value={summary} readOnly />
       </label>
+
+      <div className="mt-4 rounded-2xl border border-cyan-100 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Instructor Discussion Bridge</p>
+            <h3 className="text-lg font-black text-slate-950">12단계 연결용 최종 실행 카드 요약 저장</h3>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
+              강사용 토의 화면에서 참여자의 판단 근거, 실행 우선순위, 안전 문장 수정 포인트를 확인할 수 있도록 요약을 저장합니다.
+            </p>
+          </div>
+          <button type="button" className="rounded-2xl border bg-cyan-50 px-4 py-2 text-xs font-black text-cyan-800" onClick={applyFinalCardDraft}>
+            12단계 연결 초안 가져오기
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">집중 고객군 요약</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.focusCustomers} onChange={(event) => updateFinalCardResult({ focusCustomers: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">팀원별 역할 요약</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.memberRoles} onChange={(event) => updateFinalCardResult({ memberRoles: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">2주 실행 우선순위</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.twoWeekAction} onChange={(event) => updateFinalCardResult({ twoWeekAction: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">컴플라이언스 포인트</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.compliancePoint} onChange={(event) => updateFinalCardResult({ compliancePoint: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">팀원에게 말할 첫 문장</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.firstMessage} onChange={(event) => updateFinalCardResult({ firstMessage: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">강사용 토의 메모</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.discussionMemo} onChange={(event) => updateFinalCardResult({ discussionMemo: event.target.value })} />
+          </label>
+        </div>
+      </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-950">
         최종 카드에도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
