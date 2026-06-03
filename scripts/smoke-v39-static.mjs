@@ -77,7 +77,7 @@ for (const [label, source, markers] of [
   ['dashboard customer hero', files.dashboardCore, ['heroVariant?: DashboardHeroVariant', 'heroVariant === \'customer\'', '5단계 팀 실행진단', '우리 팀 지표로 다음 행동 준비하기', 'CustomerProgressItem']],
   ['customer judgment wrapper', files.customerJudgmentWrapper, ['V39CustomerJudgmentLab', 'V38CustomerJudgmentLab', '고객 Data 판단 프레임', '고객별 우선순위 선택', 'AI 분석 프롬프트 생성']],
   ['customer judgment store', files.customerJudgmentStore, ['ckd.v39.customerJudgment.result.v1', 'saveV39CustomerJudgmentResult', 'loadV39CustomerJudgmentResult']],
-  ['customer priority bridge', files.customerPriorityBridge, ['V39CustomerPriorityLab', 'V38CustomerPriorityLab', '6단계 고객 판단 결과 연결', '8단계 연결용 2주 대응 전략', 'saveV39CustomerStrategyResult']],
+  ['customer priority bridge', files.customerPriorityBridge, ['V39CustomerPriorityLab', 'V38CustomerPriorityLab', '고객 판단을 대응 전략으로 정리하기', '고객 대응 우선순위', '전략 초안 가져오기', 'saveV39CustomerStrategyResult']],
   ['customer strategy store', files.customerStrategyStore, ['ckd.v39.customerStrategy.result.v1', 'saveV39CustomerStrategyResult', 'loadV39CustomerStrategyResult']],
   ['member role bridge', files.memberRoleBridge, ['V39MemberRoleLab', 'V38MemberRoleLab', '7단계 고객 대응 전략을 팀원 역할 배정에 연결', '9단계 연결용 팀원 역할 배정 저장', 'saveV39MemberRoleResult']],
   ['member role store', files.memberRoleStore, ['ckd.v39.memberRole.result.v1', 'saveV39MemberRoleResult', 'loadV39MemberRoleResult']],
@@ -98,6 +98,7 @@ for (const [label, source, markers] of [
   ['app old side effect', files.app, ["import './journey-v38-app-preview';"]],
   ['customer judgment internal wording', files.customerJudgmentWrapper, ['v39 Customer Priority Selection', 'v39 Customer Data']],
   ['dashboard wrapper removed memo panel', files.dashboardWrapper, ['팀 실행진단 메모', 'Team Execution Memo', '입력 내용 저장', '저장 내용 비우기', 'saveV39DashboardResult']],
+  ['customer priority client copy', files.customerPriorityBridge, ['Customer Judgment Bridge', '6단계 고객 판단 결과 연결', '8단계 연결용', '연결 초안 가져오기']],
 ]) {
   for (const marker of markers) checkNotIncludes(source, marker, label);
 }
