@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { V38CustomerPriorityLab } from './journey-v38-customer-priority-lab';
 import {
   type V39CustomerDecisionResult,
+  type V39CustomerJudgmentResult,
   type V39CustomerPriorityDecision,
   loadV39CustomerJudgmentResult,
   normalizeV39CustomerDecisionResult,
+  normalizeV39CustomerJudgmentResult,
 } from './journey-v39-customer-judgment-result-store';
 import {
   type V39CustomerStrategyResultItem,
@@ -80,11 +82,17 @@ function getPriorityLabel(priorityDecision: V39CustomerPriorityDecision | '') {
 }
 
 function getStrategyGuide(decision: V39CustomerDecisionResult, fallbackGuide: string) {
+  if (decision.twoWeekDirection.trim()) return decision.twoWeekDirection;
+  if (decision.judgmentMemo.trim()) return decision.judgmentMemo;
   if (decision.priorityDecision === 'focus') return '2주 안에 대응 전략을 구체화하되, 자료·표현·접촉 안전선을 먼저 확인합니다.';
   if (decision.priorityDecision === 'maintain') return '관계 유지 품질과 반응 변화 관찰 기준을 세우고 과도한 설득을 피합니다.';
   if (decision.priorityDecision === 'defer') return '접근 강도와 타이밍을 낮추고 고객 부담·리스크를 먼저 관리합니다.';
   if (decision.priorityDecision === 'supplement') return '우선순위 결정보다 부족한 정보와 확인 질문, CRM 기록 보완을 먼저 설계합니다.';
   return fallbackGuide;
+}
+
+function buildRiskGuide(decision: V39CustomerDecisionResult) {
+  return [decision.riskSignal, decision.complianceNote].map((item) => item.trim()).filter(Boolean).join('\n');
 }
 
 function defaultStrategyPriority(decision: V39CustomerDecisionResult) {
@@ -103,14 +111,16 @@ function defaultMemberRole(decision: V39CustomerDecisionResult) {
   return '';
 }
 
-function loadBridgeDecisions(): Record<string, V39CustomerDecisionResult> {
-  if (typeof window === 'undefined') return {};
+function loadSourceJudgmentResult(): V39CustomerJudgmentResult {
+  if (typeof window === 'undefined') return normalizeV39CustomerJudgmentResult(undefined);
+  return normalizeV39CustomerJudgmentResult(loadV39CustomerJudgmentResult());
+}
 
-  const saved = loadV39CustomerJudgmentResult();
+function loadBridgeDecisions(sourceResult: V39CustomerJudgmentResult): Record<string, V39CustomerDecisionResult> {
   const decisions: Record<string, V39CustomerDecisionResult> = {};
 
   for (const item of CUSTOMER_BRIDGE_ITEMS) {
-    decisions[item.id] = normalizeV39CustomerDecisionResult(saved.decisions[item.id], item.id, item.label);
+    decisions[item.id] = normalizeV39CustomerDecisionResult(sourceResult.decisions[item.id], item.id, item.label);
   }
 
   return decisions;
@@ -129,14 +139,33 @@ function loadStrategyState(): Record<string, V39CustomerStrategyResultItem> {
   return strategies;
 }
 
+function SelectionChips({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+  return (
+    <div className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+      <p className="font-black text-slate-950">{title}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {items.length > 0 ? items.map((item) => (
+          <span key={item} className="rounded-full bg-emerald-50 px-2.5 py-1 font-black text-emerald-800">{item}</span>
+        )) : <span className="text-slate-500">{empty}</span>}
+      </div>
+    </div>
+  );
+}
+
 function V39CustomerJudgmentBridgePanel() {
-  const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(loadBridgeDecisions);
+  const [sourceResult, setSourceResult] = useState<V39CustomerJudgmentResult>(loadSourceJudgmentResult);
+  const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(() => loadBridgeDecisions(sourceResult));
   const [strategies, setStrategies] = useState<Record<string, V39CustomerStrategyResultItem>>(loadStrategyState);
-  const selectedCount = CUSTOMER_BRIDGE_ITEMS.filter((item) => decisions[item.id]?.priorityDecision).length;
-  const savedStrategyCount = CUSTOMER_BRIDGE_ITEMS.filter((item) => strategies[item.id]?.strategy?.trim()).length;
+  const displayItems = sourceResult.selectedCustomerTypeIds.length > 0
+    ? CUSTOMER_BRIDGE_ITEMS.filter((item) => sourceResult.selectedCustomerTypeIds.includes(item.id))
+    : CUSTOMER_BRIDGE_ITEMS;
+  const selectedCount = displayItems.filter((item) => decisions[item.id]?.priorityDecision).length;
+  const savedStrategyCount = displayItems.filter((item) => strategies[item.id]?.strategy?.trim()).length;
 
   const refreshCustomerJudgmentBridge = () => {
-    setDecisions(loadBridgeDecisions());
+    const nextSource = loadSourceJudgmentResult();
+    setSourceResult(nextSource);
+    setDecisions(loadBridgeDecisions(nextSource));
   };
 
   const updateStrategy = (customerTypeId: string, patch: Partial<V39CustomerStrategyResultItem>) => {
@@ -156,11 +185,12 @@ function V39CustomerJudgmentBridgePanel() {
   };
 
   const applyStrategyDraft = (item: CustomerBridgeItem, decision: V39CustomerDecisionResult) => {
+    const riskGuide = buildRiskGuide(decision);
     updateStrategy(item.id, {
       priority: strategies[item.id]?.priority || defaultStrategyPriority(decision),
       memberRole: strategies[item.id]?.memberRole || defaultMemberRole(decision),
       strategy: strategies[item.id]?.strategy || getStrategyGuide(decision, item.defaultGuide),
-      risk: strategies[item.id]?.risk || decision.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인합니다.',
+      risk: strategies[item.id]?.risk || riskGuide || '표현·자료·접촉 강도 안전선을 다시 확인합니다.',
     });
   };
 
@@ -171,16 +201,16 @@ function V39CustomerJudgmentBridgePanel() {
           <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Strategy Review</p>
           <h2 className="mt-2 text-2xl font-black text-slate-950">고객 판단을 대응 전략으로 정리하기</h2>
           <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
-            이전 단계에서 남긴 고객별 우선순위 판단을 바탕으로 대응 강도, 팀원 배정 방향, 2주 실행 전략, 안전선을 정리합니다.
+            이전 단계에서 정리한 고객별 기회 신호, 착시·리스크 신호, 부족한 정보, 2주 판단 메모를 바탕으로 대응 강도와 팀원 배정 방향을 정리합니다.
             이 요약은 자동 결정이 아니라 팀장이 현장 맥락에 맞게 다시 검토하기 위한 참고 자료입니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
-            판단 정리 {selectedCount} / {CUSTOMER_BRIDGE_ITEMS.length}
+            판단 정리 {selectedCount} / {displayItems.length}
           </div>
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">
-            전략 작성 {savedStrategyCount} / {CUSTOMER_BRIDGE_ITEMS.length}
+            전략 작성 {savedStrategyCount} / {displayItems.length}
           </div>
           <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={refreshCustomerJudgmentBridge}>
             이전 판단 새로고침
@@ -188,8 +218,14 @@ function V39CustomerJudgmentBridgePanel() {
         </div>
       </div>
 
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SelectionChips title="6단계 고객 Data 상황" items={sourceResult.customerContextSelections} empty="아직 선택된 상황이 없습니다." />
+        <SelectionChips title="6단계 판단 기준" items={sourceResult.judgmentCriteriaSelections} empty="아직 선택된 판단 기준이 없습니다." />
+        <SelectionChips title="7단계 표시 고객" items={displayItems.map((item) => item.label)} empty="전체 고객 유형을 표시합니다." />
+      </div>
+
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {CUSTOMER_BRIDGE_ITEMS.map((item) => {
+        {displayItems.map((item) => {
           const current = decisions[item.id] ?? normalizeV39CustomerDecisionResult(undefined, item.id, item.label);
           const strategy = strategies[item.id] ?? normalizeV39CustomerStrategyItem(undefined, item.id, item.label);
           const badgeClass = current.priorityDecision ? PRIORITY_BADGE_CLASS[current.priorityDecision] : 'border-slate-200 bg-white text-slate-500';
@@ -204,10 +240,12 @@ function V39CustomerJudgmentBridgePanel() {
               </div>
               <p className="mt-3 text-xs font-black text-emerald-700">전략 작성 방향</p>
               <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{getStrategyGuide(current, item.defaultGuide)}</p>
-              <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
-                <p><span className="font-black text-slate-950">판단 이유: </span>{current.reason || '이전 단계의 판단 이유가 아직 저장되지 않았습니다.'}</p>
-                <p className="mt-2"><span className="font-black text-slate-950">다음 확인 질문: </span>{current.nextCheck || '추가 확인 질문을 이번 단계에서 보완하세요.'}</p>
-                <p className="mt-2"><span className="font-black text-slate-950">안전선 메모: </span>{current.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인하세요.'}</p>
+              <div className="mt-3 grid gap-2 text-xs font-bold leading-5 text-slate-700">
+                <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-950"><span className="font-black">기회 신호: </span>{current.opportunitySignal || '6단계에서 기회 신호를 정리하지 않았습니다.'}</div>
+                <div className="rounded-2xl bg-amber-50 p-3 text-amber-950"><span className="font-black">착시·리스크 신호: </span>{current.riskSignal || '6단계에서 리스크 신호를 정리하지 않았습니다.'}</div>
+                <div className="rounded-2xl bg-slate-50 p-3"><span className="font-black text-slate-950">부족한 정보: </span>{current.missingInfo || '추가 확인 정보가 아직 정리되지 않았습니다.'}</div>
+                <div className="rounded-2xl bg-indigo-50 p-3 text-indigo-950"><span className="font-black">2주 판단 메모: </span>{current.judgmentMemo || current.reason || '이전 단계의 2주 판단 메모가 아직 저장되지 않았습니다.'}</div>
+                <div className="rounded-2xl bg-rose-50 p-3 text-rose-950"><span className="font-black">안전선 메모: </span>{current.complianceNote || '표현·자료·접촉 강도 안전선을 다시 확인하세요.'}</div>
               </div>
 
               <div className="mt-4 grid gap-3">
@@ -234,7 +272,7 @@ function V39CustomerJudgmentBridgePanel() {
                   <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.risk} onChange={(event) => updateStrategy(item.id, { risk: event.target.value })} placeholder="예: 고객 부담, 과잉 접촉, 컴플라이언스 표현 리스크." />
                 </label>
                 <button type="button" className="rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyStrategyDraft(item, current)}>
-                  전략 초안 가져오기
+                  6단계 판단으로 전략 초안 채우기
                 </button>
               </div>
             </article>
