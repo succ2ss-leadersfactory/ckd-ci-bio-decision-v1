@@ -4,10 +4,10 @@
 
 현재 `feature/v37-preview-shell` 브랜치의 v39 preview는 고객 시연 전 자동 검증 기준을 통과한 상태입니다.
 
-최종 확인 커밋:
+최신 확인 커밋:
 
 ```text
-edb4fafc70c4acc87a0c6d2224710e47f1907dcf
+3e5388d7c0aac2968f2903eb743c7e5dbfd134c0
 ```
 
 기준 안정 커밋:
@@ -26,7 +26,7 @@ Go 후보
 
 ## 2. CI 상태
 
-최종 확인 커밋 기준 자동 검증 결과는 다음과 같습니다.
+최신 확인 커밋 기준 자동 검증 결과는 다음과 같습니다.
 
 | Workflow | 상태 |
 |---|---:|
@@ -48,7 +48,7 @@ npm run smoke:v39:dist
 
 ## 3. 보호 파일 준수 여부
 
-아래 보호 파일은 기준 커밋 대비 변경 목록에 포함되지 않았습니다.
+아래 보호 파일은 변경하지 않습니다.
 
 ```text
 journey.html
@@ -58,17 +58,16 @@ src/full-flow-journey-v35.tsx
 src/journey-v38-app-preview.tsx
 ```
 
-운영 route `/journey.html`도 변경하지 않았습니다. 신규 검증과 시연 준비는 `/journey-v39-preview.html`에 한정됩니다.
+운영 route `/journey.html`도 변경하지 않습니다. 신규 검증과 시연 준비는 `/journey-v39-preview.html`에 한정됩니다.
 
 ## 4. v39 신규·수정 파일 현황
-
-기준 커밋 대비 주요 변경 파일은 다음과 같습니다.
 
 ### 문서
 
 ```text
 docs/v39-preview-qa-checklist.md
 docs/v39-preview-readiness-report.md
+docs/v39-preview-manual-qa-run.md
 ```
 
 ### 검증 스크립트
@@ -76,28 +75,26 @@ docs/v39-preview-readiness-report.md
 ```text
 scripts/audit-v39-readiness.mjs
 scripts/smoke-v39-static.mjs
+scripts/smoke-v39-dist.mjs
 ```
 
-### 설정
+### 설정·앱 엔트리
 
 ```text
-package.json
+journey-v39-preview.html
+src/journey-v39-app-preview.tsx
+src/journey-v39-preview-config.ts
 tsconfig.v39-smoke.json
 ```
 
-### v39 앱 엔트리
-
-```text
-src/journey-v39-app-preview.tsx
-```
-
-### v39 wrapper
+### v39 wrapper / lab
 
 ```text
 src/journey-v39-dashboard-analysis-lab.tsx
 src/journey-v39-customer-judgment-lab.tsx
 src/journey-v39-customer-priority-lab.tsx
 src/journey-v39-member-role-lab.tsx
+src/journey-v39-people-dialogue-lab.tsx
 src/journey-v39-ai-call-plan-lab.tsx
 src/journey-v39-compliance-cleanup-lab.tsx
 src/journey-v39-final-call-plan-card.tsx
@@ -111,51 +108,56 @@ src/journey-v39-dashboard-result-store.ts
 src/journey-v39-customer-judgment-result-store.ts
 src/journey-v39-customer-strategy-result-store.ts
 src/journey-v39-member-role-result-store.ts
+src/journey-v39-people-dialogue-result-store.ts
 src/journey-v39-ai-call-plan-result-store.ts
 src/journey-v39-compliance-cleanup-result-store.ts
 src/journey-v39-final-call-plan-result-store.ts
 ```
 
-## 5. v39 설계 원칙 확인
+## 5. 현재 5~13단계 설계 구조
 
-v39는 독립적으로 모든 화면을 새로 만든 구조가 아닙니다. 안정된 v38 컴포넌트를 재사용하면서, 각 단계 상단에 v39 전용 wrapper와 저장·연결 패널을 추가한 구조입니다.
+| 단계 | 화면 | 현재 구현 요지 |
+|---:|---|---|
+| 5 | 팀원 실행진단 | 팀 실행 Data를 보고 핵심 지표·보완 지표·안전선 지표를 저장 |
+| 6 | 고객 Data 분석 | 고객 Data에서 기회·착시·리스크·판단 유보 신호를 구분 |
+| 7 | 고객 유형별 대응 전략 | 6단계 판단을 고객별 2주 대응 전략으로 정리 |
+| 8 | 팀원별 역할 방향 | 5·7단계 결과를 팀원별 역할, 코칭 초점, 안전선으로 전환 |
+| 9 | 팀원 온도차와 실행 대화 | 대화 상황, 대화 목적 8유형, 평소 첫마디, 팀원 인식, 개선 첫마디를 저장 |
+| 10 | AI 콜플랜 결과물 요청 | 8·9단계 결과를 바탕으로 AI Call Plan 요청 맥락을 생성 |
+| 11 | 컴플라이언스 위험 표현 제거 | AI Call Plan 초안과 사람관리 대화 표현을 안전 문장으로 수정 |
+| 12 | 최종 2주 콜플랜 카드 | 8·9·11단계 결과를 최종 실행 카드로 통합 |
+| 13 | 강사용 토의 질문 | 12단계 결과를 강사용 디브리핑 질문으로 전환 |
 
-| 단계 | v39 wrapper | 재사용 v38 컴포넌트 |
-|---|---|---|
-| 5단계 Dashboard 분석 | `V39DashboardAnalysisLab` | `V38DashboardAnalysisLab` |
-| 6단계 고객 Data 판단 | `V39CustomerJudgmentLab` | `V38CustomerJudgmentLab` |
-| 7단계 고객 대응 전략 | `V39CustomerPriorityLab` | `V38CustomerPriorityLab` |
-| 8단계 팀원 역할 배정 | `V39MemberRoleLab` | `V38MemberRoleLab` |
-| 9단계 AI Call Plan | `V39AiCallPlanLab` | `V38AiCallPlanLab` |
-| 10단계 컴플라이언스 정리 | `V39ComplianceCleanupLab` | `V38ComplianceCleanupLab` |
-| 11단계 최종 실행 카드 | `V39FinalCallPlanCard` | `V38FinalCallPlanCard` |
-| 12단계 강사용 토의 | `V39InstructorDiscussionLab` | `V38InstructorDiscussionLab` |
-
-## 6. 5→12단계 연결 구조
+## 6. 5→13단계 연결 구조
 
 현재 v39 preview의 핵심 연결 흐름은 다음과 같습니다.
 
 ```text
-5단계 팀 Dashboard 분석 결과 저장
-→ 8단계 팀원 역할 배정에 연결
+5단계 팀원 실행진단 결과 저장
+→ 8단계 팀원 역할 방향에 연결
 
-6단계 고객 Data 판단 결과 저장
-→ 7단계 고객 대응 전략에 연결
+6단계 고객 Data 분석 결과 저장
+→ 7단계 고객 유형별 대응 전략에 연결
 
 7단계 고객 대응 전략 결과 저장
-→ 8단계 팀원 역할 배정에 연결
+→ 8단계 팀원 역할 방향에 연결
 
-8단계 팀원 역할 배정 결과 저장
-→ 9단계 AI Call Plan에 연결
+8단계 팀원 역할 방향 결과 저장
+→ 9단계 팀원 온도차와 실행 대화에 연결
+→ 10단계 AI 콜플랜 결과물 요청에 연결
 
-9단계 AI Call Plan 결과 저장
-→ 10단계 컴플라이언스 정리에 연결
+9단계 팀원 온도차와 실행 대화 결과 저장
+→ 10단계 AI 콜플랜 결과물 요청에 연결
+→ 12단계 최종 2주 콜플랜 카드에 연결
 
-10단계 컴플라이언스 정리 결과 저장
-→ 11단계 최종 실행 카드에 연결
+10단계 AI 콜플랜 결과 저장
+→ 11단계 컴플라이언스 위험 표현 제거에 연결
 
-11단계 최종 실행 카드 결과 저장
-→ 12단계 강사용 토의 화면에 연결
+11단계 컴플라이언스 위험 표현 제거 결과 저장
+→ 12단계 최종 2주 콜플랜 카드에 연결
+
+12단계 최종 2주 콜플랜 카드 결과 저장
+→ 13단계 강사용 토의 질문에 연결
 ```
 
 ## 7. localStorage key 현황
@@ -164,13 +166,14 @@ v39 전용 저장 key는 다음과 같습니다.
 
 | 목적 | localStorage key |
 |---|---|
-| 5단계 Dashboard 분석 결과 | `ckd.v39.dashboardAnalysis.result.v1` |
+| 5단계 팀원 실행진단 결과 | `ckd.v39.dashboardAnalysis.result.v1` |
 | 6단계 고객 판단 결과 | `ckd.v39.customerJudgment.result.v1` |
 | 7단계 고객 대응 전략 결과 | `ckd.v39.customerStrategy.result.v1` |
-| 8단계 팀원 역할 배정 결과 | `ckd.v39.memberRole.result.v1` |
-| 9단계 AI Call Plan 결과 | `ckd.v39.aiCallPlan.result.v1` |
-| 10단계 컴플라이언스 정리 결과 | `ckd.v39.complianceCleanup.result.v1` |
-| 11단계 최종 실행 카드 결과 | `ckd.v39.finalCallPlan.result.v1` |
+| 8단계 팀원 역할 방향 결과 | `ckd.v39.memberRole.result.v1` |
+| 9단계 팀원 실행 대화 결과 | `ckd.v39.peopleDialogue.result.v1` |
+| 10단계 AI Call Plan 결과 | `ckd.v39.aiCallPlan.result.v1` |
+| 11단계 컴플라이언스 정리 결과 | `ckd.v39.complianceCleanup.result.v1` |
+| 12단계 최종 실행 카드 결과 | `ckd.v39.finalCallPlan.result.v1` |
 
 Readiness Audit에서 key 존재와 중복 여부를 검증합니다.
 
@@ -189,8 +192,6 @@ AI 결과 자동 적용 금지
 팀장 판단·수정·확인 중심 유지
 점수화·등급화·평가처럼 보이는 표현 회피
 ```
-
-`audit:v39:readiness`는 민감정보 입력 금지 문구와 고객 시연 화면 내부 문구 노출 여부를 자동 점검합니다.
 
 ## 9. 고객 시연 화면 문구 기준
 
@@ -223,6 +224,7 @@ C1바이오 영업팀장 AI 리더십 Lab Journey
 9단계 저장 → 10단계 상단 표시
 10단계 저장 → 11단계 상단 표시
 11단계 저장 → 12단계 상단 표시
+12단계 저장 → 13단계 상단 표시
 ```
 
 추가로 다음 UI 동작을 확인합니다.
@@ -256,33 +258,16 @@ v39 Smoke success
 v39 Readiness Audit success
 고객 시연 화면 내부 문구 미노출
 민감정보 입력 유도 없음
-5→12단계 연결 흐름 정상
-v38 원본 기능 유지
+5→13단계 연결 흐름 정상
+운영 route 및 보호 파일 유지
 ```
 
 ### No-Go 조건
 
 ```text
-journey.html 또는 v34/v35/v38 보호 파일 변경 발견
+journey.html 또는 보호 파일 변경 발견
 v39 Smoke 또는 readiness audit failure
-고객 시연 화면에 preview/v39/internal 문구 노출
-실제 고객명·병원명·의료진명·제품명·내부 수치 입력 요구 문구 발견
+고객 시연 화면 내부 개발 문구 노출
+실제 고객명·병원명·의료진명·제품명·내부 수치·개인정보 입력 유도
 점수화·등급화·평가처럼 보이는 UI 또는 문구 발견
-5→12단계 저장·연결 흐름 중단
 ```
-
-## 12. 현재 최종 판단
-
-현재 자동 검증 기준으로는 다음 판단이 적절합니다.
-
-```text
-Conditional Go
-```
-
-조건:
-
-```text
-브라우저 수동 QA에서 5→12단계 저장·연결 흐름이 정상임을 확인할 것.
-```
-
-수동 QA가 통과하면 고객 시연용 v39 preview로 사용할 수 있습니다.
