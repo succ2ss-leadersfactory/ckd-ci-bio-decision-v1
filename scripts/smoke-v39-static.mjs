@@ -26,6 +26,7 @@ const files = {
   app: read('src/journey-v39-app-preview.tsx'),
   wrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
+  customerJudgmentStore: read('src/journey-v39-customer-judgment-result-store.ts'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
@@ -48,6 +49,7 @@ checkIncludes(files.packageJson, 'typecheck:v39', 'package v39 typecheck script'
 checkIncludes(files.tsconfig, 'src/journey-v39-app-preview.tsx', 'v39 tsconfig entry');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-analysis-lab.tsx', 'v39 tsconfig dashboard wrapper');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-lab.tsx', 'v39 tsconfig customer judgment wrapper');
+checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-result-store.ts', 'v39 tsconfig customer judgment result store');
 checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
@@ -89,9 +91,36 @@ for (const marker of [
   'Block 2. 판단 유보 Data 확인',
   'Block 3. 우선순위 판단 기준',
   'Block 4. AI 분석 프롬프트 준비',
+  'V39CustomerPrioritySelectionPanel',
+  '고객별 우선순위 선택',
+  '집중',
+  '유지',
+  '보류',
+  '정보 보완',
+  '판단 초안 가져오기',
+  '선택 완료',
+  '고객 판단 선택 초기화',
   '실제 고객명·병원명·의료진명·제품명·내부 수치는 입력하지 않습니다',
 ]) {
   checkIncludes(files.customerJudgmentWrapper, marker, 'v39 customer judgment wrapper marker');
+}
+
+for (const marker of [
+  'V39_CUSTOMER_JUDGMENT_RESULT_SCHEMA_VERSION',
+  'V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY',
+  'ckd.v39.customerJudgment.result.v1',
+  'V39CustomerPriorityDecision',
+  'V39CustomerDecisionResult',
+  'V39CustomerJudgmentResult',
+  'createEmptyV39CustomerDecisionResult',
+  'createEmptyV39CustomerJudgmentResult',
+  'normalizeV39CustomerDecisionResult',
+  'normalizeV39CustomerJudgmentResult',
+  'saveV39CustomerJudgmentResult',
+  'loadV39CustomerJudgmentResult',
+  'clearV39CustomerJudgmentResult',
+]) {
+  checkIncludes(files.customerJudgmentStore, marker, 'v39 customer judgment result store marker');
 }
 
 for (const marker of [
