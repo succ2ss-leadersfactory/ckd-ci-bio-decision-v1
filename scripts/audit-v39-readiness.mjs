@@ -110,7 +110,7 @@ for (const protectedImport of [
 
 const wrapperExpectations = [
   ['src/journey-v39-dashboard-analysis-lab.tsx', 'V38DashboardAnalysisLab'],
-  ['src/journey-v39-customer-judgment-lab.tsx', 'V38CustomerJudgmentLab'],
+  ['src/journey-v39-customer-judgment-lab.tsx', 'V39CustomerDataJudgmentFlow'],
   ['src/journey-v39-customer-priority-lab.tsx', 'V38CustomerPriorityLab'],
   ['src/journey-v39-member-role-lab.tsx', 'V38MemberRoleLab'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V38AiCallPlanLab'],
@@ -119,7 +119,15 @@ const wrapperExpectations = [
   ['src/journey-v39-instructor-discussion-lab.tsx', 'V38InstructorDiscussionLab'],
 ];
 for (const [file, reusedComponent] of wrapperExpectations) {
-  pass(includes(files[file], reusedComponent), `v39 wrapper must reuse stable v38 component: ${file} -> ${reusedComponent}`);
+  pass(includes(files[file], reusedComponent), `v39 wrapper must use expected implementation: ${file} -> ${reusedComponent}`);
+}
+
+for (const forbiddenCustomerJudgmentMarker of [
+  'V38CustomerJudgmentLab',
+  "from './journey-v38-customer-judgment-lab'",
+  '<V38CustomerJudgmentLab />',
+]) {
+  pass(notIncludes(files['src/journey-v39-customer-judgment-lab.tsx'], forbiddenCustomerJudgmentMarker), `v39 customer judgment must not expose legacy v38 flow: ${forbiddenCustomerJudgmentMarker}`);
 }
 
 const storeKeys = new Map();
