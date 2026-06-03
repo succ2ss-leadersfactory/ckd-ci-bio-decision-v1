@@ -4,6 +4,11 @@ import {
   type V39AiCallPlanResult,
   loadV39AiCallPlanResult,
 } from './journey-v39-ai-call-plan-result-store';
+import {
+  type V39ComplianceCleanupResult,
+  loadV39ComplianceCleanupResult,
+  saveV39ComplianceCleanupResult,
+} from './journey-v39-compliance-cleanup-result-store';
 
 const RISK_GUIDES = [
   '처방 유도 표현',
@@ -45,9 +50,24 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
   ].join('\n');
 }
 
+function buildDefaultComplianceCleanupResult(result: V39AiCallPlanResult, current: V39ComplianceCleanupResult): Partial<V39ComplianceCleanupResult> {
+  const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
+  const firstItem = savedItems[0];
+
+  return {
+    riskTypes: current.riskTypes || '처방 유도 표현, 비교 우위 단정, 허가 외·미승인 표현, 민감정보 포함 여부를 확인합니다.',
+    safeExpression: current.safeExpression || (firstItem
+      ? `${firstItem.callPlanDraft}\n\n위 문장은 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 다시 수정합니다.`
+      : 'AI Call Plan 초안을 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 안전하게 수정합니다.'),
+    finalChecklist: current.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치가 제거되었는지 확인합니다. 처방 유도, 비교 우위 단정, 허가 외 표현이 없는지 확인합니다.',
+    finalCardMemo: current.finalCardMemo || '최종 실행 카드에는 안전하게 수정한 문장과 팀장이 직접 확인한 컴플라이언스 체크포인트만 반영합니다.',
+  };
+}
+
 function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiCallPlanResult; onRefresh: () => void }) {
   const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
   const [copied, setCopied] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState(() => loadV39ComplianceCleanupResult());
   const cleanupPrompt = useMemo(() => buildCleanupPrompt(result), [result]);
 
   const copyCleanupPrompt = async () => {
@@ -58,6 +78,18 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
     } catch {
       setCopied(false);
     }
+  };
+
+  const updateCleanupResult = (patch: Partial<V39ComplianceCleanupResult>) => {
+    setCleanupResult((current) => {
+      const next = { ...current, ...patch };
+      saveV39ComplianceCleanupResult(next);
+      return next;
+    });
+  };
+
+  const applyCleanupDraft = () => {
+    updateCleanupResult(buildDefaultComplianceCleanupResult(result, cleanupResult));
   };
 
   return (
@@ -92,8 +124,8 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
           <p className="mt-1 text-sm font-black text-slate-900">{savedItems.length}개</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">다음 단계</p>
-          <p className="mt-1 text-sm font-black text-slate-900">위험 표현 제거와 안전 문장 수정</p>
+          <p className="text-xs font-black text-slate-500">최종 카드 연결</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{cleanupResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
         </div>
       </div>
 
@@ -130,6 +162,39 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
         <span className="text-sm font-black text-slate-950">복사해서 컴플라이언스 점검에 사용할 프롬프트</span>
         <textarea className="mt-3 min-h-72 w-full rounded-2xl border bg-slate-50 px-4 py-3 font-mono text-xs leading-6 text-slate-900" value={cleanupPrompt} readOnly />
       </label>
+
+      <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Final Card Bridge</p>
+            <h3 className="text-lg font-black text-slate-950">11단계 연결용 컴플라이언스 정리 결과 저장</h3>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
+              안전하게 수정한 문장과 최종 체크포인트를 11단계 2주 콜플랜 카드에 반영하기 위한 요약으로 저장합니다.
+            </p>
+          </div>
+          <button type="button" className="rounded-2xl border bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-800" onClick={applyCleanupDraft}>
+            11단계 연결 초안 가져오기
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">위험 유형 요약</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={cleanupResult.riskTypes} onChange={(event) => updateCleanupResult({ riskTypes: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">최종 체크리스트</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={cleanupResult.finalChecklist} onChange={(event) => updateCleanupResult({ finalChecklist: event.target.value })} />
+          </label>
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-xs font-black text-slate-500">안전하게 수정한 문장</span>
+            <textarea className="min-h-28 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={cleanupResult.safeExpression} onChange={(event) => updateCleanupResult({ safeExpression: event.target.value })} />
+          </label>
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-xs font-black text-slate-500">최종 카드 메모</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={cleanupResult.finalCardMemo} onChange={(event) => updateCleanupResult({ finalCardMemo: event.target.value })} />
+          </label>
+        </div>
+      </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-950">
         10단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
