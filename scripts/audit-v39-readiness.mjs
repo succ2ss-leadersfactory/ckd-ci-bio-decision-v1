@@ -58,7 +58,17 @@ const v39Files = [
   'src/journey-v39-instructor-discussion-lab.tsx',
 ];
 
-const files = Object.fromEntries([...protectedFiles, ...v39Files, 'tsconfig.v39-smoke.json', 'scripts/smoke-v39-static.mjs'].map((file) => [file, read(file)]));
+const qaDocs = [
+  'docs/v39-preview-qa-checklist.md',
+];
+
+const files = Object.fromEntries([
+  ...protectedFiles,
+  ...v39Files,
+  ...qaDocs,
+  'tsconfig.v39-smoke.json',
+  'scripts/smoke-v39-static.mjs',
+].map((file) => [file, read(file)]));
 
 for (const file of protectedFiles) {
   pass(files[file].length > 0, `Protected file is missing or unreadable: ${file}`);
@@ -161,6 +171,21 @@ for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsW
 const staticSmoke = files['scripts/smoke-v39-static.mjs'];
 for (const file of ['src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) {
   pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
+}
+
+const qaChecklist = files['docs/v39-preview-qa-checklist.md'];
+for (const marker of [
+  '# v39 Preview QA Checklist',
+  '5단계 저장',
+  '6단계 저장',
+  '7단계 저장',
+  '8단계 저장',
+  '9단계 저장',
+  '10단계 저장',
+  '11단계 저장',
+  'Go / No-Go',
+]) {
+  pass(includes(qaChecklist, marker), `QA checklist must include marker: ${marker}`);
 }
 
 if (failures.length > 0) {
