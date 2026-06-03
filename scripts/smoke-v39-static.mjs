@@ -60,7 +60,7 @@ for (const [label, source, markers] of [
 }
 
 for (const [label, source, markers] of [
-  ['dashboard wrapper', files.dashboardWrapper, ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab', 'saveV39DashboardResult', 'ckd.v39.dashboardAnalysis.result.v1']],
+  ['dashboard wrapper', files.dashboardWrapper, ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab', 'saveV39DashboardResult']],
   ['customer judgment wrapper', files.customerJudgmentWrapper, ['V39CustomerJudgmentLab', 'V38CustomerJudgmentLab', '고객 Data 판단 프레임', '고객별 우선순위 선택', 'AI 분석 프롬프트 생성']],
   ['customer judgment store', files.customerJudgmentStore, ['ckd.v39.customerJudgment.result.v1', 'saveV39CustomerJudgmentResult', 'loadV39CustomerJudgmentResult']],
   ['customer priority bridge', files.customerPriorityBridge, ['V39CustomerPriorityLab', 'V38CustomerPriorityLab', '6단계 고객 판단 결과 연결', '8단계 연결용 2주 대응 전략', 'saveV39CustomerStrategyResult']],
