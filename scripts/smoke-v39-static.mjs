@@ -25,6 +25,7 @@ const files = {
   html: read('journey-v39-preview.html'),
   app: read('src/journey-v39-app-preview.tsx'),
   wrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
+  customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
@@ -36,6 +37,7 @@ checkIncludes(files.html, '/src/journey-v39-app-preview.tsx', 'v39 HTML entry sc
 checkIncludes(files.html, '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>', 'v39 client-facing HTML title');
 checkIncludes(files.app, 'V39PreviewApp', 'v39 preview app component');
 checkIncludes(files.app, 'V39DashboardAnalysisLab', 'v39 dashboard wrapper route');
+checkIncludes(files.app, 'V39CustomerJudgmentLab', 'v39 customer judgment wrapper route');
 checkIncludes(files.app, 'V39MemberRoleLab', 'v39 member role bridge route');
 checkIncludes(files.app, 'ckd.v39.participant.v1', 'v39 participant storage key');
 checkIncludes(files.app, 'ckd.v39.progress.v1', 'v39 progress storage key');
@@ -45,6 +47,7 @@ checkIncludes(files.packageJson, 'smoke:v39', 'package v39 smoke script');
 checkIncludes(files.packageJson, 'typecheck:v39', 'package v39 typecheck script');
 checkIncludes(files.tsconfig, 'src/journey-v39-app-preview.tsx', 'v39 tsconfig entry');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-analysis-lab.tsx', 'v39 tsconfig dashboard wrapper');
+checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-lab.tsx', 'v39 tsconfig customer judgment wrapper');
 checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
@@ -68,6 +71,27 @@ for (const marker of [
   'clearV39DashboardResult',
 ]) {
   checkIncludes(files.wrapper, marker, 'v39 dashboard wrapper marker');
+}
+
+for (const marker of [
+  'V39CustomerJudgmentLab',
+  'V38CustomerJudgmentLab',
+  'Customer Data Judgment Frame',
+  '고객 Data 판단 프레임',
+  '6단계는 고객을 점수화하거나 등급화하는 단계가 아닙니다',
+  '기회성 Data',
+  '반응성 Data',
+  '실행 가능성 Data',
+  '리스크 Data',
+  '판단 유보 Data',
+  'Block 0. 고객 Data 판단 프레임',
+  'Block 1. 좋은 신호와 주의 신호 구분',
+  'Block 2. 판단 유보 Data 확인',
+  'Block 3. 우선순위 판단 기준',
+  'Block 4. AI 분석 프롬프트 준비',
+  '실제 고객명·병원명·의료진명·제품명·내부 수치는 입력하지 않습니다',
+]) {
+  checkIncludes(files.customerJudgmentWrapper, marker, 'v39 customer judgment wrapper marker');
 }
 
 for (const marker of [
