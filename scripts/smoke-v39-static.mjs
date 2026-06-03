@@ -32,6 +32,8 @@ const files = {
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   memberRoleStore: read('src/journey-v39-member-role-result-store.ts'),
   aiCallPlanBridge: read('src/journey-v39-ai-call-plan-lab.tsx'),
+  aiCallPlanStore: read('src/journey-v39-ai-call-plan-result-store.ts'),
+  complianceBridge: read('src/journey-v39-compliance-cleanup-lab.tsx'),
   dashboardStore: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
   packageJson: read('package.json'),
@@ -40,7 +42,7 @@ const files = {
 
 for (const [label, source, markers] of [
   ['html', files.html, ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']],
-  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39AiCallPlanLab']],
+  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab']],
   ['vite', files.viteConfig, ['journeyV39Preview', 'journey-v39-preview.html']],
   ['package', files.packageJson, ['smoke:v39', 'typecheck:v39']],
   ['tsconfig', files.tsconfig, [
@@ -53,6 +55,8 @@ for (const [label, source, markers] of [
     'src/journey-v39-member-role-lab.tsx',
     'src/journey-v39-member-role-result-store.ts',
     'src/journey-v39-ai-call-plan-lab.tsx',
+    'src/journey-v39-ai-call-plan-result-store.ts',
+    'src/journey-v39-compliance-cleanup-lab.tsx',
     'src/journey-v39-dashboard-result-store.ts',
   ]],
 ]) {
@@ -67,7 +71,9 @@ for (const [label, source, markers] of [
   ['customer strategy store', files.customerStrategyStore, ['ckd.v39.customerStrategy.result.v1', 'saveV39CustomerStrategyResult', 'loadV39CustomerStrategyResult']],
   ['member role bridge', files.memberRoleBridge, ['V39MemberRoleLab', 'V38MemberRoleLab', '7단계 고객 대응 전략을 팀원 역할 배정에 연결', '9단계 연결용 팀원 역할 배정 저장', 'saveV39MemberRoleResult']],
   ['member role store', files.memberRoleStore, ['ckd.v39.memberRole.result.v1', 'saveV39MemberRoleResult', 'loadV39MemberRoleResult']],
-  ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V38AiCallPlanLab', '8단계 팀원 역할 배정을 AI Call Plan에 연결', 'buildCallPlanContextPrompt']],
+  ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V38AiCallPlanLab', '8단계 팀원 역할 배정을 AI Call Plan에 연결', '10단계 연결용 AI Call Plan 결과 저장', 'saveV39AiCallPlanResult']],
+  ['AI call plan store', files.aiCallPlanStore, ['ckd.v39.aiCallPlan.result.v1', 'saveV39AiCallPlanResult', 'loadV39AiCallPlanResult']],
+  ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V38ComplianceCleanupLab', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '점검 프롬프트 복사', 'buildCleanupPrompt']],
   ['dashboard store', files.dashboardStore, ['ckd.v39.dashboardAnalysis.result.v1', 'saveV39DashboardResult', 'loadV39DashboardResult']],
 ]) {
   for (const marker of markers) checkIncludes(source, marker, label);
