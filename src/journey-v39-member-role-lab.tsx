@@ -1,9 +1,64 @@
 import { useMemo, useState } from 'react';
 import { V38MemberRoleLab } from './journey-v38-member-role-lab';
-import { loadV39DashboardResult } from './journey-v39-dashboard-result-store';
+import { loadV39DashboardResult, type V39DashboardResult } from './journey-v39-dashboard-result-store';
 
 function joinOrEmpty(items: string[]) {
   return items.length > 0 ? items.join(' / ') : '아직 저장된 값이 없습니다';
+}
+
+type RoleRecommendationDraft = {
+  memberId: string;
+  roleCandidate: string;
+  coachingFocus: string;
+  caution: string;
+};
+
+function readableMemberLabel(memberId: string) {
+  const labels: Record<string, string> = {
+    'kim-jaeho': '김재호 차장',
+    'kim-moonho': '김문호 차장',
+    'yoo-heegwan': '유희관 과장',
+    'lee-daeun': '이대은 대리',
+    'shin-jaeyoung': '신재영 대리',
+    'park-jaeuk': '박재욱 사원',
+    'moon-gyowon': '문교원 사원',
+  };
+  return labels[memberId] ?? memberId;
+}
+
+function buildRoleRecommendationDrafts(result: V39DashboardResult): RoleRecommendationDraft[] {
+  const selectedMembers = result.memberResult.selectedMemberTypeIds.slice(0, 2);
+  const coreMetrics = result.metricSelection.selectedCoreMetricIds;
+  const supportMetrics = result.metricSelection.selectedSupportMetricIds;
+  const safetyMetrics = result.metricSelection.selectedSafetyMetricIds;
+  const signalText = result.memberResult.rawAiSignalResult;
+  const finalPrep = result.memberResult.rawAiPrepResult;
+
+  if (selectedMembers.length === 0) return [];
+
+  return selectedMembers.map((memberId) => {
+    const label = readableMemberLabel(memberId);
+    const roleCandidate = coreMetrics.length > 0
+      ? `${label}에게 ${coreMetrics[0]}을 중심으로 고객 후속 행동을 구체화하는 역할을 맡기는 초안입니다.`
+      : `${label}에게 2주 실행 과정에서 고객 반응을 관찰하고 다음 행동을 정리하는 역할을 맡기는 초안입니다.`;
+    const coachingFocus = supportMetrics.length > 0
+      ? `${supportMetrics[0]}을 기준으로 실행 전후의 차이를 짧게 점검하고, 필요한 지원을 1on1에서 확인합니다.`
+      : signalText
+        ? '5단계에서 저장한 선택 유형 신호를 바탕으로 관찰 가능한 행동과 확인 질문을 함께 정리합니다.'
+        : '팀원이 역할을 이해했는지, 다음 행동을 자기 언어로 설명할 수 있는지 확인합니다.';
+    const caution = safetyMetrics.length > 0
+      ? `${safetyMetrics[0]}을 놓치지 않도록 표현, 자료 활용, 보고 기준을 함께 확인합니다.`
+      : finalPrep
+        ? 'AI가 제안한 준비물은 초안이므로 실제 팀원에게 맞게 문장과 실행 단위를 조정합니다.'
+        : '역할 추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 팀원 성향을 단정하지 않습니다.';
+
+    return {
+      memberId,
+      roleCandidate,
+      coachingFocus,
+      caution,
+    };
+  });
 }
 
 export function V39MemberRoleLab() {
@@ -22,12 +77,14 @@ export function V39MemberRoleLab() {
       coreMetrics: joinOrEmpty(dashboardResult.metricSelection.selectedCoreMetricIds),
       supportMetrics: joinOrEmpty(dashboardResult.metricSelection.selectedSupportMetricIds),
       safetyMetrics: joinOrEmpty(dashboardResult.metricSelection.selectedSafetyMetricIds),
-      selectedMembers: joinOrEmpty(dashboardResult.memberResult.selectedMemberTypeIds),
+      selectedMembers: joinOrEmpty(dashboardResult.memberResult.selectedMemberTypeIds.map(readableMemberLabel)),
       memberSignal: dashboardResult.memberResult.rawAiSignalResult || '아직 저장된 신호 요약이 없습니다',
       finalPrep: dashboardResult.memberResult.rawAiPrepResult || '아직 저장된 다음 행동 준비물이 없습니다',
       hasSavedResult: Boolean(dashboardResult.updatedAt),
     };
   }, [dashboardResult]);
+
+  const roleRecommendationDrafts = useMemo(() => buildRoleRecommendationDrafts(dashboardResult), [dashboardResult]);
 
   const refreshDashboardResult = () => {
     setDashboardResult(loadV39DashboardResult());
@@ -42,7 +99,7 @@ export function V39MemberRoleLab() {
             <h2 className="mt-2 text-xl font-black text-slate-950">5단계 저장 결과를 팀원 역할 방향에 연결</h2>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               이 패널은 5단계에서 저장한 팀 상황, 실행지표, 선택 유형, 다음 행동 준비물을 8단계 역할 배정 전에 다시 보여줍니다.
-              아직 자동 배정은 하지 않고, 팀장이 역할 방향을 정하기 전에 판단 근거를 확인하도록 돕습니다.
+              자동 배정이 아니라, 팀장이 역할 방향을 정하기 전에 판단 근거와 수정 가능한 추천 초안을 확인하도록 돕습니다.
             </p>
           </div>
           <button
@@ -95,6 +152,30 @@ export function V39MemberRoleLab() {
             <p className="text-xs font-black text-slate-500">최종 다음 행동 준비물</p>
             <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-slate-800">{summary.finalPrep}</p>
           </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">v39 역할 추천 초안</p>
+            <h3 className="text-lg font-black text-slate-950">저장 결과 기반 역할 추천 초안</h3>
+            <p className="text-xs font-bold leading-5 text-slate-600">추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 아래 역할 후보, 코칭 초점, 주의할 점을 실제 팀원 맥락에 맞게 수정하십시오.</p>
+          </div>
+          {roleRecommendationDrafts.length === 0 ? (
+            <div className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">5단계에서 선택 유형 ID를 저장하면 역할 추천 초안이 표시됩니다.</div>
+          ) : (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {roleRecommendationDrafts.map((draft) => (
+                <div key={draft.memberId} className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                  <h4 className="text-sm font-black text-slate-950">{readableMemberLabel(draft.memberId)}</h4>
+                  <div className="mt-3 space-y-2 text-sm font-bold leading-6 text-slate-700">
+                    <p><span className="font-black text-violet-800">역할 후보: </span>{draft.roleCandidate}</p>
+                    <p><span className="font-black text-violet-800">코칭 초점: </span>{draft.coachingFocus}</p>
+                    <p><span className="font-black text-violet-800">주의할 점: </span>{draft.caution}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
