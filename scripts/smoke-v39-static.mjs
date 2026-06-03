@@ -24,6 +24,7 @@ function checkNotIncludes(source, needle, label) {
 const files = {
   html: read('journey-v39-preview.html'),
   app: read('src/journey-v39-app-preview.tsx'),
+  previewConfig: read('src/journey-v39-preview-config.ts'),
   dashboardWrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   dashboardCore: read('src/journey-v38-dashboard-analysis-lab.tsx'),
   customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
@@ -32,6 +33,8 @@ const files = {
   customerStrategyStore: read('src/journey-v39-customer-strategy-result-store.ts'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   memberRoleStore: read('src/journey-v39-member-role-result-store.ts'),
+  peopleDialogueLab: read('src/journey-v39-people-dialogue-lab.tsx'),
+  peopleDialogueStore: read('src/journey-v39-people-dialogue-result-store.ts'),
   aiCallPlanBridge: read('src/journey-v39-ai-call-plan-lab.tsx'),
   aiCallPlanStore: read('src/journey-v39-ai-call-plan-result-store.ts'),
   complianceBridge: read('src/journey-v39-compliance-cleanup-lab.tsx'),
@@ -47,11 +50,13 @@ const files = {
 
 for (const [label, source, markers] of [
   ['html', files.html, ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']],
-  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']],
+  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39PeopleDialogueLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']],
+  ['v39 preview config', files.previewConfig, ['people-dialogue', '팀원 온도차와 실행 대화', 'clampV39Step', 'V39_VISIBLE_APP_STEPS']],
   ['vite', files.viteConfig, ['journeyV39Preview', 'journey-v39-preview.html']],
   ['package', files.packageJson, ['smoke:v39', 'typecheck:v39']],
   ['tsconfig', files.tsconfig, [
     'src/journey-v39-app-preview.tsx',
+    'src/journey-v39-preview-config.ts',
     'src/journey-v39-dashboard-analysis-lab.tsx',
     'src/journey-v39-customer-judgment-lab.tsx',
     'src/journey-v39-customer-judgment-result-store.ts',
@@ -59,6 +64,8 @@ for (const [label, source, markers] of [
     'src/journey-v39-customer-strategy-result-store.ts',
     'src/journey-v39-member-role-lab.tsx',
     'src/journey-v39-member-role-result-store.ts',
+    'src/journey-v39-people-dialogue-lab.tsx',
+    'src/journey-v39-people-dialogue-result-store.ts',
     'src/journey-v39-ai-call-plan-lab.tsx',
     'src/journey-v39-ai-call-plan-result-store.ts',
     'src/journey-v39-compliance-cleanup-lab.tsx',
@@ -81,6 +88,8 @@ for (const [label, source, markers] of [
   ['customer strategy store', files.customerStrategyStore, ['ckd.v39.customerStrategy.result.v1', 'saveV39CustomerStrategyResult', 'loadV39CustomerStrategyResult']],
   ['member role bridge', files.memberRoleBridge, ['V39MemberRoleLab', 'V39CustomerRolePlanningPanel', '고객 대응 전략을 팀원 역할로 구체화하기', '팀 실행진단을 역할 방향으로 정리하기', '역할 초안 가져오기', 'saveV39MemberRoleResult']],
   ['member role store', files.memberRoleStore, ['ckd.v39.memberRole.result.v1', 'saveV39MemberRoleResult', 'loadV39MemberRoleResult']],
+  ['people dialogue lab', files.peopleDialogueLab, ['V39PeopleDialogueLab', '팀원 온도차를 실행 대화로 전환하기', '과거와 현재의 일하는 방식 차이 보기', '신세대 팀원 반응 신호', '기존 팀원 부담 신호', '실행 대화 프롬프트 복사', '팀원 실행 대화 카드와 우리 팀 규범 정리']],
+  ['people dialogue store', files.peopleDialogueStore, ['ckd.v39.peopleDialogue.result.v1', 'cultureShiftSelections', 'existingMemberSignalSelections', 'dialogueCard', 'saveV39PeopleDialogueResult', 'loadV39PeopleDialogueResult']],
   ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V39MemberRoleCallPlanPanel', '팀원 역할을 AI Call Plan으로 구체화하기', 'AI Call Plan 프롬프트 복사', '컴플라이언스 점검을 위한 Call Plan 정리', 'Call Plan 초안 가져오기', 'saveV39AiCallPlanResult']],
   ['AI call plan store', files.aiCallPlanStore, ['ckd.v39.aiCallPlan.result.v1', 'saveV39AiCallPlanResult', 'loadV39AiCallPlanResult']],
   ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V38ComplianceCleanupLab', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용 컴플라이언스 정리 결과 저장', 'saveV39ComplianceCleanupResult']],
@@ -95,7 +104,8 @@ for (const [label, source, markers] of [
 
 for (const [label, source, markers] of [
   ['html title', files.html, ['v39 Preview', 'C1바이오 v39 Preview']],
-  ['app old side effect', files.app, ["import './journey-v38-app-preview';"]],
+  ['app old side effect', files.app, ["import './journey-v38-app-preview';", 'V38_VISIBLE_APP_STEPS', 'clampV38Step']],
+  ['people dialogue banned wording', files.peopleDialogueLab, ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
   ['customer judgment old flow hidden', files.customerJudgmentWrapper, ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />', 'Customer Priority Selection', '고객별 우선순위 선택', '프롬프트 대상 고객 유형']],
   ['customer priority old flow hidden', files.customerPriorityBridge, ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />', 'Customer Judgment Bridge', '6단계 고객 판단 결과 연결', '8단계 연결용', '연결 초안 가져오기']],
   ['member role old flow hidden', files.memberRoleBridge, ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />', 'Customer Strategy Bridge', 'Step 5 → Step 8 Bridge', '7단계 고객 대응 전략을 팀원 역할 배정에 연결', '9단계 연결용', '9단계 연결 초안 가져오기']],
