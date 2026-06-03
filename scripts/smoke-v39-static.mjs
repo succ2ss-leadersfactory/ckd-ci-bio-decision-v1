@@ -90,7 +90,7 @@ for (const [label, source, markers] of [
   ['member role store', files.memberRoleStore, ['ckd.v39.memberRole.result.v1', 'saveV39MemberRoleResult', 'loadV39MemberRoleResult']],
   ['people dialogue lab', files.peopleDialogueLab, ['V39PeopleDialogueLab', '팀원 온도차를 실행 대화로 전환하기', '과거와 현재의 일하는 방식 차이 보기', '신세대 팀원 반응 신호', '기존 팀원 부담 신호', '실행 대화 프롬프트 복사', '팀원 실행 대화 카드와 우리 팀 규범 정리']],
   ['people dialogue store', files.peopleDialogueStore, ['ckd.v39.peopleDialogue.result.v1', 'cultureShiftSelections', 'existingMemberSignalSelections', 'dialogueCard', 'saveV39PeopleDialogueResult', 'loadV39PeopleDialogueResult']],
-  ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V39MemberRoleCallPlanPanel', '팀원 역할을 AI Call Plan으로 구체화하기', 'AI Call Plan 프롬프트 복사', '컴플라이언스 점검을 위한 Call Plan 정리', 'Call Plan 초안 가져오기', 'saveV39AiCallPlanResult']],
+  ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V39MemberRoleCallPlanPanel', '역할과 실행 대화를 AI Call Plan으로 구체화하기', '실행 대화 새로고침', '9단계 실행 대화 요약', '팀원 실행 대화 결과', 'AI Call Plan 프롬프트 복사', '팀원 실행 대화 포인트', 'saveV39AiCallPlanResult']],
   ['AI call plan store', files.aiCallPlanStore, ['ckd.v39.aiCallPlan.result.v1', 'saveV39AiCallPlanResult', 'loadV39AiCallPlanResult']],
   ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V38ComplianceCleanupLab', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용 컴플라이언스 정리 결과 저장', 'saveV39ComplianceCleanupResult']],
   ['compliance store', files.complianceStore, ['ckd.v39.complianceCleanup.result.v1', 'saveV39ComplianceCleanupResult', 'loadV39ComplianceCleanupResult']],
