@@ -21,7 +21,8 @@ v39는 v38 안정 기준을 깨뜨리지 않고 다음 단계 기능을 실험·
 |---|---|
 | `journey-v39-preview.html` | v39 Preview HTML route |
 | `src/journey-v39-app-preview.tsx` | v39 Preview 독립 앱 entry |
-| `src/journey-v39-dashboard-analysis-lab.tsx` | v39 전용 5단계 wrapper. v38 5단계를 감싸고 결과 저장 구조 준비 패널을 표시 |
+| `src/journey-v39-dashboard-analysis-lab.tsx` | v39 전용 5단계 wrapper. v38 5단계를 감싸고 5단계 핵심 결과 수동 저장 패널을 표시 |
+| `src/journey-v39-member-role-lab.tsx` | v39 전용 8단계 wrapper. 5단계 저장 결과를 8단계 역할 방향 화면 상단에 표시 |
 | `src/journey-v39-dashboard-result-store.ts` | v39 5단계 결과 저장 타입, normalize, save/load/clear helper |
 | `tsconfig.v39-smoke.json` | v39 범위 TypeScript 검증 |
 | `scripts/smoke-v39-static.mjs` | v39 정적 구조 검증 |
@@ -37,7 +38,7 @@ v39는 v38 안정 기준을 깨뜨리지 않고 다음 단계 기능을 실험·
 최신 안정 기준 커밋:
 
 ```text
-06223052fc806d9e71287968e06d3ab339595abd
+a1664e0139dd3392d19ef93f9332f24f486803a1
 ```
 
 해당 커밋 기준 CI:
@@ -55,7 +56,10 @@ v39는 v38 안정 기준을 깨뜨리지 않고 다음 단계 기능을 실험·
 - v39 전용 participant/progress storage key 분리
 - v39 5단계 wrapper 연결
 - v39 dashboard result localStorage helper 추가
-- v39 static smoke 추가
+- v39 5단계 핵심 결과 수동 저장 패널 추가
+- v39 8단계 member role bridge wrapper 추가
+- 5단계 저장 결과를 8단계 상단에서 읽어 표시
+- v39 static smoke 추가 및 marker 보강
 - v39 dist smoke 추가
 - v39 typecheck 추가
 - v39 GitHub Actions workflow 추가
@@ -95,40 +99,63 @@ v39의 핵심 목표는 v38에서 고도화한 5단계 `팀원 실행진단` 결
 - save/load/clear helper 추가
 - v39 5단계 wrapper에서 저장 구조 초기화/비우기 테스트 UI 추가
 
-현재 v39 5단계 wrapper는 실제 5단계 내부 상태를 직접 저장하지 않는다. 우선 저장 구조 자체가 안전하게 작동하는지 확인하는 준비 단계다.
+---
+
+## 6. v39-2 완료: 5단계 핵심 결과 저장 및 8단계 연결
+
+완료 내용:
+
+- `src/journey-v39-dashboard-analysis-lab.tsx`에 수동 저장 패널 추가
+- 저장 항목:
+  - 우리 팀 상황
+  - 핵심 지표
+  - 보완 지표
+  - 안전선 지표
+  - 지표 선택 이유
+  - 선택 유형 ID
+  - 선택 유형 신호 요약
+  - 최종 다음 행동 준비물
+- 저장 버튼:
+  - `v39 5단계 결과 저장`
+  - `v39 저장 구조 초기화 테스트`
+  - `v39 저장 구조 비우기`
+- `src/journey-v39-member-role-lab.tsx` 추가
+- 8단계 상단에서 5단계 저장 결과 요약 표시
+- v39 app에서 `member-role` 단계가 `V39MemberRoleLab`을 사용하도록 연결
+- `tsconfig.v39-smoke.json`에 v39 8단계 wrapper 포함
+- `smoke-v39-static.mjs`에 v39 8단계 bridge marker 추가
+
+현재 방식은 안전성을 위해 v38 원본 5단계를 직접 수정하지 않는다. v39 전용 수동 저장 패널을 통해 먼저 데이터 구조와 단계 간 연결성을 검증한다.
 
 ---
 
-## 6. 다음 개발 범위
+## 7. 다음 개발 범위
 
-### v39-2: 실제 5단계 상태 저장 연결
+### v39-3: 8단계 저장 결과 기반 역할 추천 고도화
 
 목표:
 
-- v39 5단계에서 생성·선택한 핵심 결과를 `V39DashboardResult` 구조에 저장한다.
-- v38 원본 5단계를 크게 수정하지 않기 위해, 가능한 한 작은 prop/callback 기반 확장으로 접근한다.
-- 저장 버튼 또는 자동 저장 시점을 명확히 한다.
+- 8단계에서 5단계 저장 결과를 단순 표시하는 것을 넘어, 역할 배정의 판단 기준으로 더 잘 활용하게 한다.
+- 선택 유형과 저장된 다음 행동 준비물을 바탕으로 역할 추천 초안을 보여준다.
+- 자동 배정보다는 “팀장이 수정 가능한 추천 초안”으로 둔다.
 
-권장 접근:
+권장 구현 범위:
 
-1. `V38DashboardAnalysisLab`에 선택적 callback prop을 추가한다.
-   - 예: `onResultChange?: (result: PartialDashboardResult) => void`
-   - v38 route에서는 prop을 넘기지 않는다.
-   - v39 wrapper에서만 prop을 넘긴다.
-2. 상태가 바뀔 때마다 바로 저장하지 말고, 우선 `저장하기` 버튼으로 수동 저장한다.
-3. 저장 성공 후 v39 wrapper 요약 패널에 저장된 상황/지표/유형 수를 표시한다.
-4. 이후 안정화되면 자동 저장으로 확장한다.
+1. `src/journey-v39-member-role-lab.tsx` 상단 bridge에 역할 추천 초안 영역 추가
+2. 선택 유형 ID와 저장된 지표를 기반으로 추천 문장 생성
+3. 추천 문장은 “역할 후보”, “코칭 초점”, “주의할 점” 3개 필드로 구성
+4. 기존 v38 8단계 역할 배정 화면은 그대로 유지
+5. v39 static smoke에 추천 초안 marker 추가
 
 주의:
 
-- v38 화면 문구와 흐름을 바꾸지 않는다.
-- v38 storage key를 바꾸지 않는다.
-- v39에서만 새 저장 key를 사용한다.
-- 저장 구조는 8단계·대시보드 연동 전까지 localStorage에만 둔다.
+- 고객군 자동 배정까지 바로 가지 않는다.
+- 팀장 판단을 대체하는 표현을 쓰지 않는다.
+- 추천은 초안이며 수정 가능하다는 안내를 유지한다.
 
 ---
 
-## 7. 검증 명령
+## 8. 검증 명령
 
 v39 관련 수정 후에는 다음 명령을 기준으로 검증한다.
 
@@ -163,14 +190,14 @@ CI 기준:
 
 ---
 
-## 8. 다음 단계
+## 9. 다음 단계
 
-다음 단계는 `v39-2: 실제 5단계 상태 저장 연결`이다.
+다음 단계는 `v39-3: 8단계 저장 결과 기반 역할 추천 고도화`다.
 
 첫 구현 단위는 다음처럼 제한한다.
 
-1. `V38DashboardAnalysisLab`에 선택적 결과 snapshot 생성 callback 추가
-2. v38 route에서는 기존 동작 유지
-3. v39 wrapper에서만 snapshot을 받아 저장 버튼으로 `saveV39DashboardResult` 호출
-4. v39 static smoke에 callback marker 추가
-5. v39 smoke 전체 통과 확인
+1. `V39MemberRoleLab`에 저장 결과 기반 추천 초안 생성 함수 추가
+2. 8단계 bridge 패널에 추천 초안 카드 표시
+3. 추천 문구는 역할 후보, 코칭 초점, 주의할 점으로 제한
+4. v39 static smoke marker 추가
+5. v35/v36/v38/v39 smoke 전체 통과 확인
