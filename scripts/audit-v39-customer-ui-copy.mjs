@@ -33,18 +33,18 @@ for (const marker of [
   'v39 5단계 핵심 결과 수동 저장 패널',
   'v39 저장 구조 초기화 테스트',
   'v39 저장 구조 비우기',
+  '팀 실행진단 메모',
+  'Team Execution Memo',
+  '입력 내용 저장',
+  '저장 내용 비우기',
 ]) {
   mustNotInclude(dashboardWrapper, marker, 'dashboard wrapper copy');
 }
 
 for (const marker of [
-  '팀 실행진단 메모',
-  '다음 단계에서 팀원 역할 배정 참고자료로 활용됩니다',
-  '입력 내용 저장',
-  '저장 내용 비우기',
-  '실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다',
+  'V38DashboardAnalysisLab heroVariant="customer"',
 ]) {
-  mustInclude(dashboardWrapper, marker, 'dashboard wrapper copy');
+  mustInclude(dashboardWrapper, marker, 'dashboard wrapper connection');
 }
 
 for (const marker of [
@@ -60,11 +60,10 @@ for (const marker of [
 }
 
 for (const marker of [
-  'v38 Dashboard Analysis Lab</p>',
   'v39 Dashboard Result Bridge',
   '저장 Key',
 ]) {
-  mustNotInclude(dashboardWrapper, marker, 'visible v39 dashboard wrapper copy');
+  mustNotInclude(dashboardCore, marker, 'dashboard customer hero copy');
 }
 
 if (failures.length > 0) {
