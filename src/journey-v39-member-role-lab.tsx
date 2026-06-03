@@ -5,6 +5,12 @@ import {
   type V39CustomerStrategyResult,
   loadV39CustomerStrategyResult,
 } from './journey-v39-customer-strategy-result-store';
+import {
+  type V39MemberRoleResultItem,
+  loadV39MemberRoleResult,
+  normalizeV39MemberRoleItem,
+  saveV39MemberRoleResult,
+} from './journey-v39-member-role-result-store';
 
 function joinOrEmpty(items: string[]) {
   return items.length > 0 ? items.join(' / ') : '아직 저장된 값이 없습니다';
@@ -24,6 +30,16 @@ type StrategyRoleHint = {
   strategyCount: number;
   risks: string[];
 };
+
+const MEMBER_ROLE_SAVE_TARGETS = [
+  '신재영 대리 · 후속 대화 연결',
+  '이대은 대리 · 관계 유지 품질 관리',
+  '박재욱 사원 · CRM·정보 보완',
+  '유희관 과장 · 변화 신호 관찰',
+  '김문호 차장 · 접근 강도 조절',
+  '김재호 차장 · 현장 대응 후 기록 정리',
+  '팀장 직접 점검 필요',
+];
 
 function readableMemberLabel(memberId: string) {
   const labels: Record<string, string> = {
@@ -96,9 +112,60 @@ function buildStrategyRoleHints(strategyResult: V39CustomerStrategyResult): Stra
   return Array.from(hintsByRole.values()).slice(0, 6);
 }
 
+function loadMemberRoleSaveState(): Record<string, V39MemberRoleResultItem> {
+  if (typeof window === 'undefined') return {};
+
+  const saved = loadV39MemberRoleResult();
+  const roles: Record<string, V39MemberRoleResultItem> = {};
+
+  for (const target of MEMBER_ROLE_SAVE_TARGETS) {
+    roles[target] = normalizeV39MemberRoleItem(saved.roles[target], target, target);
+  }
+
+  return roles;
+}
+
+function buildDefaultRoleItem(memberRole: string, hint?: StrategyRoleHint): Partial<V39MemberRoleResultItem> {
+  return {
+    assignedCustomers: hint?.customerLabels.join(' · ') ?? '',
+    roleMission: hint ? `${hint.customerLabels.join(' · ')} 고객군의 2주 대응 실행을 맡고, 진행 상황을 짧게 기록합니다.` : '',
+    coachingFocus: hint ? `${hint.priorities.join(' · ') || '우선순위'} 기준으로 실행 전 준비와 실행 후 기록을 함께 점검합니다.` : '',
+    riskGuardrail: hint?.risks.join(' / ') || '표현·자료·접촉 강도 안전선을 확인합니다.',
+    callPlanPrep: hint ? '방문 전 확인 질문, 사용 가능한 자료 범위, CRM 기록 항목을 준비합니다.' : '',
+  };
+}
+
 function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strategyResult: V39CustomerStrategyResult; onRefresh: () => void }) {
   const savedStrategies = Object.values(strategyResult.strategies).filter((strategy) => strategy.strategy.trim());
   const roleHints = buildStrategyRoleHints(strategyResult);
+  const [memberRoles, setMemberRoles] = useState<Record<string, V39MemberRoleResultItem>>(loadMemberRoleSaveState);
+  const savedMemberRoleCount = MEMBER_ROLE_SAVE_TARGETS.filter((target) => memberRoles[target]?.roleMission?.trim()).length;
+
+  const updateMemberRole = (memberRoleId: string, patch: Partial<V39MemberRoleResultItem>) => {
+    setMemberRoles((current) => {
+      const next = {
+        ...current,
+        [memberRoleId]: {
+          ...normalizeV39MemberRoleItem(current[memberRoleId], memberRoleId, memberRoleId),
+          ...patch,
+        },
+      };
+      saveV39MemberRoleResult({ schemaVersion: 1, updatedAt: '', roles: next });
+      return next;
+    });
+  };
+
+  const applyMemberRoleDraft = (memberRoleId: string) => {
+    const hint = roleHints.find((item) => item.memberRole === memberRoleId);
+    const current = memberRoles[memberRoleId];
+    updateMemberRole(memberRoleId, {
+      assignedCustomers: current?.assignedCustomers || buildDefaultRoleItem(memberRoleId, hint).assignedCustomers || '',
+      roleMission: current?.roleMission || buildDefaultRoleItem(memberRoleId, hint).roleMission || '',
+      coachingFocus: current?.coachingFocus || buildDefaultRoleItem(memberRoleId, hint).coachingFocus || '',
+      riskGuardrail: current?.riskGuardrail || buildDefaultRoleItem(memberRoleId, hint).riskGuardrail || '',
+      callPlanPrep: current?.callPlanPrep || buildDefaultRoleItem(memberRoleId, hint).callPlanPrep || '',
+    });
+  };
 
   return (
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
@@ -120,7 +187,7 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
         </button>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">저장 상태</p>
           <p className="mt-1 text-sm font-black text-slate-900">{strategyResult.updatedAt ? '저장 결과 있음' : '저장 결과 없음'}</p>
@@ -133,6 +200,10 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">팀원 배정 방향</p>
           <p className="mt-1 text-sm font-black text-slate-900">{roleHints.length > 0 ? `${roleHints.length}개 방향` : '아직 저장된 방향 없음'}</p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-xs font-black text-slate-500">9단계 연결 저장</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{savedMemberRoleCount}개</p>
         </div>
       </div>
 
@@ -161,17 +232,45 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
 
       {roleHints.length > 0 ? (
         <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
-          <h3 className="text-sm font-black text-slate-950">팀원 역할 배정 참고 초안</h3>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 7단계 고객 전략에서 반복적으로 등장한 팀원 배정 방향을 묶은 참고 자료입니다.</p>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {roleHints.map((hint) => (
-              <article key={hint.memberRole} className="rounded-2xl border bg-emerald-50 p-4">
-                <p className="text-sm font-black text-slate-950">{hint.memberRole}</p>
-                <p className="mt-2 text-xs font-bold leading-5 text-slate-700">연결 고객 유형: {hint.customerLabels.join(' · ')}</p>
-                <p className="mt-1 text-xs font-bold leading-5 text-slate-700">우선순위: {hint.priorities.length > 0 ? hint.priorities.join(' · ') : '미정'}</p>
-                <p className="mt-2 text-xs font-bold leading-5 text-amber-900">주의 리스크: {hint.risks.length > 0 ? hint.risks.join(' / ') : '표현·자료·접촉 강도 안전선 확인'}</p>
-              </article>
-            ))}
+          <h3 className="text-sm font-black text-slate-950">9단계 연결용 팀원 역할 배정 저장</h3>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 9단계 AI Call Plan에 넘길 실행 맥락을 팀장이 정리하는 기록입니다.</p>
+          <div className="mt-3 grid gap-4 xl:grid-cols-2">
+            {roleHints.map((hint) => {
+              const current = memberRoles[hint.memberRole] ?? normalizeV39MemberRoleItem(undefined, hint.memberRole, hint.memberRole);
+              return (
+                <article key={hint.memberRole} className="rounded-2xl border bg-emerald-50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-black text-slate-950">{hint.memberRole}</p>
+                    <button type="button" className="rounded-2xl border bg-white px-3 py-2 text-xs font-black text-slate-700" onClick={() => applyMemberRoleDraft(hint.memberRole)}>
+                      9단계 연결 초안 가져오기
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-700">연결 고객 유형: {hint.customerLabels.join(' · ')}</p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">담당 고객군</span>
+                      <input className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm" value={current.assignedCustomers} onChange={(event) => updateMemberRole(hint.memberRole, { assignedCustomers: event.target.value })} />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">콜플랜 준비물</span>
+                      <input className="min-h-11 w-full rounded-2xl border bg-white px-3 py-2 text-sm" value={current.callPlanPrep} onChange={(event) => updateMemberRole(hint.memberRole, { callPlanPrep: event.target.value })} />
+                    </label>
+                    <label className="space-y-1 md:col-span-2">
+                      <span className="text-xs font-black text-slate-500">역할 미션</span>
+                      <textarea className="min-h-20 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.roleMission} onChange={(event) => updateMemberRole(hint.memberRole, { roleMission: event.target.value })} />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">코칭 초점</span>
+                      <textarea className="min-h-20 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.coachingFocus} onChange={(event) => updateMemberRole(hint.memberRole, { coachingFocus: event.target.value })} />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">리스크 안전선</span>
+                      <textarea className="min-h-20 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.riskGuardrail} onChange={(event) => updateMemberRole(hint.memberRole, { riskGuardrail: event.target.value })} />
+                    </label>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       ) : null}
