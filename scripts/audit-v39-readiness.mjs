@@ -100,7 +100,7 @@ const expectedImplementationMarkers = [
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V39MemberRoleCallPlanPanel'],
   ['src/journey-v39-compliance-cleanup-lab.tsx', 'V39AiCallPlanCleanupPanel'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V39FinalExecutionCardPanel'],
-  ['src/journey-v39-instructor-discussion-lab.tsx', 'V38InstructorDiscussionLab'],
+  ['src/journey-v39-instructor-discussion-lab.tsx', 'V39InstructorDiscussionPanel'],
 ];
 for (const [file, marker] of expectedImplementationMarkers) pass(includes(files[file], marker), `${file} missing implementation marker: ${marker}`);
 
@@ -124,6 +124,10 @@ for (const marker of ['V39FinalCallPlanCard', 'V39FinalExecutionCardPanel', '최
   pass(includes(files['src/journey-v39-final-call-plan-card.tsx'], marker), `final card missing marker: ${marker}`);
 }
 
+for (const marker of ['V39InstructorDiscussionLab', 'V39InstructorDiscussionPanel', '최종 실행 카드를 강사용 토의 질문으로 전환하기', '13단계 강사용 토의 연결 요약', '강사용 핵심 질문', '12단계 최종 카드 새로고침']) {
+  pass(includes(files['src/journey-v39-instructor-discussion-lab.tsx'], marker), `instructor discussion missing marker: ${marker}`);
+}
+
 const forbiddenByFile = [
   ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
   ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
@@ -131,6 +135,7 @@ const forbiddenByFile = [
   ['src/journey-v39-ai-call-plan-lab.tsx', ['V38AiCallPlanLab', "from './journey-v38-ai-call-plan-lab'", '<V38AiCallPlanLab />']],
   ['src/journey-v39-compliance-cleanup-lab.tsx', ['V38ComplianceCleanupLab', "from './journey-v38-compliance-cleanup-lab'", '<V38ComplianceCleanupLab />', 'Call Plan Cleanup Bridge', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용', 'Final Card Bridge']],
   ['src/journey-v39-final-call-plan-card.tsx', ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']],
+  ['src/journey-v39-instructor-discussion-lab.tsx', ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']],
   ['src/journey-v39-people-dialogue-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
 ];
 for (const [file, markers] of forbiddenByFile) for (const marker of markers) pass(notIncludes(files[file], marker), `${file} must not expose forbidden marker: ${marker}`);
