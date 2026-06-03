@@ -27,6 +27,7 @@ const files = {
   wrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   customerJudgmentWrapper: read('src/journey-v39-customer-judgment-lab.tsx'),
   customerJudgmentStore: read('src/journey-v39-customer-judgment-result-store.ts'),
+  customerPriorityBridge: read('src/journey-v39-customer-priority-lab.tsx'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
@@ -39,6 +40,7 @@ checkIncludes(files.html, '<title>C1바이오 영업팀장 AI 리더십 Lab Jour
 checkIncludes(files.app, 'V39PreviewApp', 'v39 preview app component');
 checkIncludes(files.app, 'V39DashboardAnalysisLab', 'v39 dashboard wrapper route');
 checkIncludes(files.app, 'V39CustomerJudgmentLab', 'v39 customer judgment wrapper route');
+checkIncludes(files.app, 'V39CustomerPriorityLab', 'v39 customer priority bridge route');
 checkIncludes(files.app, 'V39MemberRoleLab', 'v39 member role bridge route');
 checkIncludes(files.app, 'ckd.v39.participant.v1', 'v39 participant storage key');
 checkIncludes(files.app, 'ckd.v39.progress.v1', 'v39 progress storage key');
@@ -50,6 +52,7 @@ checkIncludes(files.tsconfig, 'src/journey-v39-app-preview.tsx', 'v39 tsconfig e
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-analysis-lab.tsx', 'v39 tsconfig dashboard wrapper');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-lab.tsx', 'v39 tsconfig customer judgment wrapper');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-result-store.ts', 'v39 tsconfig customer judgment result store');
+checkIncludes(files.tsconfig, 'src/journey-v39-customer-priority-lab.tsx', 'v39 tsconfig customer priority bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
@@ -111,8 +114,10 @@ for (const marker of [
   '다음 확인 질문',
   '2주 실행 방향',
   '컴플라이언스 주의점',
-  '실제 고객명·병원명·의료진명·제품명·내부 수치가 들어가지 않도록 안전선 문구를 포함했습니다',
-  '실제 고객명·병원명·의료진명·제품명·내부 수치는 입력하지 않습니다',
+  '안전선 문구를 포함했습니다',
+  '실제 고객명',
+  '제품명',
+  '내부 수치',
 ]) {
   checkIncludes(files.customerJudgmentWrapper, marker, 'v39 customer judgment wrapper marker');
 }
@@ -133,6 +138,23 @@ for (const marker of [
   'clearV39CustomerJudgmentResult',
 ]) {
   checkIncludes(files.customerJudgmentStore, marker, 'v39 customer judgment result store marker');
+}
+
+for (const marker of [
+  'V39CustomerPriorityLab',
+  'V38CustomerPriorityLab',
+  'V39CustomerJudgmentBridgePanel',
+  'Customer Judgment Bridge',
+  '6단계 고객 판단 결과 연결',
+  '6단계 판단 새로고침',
+  '연결된 판단',
+  '7단계 전략 작성 방향',
+  'getStrategyGuide',
+  'loadBridgeDecisions',
+  '자동 결정이 아니라',
+  '실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다',
+]) {
+  checkIncludes(files.customerPriorityBridge, marker, 'v39 customer priority bridge marker');
 }
 
 for (const marker of [
