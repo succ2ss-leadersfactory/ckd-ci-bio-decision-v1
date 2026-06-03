@@ -23,10 +23,17 @@ function buildPeopleDialogueSummary(result: V39PeopleDialogueResult) {
 
   if (result.cultureShiftSelections.length > 0) lines.push(`- 일하는 방식 변화 선택: ${result.cultureShiftSelections.length}개`);
   if (result.leaderFeelingSelections.length > 0) lines.push(`- 팀장 당혹감 선택: ${result.leaderFeelingSelections.length}개`);
-  if (result.newGenSignalSelections.length > 0) lines.push(`- 신세대 팀원 반응 신호: ${result.newGenSignalSelections.length}개`);
+  if (result.newGenSignalSelections.length > 0) lines.push(`- 현재 변화 신호: ${result.newGenSignalSelections.length}개`);
   if (result.existingMemberSignalSelections.length > 0) lines.push(`- 기존 팀원 부담 신호: ${result.existingMemberSignalSelections.length}개`);
   if (result.conflictTypeSelections.length > 0) lines.push(`- 갈등 유형: ${result.conflictTypeSelections.length}개`);
   if (result.dialogueStrategySelections.length > 0) lines.push(`- 팀장 대화 전략: ${result.dialogueStrategySelections.length}개`);
+  if (result.conversationSituationId) lines.push(`- 선택한 대화 상황 ID: ${result.conversationSituationId}`);
+  if (result.dialoguePurposeId) lines.push(`- 선택한 대화 목적 ID: ${result.dialoguePurposeId}`);
+  if (result.familiarOpeningId || result.familiarOpeningCustom.trim()) lines.push(`- 평소 첫마디: ${result.familiarOpeningCustom || result.familiarOpeningId}`);
+  if (result.perceivedByNewGen) lines.push(`- 신세대 팀원에게 들릴 수 있는 의미: ${result.perceivedByNewGen}`);
+  if (result.perceivedByExistingMember) lines.push(`- 기존 팀원에게 들릴 수 있는 의미: ${result.perceivedByExistingMember}`);
+  if (result.missingInformation) lines.push(`- 빠진 정보: ${result.missingInformation}`);
+  if (result.purposeFitOpening) lines.push(`- 목적에 맞게 바꾼 첫마디: ${result.purposeFitOpening}`);
 
   if (hasDialogueCard(result)) {
     lines.push('- 팀원 실행 대화 카드: 작성됨');
@@ -79,7 +86,7 @@ function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult, peopleDialo
     peopleDialogueSummary,
     '',
     'AI Call Plan 요청 시 위 내용을 바탕으로 고객군별 2주 콜 우선순위, 팀원별 실행 역할, 방문 전 질문, 팀원 실행 대화 포인트, 컴플라이언스 안전 표현, 리스크 점검표를 작성해 주세요.',
-    '단, 팀원을 세대 특성으로 단정하지 말고 역할 기준, 지원 방식, 책임 범위, 실행 대화 규범을 함께 반영해 주세요.',
+    '단, 팀원을 세대 특성으로 단정하지 말고 선택한 대화 목적, 역할 기준, 지원 방식, 책임 범위, 실행 대화 규범을 함께 반영해 주세요.',
   ].join('\n');
 }
 
@@ -107,7 +114,7 @@ function V39MemberRoleCallPlanPanel({
   const [callPlanItems, setCallPlanItems] = useState<Record<string, V39AiCallPlanResultItem>>(buildInitialCallPlanSaveState);
   const callPlanContextPrompt = useMemo(() => buildCallPlanContextPrompt(roleResult, peopleDialogueResult), [roleResult, peopleDialogueResult]);
   const currentCallPlan = callPlanItems.callPlanDraft ?? normalizeV39AiCallPlanResultItem(undefined, 'callPlanDraft', 'AI Call Plan 초안');
-  const peopleDialogueCompleted = hasDialogueCard(peopleDialogueResult) || peopleDialogueResult.teamNorms.trim().length > 0;
+  const peopleDialogueCompleted = hasDialogueCard(peopleDialogueResult) || peopleDialogueResult.teamNorms.trim().length > 0 || peopleDialogueResult.purposeFitOpening.trim().length > 0;
 
   const copyPrompt = async () => {
     try {
