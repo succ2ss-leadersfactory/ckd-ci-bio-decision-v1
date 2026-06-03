@@ -126,7 +126,7 @@ const implementationMarkers = [
   ['src/journey-v39-member-role-lab.tsx', 'V39CustomerRolePlanningPanel'],
   ['src/journey-v39-people-dialogue-lab.tsx', 'V39PeopleDialogueLab'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V39MemberRoleCallPlanPanel'],
-  ['src/journey-v39-compliance-cleanup-lab.tsx', 'V38ComplianceCleanupLab'],
+  ['src/journey-v39-compliance-cleanup-lab.tsx', 'V39AiCallPlanCleanupPanel'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V38FinalCallPlanCard'],
   ['src/journey-v39-instructor-discussion-lab.tsx', 'V38InstructorDiscussionLab'],
 ];
@@ -138,11 +138,16 @@ for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary
   pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan must include people dialogue bridge marker: ${marker}`);
 }
 
+for (const marker of ['AI Call Plan의 위험 표현을 안전한 실행 문장으로 바꾸기', '팀원 실행 대화 기준', '팀원에게 부담을 전가하는 표현', '세대 특성으로 팀원을 단정하는 표현', '12단계 최종 실행 카드에 반영할 안전 문장 정리']) {
+  pass(includes(files['src/journey-v39-compliance-cleanup-lab.tsx'], marker), `compliance cleanup must include refreshed marker: ${marker}`);
+}
+
 const forbiddenByFile = [
   ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
   ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
   ['src/journey-v39-member-role-lab.tsx', ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />']],
   ['src/journey-v39-ai-call-plan-lab.tsx', ['V38AiCallPlanLab', "from './journey-v38-ai-call-plan-lab'", '<V38AiCallPlanLab />']],
+  ['src/journey-v39-compliance-cleanup-lab.tsx', ['V38ComplianceCleanupLab', "from './journey-v38-compliance-cleanup-lab'", '<V38ComplianceCleanupLab />', 'Call Plan Cleanup Bridge', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용', 'Final Card Bridge']],
   ['src/journey-v39-people-dialogue-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
 ];
 for (const [file, markers] of forbiddenByFile) {
