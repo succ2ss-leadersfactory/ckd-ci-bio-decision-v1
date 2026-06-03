@@ -30,6 +30,8 @@ const files = {
   customerPriorityBridge: read('src/journey-v39-customer-priority-lab.tsx'),
   customerStrategyStore: read('src/journey-v39-customer-strategy-result-store.ts'),
   memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
+  memberRoleStore: read('src/journey-v39-member-role-result-store.ts'),
+  aiCallPlanBridge: read('src/journey-v39-ai-call-plan-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
   packageJson: read('package.json'),
@@ -43,6 +45,7 @@ checkIncludes(files.app, 'V39DashboardAnalysisLab', 'v39 dashboard wrapper route
 checkIncludes(files.app, 'V39CustomerJudgmentLab', 'v39 customer judgment wrapper route');
 checkIncludes(files.app, 'V39CustomerPriorityLab', 'v39 customer priority bridge route');
 checkIncludes(files.app, 'V39MemberRoleLab', 'v39 member role bridge route');
+checkIncludes(files.app, 'V39AiCallPlanLab', 'v39 AI call plan bridge route');
 checkIncludes(files.app, 'ckd.v39.participant.v1', 'v39 participant storage key');
 checkIncludes(files.app, 'ckd.v39.progress.v1', 'v39 progress storage key');
 checkIncludes(files.viteConfig, 'journeyV39Preview', 'vite v39 input key');
@@ -56,6 +59,8 @@ checkIncludes(files.tsconfig, 'src/journey-v39-customer-judgment-result-store.ts
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-priority-lab.tsx', 'v39 tsconfig customer priority bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-customer-strategy-result-store.ts', 'v39 tsconfig customer strategy result store');
 checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
+checkIncludes(files.tsconfig, 'src/journey-v39-member-role-result-store.ts', 'v39 tsconfig member role result store');
+checkIncludes(files.tsconfig, 'src/journey-v39-ai-call-plan-lab.tsx', 'v39 tsconfig AI call plan bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
 for (const marker of [
@@ -212,8 +217,46 @@ for (const marker of [
   '7단계 전략 결과 새로고침',
   'buildStrategyRoleHints',
   '팀원 역할 배정 참고 초안',
+  '9단계 연결용 팀원 역할 배정 저장',
+  '9단계 연결 초안 가져오기',
+  'saveV39MemberRoleResult',
+  'loadMemberRoleSaveState',
 ]) {
   checkIncludes(files.memberRoleBridge, marker, 'v39 member role bridge marker');
+}
+
+for (const marker of [
+  'V39_MEMBER_ROLE_RESULT_SCHEMA_VERSION',
+  'V39_MEMBER_ROLE_RESULT_STORAGE_KEY',
+  'ckd.v39.memberRole.result.v1',
+  'V39MemberRoleResultItem',
+  'V39MemberRoleResult',
+  'createEmptyV39MemberRoleItem',
+  'createEmptyV39MemberRoleResult',
+  'normalizeV39MemberRoleItem',
+  'normalizeV39MemberRoleResult',
+  'saveV39MemberRoleResult',
+  'loadV39MemberRoleResult',
+  'clearV39MemberRoleResult',
+]) {
+  checkIncludes(files.memberRoleStore, marker, 'v39 member role result store marker');
+}
+
+for (const marker of [
+  'V39AiCallPlanLab',
+  'V38AiCallPlanLab',
+  'V39MemberRoleCallPlanBridgePanel',
+  'Member Role Bridge',
+  '8단계 팀원 역할 배정을 AI Call Plan에 연결',
+  '8단계 역할 결과 새로고침',
+  '연결 프롬프트 복사',
+  '연결 프롬프트 복사 완료',
+  'buildCallPlanContextPrompt',
+  '복사해서 AI Call Plan 프롬프트에 붙일 연결 맥락',
+  'AI Call Plan 프롬프트 맥락화',
+  '실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 개인정보는 포함하지 않습니다',
+]) {
+  checkIncludes(files.aiCallPlanBridge, marker, 'v39 AI call plan bridge marker');
 }
 
 for (const marker of [
