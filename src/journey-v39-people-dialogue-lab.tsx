@@ -417,7 +417,7 @@ export function V39PeopleDialogueLab() {
             </div>
             <h2 className="mt-8 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">팀장의 첫마디를 목적에 맞게 바꾸기</h2>
             <p className="mt-6 max-w-4xl text-base font-bold leading-8 text-slate-600">
-              좋은 대화는 단순히 부드러운 대화가 아닙니다. 지금 필요한 대화의 목적을 알고, 역할 기준·지원 방식·책임 범위를 분명히 하며, 팀원이 실행으로 움직일 수 있게 만드는 대화입니다.
+              좋은 대화는 단순히 부드러운 대화가 아닙니다. 팀원 온도차를 세대 탓으로 돌리지 않고, 지금 필요한 대화의 목적을 알고, 역할 기준·지원 방식·책임 범위를 분명히 하며, 팀원이 실행으로 움직일 수 있게 만드는 대화입니다.
             </p>
             <div className="mt-8 rounded-3xl border border-violet-100 bg-violet-50 p-5 text-sm font-bold leading-6 text-violet-950">
               대화법을 바꾸는 이유는 팀원을 조심스럽게 대하라는 뜻이 아닙니다. 일이 실행되는 조건이 달라졌기 때문입니다. 예전에는 속으로 생각하던 질문들이 이제는 역할, 공정성, 성장, 자율성, 책임 범위에 대한 확인으로 드러납니다.
