@@ -45,12 +45,19 @@ if (v38ScriptPaths.length === 0) {
 
 const distFiles = listFiles('dist');
 const assetFiles = distFiles.filter((file) => file.includes('assets'));
+const assetJsFiles = assetFiles.filter((file) => file.endsWith('.js'));
 
 if (assetFiles.length === 0) {
   fail('dist/assets must include bundled assets.');
 }
 
-const v38BundledJs = v38ScriptPaths.map((file) => readText(file)).join('\n');
+if (assetJsFiles.length === 0) {
+  fail('dist/assets must include bundled JavaScript assets.');
+}
+
+const v38EntryJs = v38ScriptPaths.map((file) => readText(file)).join('\n');
+const allBundledJs = assetJsFiles.map((file) => readText(file)).join('\n');
+const markerSearchText = [v38EntryJs, allBundledJs].join('\n');
 
 for (const text of [
   'C1바이오 영업팀장 AI 리더십 Lab Journey',
@@ -117,13 +124,13 @@ for (const text of [
   'AI 전략 점검 프롬프트 복사',
   '7단계 판단을 팀원 역할로 바꾸는 기준',
 ]) {
-  if (!v38BundledJs.includes(text)) {
-    fail(`v38 entry bundle must include ${text}.`);
+  if (!markerSearchText.includes(text)) {
+    fail(`v38 built assets must include ${text}.`);
   }
 }
 
 for (const forbidden of ['김민재 프로', '이서연 프로', '정하늘 프로', '최도윤 프로', 'v38 진행 초기화', 'C1바이오 v38 Preview']) {
-  if (v38BundledJs.includes(forbidden) || distHtml.includes(forbidden)) {
+  if (markerSearchText.includes(forbidden) || distHtml.includes(forbidden)) {
     fail(`v38 client-facing bundle must not include forbidden marker: ${forbidden}.`);
   }
 }
