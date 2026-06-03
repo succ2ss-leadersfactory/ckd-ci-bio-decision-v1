@@ -75,7 +75,7 @@ for (const [label, source, markers] of [
 for (const [label, source, markers] of [
   ['dashboard wrapper', files.dashboardWrapper, ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab', 'heroVariant="customer"']],
   ['dashboard customer hero', files.dashboardCore, ['heroVariant?: DashboardHeroVariant', 'heroVariant === \'customer\'', '5단계 팀 실행진단', '우리 팀 지표로 다음 행동 준비하기', 'CustomerProgressItem']],
-  ['customer judgment wrapper', files.customerJudgmentWrapper, ['V39CustomerJudgmentLab', 'V38CustomerJudgmentLab', '고객 Data에서 기회와 착시 구분하기', '고객 Data 상황 선택', '고객 판단 기준 정하기', '고객별 신호 정리와 2주 판단 메모', 'AI 고객 신호 분리 프롬프트 준비']],
+  ['customer judgment wrapper', files.customerJudgmentWrapper, ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow', '고객 Data에서 기회와 착시 구분하기', '고객 Data 상황 선택', '고객 판단 기준 정하기', '고객별 신호 정리와 2주 판단 메모', 'AI 고객 신호 분리 프롬프트 준비']],
   ['customer judgment store', files.customerJudgmentStore, ['ckd.v39.customerJudgment.result.v1', 'customerContextSelections', 'judgmentCriteriaSelections', 'selectedCustomerTypeIds', 'rawAiSignalResult', 'saveV39CustomerJudgmentResult', 'loadV39CustomerJudgmentResult']],
   ['customer priority bridge', files.customerPriorityBridge, ['V39CustomerPriorityLab', 'V38CustomerPriorityLab', '고객 판단을 대응 전략으로 정리하기', '고객 대응 우선순위', '전략 초안 가져오기', 'saveV39CustomerStrategyResult']],
   ['customer strategy store', files.customerStrategyStore, ['ckd.v39.customerStrategy.result.v1', 'saveV39CustomerStrategyResult', 'loadV39CustomerStrategyResult']],
@@ -96,7 +96,7 @@ for (const [label, source, markers] of [
 for (const [label, source, markers] of [
   ['html title', files.html, ['v39 Preview', 'C1바이오 v39 Preview']],
   ['app old side effect', files.app, ["import './journey-v38-app-preview';"]],
-  ['customer judgment old flow wording', files.customerJudgmentWrapper, ['Customer Priority Selection', '고객별 우선순위 선택', '프롬프트 대상 고객 유형']],
+  ['customer judgment old flow hidden', files.customerJudgmentWrapper, ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />', 'Customer Priority Selection', '고객별 우선순위 선택', '프롬프트 대상 고객 유형']],
   ['dashboard wrapper removed memo panel', files.dashboardWrapper, ['팀 실행진단 메모', 'Team Execution Memo', '입력 내용 저장', '저장 내용 비우기', 'saveV39DashboardResult']],
   ['customer priority client copy', files.customerPriorityBridge, ['Customer Judgment Bridge', '6단계 고객 판단 결과 연결', '8단계 연결용', '연결 초안 가져오기']],
 ]) {
