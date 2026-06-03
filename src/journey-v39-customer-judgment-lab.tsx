@@ -203,12 +203,53 @@ function buildInitialCustomerJudgmentState(): Record<string, V39CustomerDecision
   return decisions;
 }
 
+function buildCustomerAiAnalysisPrompt(
+  candidate: CustomerPriorityCandidate,
+  decision: V39CustomerDecisionResult,
+) {
+  return [
+    '당신은 제약영업 팀장의 고객 Data 판단을 돕는 AI 사고 파트너입니다.',
+    '',
+    '[안전선]',
+    '- 아래 내용은 교육용 가상 고객 유형 Data입니다.',
+    '- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보를 추정하거나 요구하지 마세요.',
+    '- 미승인 효능 표현, 비교 우위 단정, 처방 유도 문장, 과도한 설득 문장을 만들지 마세요.',
+    '- 답변은 고객 평가나 등급화가 아니라, 팀장의 판단 보조 관점으로 작성하세요.',
+    '',
+    '[입력 Data]',
+    `- 고객 유형: ${candidate.label}`,
+    `- Data 1차 해석: ${candidate.dataRead}`,
+    `- 팀장 우선순위 판단: ${getPriorityLabel(decision.priorityDecision)}`,
+    `- 판단 이유: ${decision.reason || '아직 작성 전'}`,
+    `- 다음 확인 질문: ${decision.nextCheck || '아직 작성 전'}`,
+    `- 컴플라이언스 메모: ${decision.complianceNote || '아직 작성 전'}`,
+    '',
+    '[요청]',
+    '위 Data를 바탕으로 이 고객 유형을 2주 안에 어떻게 다룰지 분석해 주세요.',
+    '단, 확정 결론처럼 말하지 말고 팀장이 다시 판단할 수 있는 초안으로 작성해 주세요.',
+    '',
+    '[출력 형식]',
+    '1. 기회 신호: 믿을 수 있는 긍정 신호와 그 근거',
+    '2. 리스크 신호: 주의해야 할 신호와 과잉해석 가능성',
+    '3. 부족한 정보: 추가로 확인해야 할 정보',
+    '4. 다음 확인 질문: 고객에게 직접 확인하기보다 팀원이 준비해야 할 질문 중심',
+    '5. 2주 실행 방향: 집중/유지/보류/정보 보완 중 현재 판단에 맞춘 안전한 실행 방향',
+    '6. 컴플라이언스 주의점: 표현, 자료 활용, 접촉 강도에서 지켜야 할 안전선',
+  ].join('\n');
+}
+
 function V39CustomerPrioritySelectionPanel() {
   const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(buildInitialCustomerJudgmentState);
+  const [promptCustomerId, setPromptCustomerId] = useState(CUSTOMER_PRIORITY_CANDIDATES[0]?.id ?? 'A');
+  const [copiedPromptCustomerId, setCopiedPromptCustomerId] = useState('');
   const selectedCount = useMemo(
     () => CUSTOMER_PRIORITY_CANDIDATES.filter((candidate) => decisions[candidate.id]?.priorityDecision).length,
     [decisions],
   );
+
+  const selectedPromptCandidate = CUSTOMER_PRIORITY_CANDIDATES.find((candidate) => candidate.id === promptCustomerId) ?? CUSTOMER_PRIORITY_CANDIDATES[0];
+  const selectedPromptDecision = decisions[selectedPromptCandidate.id] ?? normalizeV39CustomerDecisionResult(undefined, selectedPromptCandidate.id, selectedPromptCandidate.label);
+  const generatedPrompt = buildCustomerAiAnalysisPrompt(selectedPromptCandidate, selectedPromptDecision);
 
   const updateDecision = (customerTypeId: string, patch: Partial<V39CustomerDecisionResult>) => {
     setDecisions((current) => {
@@ -239,112 +280,172 @@ function V39CustomerPrioritySelectionPanel() {
     });
   };
 
+  const copyGeneratedPrompt = () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard) return;
+    void navigator.clipboard.writeText(generatedPrompt).then(() => {
+      setCopiedPromptCustomerId(selectedPromptCandidate.id);
+    });
+  };
+
   const resetCustomerJudgmentSelections = () => {
     const empty = buildInitialCustomerJudgmentState();
     for (const candidate of CUSTOMER_PRIORITY_CANDIDATES) {
       empty[candidate.id] = normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
     }
     setDecisions(empty);
+    setCopiedPromptCustomerId('');
     saveV39CustomerJudgmentResult({ schemaVersion: 1, updatedAt: '', decisions: empty });
   };
 
   return (
-    <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="text-xs font-black uppercase tracking-wide text-violet-700">v39 Customer Priority Selection</p>
-          <h3 className="mt-2 text-xl font-black text-slate-950">고객별 우선순위 선택</h3>
-          <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
-            아래 선택은 고객을 평가하거나 등급화하는 기능이 아닙니다. 고객 Data를 읽은 뒤, 2주 안에 어떤 대응 방향이 적합한지
-            팀장 관점에서 임시 판단을 남기는 기록입니다.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-violet-800 shadow-sm">
-            선택 완료 {selectedCount} / {CUSTOMER_PRIORITY_CANDIDATES.length}
+    <section className="space-y-4">
+      <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Customer Priority Selection</p>
+            <h3 className="mt-2 text-xl font-black text-slate-950">고객별 우선순위 선택</h3>
+            <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
+              아래 선택은 고객을 평가하거나 등급화하는 기능이 아닙니다. 고객 Data를 읽은 뒤, 2주 안에 어떤 대응 방향이 적합한지
+              팀장 관점에서 임시 판단을 남기는 기록입니다.
+            </p>
           </div>
-          <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={resetCustomerJudgmentSelections}>
-            고객 판단 선택 초기화
+          <div className="flex flex-wrap gap-2">
+            <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-violet-800 shadow-sm">
+              선택 완료 {selectedCount} / {CUSTOMER_PRIORITY_CANDIDATES.length}
+            </div>
+            <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={resetCustomerJudgmentSelections}>
+              고객 판단 선택 초기화
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
+            <article key={option.id} className="rounded-2xl border bg-white p-4">
+              <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${PRIORITY_BADGE_CLASS[option.id]}`}>{option.label}</p>
+              <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{option.description}</p>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-2">
+          {CUSTOMER_PRIORITY_CANDIDATES.map((candidate) => {
+            const current = decisions[candidate.id] ?? normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
+            return (
+              <article key={candidate.id} className="rounded-3xl border bg-white p-4 shadow-sm">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm font-black text-slate-950">{candidate.label}</p>
+                    <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{candidate.dataRead}</p>
+                  </div>
+                  <span className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${current.priorityDecision ? PRIORITY_BADGE_CLASS[current.priorityDecision] : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                    현재 판단: {getPriorityLabel(current.priorityDecision)}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-2 md:grid-cols-4">
+                  {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
+                    <label key={option.id} className={`cursor-pointer rounded-2xl border p-3 text-center text-xs font-black ${current.priorityDecision === option.id ? PRIORITY_BADGE_CLASS[option.id] : 'bg-white text-slate-600'}`}>
+                      <input
+                        type="radio"
+                        className="sr-only"
+                        name={`customer-priority-${candidate.id}`}
+                        checked={current.priorityDecision === option.id}
+                        onChange={() => updateDecision(candidate.id, { priorityDecision: option.id })}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+
+                <button type="button" className="mt-3 rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applySuggestedDecision(candidate)}>
+                  판단 초안 가져오기
+                </button>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <label className="space-y-1">
+                    <span className="text-xs font-black text-slate-500">판단 이유</span>
+                    <textarea
+                      className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                      value={current.reason}
+                      onChange={(event) => updateDecision(candidate.id, { reason: event.target.value })}
+                      placeholder="예: 기회 신호는 있으나 고객 반응과 안전선을 함께 봐야 한다."
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-xs font-black text-slate-500">다음 확인 질문</span>
+                    <textarea
+                      className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                      value={current.nextCheck}
+                      onChange={(event) => updateDecision(candidate.id, { nextCheck: event.target.value })}
+                      placeholder="예: 고객이 확인하려는 기준은 무엇인가?"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-xs font-black text-slate-500">컴플라이언스 메모</span>
+                    <textarea
+                      className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                      value={current.complianceNote}
+                      onChange={(event) => updateDecision(candidate.id, { complianceNote: event.target.value })}
+                      placeholder="예: 승인 자료 범위 안에서만 설명한다."
+                    />
+                  </label>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI Analysis Prompt</p>
+            <h3 className="mt-2 text-xl font-black text-slate-950">AI 분석 프롬프트 생성</h3>
+            <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
+              고객별 우선순위 판단을 바탕으로 AI에 복사할 수 있는 분석 프롬프트를 만듭니다. 프롬프트에는 실제 고객명, 병원명,
+              의료진명, 제품명, 내부 수치가 들어가지 않도록 안전선 문구를 포함했습니다.
+            </p>
+          </div>
+          <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-emerald-800 shadow-sm" onClick={copyGeneratedPrompt}>
+            {copiedPromptCustomerId === selectedPromptCandidate.id ? '프롬프트 복사 완료' : '프롬프트 복사'}
           </button>
         </div>
-      </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
-          <article key={option.id} className="rounded-2xl border bg-white p-4">
-            <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${PRIORITY_BADGE_CLASS[option.id]}`}>{option.label}</p>
-            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{option.description}</p>
-          </article>
-        ))}
-      </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-[240px_1fr]">
+          <div className="rounded-2xl border bg-white p-4">
+            <p className="text-xs font-black text-slate-500">프롬프트 대상 고객 유형</p>
+            <div className="mt-3 grid gap-2">
+              {CUSTOMER_PRIORITY_CANDIDATES.map((candidate) => {
+                const current = decisions[candidate.id] ?? normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
+                return (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    className={`rounded-2xl border px-3 py-2 text-left text-xs font-black ${promptCustomerId === candidate.id ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'bg-white text-slate-600'}`}
+                    onClick={() => {
+                      setPromptCustomerId(candidate.id);
+                      setCopiedPromptCustomerId('');
+                    }}
+                  >
+                    {candidate.label}
+                    <span className="mt-1 block text-[11px] font-bold opacity-80">{getPriorityLabel(current.priorityDecision)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-2">
-        {CUSTOMER_PRIORITY_CANDIDATES.map((candidate) => {
-          const current = decisions[candidate.id] ?? normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
-          return (
-            <article key={candidate.id} className="rounded-3xl border bg-white p-4 shadow-sm">
-              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <p className="text-sm font-black text-slate-950">{candidate.label}</p>
-                  <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{candidate.dataRead}</p>
-                </div>
-                <span className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${current.priorityDecision ? PRIORITY_BADGE_CLASS[current.priorityDecision] : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
-                  현재 판단: {getPriorityLabel(current.priorityDecision)}
-                </span>
-              </div>
-
-              <div className="mt-4 grid gap-2 md:grid-cols-4">
-                {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
-                  <label key={option.id} className={`cursor-pointer rounded-2xl border p-3 text-center text-xs font-black ${current.priorityDecision === option.id ? PRIORITY_BADGE_CLASS[option.id] : 'bg-white text-slate-600'}`}>
-                    <input
-                      type="radio"
-                      className="sr-only"
-                      name={`v39-customer-priority-${candidate.id}`}
-                      checked={current.priorityDecision === option.id}
-                      onChange={() => updateDecision(candidate.id, { priorityDecision: option.id })}
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
-
-              <button type="button" className="mt-3 rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applySuggestedDecision(candidate)}>
-                판단 초안 가져오기
-              </button>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">판단 이유</span>
-                  <textarea
-                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
-                    value={current.reason}
-                    onChange={(event) => updateDecision(candidate.id, { reason: event.target.value })}
-                    placeholder="예: 기회 신호는 있으나 고객 반응과 안전선을 함께 봐야 한다."
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">다음 확인 질문</span>
-                  <textarea
-                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
-                    value={current.nextCheck}
-                    onChange={(event) => updateDecision(candidate.id, { nextCheck: event.target.value })}
-                    placeholder="예: 고객이 확인하려는 기준은 무엇인가?"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">컴플라이언스 메모</span>
-                  <textarea
-                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
-                    value={current.complianceNote}
-                    onChange={(event) => updateDecision(candidate.id, { complianceNote: event.target.value })}
-                    placeholder="예: 승인 자료 범위 안에서만 설명한다."
-                  />
-                </label>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+          <label className="space-y-2">
+            <span className="text-xs font-black text-slate-500">복사해서 사용할 AI 분석 프롬프트</span>
+            <textarea
+              className="min-h-[28rem] w-full rounded-2xl border bg-white px-4 py-3 font-mono text-xs leading-6 text-slate-900 shadow-sm"
+              value={generatedPrompt}
+              readOnly
+            />
+          </label>
+        </div>
+      </section>
     </section>
   );
 }
