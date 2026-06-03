@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { V38AiCallPlanLab } from './journey-v38-ai-call-plan-lab';
 import {
   type V39MemberRoleResult,
   loadV39MemberRoleResult,
@@ -16,16 +15,16 @@ function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult) {
 
   if (savedRoles.length === 0) {
     return [
-      '아직 8단계 팀원 역할 배정 결과가 저장되지 않았습니다.',
+      '아직 8단계 팀원 역할 결과가 저장되지 않았습니다.',
       '먼저 8단계에서 담당 고객군, 역할 미션, 코칭 초점, 리스크 안전선, 콜플랜 준비물을 정리하세요.',
     ].join('\n');
   }
 
   return [
-    '아래 내용은 교육용 가상 고객군과 팀원 역할 배정 결과입니다.',
+    '아래 내용은 교육용 가상 고객군과 팀원 역할 결과입니다.',
     '실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 개인정보는 포함하지 않습니다.',
     '',
-    '8단계 팀원 역할 배정 결과:',
+    '8단계 팀원 역할 결과:',
     ...savedRoles.flatMap((role, index) => [
       `${index + 1}. ${role.memberLabel}`,
       `- 담당 고객군: ${role.assignedCustomers || '아직 정리되지 않았습니다.'}`,
@@ -47,14 +46,14 @@ function buildInitialCallPlanSaveState(): Record<string, V39AiCallPlanResultItem
   };
 }
 
-function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResult: V39MemberRoleResult; onRefresh: () => void }) {
+function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39MemberRoleResult; onRefresh: () => void }) {
   const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
   const [copied, setCopied] = useState(false);
   const [callPlanItems, setCallPlanItems] = useState<Record<string, V39AiCallPlanResultItem>>(buildInitialCallPlanSaveState);
   const callPlanContextPrompt = useMemo(() => buildCallPlanContextPrompt(roleResult), [roleResult]);
   const currentCallPlan = callPlanItems.callPlanDraft ?? normalizeV39AiCallPlanResultItem(undefined, 'callPlanDraft', 'AI Call Plan 초안');
 
-  const copyBridgePrompt = async () => {
+  const copyPrompt = async () => {
     try {
       await navigator.clipboard.writeText(callPlanContextPrompt);
       setCopied(true);
@@ -90,42 +89,42 @@ function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResul
     <section className="rounded-3xl border border-sky-100 bg-sky-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-sky-700">Member Role Bridge</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">8단계 팀원 역할 배정을 AI Call Plan에 연결</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI Call Plan Preparation</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">팀원 역할을 AI Call Plan으로 구체화하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            8단계에서 저장한 담당 고객군, 역할 미션, 코칭 초점, 리스크 안전선, 콜플랜 준비물을 9단계 AI 프롬프트 작성 전에 다시 확인합니다.
+            8단계에서 정리한 담당 고객군, 역할 미션, 코칭 초점, 리스크 안전선, 콜플랜 준비물을 바탕으로 AI에게 요청할 맥락을 정리합니다.
             이 요약은 AI에게 답을 맡기기 위한 자료가 아니라, 팀장이 요청 맥락을 안전하게 정리하기 위한 입력 초안입니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefresh}>
-            8단계 역할 결과 새로고침
+            팀원 역할 새로고침
           </button>
-          <button type="button" className="rounded-full bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800" onClick={copyBridgePrompt}>
-            {copied ? '연결 프롬프트 복사 완료' : '연결 프롬프트 복사'}
+          <button type="button" className="rounded-full bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800" onClick={copyPrompt}>
+            {copied ? '프롬프트 복사 완료' : 'AI Call Plan 프롬프트 복사'}
           </button>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">저장 상태</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{roleResult.updatedAt ? '저장 결과 있음' : '저장 결과 없음'}</p>
+          <p className="text-xs font-black text-slate-500">역할 상태</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{roleResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
           {roleResult.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{roleResult.updatedAt}</p> : null}
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">저장된 역할</p>
+          <p className="text-xs font-black text-slate-500">정리된 역할</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedRoles.length}개</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">다음 단계</p>
-          <p className="mt-1 text-sm font-black text-slate-900">AI Call Plan 프롬프트 맥락화</p>
+          <p className="text-xs font-black text-slate-500">이번 단계 결과</p>
+          <p className="mt-1 text-sm font-black text-slate-900">AI Call Plan 초안</p>
         </div>
       </div>
 
       {savedRoles.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
-          8단계에서 9단계 연결용 팀원 역할 배정 결과를 저장하면, 이곳에 AI Call Plan 입력 맥락이 표시됩니다.
+          8단계에서 팀원별 역할을 정리하면, 이곳에 AI Call Plan 입력 맥락이 표시됩니다.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 xl:grid-cols-3">
@@ -146,21 +145,21 @@ function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResul
       )}
 
       <label className="mt-4 block rounded-2xl border bg-white p-4 shadow-sm">
-        <span className="text-sm font-black text-slate-950">복사해서 AI Call Plan 프롬프트에 붙일 연결 맥락</span>
+        <span className="text-sm font-black text-slate-950">복사해서 AI Call Plan 프롬프트에 붙일 입력 맥락</span>
         <textarea className="mt-3 min-h-80 w-full rounded-2xl border bg-slate-50 px-4 py-3 font-mono text-xs leading-6 text-slate-900" value={callPlanContextPrompt} readOnly />
       </label>
 
       <div className="mt-4 rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Call Plan Cleanup Bridge</p>
-            <h3 className="text-lg font-black text-slate-950">10단계 연결용 AI Call Plan 결과 저장</h3>
+            <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Compliance Review Preparation</p>
+            <h3 className="text-lg font-black text-slate-950">컴플라이언스 점검을 위한 Call Plan 정리</h3>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
-              AI가 만든 콜플랜 문장을 그대로 쓰지 않고, 10단계에서 컴플라이언스 위험 표현을 제거하기 위한 점검 대상으로 저장합니다.
+              AI가 만든 콜플랜 문장을 그대로 쓰지 않고, 다음 단계에서 컴플라이언스 위험 표현을 제거하기 위한 점검 대상으로 정리합니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-800" onClick={applyCallPlanDraft}>
-            10단계 연결 초안 가져오기
+            Call Plan 초안 가져오기
           </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -173,7 +172,7 @@ function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResul
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={currentCallPlan.riskMemo} onChange={(event) => updateCallPlanItem({ riskMemo: event.target.value })} />
           </label>
           <label className="space-y-1 md:col-span-2">
-            <span className="text-xs font-black text-slate-500">10단계 점검 초점</span>
+            <span className="text-xs font-black text-slate-500">다음 단계 점검 초점</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={currentCallPlan.cleanupFocus} onChange={(event) => updateCallPlanItem({ cleanupFocus: event.target.value })} />
           </label>
         </div>
@@ -194,10 +193,5 @@ export function V39AiCallPlanLab() {
     setMemberRoleResult(loadV39MemberRoleResult());
   };
 
-  return (
-    <section className="space-y-4">
-      <V39MemberRoleCallPlanBridgePanel roleResult={memberRoleResult} onRefresh={refreshMemberRoleResult} />
-      <V38AiCallPlanLab />
-    </section>
-  );
+  return <V39MemberRoleCallPlanPanel roleResult={memberRoleResult} onRefresh={refreshMemberRoleResult} />;
 }
