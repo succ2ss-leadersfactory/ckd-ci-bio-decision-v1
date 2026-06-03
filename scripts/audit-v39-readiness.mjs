@@ -134,7 +134,15 @@ for (const [file, marker] of implementationMarkers) {
   pass(includes(files[file], marker), `v39 wrapper must use expected implementation: ${file} -> ${marker}`);
 }
 
-for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '팀원 실행 대화 포인트', '실행 대화 새로고침']) {
+for (const marker of ['팀장의 첫마디를 목적에 맞게 바꾸기', '나 때는 말이야', '지금은 말이야', '왜 대화의 시작을 바꿔야 할까', '지금 필요한 대화는 무엇인가', '평소라면 어떻게 시작하시겠습니까', '팀원은 이렇게 들을 수 있습니다', '내가 실제로 사용할 실행 대화 저장', 'DIALOGUE_PURPOSES', 'CONVERSATION_SITUATIONS']) {
+  pass(includes(files['src/journey-v39-people-dialogue-lab.tsx'], marker), `people dialogue lab must include purpose-based marker: ${marker}`);
+}
+
+for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarOpeningId', 'perceivedByNewGen', 'perceivedByExistingMember', 'missingInformation', 'purposeFitOpening']) {
+  pass(includes(files['src/journey-v39-people-dialogue-result-store.ts'], marker), `people dialogue store must include purpose-based field: ${marker}`);
+}
+
+for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '선택한 대화 목적 ID', '목적에 맞게 바꾼 첫마디', '팀원 실행 대화 포인트', '실행 대화 새로고침']) {
   pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan must include people dialogue bridge marker: ${marker}`);
 }
 
