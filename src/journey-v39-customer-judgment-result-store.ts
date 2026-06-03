@@ -11,11 +11,20 @@ export type V39CustomerDecisionResult = {
   reason: string;
   nextCheck: string;
   complianceNote: string;
+  opportunitySignal: string;
+  riskSignal: string;
+  missingInfo: string;
+  twoWeekDirection: string;
+  judgmentMemo: string;
 };
 
 export type V39CustomerJudgmentResult = {
   schemaVersion: number;
   updatedAt: string;
+  customerContextSelections: string[];
+  judgmentCriteriaSelections: string[];
+  selectedCustomerTypeIds: string[];
+  rawAiSignalResult: string;
   decisions: Record<string, V39CustomerDecisionResult>;
 };
 
@@ -30,6 +39,11 @@ export function createEmptyV39CustomerDecisionResult(
     reason: '',
     nextCheck: '',
     complianceNote: '',
+    opportunitySignal: '',
+    riskSignal: '',
+    missingInfo: '',
+    twoWeekDirection: '',
+    judgmentMemo: '',
   };
 }
 
@@ -37,12 +51,21 @@ export function createEmptyV39CustomerJudgmentResult(): V39CustomerJudgmentResul
   return {
     schemaVersion: V39_CUSTOMER_JUDGMENT_RESULT_SCHEMA_VERSION,
     updatedAt: '',
+    customerContextSelections: [],
+    judgmentCriteriaSelections: [],
+    selectedCustomerTypeIds: [],
+    rawAiSignalResult: '',
     decisions: {},
   };
 }
 
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value : '';
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string');
 }
 
 function normalizePriorityDecision(value: unknown): V39CustomerPriorityDecision | '' {
@@ -68,6 +91,11 @@ export function normalizeV39CustomerDecisionResult(
     reason: normalizeText(source.reason),
     nextCheck: normalizeText(source.nextCheck),
     complianceNote: normalizeText(source.complianceNote),
+    opportunitySignal: normalizeText(source.opportunitySignal),
+    riskSignal: normalizeText(source.riskSignal),
+    missingInfo: normalizeText(source.missingInfo),
+    twoWeekDirection: normalizeText(source.twoWeekDirection),
+    judgmentMemo: normalizeText(source.judgmentMemo),
   };
 }
 
@@ -87,6 +115,10 @@ export function normalizeV39CustomerJudgmentResult(
   return {
     schemaVersion: V39_CUSTOMER_JUDGMENT_RESULT_SCHEMA_VERSION,
     updatedAt: normalizeText(source.updatedAt),
+    customerContextSelections: normalizeStringArray(source.customerContextSelections),
+    judgmentCriteriaSelections: normalizeStringArray(source.judgmentCriteriaSelections),
+    selectedCustomerTypeIds: normalizeStringArray(source.selectedCustomerTypeIds),
+    rawAiSignalResult: normalizeText(source.rawAiSignalResult),
     decisions,
   };
 }
