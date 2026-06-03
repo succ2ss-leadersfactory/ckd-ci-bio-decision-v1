@@ -31,6 +31,7 @@ const files = {
   customerPriority: read('src/journey-v39-customer-priority-lab.tsx'),
   memberRole: read('src/journey-v39-member-role-lab.tsx'),
   peopleDialogue: read('src/journey-v39-people-dialogue-lab.tsx'),
+  peopleDialogueUx: read('src/journey-v39-people-dialogue-ux-lab.tsx'),
   peopleDialogueStore: read('src/journey-v39-people-dialogue-result-store.ts'),
   aiCallPlan: read('src/journey-v39-ai-call-plan-lab.tsx'),
   compliance: read('src/journey-v39-compliance-cleanup-lab.tsx'),
@@ -40,12 +41,13 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39PeopleDialogueLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
   'src/journey-v39-app-preview.tsx',
   'src/journey-v39-people-dialogue-lab.tsx',
+  'src/journey-v39-people-dialogue-ux-lab.tsx',
   'src/journey-v39-people-dialogue-result-store.ts',
   'src/journey-v39-final-call-plan-card.tsx',
   'src/journey-v39-final-call-plan-result-store.ts',
@@ -69,6 +71,16 @@ for (const marker of [
   'DIALOGUE_PURPOSES',
   'CONVERSATION_SITUATIONS',
 ]) mustInclude(files.peopleDialogue, marker, 'people dialogue');
+
+for (const marker of [
+  'V39PeopleDialogueUxLab',
+  '9단계 진행 가이드',
+  '이 단계에서 하는 일',
+  '이전 단계에서 가져온 것',
+  '다음 단계로 넘길 것',
+  '최소 결과물',
+  '10단계 AI 실행계획 프롬프트',
+]) mustInclude(files.peopleDialogueUx, marker, 'people dialogue UX wrapper');
 
 for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarOpeningId', 'purposeFitOpening', 'ckd.v39.peopleDialogue.result.v1']) mustInclude(files.peopleDialogueStore, marker, 'people dialogue store');
 for (const marker of ['V39AiCallPlanLab', '9단계 실행 대화 요약', '목적에 맞게 바꾼 첫마디']) mustInclude(files.aiCallPlan, marker, 'AI call plan');
