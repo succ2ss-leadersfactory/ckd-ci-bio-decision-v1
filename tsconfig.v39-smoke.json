@@ -10,6 +10,7 @@
     "src/journey-v39-customer-priority-lab.tsx",
     "src/journey-v39-customer-strategy-result-store.ts",
     "src/journey-v39-member-role-lab.tsx",
+    "src/journey-v39-member-role-ux-lab.tsx",
     "src/journey-v39-member-role-result-store.ts",
     "src/journey-v39-people-dialogue-lab.tsx",
     "src/journey-v39-people-dialogue-ux-lab.tsx",
