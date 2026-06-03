@@ -21,7 +21,8 @@ function mustInclude(source, marker, label) {
   if (!source.includes(marker)) failures.push(`Missing customer-facing ${label}: ${marker}`);
 }
 
-const dashboard = read('src/journey-v39-dashboard-analysis-lab.tsx');
+const dashboardWrapper = read('src/journey-v39-dashboard-analysis-lab.tsx');
+const dashboardCore = read('src/journey-v38-dashboard-analysis-lab.tsx');
 
 for (const marker of [
   'v39 Dashboard Result Bridge',
@@ -33,7 +34,7 @@ for (const marker of [
   'v39 저장 구조 초기화 테스트',
   'v39 저장 구조 비우기',
 ]) {
-  mustNotInclude(dashboard, marker, 'dashboard copy');
+  mustNotInclude(dashboardWrapper, marker, 'dashboard wrapper copy');
 }
 
 for (const marker of [
@@ -43,7 +44,27 @@ for (const marker of [
   '저장 내용 비우기',
   '실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다',
 ]) {
-  mustInclude(dashboard, marker, 'dashboard copy');
+  mustInclude(dashboardWrapper, marker, 'dashboard wrapper copy');
+}
+
+for (const marker of [
+  'heroVariant?: DashboardHeroVariant',
+  'heroVariant === \'customer\'',
+  '5단계 팀 실행진단',
+  '우리 팀 지표로 다음 행동 준비하기',
+  '안내',
+  'CustomerProgressItem',
+  '모든 항목을 순서대로 완료하면 우리 팀만의 실행 계획이 완성됩니다',
+]) {
+  mustInclude(dashboardCore, marker, 'dashboard customer hero copy');
+}
+
+for (const marker of [
+  'v38 Dashboard Analysis Lab</p>',
+  'v39 Dashboard Result Bridge',
+  '저장 Key',
+]) {
+  mustNotInclude(dashboardWrapper, marker, 'visible v39 dashboard wrapper copy');
 }
 
 if (failures.length > 0) {
