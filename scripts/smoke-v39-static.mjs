@@ -85,12 +85,21 @@ for (const marker of [
 ]) mustInclude(files.finalCard, marker, 'final card');
 
 for (const marker of ['ckd.v39.finalCallPlan.result.v1', 'saveV39FinalCallPlanResult', 'loadV39FinalCallPlanResult']) mustInclude(files.finalCardStore, marker, 'final card store');
-for (const marker of ['V39InstructorDiscussionLab', 'buildInstructorDiscussionGuide']) mustInclude(files.instructor, marker, 'instructor');
+for (const marker of [
+  'V39InstructorDiscussionLab',
+  'V39InstructorDiscussionPanel',
+  '최종 실행 카드를 강사용 토의 질문으로 전환하기',
+  '13단계 강사용 토의 연결 요약',
+  '강사용 핵심 질문',
+  '12단계 최종 카드 새로고침',
+  'buildInstructorDiscussionGuide',
+]) mustInclude(files.instructor, marker, 'instructor');
 
 for (const marker of ['v39 Preview', 'C1바이오 v39 Preview']) mustNotInclude(files.html, marker, 'html title');
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step']) mustNotInclude(files.app, marker, 'old app route');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.peopleDialogue, marker, 'people dialogue wording');
 for (const marker of ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']) mustNotInclude(files.finalCard, marker, 'old final card flow');
+for (const marker of ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']) mustNotInclude(files.instructor, marker, 'old instructor flow');
 
 if (failures.length > 0) {
   console.error('v39 static smoke failed:');
