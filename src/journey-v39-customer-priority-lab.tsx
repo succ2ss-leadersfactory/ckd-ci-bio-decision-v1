@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { V38CustomerPriorityLab } from './journey-v38-customer-priority-lab';
 import {
   type V39CustomerDecisionResult,
   type V39CustomerJudgmentResult,
@@ -22,36 +21,12 @@ type CustomerBridgeItem = {
 };
 
 const CUSTOMER_BRIDGE_ITEMS: CustomerBridgeItem[] = [
-  {
-    id: 'A',
-    label: '고객 유형 A',
-    defaultGuide: '후속 대화 가능성은 살리되, 표현과 자료 활용 안전선을 먼저 확인합니다.',
-  },
-  {
-    id: 'B',
-    label: '고객 유형 B',
-    defaultGuide: '관심 신호를 과잉해석하지 말고 보류 이유와 니즈를 먼저 확인합니다.',
-  },
-  {
-    id: 'C',
-    label: '고객 유형 C',
-    defaultGuide: '관계 유지 품질을 관리하면서 변화 신호를 관찰합니다.',
-  },
-  {
-    id: 'D',
-    label: '고객 유형 D',
-    defaultGuide: '접촉 강도를 낮추고 고객 부담, 메시지, 기록 리스크를 먼저 정비합니다.',
-  },
-  {
-    id: 'E',
-    label: '고객 유형 E',
-    defaultGuide: '기회 신호는 크지만 승인 자료 범위와 표현 안전선 확인을 선행합니다.',
-  },
-  {
-    id: 'F',
-    label: '고객 유형 F',
-    defaultGuide: '전략 단정보다 최근 반응, 접촉 공백, CRM 기록 보완을 먼저 설계합니다.',
-  },
+  { id: 'A', label: '고객 유형 A', defaultGuide: '후속 대화 가능성은 살리되, 표현과 자료 활용 안전선을 먼저 확인합니다.' },
+  { id: 'B', label: '고객 유형 B', defaultGuide: '관심 신호를 과잉해석하지 말고 보류 이유와 니즈를 먼저 확인합니다.' },
+  { id: 'C', label: '고객 유형 C', defaultGuide: '관계 유지 품질을 관리하면서 변화 신호를 관찰합니다.' },
+  { id: 'D', label: '고객 유형 D', defaultGuide: '접촉 강도를 낮추고 고객 부담, 메시지, 기록 리스크를 먼저 정비합니다.' },
+  { id: 'E', label: '고객 유형 E', defaultGuide: '기회 신호는 크지만 승인 자료 범위와 표현 안전선 확인을 선행합니다.' },
+  { id: 'F', label: '고객 유형 F', defaultGuide: '전략 단정보다 최근 반응, 접촉 공백, CRM 기록 보완을 먼저 설계합니다.' },
 ];
 
 const PRIORITY_BADGE_CLASS: Record<V39CustomerPriorityDecision, string> = {
@@ -289,10 +264,5 @@ function V39CustomerJudgmentBridgePanel() {
 }
 
 export function V39CustomerPriorityLab() {
-  return (
-    <section className="space-y-4">
-      <V39CustomerJudgmentBridgePanel />
-      <V38CustomerPriorityLab />
-    </section>
-  );
+  return <V39CustomerJudgmentBridgePanel />;
 }
