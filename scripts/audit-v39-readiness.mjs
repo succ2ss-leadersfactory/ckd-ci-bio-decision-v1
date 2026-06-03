@@ -60,6 +60,7 @@ const v39Files = [
 
 const qaDocs = [
   'docs/v39-preview-qa-checklist.md',
+  'docs/v39-preview-readiness-report.md',
 ];
 
 const files = Object.fromEntries([
@@ -186,6 +187,19 @@ for (const marker of [
   'Go / No-Go',
 ]) {
   pass(includes(qaChecklist, marker), `QA checklist must include marker: ${marker}`);
+}
+
+const readinessReport = files['docs/v39-preview-readiness-report.md'];
+for (const marker of [
+  '# v39 Preview Readiness Report',
+  'Conditional Go',
+  '보호 파일 준수 여부',
+  '5→12단계 연결 구조',
+  'localStorage key 현황',
+  '남은 수동 QA 항목',
+  'Go / No-Go 기준',
+]) {
+  pass(includes(readinessReport, marker), `Readiness report must include marker: ${marker}`);
 }
 
 if (failures.length > 0) {
