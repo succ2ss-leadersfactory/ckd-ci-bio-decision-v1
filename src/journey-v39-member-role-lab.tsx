@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { V38MemberRoleLab } from './journey-v38-member-role-lab';
 import { loadV39DashboardResult, type V39DashboardResult } from './journey-v39-dashboard-result-store';
 import {
   type V39CustomerStrategyResult,
@@ -135,7 +134,7 @@ function buildDefaultRoleItem(memberRole: string, hint?: StrategyRoleHint): Part
   };
 }
 
-function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strategyResult: V39CustomerStrategyResult; onRefresh: () => void }) {
+function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyResult: V39CustomerStrategyResult; onRefresh: () => void }) {
   const savedStrategies = Object.values(strategyResult.strategies).filter((strategy) => strategy.strategy.trim());
   const roleHints = buildStrategyRoleHints(strategyResult);
   const [memberRoles, setMemberRoles] = useState<Record<string, V39MemberRoleResultItem>>(loadMemberRoleSaveState);
@@ -171,11 +170,11 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Strategy Bridge</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">7단계 고객 대응 전략을 팀원 역할 배정에 연결</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Role Planning</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">고객 대응 전략을 팀원 역할로 구체화하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            7단계에서 저장한 고객 유형별 우선순위, 2주 대응 전략, 팀원 배정 방향, 리스크를 8단계 역할 배정 전에 다시 확인합니다.
-            이 연결은 자동 배정이 아니라 팀장이 실행 책임과 코칭 초점을 정교화하기 위한 참고 자료입니다.
+            7단계에서 정리한 고객 유형별 우선순위, 2주 대응 전략, 팀원 배정 방향, 리스크를 바탕으로 팀원별 역할과 코칭 초점을 정리합니다.
+            자동 배정이 아니라 팀장이 실행 책임과 지원 방식을 판단하기 위한 참고 자료입니다.
           </p>
         </div>
         <button
@@ -183,26 +182,26 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
           className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800"
           onClick={onRefresh}
         >
-          7단계 전략 결과 새로고침
+          고객 전략 새로고침
         </button>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">저장 상태</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{strategyResult.updatedAt ? '저장 결과 있음' : '저장 결과 없음'}</p>
+          <p className="text-xs font-black text-slate-500">전략 상태</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{strategyResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
           {strategyResult.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{strategyResult.updatedAt}</p> : null}
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">저장된 고객 전략</p>
+          <p className="text-xs font-black text-slate-500">고객 전략</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedStrategies.length}개</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">팀원 배정 방향</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{roleHints.length > 0 ? `${roleHints.length}개 방향` : '아직 저장된 방향 없음'}</p>
+          <p className="text-xs font-black text-slate-500">팀원 역할 방향</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{roleHints.length > 0 ? `${roleHints.length}개 방향` : '아직 정리된 방향 없음'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">9단계 연결 저장</p>
+          <p className="text-xs font-black text-slate-500">역할 정리</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedMemberRoleCount}개</p>
         </div>
       </div>
@@ -232,8 +231,8 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
 
       {roleHints.length > 0 ? (
         <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
-          <h3 className="text-sm font-black text-slate-950">9단계 연결용 팀원 역할 배정 저장</h3>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 9단계 AI Call Plan에 넘길 실행 맥락을 팀장이 정리하는 기록입니다.</p>
+          <h3 className="text-base font-black text-slate-950">팀원별 역할 정리</h3>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 다음 단계 AI Call Plan에 넘길 실행 맥락을 팀장이 정리하는 기록입니다.</p>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             {roleHints.map((hint) => {
               const current = memberRoles[hint.memberRole] ?? normalizeV39MemberRoleItem(undefined, hint.memberRole, hint.memberRole);
@@ -242,10 +241,10 @@ function V39CustomerStrategyBridgePanel({ strategyResult, onRefresh }: { strateg
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-black text-slate-950">{hint.memberRole}</p>
                     <button type="button" className="rounded-2xl border bg-white px-3 py-2 text-xs font-black text-slate-700" onClick={() => applyMemberRoleDraft(hint.memberRole)}>
-                      9단계 연결 초안 가져오기
+                      역할 초안 가져오기
                     </button>
                   </div>
-                  <p className="mt-2 text-xs font-bold leading-5 text-slate-700">연결 고객 유형: {hint.customerLabels.join(' · ')}</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-700">담당 고객 유형: {hint.customerLabels.join(' · ')}</p>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <label className="space-y-1">
                       <span className="text-xs font-black text-slate-500">담당 고객군</span>
@@ -314,15 +313,15 @@ export function V39MemberRoleLab() {
 
   return (
     <div className="space-y-4">
-      <V39CustomerStrategyBridgePanel strategyResult={customerStrategyResult} onRefresh={refreshCustomerStrategyResult} />
+      <V39CustomerRolePlanningPanel strategyResult={customerStrategyResult} onRefresh={refreshCustomerStrategyResult} />
 
       <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Step 5 → Step 8 Bridge</p>
-            <h2 className="mt-2 text-xl font-black text-slate-950">5단계 저장 결과를 팀원 역할 방향에 연결</h2>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Team Execution Review</p>
+            <h2 className="mt-2 text-xl font-black text-slate-950">팀 실행진단을 역할 방향으로 정리하기</h2>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              이 패널은 5단계에서 저장한 팀 상황, 실행지표, 선택 유형, 다음 행동 준비물을 8단계 역할 배정 전에 다시 보여줍니다.
+              5단계에서 정리한 팀 상황, 실행지표, 선택 유형, 다음 행동 준비물을 바탕으로 팀원 역할 방향을 다시 확인합니다.
               자동 배정이 아니라, 팀장이 역할 방향을 정하기 전에 판단 근거와 수정 가능한 추천 초안을 확인하도록 돕습니다.
             </p>
           </div>
@@ -331,14 +330,14 @@ export function V39MemberRoleLab() {
             className="rounded-full bg-violet-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-violet-800"
             onClick={refreshDashboardResult}
           >
-            5단계 저장 결과 새로고침
+            팀 실행진단 새로고침
           </button>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black text-slate-500">저장 상태</p>
-            <p className="mt-1 text-sm font-black text-slate-900">{summary.hasSavedResult ? '저장 결과 있음' : '저장 결과 없음'}</p>
+            <p className="text-xs font-black text-slate-500">정리 상태</p>
+            <p className="mt-1 text-sm font-black text-slate-900">{summary.hasSavedResult ? '정리 결과 있음' : '정리 결과 없음'}</p>
             {dashboardResult.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{dashboardResult.updatedAt}</p> : null}
           </div>
           <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -402,8 +401,6 @@ export function V39MemberRoleLab() {
           )}
         </div>
       </section>
-
-      <V38MemberRoleLab />
     </div>
   );
 }
