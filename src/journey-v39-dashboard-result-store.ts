@@ -117,7 +117,7 @@ function readPrepState(value: unknown): V38PrepState {
           strengthSignal: readString(record.strengthSignal),
           concernSignal: readString(record.concernSignal),
           checkQuestion: readString(record.checkQuestion),
-          avoidAssumption: readString(record.avoidAssumption),
+          doNotAssume: readString(record.doNotAssume),
           aiDraft: readString(record.aiDraft),
           finalPrep: readString(record.finalPrep),
         },
