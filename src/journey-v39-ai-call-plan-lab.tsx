@@ -4,24 +4,65 @@ import {
   loadV39MemberRoleResult,
 } from './journey-v39-member-role-result-store';
 import {
+  type V39PeopleDialogueResult,
+  loadV39PeopleDialogueResult,
+} from './journey-v39-people-dialogue-result-store';
+import {
   type V39AiCallPlanResultItem,
   loadV39AiCallPlanResult,
   normalizeV39AiCallPlanResultItem,
   saveV39AiCallPlanResult,
 } from './journey-v39-ai-call-plan-result-store';
 
-function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult) {
+function hasDialogueCard(result: V39PeopleDialogueResult) {
+  return Object.values(result.dialogueCard).some((value) => value.trim());
+}
+
+function buildPeopleDialogueSummary(result: V39PeopleDialogueResult) {
+  const lines: string[] = [];
+
+  if (result.cultureShiftSelections.length > 0) lines.push(`- 일하는 방식 변화 선택: ${result.cultureShiftSelections.length}개`);
+  if (result.leaderFeelingSelections.length > 0) lines.push(`- 팀장 당혹감 선택: ${result.leaderFeelingSelections.length}개`);
+  if (result.newGenSignalSelections.length > 0) lines.push(`- 신세대 팀원 반응 신호: ${result.newGenSignalSelections.length}개`);
+  if (result.existingMemberSignalSelections.length > 0) lines.push(`- 기존 팀원 부담 신호: ${result.existingMemberSignalSelections.length}개`);
+  if (result.conflictTypeSelections.length > 0) lines.push(`- 갈등 유형: ${result.conflictTypeSelections.length}개`);
+  if (result.dialogueStrategySelections.length > 0) lines.push(`- 팀장 대화 전략: ${result.dialogueStrategySelections.length}개`);
+
+  if (hasDialogueCard(result)) {
+    lines.push('- 팀원 실행 대화 카드: 작성됨');
+    if (result.dialogueCard.targetMember) lines.push(`  · 대상 팀원: ${result.dialogueCard.targetMember}`);
+    if (result.dialogueCard.expectedReaction) lines.push(`  · 예상 반응: ${result.dialogueCard.expectedReaction}`);
+    if (result.dialogueCard.openingLine) lines.push(`  · 팀장이 먼저 꺼낼 말: ${result.dialogueCard.openingLine}`);
+    if (result.dialogueCard.agreementCriteria) lines.push(`  · 합의할 실행 기준: ${result.dialogueCard.agreementCriteria}`);
+    if (result.dialogueCard.leaderSupport) lines.push(`  · 팀장이 지원할 것: ${result.dialogueCard.leaderSupport}`);
+    if (result.dialogueCard.avoidPhrase) lines.push(`  · 피해야 할 말: ${result.dialogueCard.avoidPhrase}`);
+    if (result.dialogueCard.alternativePhrase) lines.push(`  · 대체 문장: ${result.dialogueCard.alternativePhrase}`);
+  }
+
+  if (result.teamNorms.trim()) {
+    lines.push('- 우리 팀 실행 대화 규범:');
+    lines.push(result.teamNorms);
+  }
+
+  return lines.length > 0 ? lines.join('\n') : '아직 9단계 팀원 실행 대화 결과가 저장되지 않았습니다.';
+}
+
+function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult, peopleDialogueResult: V39PeopleDialogueResult) {
   const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
+  const peopleDialogueSummary = buildPeopleDialogueSummary(peopleDialogueResult);
 
   if (savedRoles.length === 0) {
     return [
       '아직 8단계 팀원 역할 결과가 저장되지 않았습니다.',
       '먼저 8단계에서 담당 고객군, 역할 미션, 코칭 초점, 리스크 안전선, 콜플랜 준비물을 정리하세요.',
+      '',
+      '9단계 팀원 실행 대화 결과:',
+      peopleDialogueSummary,
     ].join('\n');
   }
 
   return [
-    '아래 내용은 교육용 가상 고객군과 팀원 역할 결과입니다.',
+    '아래 내용은 교육용 가상 고객군, 팀원 역할, 실행 대화 결과입니다.',
     '실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 개인정보는 포함하지 않습니다.',
     '',
     '8단계 팀원 역할 결과:',
@@ -34,7 +75,11 @@ function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult) {
       `- 콜플랜 준비물: ${role.callPlanPrep || '방문 전 확인 질문과 사용 가능한 자료 범위 확인'}`,
       '',
     ]),
-    'AI Call Plan 요청 시 위 내용을 바탕으로 고객군별 2주 콜 우선순위, 팀원별 실행 역할, 방문 전 질문, 컴플라이언스 안전 표현, 리스크 점검표를 작성해 주세요.',
+    '9단계 팀원 실행 대화 결과:',
+    peopleDialogueSummary,
+    '',
+    'AI Call Plan 요청 시 위 내용을 바탕으로 고객군별 2주 콜 우선순위, 팀원별 실행 역할, 방문 전 질문, 팀원 실행 대화 포인트, 컴플라이언스 안전 표현, 리스크 점검표를 작성해 주세요.',
+    '단, 팀원을 세대 특성으로 단정하지 말고 역할 기준, 지원 방식, 책임 범위, 실행 대화 규범을 함께 반영해 주세요.',
   ].join('\n');
 }
 
@@ -46,12 +91,23 @@ function buildInitialCallPlanSaveState(): Record<string, V39AiCallPlanResultItem
   };
 }
 
-function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39MemberRoleResult; onRefresh: () => void }) {
+function V39MemberRoleCallPlanPanel({
+  roleResult,
+  peopleDialogueResult,
+  onRefreshRole,
+  onRefreshPeopleDialogue,
+}: {
+  roleResult: V39MemberRoleResult;
+  peopleDialogueResult: V39PeopleDialogueResult;
+  onRefreshRole: () => void;
+  onRefreshPeopleDialogue: () => void;
+}) {
   const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
   const [copied, setCopied] = useState(false);
   const [callPlanItems, setCallPlanItems] = useState<Record<string, V39AiCallPlanResultItem>>(buildInitialCallPlanSaveState);
-  const callPlanContextPrompt = useMemo(() => buildCallPlanContextPrompt(roleResult), [roleResult]);
+  const callPlanContextPrompt = useMemo(() => buildCallPlanContextPrompt(roleResult, peopleDialogueResult), [roleResult, peopleDialogueResult]);
   const currentCallPlan = callPlanItems.callPlanDraft ?? normalizeV39AiCallPlanResultItem(undefined, 'callPlanDraft', 'AI Call Plan 초안');
+  const peopleDialogueCompleted = hasDialogueCard(peopleDialogueResult) || peopleDialogueResult.teamNorms.trim().length > 0;
 
   const copyPrompt = async () => {
     try {
@@ -79,9 +135,9 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
 
   const applyCallPlanDraft = () => {
     updateCallPlanItem({
-      callPlanDraft: currentCallPlan.callPlanDraft || '고객군별 2주 콜 우선순위, 팀원별 실행 역할, 방문 전 확인 질문, 사용 가능한 자료 범위, 리스크 점검 기준을 정리한다.',
-      riskMemo: currentCallPlan.riskMemo || '처방 유도 표현, 비교 우위 단정, 허가 외 표현, 실제 고객·병원·의료진·처방 정보 포함 여부를 점검한다.',
-      cleanupFocus: currentCallPlan.cleanupFocus || '10단계에서 문장을 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 안전하게 수정한다.',
+      callPlanDraft: currentCallPlan.callPlanDraft || '고객군별 2주 콜 우선순위, 팀원별 실행 역할, 팀원이 납득할 수 있는 실행 대화 포인트, 방문 전 확인 질문, 사용 가능한 자료 범위, 리스크 점검 기준을 정리한다.',
+      riskMemo: currentCallPlan.riskMemo || '처방 유도 표현, 비교 우위 단정, 허가 외 표현, 실제 고객·병원·의료진·처방 정보 포함 여부, 팀원에게 부담을 전가하는 표현을 점검한다.',
+      cleanupFocus: currentCallPlan.cleanupFocus || '11단계에서 문장을 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 안전하게 수정한다.',
     });
   };
 
@@ -90,15 +146,18 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI Call Plan Preparation</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">팀원 역할을 AI Call Plan으로 구체화하기</h2>
+          <h2 className="mt-2 text-xl font-black text-slate-950">역할과 실행 대화를 AI Call Plan으로 구체화하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            8단계에서 정리한 담당 고객군, 역할 미션, 코칭 초점, 리스크 안전선, 콜플랜 준비물을 바탕으로 AI에게 요청할 맥락을 정리합니다.
-            이 요약은 AI에게 답을 맡기기 위한 자료가 아니라, 팀장이 요청 맥락을 안전하게 정리하기 위한 입력 초안입니다.
+            8단계에서 정리한 팀원 역할과 9단계에서 정리한 실행 대화 결과를 함께 바탕으로 AI에게 요청할 맥락을 정리합니다.
+            이 요약은 AI에게 답을 맡기기 위한 자료가 아니라, 팀장이 고객 실행과 팀원 수용성을 함께 반영해 요청 맥락을 안전하게 정리하기 위한 입력 초안입니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefresh}>
+          <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshRole}>
             팀원 역할 새로고침
+          </button>
+          <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshPeopleDialogue}>
+            실행 대화 새로고침
           </button>
           <button type="button" className="rounded-full bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800" onClick={copyPrompt}>
             {copied ? '프롬프트 복사 완료' : 'AI Call Plan 프롬프트 복사'}
@@ -106,7 +165,7 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">역할 상태</p>
           <p className="mt-1 text-sm font-black text-slate-900">{roleResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
@@ -115,6 +174,10 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">정리된 역할</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedRoles.length}개</p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-xs font-black text-slate-500">실행 대화</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{peopleDialogueCompleted ? '정리 결과 있음' : '정리 결과 없음'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">이번 단계 결과</p>
@@ -144,6 +207,11 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
         </div>
       )}
 
+      <div className="mt-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+        <p className="text-sm font-black text-slate-950">9단계 실행 대화 요약</p>
+        <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-violet-50 p-4 text-xs font-bold leading-6 text-violet-950">{buildPeopleDialogueSummary(peopleDialogueResult)}</pre>
+      </div>
+
       <label className="mt-4 block rounded-2xl border bg-white p-4 shadow-sm">
         <span className="text-sm font-black text-slate-950">복사해서 AI Call Plan 프롬프트에 붙일 입력 맥락</span>
         <textarea className="mt-3 min-h-80 w-full rounded-2xl border bg-slate-50 px-4 py-3 font-mono text-xs leading-6 text-slate-900" value={callPlanContextPrompt} readOnly />
@@ -155,7 +223,7 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
             <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Compliance Review Preparation</p>
             <h3 className="text-lg font-black text-slate-950">컴플라이언스 점검을 위한 Call Plan 정리</h3>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
-              AI가 만든 콜플랜 문장을 그대로 쓰지 않고, 다음 단계에서 컴플라이언스 위험 표현을 제거하기 위한 점검 대상으로 정리합니다.
+              AI가 만든 콜플랜 문장을 그대로 쓰지 않고, 다음 단계에서 컴플라이언스 위험 표현과 팀원 실행 대화 위험을 함께 점검하기 위한 대상으로 정리합니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-800" onClick={applyCallPlanDraft}>
@@ -179,8 +247,8 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
       </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-950">
-        9단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
-        AI에게 요청할 때도 교육용 가상 고객군과 팀원 역할 맥락만 사용합니다.
+        10단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
+        AI에게 요청할 때도 교육용 가상 고객군, 팀원 역할, 실행 대화 맥락만 사용합니다.
       </div>
     </section>
   );
@@ -188,10 +256,22 @@ function V39MemberRoleCallPlanPanel({ roleResult, onRefresh }: { roleResult: V39
 
 export function V39AiCallPlanLab() {
   const [memberRoleResult, setMemberRoleResult] = useState(() => loadV39MemberRoleResult());
+  const [peopleDialogueResult, setPeopleDialogueResult] = useState(() => loadV39PeopleDialogueResult());
 
   const refreshMemberRoleResult = () => {
     setMemberRoleResult(loadV39MemberRoleResult());
   };
 
-  return <V39MemberRoleCallPlanPanel roleResult={memberRoleResult} onRefresh={refreshMemberRoleResult} />;
+  const refreshPeopleDialogueResult = () => {
+    setPeopleDialogueResult(loadV39PeopleDialogueResult());
+  };
+
+  return (
+    <V39MemberRoleCallPlanPanel
+      roleResult={memberRoleResult}
+      peopleDialogueResult={peopleDialogueResult}
+      onRefreshRole={refreshMemberRoleResult}
+      onRefreshPeopleDialogue={refreshPeopleDialogueResult}
+    />
+  );
 }
