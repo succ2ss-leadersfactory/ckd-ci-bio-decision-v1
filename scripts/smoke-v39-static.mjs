@@ -25,6 +25,7 @@ const files = {
   html: read('journey-v39-preview.html'),
   app: read('src/journey-v39-app-preview.tsx'),
   wrapper: read('src/journey-v39-dashboard-analysis-lab.tsx'),
+  memberRoleBridge: read('src/journey-v39-member-role-lab.tsx'),
   store: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
   packageJson: read('package.json'),
@@ -35,6 +36,7 @@ checkIncludes(files.html, '/src/journey-v39-app-preview.tsx', 'v39 HTML entry sc
 checkIncludes(files.html, '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>', 'v39 client-facing HTML title');
 checkIncludes(files.app, 'V39PreviewApp', 'v39 preview app component');
 checkIncludes(files.app, 'V39DashboardAnalysisLab', 'v39 dashboard wrapper route');
+checkIncludes(files.app, 'V39MemberRoleLab', 'v39 member role bridge route');
 checkIncludes(files.app, 'ckd.v39.participant.v1', 'v39 participant storage key');
 checkIncludes(files.app, 'ckd.v39.progress.v1', 'v39 progress storage key');
 checkIncludes(files.viteConfig, 'journeyV39Preview', 'vite v39 input key');
@@ -43,6 +45,7 @@ checkIncludes(files.packageJson, 'smoke:v39', 'package v39 smoke script');
 checkIncludes(files.packageJson, 'typecheck:v39', 'package v39 typecheck script');
 checkIncludes(files.tsconfig, 'src/journey-v39-app-preview.tsx', 'v39 tsconfig entry');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-analysis-lab.tsx', 'v39 tsconfig dashboard wrapper');
+checkIncludes(files.tsconfig, 'src/journey-v39-member-role-lab.tsx', 'v39 tsconfig member role bridge');
 checkIncludes(files.tsconfig, 'src/journey-v39-dashboard-result-store.ts', 'v39 tsconfig dashboard result store');
 
 for (const marker of [
@@ -65,6 +68,21 @@ for (const marker of [
   'clearV39DashboardResult',
 ]) {
   checkIncludes(files.wrapper, marker, 'v39 dashboard wrapper marker');
+}
+
+for (const marker of [
+  'V39MemberRoleLab',
+  'V38MemberRoleLab',
+  'loadV39DashboardResult',
+  'v39 Step 5 → Step 8 Bridge',
+  '5단계 저장 결과를 팀원 역할 방향에 연결',
+  '5단계 저장 결과 새로고침',
+  '선택 유형 신호 요약',
+  '최종 다음 행동 준비물',
+  '저장 결과 있음',
+  '저장 결과 없음',
+]) {
+  checkIncludes(files.memberRoleBridge, marker, 'v39 member role bridge marker');
 }
 
 for (const marker of [
