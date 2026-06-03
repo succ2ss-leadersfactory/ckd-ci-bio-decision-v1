@@ -6,7 +6,6 @@ import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
 import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
-import { clampV38Step, V38_STORAGE_KEYS, V38_VISIBLE_APP_STEPS } from './journey-v38-preview-config';
 import { V39AiCallPlanLab } from './journey-v39-ai-call-plan-lab';
 import { V39ComplianceCleanupLab } from './journey-v39-compliance-cleanup-lab';
 import { V39CustomerJudgmentLab } from './journey-v39-customer-judgment-lab';
@@ -15,6 +14,8 @@ import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
 import { V39InstructorDiscussionLab } from './journey-v39-instructor-discussion-lab';
 import { V39MemberRoleLab } from './journey-v39-member-role-lab';
+import { V39PeopleDialogueLab } from './journey-v39-people-dialogue-lab';
+import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
 
@@ -98,7 +99,7 @@ function EntryStep({ participant, setParticipant }: { participant: V39Participan
 }
 
 function renderV39Step(step: number, participant: V39Participant, setParticipant: (next: V39Participant) => void) {
-  const current = V38_VISIBLE_APP_STEPS[step];
+  const current = V39_VISIBLE_APP_STEPS[step];
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
@@ -108,6 +109,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'customer-judgment') return <V39CustomerJudgmentLab />;
   if (current.id === 'customer-priority') return <V39CustomerPriorityLab />;
   if (current.id === 'member-role') return <V39MemberRoleLab />;
+  if (current.id === 'people-dialogue') return <V39PeopleDialogueLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupLab />;
   if (current.id === 'final-call-plan-card') return <V39FinalCallPlanCard />;
@@ -133,10 +135,10 @@ function V39ResetControl({ onReset }: { onReset: () => void }) {
 function V39PreviewApp() {
   const [participant, setParticipant] = useStored<V39Participant>(V39_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V39Progress>(V39_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
-  const safeStep = clampV38Step(progress.step);
+  const safeStep = clampV39Step(progress.step);
 
   const goToStep = (nextStep: number) => {
-    setProgress({ step: clampV38Step(nextStep) });
+    setProgress({ step: clampV39Step(nextStep) });
     scrollV39ToTop();
   };
 
@@ -153,7 +155,7 @@ function V39PreviewApp() {
       <JourneyShell
         title="C1바이오 영업팀장 AI 리더십 Lab Journey"
         subtitle="영업팀장이 AI를 활용해 고객·팀원·실행 데이터를 해석하고 2주 실행전략을 설계하는 실습 과정입니다."
-        steps={V38_VISIBLE_APP_STEPS}
+        steps={V39_VISIBLE_APP_STEPS}
         currentStep={safeStep}
         onPrev={() => goToStep(safeStep - 1)}
         onNext={() => goToStep(safeStep + 1)}
