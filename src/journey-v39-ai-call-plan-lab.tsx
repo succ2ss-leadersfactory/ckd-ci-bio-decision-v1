@@ -4,6 +4,12 @@ import {
   type V39MemberRoleResult,
   loadV39MemberRoleResult,
 } from './journey-v39-member-role-result-store';
+import {
+  type V39AiCallPlanResultItem,
+  loadV39AiCallPlanResult,
+  normalizeV39AiCallPlanResultItem,
+  saveV39AiCallPlanResult,
+} from './journey-v39-ai-call-plan-result-store';
 
 function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult) {
   const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
@@ -33,10 +39,20 @@ function buildCallPlanContextPrompt(roleResult: V39MemberRoleResult) {
   ].join('\n');
 }
 
+function buildInitialCallPlanSaveState(): Record<string, V39AiCallPlanResultItem> {
+  if (typeof window === 'undefined') return {};
+  const saved = loadV39AiCallPlanResult();
+  return {
+    callPlanDraft: normalizeV39AiCallPlanResultItem(saved.items.callPlanDraft, 'callPlanDraft', 'AI Call Plan 초안'),
+  };
+}
+
 function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResult: V39MemberRoleResult; onRefresh: () => void }) {
   const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
   const [copied, setCopied] = useState(false);
+  const [callPlanItems, setCallPlanItems] = useState<Record<string, V39AiCallPlanResultItem>>(buildInitialCallPlanSaveState);
   const callPlanContextPrompt = useMemo(() => buildCallPlanContextPrompt(roleResult), [roleResult]);
+  const currentCallPlan = callPlanItems.callPlanDraft ?? normalizeV39AiCallPlanResultItem(undefined, 'callPlanDraft', 'AI Call Plan 초안');
 
   const copyBridgePrompt = async () => {
     try {
@@ -46,6 +62,28 @@ function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResul
     } catch {
       setCopied(false);
     }
+  };
+
+  const updateCallPlanItem = (patch: Partial<V39AiCallPlanResultItem>) => {
+    setCallPlanItems((current) => {
+      const next = {
+        ...current,
+        callPlanDraft: {
+          ...normalizeV39AiCallPlanResultItem(current.callPlanDraft, 'callPlanDraft', 'AI Call Plan 초안'),
+          ...patch,
+        },
+      };
+      saveV39AiCallPlanResult({ schemaVersion: 1, updatedAt: '', items: next });
+      return next;
+    });
+  };
+
+  const applyCallPlanDraft = () => {
+    updateCallPlanItem({
+      callPlanDraft: currentCallPlan.callPlanDraft || '고객군별 2주 콜 우선순위, 팀원별 실행 역할, 방문 전 확인 질문, 사용 가능한 자료 범위, 리스크 점검 기준을 정리한다.',
+      riskMemo: currentCallPlan.riskMemo || '처방 유도 표현, 비교 우위 단정, 허가 외 표현, 실제 고객·병원·의료진·처방 정보 포함 여부를 점검한다.',
+      cleanupFocus: currentCallPlan.cleanupFocus || '10단계에서 문장을 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 안전하게 수정한다.',
+    });
   };
 
   return (
@@ -111,6 +149,35 @@ function V39MemberRoleCallPlanBridgePanel({ roleResult, onRefresh }: { roleResul
         <span className="text-sm font-black text-slate-950">복사해서 AI Call Plan 프롬프트에 붙일 연결 맥락</span>
         <textarea className="mt-3 min-h-80 w-full rounded-2xl border bg-slate-50 px-4 py-3 font-mono text-xs leading-6 text-slate-900" value={callPlanContextPrompt} readOnly />
       </label>
+
+      <div className="mt-4 rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Call Plan Cleanup Bridge</p>
+            <h3 className="text-lg font-black text-slate-950">10단계 연결용 AI Call Plan 결과 저장</h3>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
+              AI가 만든 콜플랜 문장을 그대로 쓰지 않고, 10단계에서 컴플라이언스 위험 표현을 제거하기 위한 점검 대상으로 저장합니다.
+            </p>
+          </div>
+          <button type="button" className="rounded-2xl border bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-800" onClick={applyCallPlanDraft}>
+            10단계 연결 초안 가져오기
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <label className="space-y-1 md:col-span-3">
+            <span className="text-xs font-black text-slate-500">AI Call Plan 초안</span>
+            <textarea className="min-h-28 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={currentCallPlan.callPlanDraft} onChange={(event) => updateCallPlanItem({ callPlanDraft: event.target.value })} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">위험 메모</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={currentCallPlan.riskMemo} onChange={(event) => updateCallPlanItem({ riskMemo: event.target.value })} />
+          </label>
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-xs font-black text-slate-500">10단계 점검 초점</span>
+            <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={currentCallPlan.cleanupFocus} onChange={(event) => updateCallPlanItem({ cleanupFocus: event.target.value })} />
+          </label>
+        </div>
+      </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-950">
         9단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
