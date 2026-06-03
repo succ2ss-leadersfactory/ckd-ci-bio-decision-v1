@@ -7,7 +7,7 @@
 자동 검증은 아래 커밋 기준 통과했습니다.
 
 ```text
-3895da30cf2bdeb75e1e5b6adfd82d7a81cc52aa
+64244324ad63e59ce34ae2481a035a521a833531
 ```
 
 자동 검증 상태:
@@ -37,7 +37,7 @@
 | 확인 URL | 수동 QA 시 입력 |
 | 저장소 | `succ2ss-leadersfactory/ckd-ci-bio-decision-v1` |
 | 브랜치 | `feature/v37-preview-shell` |
-| 자동 검증 기준 커밋 | `3895da30cf2bdeb75e1e5b6adfd82d7a81cc52aa` |
+| 자동 검증 기준 커밋 | `64244324ad63e59ce34ae2481a035a521a833531` |
 | 브라우저 | 수동 QA 시 입력 |
 | 디바이스 | PC / 태블릿 / 모바일 확인 필요 |
 | 최종 판단 | Pending Manual QA |
