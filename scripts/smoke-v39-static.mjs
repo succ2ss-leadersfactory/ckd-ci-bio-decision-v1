@@ -92,7 +92,7 @@ for (const [label, source, markers] of [
   ['people dialogue store', files.peopleDialogueStore, ['ckd.v39.peopleDialogue.result.v1', 'cultureShiftSelections', 'existingMemberSignalSelections', 'dialogueCard', 'saveV39PeopleDialogueResult', 'loadV39PeopleDialogueResult']],
   ['AI call plan bridge', files.aiCallPlanBridge, ['V39AiCallPlanLab', 'V39MemberRoleCallPlanPanel', '역할과 실행 대화를 AI Call Plan으로 구체화하기', '실행 대화 새로고침', '9단계 실행 대화 요약', '팀원 실행 대화 결과', 'AI Call Plan 프롬프트 복사', '팀원 실행 대화 포인트', 'saveV39AiCallPlanResult']],
   ['AI call plan store', files.aiCallPlanStore, ['ckd.v39.aiCallPlan.result.v1', 'saveV39AiCallPlanResult', 'loadV39AiCallPlanResult']],
-  ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V38ComplianceCleanupLab', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용 컴플라이언스 정리 결과 저장', 'saveV39ComplianceCleanupResult']],
+  ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V39AiCallPlanCleanupPanel', 'AI Call Plan의 위험 표현을 안전한 실행 문장으로 바꾸기', '팀원 실행 대화 기준', '팀원에게 부담을 전가하는 표현', '세대 특성으로 팀원을 단정하는 표현', '12단계 최종 실행 카드에 반영할 안전 문장 정리', 'saveV39ComplianceCleanupResult']],
   ['compliance store', files.complianceStore, ['ckd.v39.complianceCleanup.result.v1', 'saveV39ComplianceCleanupResult', 'loadV39ComplianceCleanupResult']],
   ['final card bridge', files.finalCardBridge, ['V39FinalCallPlanCard', 'V38FinalCallPlanCard', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장', 'saveV39FinalCallPlanResult']],
   ['final card store', files.finalCardStore, ['ckd.v39.finalCallPlan.result.v1', 'saveV39FinalCallPlanResult', 'loadV39FinalCallPlanResult']],
@@ -110,6 +110,7 @@ for (const [label, source, markers] of [
   ['customer priority old flow hidden', files.customerPriorityBridge, ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />', 'Customer Judgment Bridge', '6단계 고객 판단 결과 연결', '8단계 연결용', '연결 초안 가져오기']],
   ['member role old flow hidden', files.memberRoleBridge, ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />', 'Customer Strategy Bridge', 'Step 5 → Step 8 Bridge', '7단계 고객 대응 전략을 팀원 역할 배정에 연결', '9단계 연결용', '9단계 연결 초안 가져오기']],
   ['AI call plan old flow hidden', files.aiCallPlanBridge, ['V38AiCallPlanLab', "from './journey-v38-ai-call-plan-lab'", '<V38AiCallPlanLab />', 'Member Role Bridge', '8단계 팀원 역할 배정을 AI Call Plan에 연결', '연결 프롬프트 복사', 'Call Plan Cleanup Bridge', '10단계 연결용', '10단계 연결 초안 가져오기']],
+  ['compliance old flow hidden', files.complianceBridge, ['V38ComplianceCleanupLab', "from './journey-v38-compliance-cleanup-lab'", '<V38ComplianceCleanupLab />', 'Call Plan Cleanup Bridge', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용', '11단계 연결 초안 가져오기', 'Final Card Bridge']],
   ['dashboard wrapper removed memo panel', files.dashboardWrapper, ['팀 실행진단 메모', 'Team Execution Memo', '입력 내용 저장', '저장 내용 비우기', 'saveV39DashboardResult']],
 ]) {
   for (const marker of markers) checkNotIncludes(source, marker, label);
