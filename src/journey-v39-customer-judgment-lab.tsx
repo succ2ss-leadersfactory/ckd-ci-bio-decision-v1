@@ -1,4 +1,13 @@
+import { useMemo, useState } from 'react';
 import { V38CustomerJudgmentLab } from './journey-v38-customer-judgment-lab';
+import {
+  type V39CustomerDecisionResult,
+  type V39CustomerPriorityDecision,
+  createEmptyV39CustomerJudgmentResult,
+  loadV39CustomerJudgmentResult,
+  normalizeV39CustomerDecisionResult,
+  saveV39CustomerJudgmentResult,
+} from './journey-v39-customer-judgment-result-store';
 
 type JudgmentFrameItem = {
   title: string;
@@ -10,6 +19,22 @@ type JudgmentFrameItem = {
 
 type LabBlockItem = {
   title: string;
+  description: string;
+};
+
+type CustomerPriorityCandidate = {
+  id: string;
+  label: string;
+  dataRead: string;
+  suggestedDecision: V39CustomerPriorityDecision;
+  decisionReason: string;
+  nextCheck: string;
+  complianceNote: string;
+};
+
+type PriorityOption = {
+  id: V39CustomerPriorityDecision;
+  label: string;
   description: string;
 };
 
@@ -74,6 +99,256 @@ const CUSTOMER_DATA_LAB_BLOCKS: LabBlockItem[] = [
   },
 ];
 
+const CUSTOMER_PRIORITY_OPTIONS: PriorityOption[] = [
+  {
+    id: 'focus',
+    label: '집중',
+    description: '기회 신호와 실행 가능성이 함께 있어 2주 안에 우선 대응할 후보입니다.',
+  },
+  {
+    id: 'maintain',
+    label: '유지',
+    description: '관계와 기본 접점은 유지하되 과도한 설득보다 관찰과 품질 관리가 적합합니다.',
+  },
+  {
+    id: 'defer',
+    label: '보류',
+    description: '현재 접근 강도나 타이밍을 낮추고 고객 부담·리스크를 먼저 관리합니다.',
+  },
+  {
+    id: 'supplement',
+    label: '정보 보완',
+    description: '판단 근거가 부족해 우선순위 결정보다 추가 확인과 기록 정리가 먼저입니다.',
+  },
+];
+
+const CUSTOMER_PRIORITY_CANDIDATES: CustomerPriorityCandidate[] = [
+  {
+    id: 'A',
+    label: '고객 유형 A',
+    dataRead: '반응 상승, 자료 요청, 후속 미팅 동의가 함께 나타나지만 표현 안전선 확인이 필요합니다.',
+    suggestedDecision: 'focus',
+    decisionReason: '기회성과 실행 가능성이 모두 보이므로 집중 후보입니다. 단, 승인 자료 범위와 표현을 먼저 확인해야 합니다.',
+    nextCheck: '고객 질문의 구체 내용과 사용할 수 있는 근거자료 범위',
+    complianceNote: '자료 제공 전 승인된 자료인지 확인하고 제품명·효능 표현을 임의로 확장하지 않습니다.',
+  },
+  {
+    id: 'B',
+    label: '고객 유형 B',
+    dataRead: '잠재력과 관계 수준은 높지만 후속 미팅 보류와 기존 치료 유지 선호가 있습니다.',
+    suggestedDecision: 'supplement',
+    decisionReason: '관심은 있으나 아직 판단 기준이 불명확하므로 보류 이유와 니즈를 먼저 확인해야 합니다.',
+    nextCheck: '보류 이유의 실제 의미, 고객이 비교하거나 확인하려는 기준',
+    complianceNote: '고객의 기존 선택을 부정하거나 전환을 압박하는 표현을 피합니다.',
+  },
+  {
+    id: 'C',
+    label: '고객 유형 C',
+    dataRead: '관계는 안정적이지만 자료 요청과 후속 미팅이 없어 변화 신호는 약합니다.',
+    suggestedDecision: 'maintain',
+    decisionReason: '집중보다 관계 유지 품질과 반응 변화 관찰이 적합합니다.',
+    nextCheck: '관계 유지 외에 새롭게 확인할 니즈나 변화 신호',
+    complianceNote: '필요성이 낮은 상황에서 과도한 자료 제공이나 반복 접촉을 하지 않습니다.',
+  },
+  {
+    id: 'D',
+    label: '고객 유형 D',
+    dataRead: '접촉은 많지만 무반응과 피로감이 커지고 실행 품질도 낮습니다.',
+    suggestedDecision: 'defer',
+    decisionReason: '더 밀어붙이기보다 접촉 강도와 메시지를 낮추고 리스크를 먼저 관리해야 합니다.',
+    nextCheck: '무반응 원인, 고객 부담 수준, 최근 메시지의 적절성',
+    complianceNote: '반복 접촉으로 부담을 키우지 않고 고객이 요청하지 않은 정보 제공을 자제합니다.',
+  },
+  {
+    id: 'E',
+    label: '고객 유형 E',
+    dataRead: '질문 증가와 후속 미팅 동의가 있지만 컴플라이언스 민감도가 높습니다.',
+    suggestedDecision: 'focus',
+    decisionReason: '기회 신호가 강하므로 집중 후보입니다. 다만 안전선 점검 없는 실행은 위험합니다.',
+    nextCheck: '질문의 범위, 승인 근거자료, 답변 가능한 표현 수준',
+    complianceNote: '미승인 표현, 비교 우위 단정, 내부 수치 언급을 피하고 승인 자료 안에서 답변합니다.',
+  },
+  {
+    id: 'F',
+    label: '고객 유형 F',
+    dataRead: '관계 수준은 있으나 최근 콜과 CRM 기록이 부족해 판단 Data가 약합니다.',
+    suggestedDecision: 'supplement',
+    decisionReason: '현재 Data만으로 대응 전략을 정하기보다 정보 보완과 기록 정리가 먼저입니다.',
+    nextCheck: '최근 반응, 접촉 공백 이유, 실제 니즈, CRM 기록 보완 항목',
+    complianceNote: '부족한 정보를 추측으로 채우지 않고 확인 가능한 사실만 기록합니다.',
+  },
+];
+
+const PRIORITY_BADGE_CLASS: Record<V39CustomerPriorityDecision, string> = {
+  focus: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  maintain: 'border-cyan-200 bg-cyan-50 text-cyan-900',
+  defer: 'border-amber-200 bg-amber-50 text-amber-900',
+  supplement: 'border-slate-200 bg-slate-50 text-slate-800',
+};
+
+function getPriorityLabel(priorityDecision: V39CustomerPriorityDecision | '') {
+  return CUSTOMER_PRIORITY_OPTIONS.find((option) => option.id === priorityDecision)?.label ?? '미선택';
+}
+
+function buildInitialCustomerJudgmentState(): Record<string, V39CustomerDecisionResult> {
+  if (typeof window === 'undefined') return createEmptyV39CustomerJudgmentResult().decisions;
+
+  const saved = loadV39CustomerJudgmentResult();
+  const decisions: Record<string, V39CustomerDecisionResult> = {};
+
+  for (const candidate of CUSTOMER_PRIORITY_CANDIDATES) {
+    decisions[candidate.id] = normalizeV39CustomerDecisionResult(saved.decisions[candidate.id], candidate.id, candidate.label);
+  }
+
+  return decisions;
+}
+
+function V39CustomerPrioritySelectionPanel() {
+  const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(buildInitialCustomerJudgmentState);
+  const selectedCount = useMemo(
+    () => CUSTOMER_PRIORITY_CANDIDATES.filter((candidate) => decisions[candidate.id]?.priorityDecision).length,
+    [decisions],
+  );
+
+  const updateDecision = (customerTypeId: string, patch: Partial<V39CustomerDecisionResult>) => {
+    setDecisions((current) => {
+      const candidate = CUSTOMER_PRIORITY_CANDIDATES.find((item) => item.id === customerTypeId);
+      if (!candidate) return current;
+      const next = {
+        ...current,
+        [customerTypeId]: {
+          ...normalizeV39CustomerDecisionResult(current[customerTypeId], candidate.id, candidate.label),
+          ...patch,
+        },
+      };
+      saveV39CustomerJudgmentResult({
+        schemaVersion: 1,
+        updatedAt: '',
+        decisions: next,
+      });
+      return next;
+    });
+  };
+
+  const applySuggestedDecision = (candidate: CustomerPriorityCandidate) => {
+    updateDecision(candidate.id, {
+      priorityDecision: candidate.suggestedDecision,
+      reason: decisions[candidate.id]?.reason || candidate.decisionReason,
+      nextCheck: decisions[candidate.id]?.nextCheck || candidate.nextCheck,
+      complianceNote: decisions[candidate.id]?.complianceNote || candidate.complianceNote,
+    });
+  };
+
+  const resetCustomerJudgmentSelections = () => {
+    const empty = buildInitialCustomerJudgmentState();
+    for (const candidate of CUSTOMER_PRIORITY_CANDIDATES) {
+      empty[candidate.id] = normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
+    }
+    setDecisions(empty);
+    saveV39CustomerJudgmentResult({ schemaVersion: 1, updatedAt: '', decisions: empty });
+  };
+
+  return (
+    <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-violet-700">v39 Customer Priority Selection</p>
+          <h3 className="mt-2 text-xl font-black text-slate-950">고객별 우선순위 선택</h3>
+          <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
+            아래 선택은 고객을 평가하거나 등급화하는 기능이 아닙니다. 고객 Data를 읽은 뒤, 2주 안에 어떤 대응 방향이 적합한지
+            팀장 관점에서 임시 판단을 남기는 기록입니다.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-violet-800 shadow-sm">
+            선택 완료 {selectedCount} / {CUSTOMER_PRIORITY_CANDIDATES.length}
+          </div>
+          <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={resetCustomerJudgmentSelections}>
+            고객 판단 선택 초기화
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
+          <article key={option.id} className="rounded-2xl border bg-white p-4">
+            <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${PRIORITY_BADGE_CLASS[option.id]}`}>{option.label}</p>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{option.description}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-2">
+        {CUSTOMER_PRIORITY_CANDIDATES.map((candidate) => {
+          const current = decisions[candidate.id] ?? normalizeV39CustomerDecisionResult(undefined, candidate.id, candidate.label);
+          return (
+            <article key={candidate.id} className="rounded-3xl border bg-white p-4 shadow-sm">
+              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="text-sm font-black text-slate-950">{candidate.label}</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-600">{candidate.dataRead}</p>
+                </div>
+                <span className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${current.priorityDecision ? PRIORITY_BADGE_CLASS[current.priorityDecision] : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                  현재 판단: {getPriorityLabel(current.priorityDecision)}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-2 md:grid-cols-4">
+                {CUSTOMER_PRIORITY_OPTIONS.map((option) => (
+                  <label key={option.id} className={`cursor-pointer rounded-2xl border p-3 text-center text-xs font-black ${current.priorityDecision === option.id ? PRIORITY_BADGE_CLASS[option.id] : 'bg-white text-slate-600'}`}>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      name={`v39-customer-priority-${candidate.id}`}
+                      checked={current.priorityDecision === option.id}
+                      onChange={() => updateDecision(candidate.id, { priorityDecision: option.id })}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+
+              <button type="button" className="mt-3 rounded-2xl border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applySuggestedDecision(candidate)}>
+                판단 초안 가져오기
+              </button>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">판단 이유</span>
+                  <textarea
+                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                    value={current.reason}
+                    onChange={(event) => updateDecision(candidate.id, { reason: event.target.value })}
+                    placeholder="예: 기회 신호는 있으나 고객 반응과 안전선을 함께 봐야 한다."
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">다음 확인 질문</span>
+                  <textarea
+                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                    value={current.nextCheck}
+                    onChange={(event) => updateDecision(candidate.id, { nextCheck: event.target.value })}
+                    placeholder="예: 고객이 확인하려는 기준은 무엇인가?"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">컴플라이언스 메모</span>
+                  <textarea
+                    className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6 text-slate-900"
+                    value={current.complianceNote}
+                    onChange={(event) => updateDecision(candidate.id, { complianceNote: event.target.value })}
+                    placeholder="예: 승인 자료 범위 안에서만 설명한다."
+                  />
+                </label>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function V39CustomerJudgmentLab() {
   return (
     <section className="space-y-4">
@@ -130,6 +405,7 @@ export function V39CustomerJudgmentLab() {
         </div>
       </section>
 
+      <V39CustomerPrioritySelectionPanel />
       <V38CustomerJudgmentLab />
     </section>
   );
