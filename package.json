@@ -22,7 +22,8 @@
     "smoke:v38": "npm run smoke:v38:static && npm run typecheck:v38 && npm run build && npm run smoke:v38:dist",
     "smoke:v39:static": "node scripts/smoke-v39-static.mjs",
     "smoke:v39:dist": "node scripts/smoke-v39-dist.mjs",
-    "smoke:v39": "npm run smoke:v39:static && npm run typecheck:v39 && npm run build && npm run smoke:v39:dist",
+    "audit:v39:readiness": "node scripts/audit-v39-readiness.mjs",
+    "smoke:v39": "npm run smoke:v39:static && npm run audit:v39:readiness && npm run typecheck:v39 && npm run build && npm run smoke:v39:dist",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
