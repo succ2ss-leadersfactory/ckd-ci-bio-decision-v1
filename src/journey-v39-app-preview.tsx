@@ -14,7 +14,7 @@ import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
 import { V39InstructorDiscussionLab } from './journey-v39-instructor-discussion-lab';
 import { V39MemberRoleLab } from './journey-v39-member-role-lab';
-import { V39PeopleDialogueLab } from './journey-v39-people-dialogue-lab';
+import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
@@ -56,7 +56,7 @@ function ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
       <p className="font-bold">AI·제약영업 안전선</p>
-      <p className="mt-1">교육용 가상 자료만 사용합니다. 실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 정보, 내부 수치, 민감정보는 입력하지 않습니다.</p>
+      <p className="mt-1">교육용 가상 자료만 사용합니다. 실제 고객·기관·제품·성과 수치·개인 관련 정보는 입력하지 않습니다.</p>
     </div>
   );
 }
@@ -109,7 +109,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'customer-judgment') return <V39CustomerJudgmentLab />;
   if (current.id === 'customer-priority') return <V39CustomerPriorityLab />;
   if (current.id === 'member-role') return <V39MemberRoleLab />;
-  if (current.id === 'people-dialogue') return <V39PeopleDialogueLab />;
+  if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupLab />;
   if (current.id === 'final-call-plan-card') return <V39FinalCallPlanCard />;
