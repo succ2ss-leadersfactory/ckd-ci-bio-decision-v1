@@ -339,7 +339,6 @@ export function V39PeopleDialogueLab() {
   const prompt = useMemo(() => buildPeopleDialoguePrompt(result), [result]);
   const selectedSituation = findSituation(result.conversationSituationId);
   const selectedPurpose = findPurpose(result.dialoguePurposeId || selectedSituation?.recommendedPurposeId || '');
-  const selectedFamiliarOpening = findFamiliarOpening(result.familiarOpeningId);
 
   const persist = (patch: Partial<V39PeopleDialogueResult>) => {
     setResult((current) => {
@@ -422,12 +421,18 @@ export function V39PeopleDialogueLab() {
             <div className="mt-8 rounded-3xl border border-violet-100 bg-violet-50 p-5 text-sm font-bold leading-6 text-violet-950">
               대화법을 바꾸는 이유는 팀원을 조심스럽게 대하라는 뜻이 아닙니다. 일이 실행되는 조건이 달라졌기 때문입니다. 예전에는 속으로 생각하던 질문들이 이제는 역할, 공정성, 성장, 자율성, 책임 범위에 대한 확인으로 드러납니다.
             </div>
+            <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-600">
+              아래 블록을 순서대로 따라가며 상황 선택 → 대화 목적 선택 → 평소 첫마디 확인 → 실행 대화 개선 순서로 진행합니다.
+            </div>
           </div>
           <div className="grid gap-3">
             <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-black text-violet-950">일하는 방식 변화 {result.cultureShiftSelections.length} / 3</div>
             <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-950">대화 상황 {result.conversationSituationId ? '선택됨' : '미선택'}</div>
             <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm font-black text-sky-950">대화 목적 {selectedPurpose?.label || '미선택'}</div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-950">역할 정리 결과 {savedRoleCount}개</div>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-950">
+              <p>역할 정리 결과 {savedRoleCount}개</p>
+              <p className="mt-1 text-[11px] font-bold leading-4 text-emerald-800">{savedRoleCount > 0 ? '8단계 역할 결과가 반영되었습니다.' : '8단계 저장 결과가 있으면 자동 반영됩니다.'}</p>
+            </div>
           </div>
         </div>
       </section>
