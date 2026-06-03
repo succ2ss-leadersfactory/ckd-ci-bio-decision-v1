@@ -41,6 +41,7 @@ const protectedFiles = [
 const v39Files = [
   'journey-v39-preview.html',
   'src/journey-v39-app-preview.tsx',
+  'src/journey-v39-preview-config.ts',
   'src/journey-v39-dashboard-analysis-lab.tsx',
   'src/journey-v39-dashboard-result-store.ts',
   'src/journey-v39-customer-judgment-lab.tsx',
@@ -49,6 +50,8 @@ const v39Files = [
   'src/journey-v39-customer-strategy-result-store.ts',
   'src/journey-v39-member-role-lab.tsx',
   'src/journey-v39-member-role-result-store.ts',
+  'src/journey-v39-people-dialogue-lab.tsx',
+  'src/journey-v39-people-dialogue-result-store.ts',
   'src/journey-v39-ai-call-plan-lab.tsx',
   'src/journey-v39-ai-call-plan-result-store.ts',
   'src/journey-v39-compliance-cleanup-lab.tsx',
@@ -84,11 +87,17 @@ for (const unsafeTitle of ['v39 Preview', 'C1바이오 v39 Preview', 'preview sh
 }
 
 const app = files['src/journey-v39-app-preview.tsx'];
+const config = files['src/journey-v39-preview-config.ts'];
+for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) {
+  pass(includes(config, marker), `v39 config must include marker: ${marker}`);
+}
+
 const routePairs = [
   ['dashboard-analysis', 'V39DashboardAnalysisLab'],
   ['customer-judgment', 'V39CustomerJudgmentLab'],
   ['customer-priority', 'V39CustomerPriorityLab'],
   ['member-role', 'V39MemberRoleLab'],
+  ['people-dialogue', 'V39PeopleDialogueLab'],
   ['ai-call-plan', 'V39AiCallPlanLab'],
   ['compliance-cleanup', 'V39ComplianceCleanupLab'],
   ['final-call-plan-card', 'V39FinalCallPlanCard'],
@@ -98,14 +107,16 @@ for (const [routeId, componentName] of routePairs) {
   pass(includes(app, `current.id === '${routeId}'`) && includes(app, componentName), `v39 app must route ${routeId} to ${componentName}`);
 }
 
-for (const protectedImport of [
+for (const forbiddenAppMarker of [
   "import './journey-v38-app-preview';",
   "from './journey-v38-app-preview'",
   "from './full-flow-journey-v34'",
   "from './full-flow-journey-v35'",
   "from './journey-active'",
+  'V38_VISIBLE_APP_STEPS',
+  'clampV38Step',
 ]) {
-  pass(notIncludes(app, protectedImport), `v39 app must not import protected implementation: ${protectedImport}`);
+  pass(notIncludes(app, forbiddenAppMarker), `v39 app must not use protected or old routing marker: ${forbiddenAppMarker}`);
 }
 
 const implementationMarkers = [
@@ -113,6 +124,7 @@ const implementationMarkers = [
   ['src/journey-v39-customer-judgment-lab.tsx', 'V39CustomerDataJudgmentFlow'],
   ['src/journey-v39-customer-priority-lab.tsx', 'V39CustomerJudgmentBridgePanel'],
   ['src/journey-v39-member-role-lab.tsx', 'V39CustomerRolePlanningPanel'],
+  ['src/journey-v39-people-dialogue-lab.tsx', 'V39PeopleDialogueLab'],
   ['src/journey-v39-ai-call-plan-lab.tsx', 'V39MemberRoleCallPlanPanel'],
   ['src/journey-v39-compliance-cleanup-lab.tsx', 'V38ComplianceCleanupLab'],
   ['src/journey-v39-final-call-plan-card.tsx', 'V38FinalCallPlanCard'],
@@ -127,10 +139,11 @@ const forbiddenByFile = [
   ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
   ['src/journey-v39-member-role-lab.tsx', ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />']],
   ['src/journey-v39-ai-call-plan-lab.tsx', ['V38AiCallPlanLab', "from './journey-v38-ai-call-plan-lab'", '<V38AiCallPlanLab />']],
+  ['src/journey-v39-people-dialogue-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
 ];
 for (const [file, markers] of forbiddenByFile) {
   for (const marker of markers) {
-    pass(notIncludes(files[file], marker), `${file} must not expose legacy v38 flow: ${marker}`);
+    pass(notIncludes(files[file], marker), `${file} must not expose forbidden marker: ${marker}`);
   }
 }
 
@@ -149,6 +162,7 @@ const expectedKeys = [
   'ckd.v39.customerJudgment.result.v1',
   'ckd.v39.customerStrategy.result.v1',
   'ckd.v39.memberRole.result.v1',
+  'ckd.v39.peopleDialogue.result.v1',
   'ckd.v39.aiCallPlan.result.v1',
   'ckd.v39.complianceCleanup.result.v1',
   'ckd.v39.finalCallPlan.result.v1',
@@ -162,6 +176,10 @@ for (const safetyPhrase of ['실제 고객명', '병원명', '의료진명', '�
   pass(includes(allV39Content, safetyPhrase), `v39 flow should repeatedly show sensitive-input guardrail: ${safetyPhrase}`);
 }
 
+for (const peopleMarker of ['신세대 팀원', '기존 팀원', '팀원 온도차', '실행 대화']) {
+  pass(includes(files['src/journey-v39-people-dialogue-lab.tsx'], peopleMarker), `people dialogue lab must include marker: ${peopleMarker}`);
+}
+
 for (const riskyPhrase of ['점수화하는 단계가 아닙니다', '등급화하는 단계가 아닙니다', '평가 자료가 아니라']) {
   warn(includes(allV39Content, riskyPhrase), `Recommended anti-scoring/anti-evaluation guidance is missing: ${riskyPhrase}`);
 }
@@ -172,7 +190,7 @@ for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsW
 }
 
 const staticSmoke = files['scripts/smoke-v39-static.mjs'];
-for (const file of ['src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) {
+for (const file of ['src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) {
   pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 }
 
