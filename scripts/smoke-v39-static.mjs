@@ -36,6 +36,8 @@ const files = {
   complianceBridge: read('src/journey-v39-compliance-cleanup-lab.tsx'),
   complianceStore: read('src/journey-v39-compliance-cleanup-result-store.ts'),
   finalCardBridge: read('src/journey-v39-final-call-plan-card.tsx'),
+  finalCardStore: read('src/journey-v39-final-call-plan-result-store.ts'),
+  instructorBridge: read('src/journey-v39-instructor-discussion-lab.tsx'),
   dashboardStore: read('src/journey-v39-dashboard-result-store.ts'),
   viteConfig: read('vite.config.ts'),
   packageJson: read('package.json'),
@@ -44,7 +46,7 @@ const files = {
 
 for (const [label, source, markers] of [
   ['html', files.html, ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']],
-  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard']],
+  ['app route', files.app, ['V39PreviewApp', 'V39DashboardAnalysisLab', 'V39CustomerJudgmentLab', 'V39CustomerPriorityLab', 'V39MemberRoleLab', 'V39AiCallPlanLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']],
   ['vite', files.viteConfig, ['journeyV39Preview', 'journey-v39-preview.html']],
   ['package', files.packageJson, ['smoke:v39', 'typecheck:v39']],
   ['tsconfig', files.tsconfig, [
@@ -61,6 +63,8 @@ for (const [label, source, markers] of [
     'src/journey-v39-compliance-cleanup-lab.tsx',
     'src/journey-v39-compliance-cleanup-result-store.ts',
     'src/journey-v39-final-call-plan-card.tsx',
+    'src/journey-v39-final-call-plan-result-store.ts',
+    'src/journey-v39-instructor-discussion-lab.tsx',
     'src/journey-v39-dashboard-result-store.ts',
   ]],
 ]) {
@@ -79,7 +83,9 @@ for (const [label, source, markers] of [
   ['AI call plan store', files.aiCallPlanStore, ['ckd.v39.aiCallPlan.result.v1', 'saveV39AiCallPlanResult', 'loadV39AiCallPlanResult']],
   ['compliance bridge', files.complianceBridge, ['V39ComplianceCleanupLab', 'V38ComplianceCleanupLab', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용 컴플라이언스 정리 결과 저장', 'saveV39ComplianceCleanupResult']],
   ['compliance store', files.complianceStore, ['ckd.v39.complianceCleanup.result.v1', 'saveV39ComplianceCleanupResult', 'loadV39ComplianceCleanupResult']],
-  ['final card bridge', files.finalCardBridge, ['V39FinalCallPlanCard', 'V38FinalCallPlanCard', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '최종 카드 요약 복사', 'buildFinalCardSummary']],
+  ['final card bridge', files.finalCardBridge, ['V39FinalCallPlanCard', 'V38FinalCallPlanCard', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장', 'saveV39FinalCallPlanResult']],
+  ['final card store', files.finalCardStore, ['ckd.v39.finalCallPlan.result.v1', 'saveV39FinalCallPlanResult', 'loadV39FinalCallPlanResult']],
+  ['instructor bridge', files.instructorBridge, ['V39InstructorDiscussionLab', 'V38InstructorDiscussionLab', '11단계 최종 실행 카드를 강사용 토의 화면에 연결', '토의 요약 복사', 'buildInstructorDiscussionGuide']],
   ['dashboard store', files.dashboardStore, ['ckd.v39.dashboardAnalysis.result.v1', 'saveV39DashboardResult', 'loadV39DashboardResult']],
 ]) {
   for (const marker of markers) checkIncludes(source, marker, label);
