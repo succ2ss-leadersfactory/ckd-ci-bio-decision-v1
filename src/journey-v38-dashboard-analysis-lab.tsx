@@ -35,6 +35,7 @@ type TeamMember = V38TeamMember;
 type MemberPrep = V38MemberPrep;
 type PrepState = V38PrepState;
 type DeliverableState = Record<string, string[]>;
+type DashboardHeroVariant = 'legacy' | 'customer';
 
 function metricNames(ids: string[]) {
   return ids.map((id) => METRIC_OPTIONS.find((item) => item.id === id)?.name ?? id);
@@ -52,7 +53,25 @@ function parseAiPrepDraftByMember(rawText: string, members: TeamMember[]) {
   return parseV38AiPrepDraftByMember(rawText, members);
 }
 
-export function V38DashboardAnalysisLab() {
+function CustomerProgressItem({ label, value, tone }: { label: string; value: string; tone: 'orange' | 'amber' | 'cyan' | 'sky' | 'violet' | 'emerald' }) {
+  const toneClass = {
+    orange: 'border-orange-100 bg-orange-50 text-orange-950',
+    amber: 'border-amber-100 bg-amber-50 text-amber-950',
+    cyan: 'border-cyan-100 bg-cyan-50 text-cyan-950',
+    sky: 'border-sky-100 bg-sky-50 text-sky-950',
+    violet: 'border-violet-100 bg-violet-50 text-violet-950',
+    emerald: 'border-emerald-100 bg-emerald-50 text-emerald-950',
+  }[tone];
+
+  return (
+    <div className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3 text-sm font-black shadow-sm ${toneClass}`}>
+      <span>{label}</span>
+      <span className="tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+export function V38DashboardAnalysisLab({ heroVariant = 'legacy' }: { heroVariant?: DashboardHeroVariant } = {}) {
   const [teamSituations, setTeamSituations] = useState<string[]>([]);
   const [aiMetricSuggestion, setAiMetricSuggestion] = useState('');
   const [parseNotice, setParseNotice] = useState('');
@@ -228,25 +247,62 @@ export function V38DashboardAnalysisLab() {
 
   return (
     <section className="space-y-4">
-      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v38 Dashboard Analysis Lab</p>
-            <h2 className="mt-2 text-2xl font-black text-slate-950">우리 팀 지표로 다음 행동 준비하기</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              이 단계는 <span className="font-black text-slate-950">우리 팀 상황 선택 → AI 추천 결과 붙여넣기 → 자동 분리·채우기 → 최종 실행지표 선택 → 우리 팀에 존재하는 유형 2명 선택 → 선택한 2명 상세 분석 → AI 2차 결과 자동 채우기</span> 흐름으로, 팀장이 사용할 <span className="font-black text-slate-950">다음 행동 준비물</span>을 만듭니다.
-            </p>
-          </div>
-          <div className="grid gap-2 text-sm font-black text-cyan-800 md:text-right">
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">상황 선택 {teamSituations.length} / {MAX_TEAM_SITUATIONS}</div>
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">지표 선택 {selectedCoreMetrics.length + selectedSupportMetrics.length + selectedSafetyMetrics.length} / 6</div>
-            <div className="rounded-2xl bg-cyan-50 px-4 py-3">유형 선택 {selectedMemberTypeIds.length} / 2</div>
-            <div className="rounded-2xl bg-cyan-50 px-4 py-3">신호 분리 {completedSignalCount} / {selectedTeamMembers.length || 2}</div>
-            <div className="rounded-2xl bg-indigo-50 px-4 py-3 text-indigo-800">행동 선택 {completedActionChoiceCount} / {selectedTeamMembers.length || 2}</div>
-            <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-800">준비물 완성 {completedFinalCount} / {selectedTeamMembers.length || 2}</div>
+      {heroVariant === 'customer' ? (
+        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[1fr_21rem] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-2xl bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">
+                <span className="text-base">↗</span>
+                <span>5단계 팀 실행진단</span>
+              </div>
+              <h2 className="mt-8 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">우리 팀 지표로 다음 행동 준비하기</h2>
+              <p className="mt-6 max-w-4xl text-base font-bold leading-8 text-slate-600">
+                우리 팀 상황을 고르고, AI가 제안한 실행 지표를 검토한 뒤, 팀원별 다음 행동 준비물을 체계적으로 정리합니다.
+                모든 결과는 팀장 판단으로 수정해 현장에 맞게 확정합니다.
+              </p>
+              <div className="mt-8 max-w-3xl rounded-3xl border border-blue-100 bg-blue-50/70 p-5 shadow-sm">
+                <div className="flex gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-xl text-white shadow-sm">💡</div>
+                  <div>
+                    <h3 className="text-base font-black text-blue-800">안내</h3>
+                    <p className="mt-2 text-sm font-bold leading-6 text-slate-700">
+                      모든 항목을 순서대로 완료하면 우리 팀만의 실행 계획이 완성됩니다. 각 단계의 도움말을 참고하여 정확하게 입력해 주세요.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <CustomerProgressItem label="상황 선택" value={`${teamSituations.length} / ${MAX_TEAM_SITUATIONS}`} tone="orange" />
+              <CustomerProgressItem label="지표 선택" value={`${selectedCoreMetrics.length + selectedSupportMetrics.length + selectedSafetyMetrics.length} / 6`} tone="amber" />
+              <CustomerProgressItem label="유형 선택" value={`${selectedMemberTypeIds.length} / 2`} tone="cyan" />
+              <CustomerProgressItem label="신호 분리" value={`${completedSignalCount} / ${selectedTeamMembers.length || 2}`} tone="sky" />
+              <CustomerProgressItem label="행동 선택" value={`${completedActionChoiceCount} / ${selectedTeamMembers.length || 2}`} tone="violet" />
+              <CustomerProgressItem label="준비물 완성" value={`${completedFinalCount} / ${selectedTeamMembers.length || 2}`} tone="emerald" />
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v38 Dashboard Analysis Lab</p>
+              <h2 className="mt-2 text-2xl font-black text-slate-950">우리 팀 지표로 다음 행동 준비하기</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                이 단계는 <span className="font-black text-slate-950">우리 팀 상황 선택 → AI 추천 결과 붙여넣기 → 자동 분리·채우기 → 최종 실행지표 선택 → 우리 팀에 존재하는 유형 2명 선택 → 선택한 2명 상세 분석 → AI 2차 결과 자동 채우기</span> 흐름으로, 팀장이 사용할 <span className="font-black text-slate-950">다음 행동 준비물</span>을 만듭니다.
+              </p>
+            </div>
+            <div className="grid gap-2 text-sm font-black text-cyan-800 md:text-right">
+              <div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">상황 선택 {teamSituations.length} / {MAX_TEAM_SITUATIONS}</div>
+              <div className="rounded-2xl bg-amber-50 px-4 py-3 text-amber-800">지표 선택 {selectedCoreMetrics.length + selectedSupportMetrics.length + selectedSafetyMetrics.length} / 6</div>
+              <div className="rounded-2xl bg-cyan-50 px-4 py-3">유형 선택 {selectedMemberTypeIds.length} / 2</div>
+              <div className="rounded-2xl bg-cyan-50 px-4 py-3">신호 분리 {completedSignalCount} / {selectedTeamMembers.length || 2}</div>
+              <div className="rounded-2xl bg-indigo-50 px-4 py-3 text-indigo-800">행동 선택 {completedActionChoiceCount} / {selectedTeamMembers.length || 2}</div>
+              <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-800">준비물 완성 {completedFinalCount} / {selectedTeamMembers.length || 2}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-3xl border border-amber-100 bg-amber-50 p-5 shadow-sm md:p-6">
         <p className="text-xs font-black uppercase tracking-wide text-amber-700">Block 0</p>
