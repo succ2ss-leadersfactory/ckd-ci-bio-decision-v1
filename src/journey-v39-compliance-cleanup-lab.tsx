@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { V38ComplianceCleanupLab } from './journey-v38-compliance-cleanup-lab';
 import {
   type V39AiCallPlanResult,
   loadV39AiCallPlanResult,
@@ -17,6 +16,8 @@ const RISK_GUIDES = [
   '실제 고객명·병원명·의료진명·처방 정보 포함',
   '과도한 약속 또는 압박 표현',
   '승인 자료 범위를 벗어난 설명',
+  '팀원에게 부담을 전가하는 표현',
+  '세대 특성으로 팀원을 단정하는 표현',
 ];
 
 function buildCleanupPrompt(result: V39AiCallPlanResult) {
@@ -24,15 +25,16 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
 
   if (savedItems.length === 0) {
     return [
-      '아직 9단계 AI Call Plan 결과가 저장되지 않았습니다.',
-      '9단계에서 AI Call Plan 초안, 위험 메모, 10단계 점검 초점을 먼저 저장하세요.',
+      '아직 10단계 AI Call Plan 결과가 저장되지 않았습니다.',
+      '10단계에서 AI Call Plan 초안, 위험 메모, 11단계 점검 초점을 먼저 저장하세요.',
     ].join('\n');
   }
 
   return [
-    '당신은 제약영업 컴플라이언스 위험 표현을 점검하는 리뷰 파트너입니다.',
+    '당신은 제약영업 컴플라이언스와 팀원 실행 대화 위험을 함께 점검하는 리뷰 파트너입니다.',
     '아래 문장은 교육용 가상 고객군 기준의 AI Call Plan 초안입니다.',
     '실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 개인정보를 추정하거나 추가하지 마세요.',
+    '팀원을 세대 특성으로 단정하거나, 팀원에게 리스크를 전가하는 표현도 함께 점검해 주세요.',
     '',
     '점검 대상:',
     ...savedItems.flatMap((item, index) => [
@@ -43,10 +45,11 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
       '',
     ]),
     '요청:',
-    '1. 위험 표현 유형을 찾아 주세요.',
-    '2. 왜 위험한지 짧게 설명해 주세요.',
-    '3. 승인 자료 범위, 질문 중심, 가상 고객군 기준의 안전한 대체 문장으로 바꿔 주세요.',
-    '4. 팀장이 최종 확인해야 할 컴플라이언스 체크포인트를 정리해 주세요.',
+    '1. 제약영업 컴플라이언스 관점의 위험 표현 유형을 찾아 주세요.',
+    '2. 팀원 실행 대화 관점에서 부담 전가, 세대 단정, 책임 회피처럼 보일 수 있는 표현을 찾아 주세요.',
+    '3. 왜 위험한지 짧게 설명해 주세요.',
+    '4. 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준의 안전한 대체 문장으로 바꿔 주세요.',
+    '5. 팀장이 최종 확인해야 할 컴플라이언스와 사람관리 체크포인트를 정리해 주세요.',
   ].join('\n');
 }
 
@@ -55,16 +58,16 @@ function buildDefaultComplianceCleanupResult(result: V39AiCallPlanResult, curren
   const firstItem = savedItems[0];
 
   return {
-    riskTypes: current.riskTypes || '처방 유도 표현, 비교 우위 단정, 허가 외·미승인 표현, 민감정보 포함 여부를 확인합니다.',
+    riskTypes: current.riskTypes || '처방 유도 표현, 비교 우위 단정, 허가 외·미승인 표현, 민감정보 포함, 팀원에게 부담을 전가하는 표현, 세대 특성 단정 표현을 확인합니다.',
     safeExpression: current.safeExpression || (firstItem
-      ? `${firstItem.callPlanDraft}\n\n위 문장은 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 다시 수정합니다.`
-      : 'AI Call Plan 초안을 승인 자료 범위, 질문 중심, 가상 고객군 기준으로 안전하게 수정합니다.'),
-    finalChecklist: current.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치가 제거되었는지 확인합니다. 처방 유도, 비교 우위 단정, 허가 외 표현이 없는지 확인합니다.',
-    finalCardMemo: current.finalCardMemo || '최종 실행 카드에는 안전하게 수정한 문장과 팀장이 직접 확인한 컴플라이언스 체크포인트만 반영합니다.',
+      ? `${firstItem.callPlanDraft}\n\n위 문장은 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 다시 수정합니다.`
+      : 'AI Call Plan 초안을 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 안전하게 수정합니다.'),
+    finalChecklist: current.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치가 제거되었는지 확인합니다. 처방 유도, 비교 우위 단정, 허가 외 표현이 없는지 확인합니다. 팀원을 세대 특성으로 단정하거나 실행 부담을 일방적으로 전가하는 문장이 없는지 확인합니다.',
+    finalCardMemo: current.finalCardMemo || '최종 실행 카드에는 안전하게 수정한 문장, 팀장이 직접 확인한 컴플라이언스 체크포인트, 팀원 실행 대화 기준만 반영합니다.',
   };
 }
 
-function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiCallPlanResult; onRefresh: () => void }) {
+function V39AiCallPlanCleanupPanel({ result, onRefresh }: { result: V39AiCallPlanResult; onRefresh: () => void }) {
   const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
   const [copied, setCopied] = useState(false);
   const [cleanupResult, setCleanupResult] = useState(() => loadV39ComplianceCleanupResult());
@@ -96,16 +99,16 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
     <section className="rounded-3xl border border-rose-100 bg-rose-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-rose-700">Call Plan Cleanup Bridge</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-rose-700">Compliance Review</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">AI Call Plan의 위험 표현을 안전한 실행 문장으로 바꾸기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            9단계에서 저장한 AI Call Plan 초안, 위험 메모, 점검 초점을 10단계 컴플라이언스 위험 표현 제거 실습 전에 다시 확인합니다.
-            이 연결은 AI 초안을 그대로 쓰기 위한 것이 아니라, 위험 표현을 찾아 안전 문장으로 바꾸기 위한 점검 자료입니다.
+            10단계에서 저장한 AI Call Plan 초안, 위험 메모, 점검 초점을 바탕으로 11단계 컴플라이언스 위험 표현 제거 실습을 진행합니다.
+            이 단계는 AI 초안을 그대로 쓰기 위한 것이 아니라, 제약영업 안전선과 팀원 실행 대화 기준에 맞게 문장을 다시 점검하고 수정하는 과정입니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefresh}>
-            9단계 결과 새로고침
+            AI Call Plan 새로고침
           </button>
           <button type="button" className="rounded-full bg-rose-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-rose-800" onClick={copyCleanupPrompt}>
             {copied ? '점검 프롬프트 복사 완료' : '점검 프롬프트 복사'}
@@ -115,8 +118,8 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">저장 상태</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.updatedAt ? '저장 결과 있음' : '저장 결과 없음'}</p>
+          <p className="text-xs font-black text-slate-500">AI Call Plan 상태</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{result.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
           {result.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{result.updatedAt}</p> : null}
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -124,7 +127,7 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
           <p className="mt-1 text-sm font-black text-slate-900">{savedItems.length}개</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">최종 카드 연결</p>
+          <p className="text-xs font-black text-slate-500">12단계 실행 카드 준비</p>
           <p className="mt-1 text-sm font-black text-slate-900">{cleanupResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
         </div>
       </div>
@@ -140,7 +143,7 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
 
       {savedItems.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
-          9단계에서 10단계 연결용 AI Call Plan 결과를 저장하면, 이곳에 컴플라이언스 점검 대상 문장이 표시됩니다.
+          10단계에서 AI Call Plan 결과를 저장하면, 이곳에 11단계 컴플라이언스 점검 대상 문장이 표시됩니다.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 xl:grid-cols-2">
@@ -151,7 +154,7 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
               <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.callPlanDraft}</p>
               <p className="mt-3 text-xs font-black text-amber-700">위험 메모</p>
               <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.riskMemo || '아직 작성되지 않았습니다.'}</p>
-              <p className="mt-3 text-xs font-black text-emerald-700">10단계 점검 초점</p>
+              <p className="mt-3 text-xs font-black text-emerald-700">11단계 점검 초점</p>
               <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.cleanupFocus || '아직 작성되지 않았습니다.'}</p>
             </article>
           ))}
@@ -166,14 +169,14 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
       <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Final Card Bridge</p>
-            <h3 className="text-lg font-black text-slate-950">11단계 연결용 컴플라이언스 정리 결과 저장</h3>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Final Card Preparation</p>
+            <h3 className="text-lg font-black text-slate-950">12단계 최종 실행 카드에 반영할 안전 문장 정리</h3>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
-              안전하게 수정한 문장과 최종 체크포인트를 11단계 2주 콜플랜 카드에 반영하기 위한 요약으로 저장합니다.
+              안전하게 수정한 문장과 최종 체크포인트를 12단계 2주 콜플랜 카드에 반영하기 위한 요약으로 저장합니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-800" onClick={applyCleanupDraft}>
-            11단계 연결 초안 가져오기
+            안전 문장 초안 가져오기
           </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -197,8 +200,8 @@ function V39AiCallPlanCleanupBridgePanel({ result, onRefresh }: { result: V39AiC
       </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-950">
-        10단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
-        AI Call Plan 초안은 반드시 사람이 위험 표현을 찾아 안전 문장으로 수정합니다.
+        11단계에서도 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다.
+        AI Call Plan 초안은 반드시 사람이 위험 표현과 실행 대화 리스크를 찾아 안전 문장으로 수정합니다.
       </div>
     </section>
   );
@@ -211,10 +214,5 @@ export function V39ComplianceCleanupLab() {
     setResult(loadV39AiCallPlanResult());
   };
 
-  return (
-    <section className="space-y-4">
-      <V39AiCallPlanCleanupBridgePanel result={result} onRefresh={refreshAiCallPlanResult} />
-      <V38ComplianceCleanupLab />
-    </section>
-  );
+  return <V39AiCallPlanCleanupPanel result={result} onRefresh={refreshAiCallPlanResult} />;
 }
