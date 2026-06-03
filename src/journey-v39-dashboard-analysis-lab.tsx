@@ -184,7 +184,7 @@ export function V39DashboardAnalysisLab() {
         {savedResult.updatedAt ? <p className="mt-3 text-xs font-bold text-slate-500">마지막 저장 시각: {savedResult.updatedAt}</p> : null}
       </section>
 
-      <V38DashboardAnalysisLab />
+      <V38DashboardAnalysisLab heroVariant="customer" />
     </div>
   );
 }
