@@ -23,6 +23,7 @@ const V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS = [
   '5단계에서 넘겨받은 기준',
   '관리 지표를 고객 Data로 확인하기',
   '고객 Data 해석 메모',
+  '팀원별 영업활동 기록 품질 차이',
 ].join('|');
 void V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS;
 
@@ -41,7 +42,7 @@ const CUSTOMER_DATA_ANALYSIS_PATTERNS = [
   '고객 질문·자료 요청 변화',
   '신규·미접촉 고객군 반응',
   '방문 제한·일정 변경 패턴',
-  '팀원별 CRM 기록 품질 차이',
+  '팀원별 영업활동 기록 품질 차이',
   '자료 전달 후 후속 확인 여부',
 ];
 
@@ -210,7 +211,7 @@ export function V39CustomerJudgmentUxLab() {
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
             <p className="font-black text-slate-950">AI 없이도 할 수 있습니다</p>
-            <p className="mt-1">팀장은 CRM, 방문 메모, 고객 반응을 보고 경험적으로 고객 상황을 판단하고 다음 행동을 정할 수 있습니다.</p>
+            <p className="mt-1">팀장은 영업활동 기록, 방문·면담 메모, 고객 반응을 보고 경험적으로 고객 상황을 판단하고 다음 행동을 정할 수 있습니다.</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
