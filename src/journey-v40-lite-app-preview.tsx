@@ -43,7 +43,7 @@ function LiteNotice() {
   return (
     <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
       <p className="font-black">v40-lite 실습 기준</p>
-      <p className="mt-1">정답을 맞히는 화면이 아닙니다. 팀장이 현장에서 볼 것, 확인할 것, 조심할 해석을 미리 연습하는 가상 실습 도구입니다.</p>
+      <p className="mt-1">하나의 답을 고르는 화면이 아닙니다. 팀장이 현장에서 볼 것, 확인할 것, 조심할 해석을 미리 연습하는 가상 실습 도구입니다.</p>
     </div>
   );
 }
@@ -85,7 +85,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40LitePartic
 
         <label className="mt-4 flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고, 정답이 아니라 현장 실행을 위한 문장을 직접 써봅니다.</span>
+          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고, 현장 실행을 위한 문장을 직접 써봅니다.</span>
         </label>
       </section>
     </div>
@@ -243,7 +243,7 @@ function V40LitePreviewApp() {
     <>
       <JourneyShell
         title="C1바이오 영업팀장 AI 리더십 Lab Journey Lite"
-        subtitle="팀장이 정답을 맞히는 것이 아니라, 현장에서 할 판단과 말을 미리 연습해보는 축약형 실습입니다."
+        subtitle="팀장이 현장에서 할 판단과 말을 미리 연습해보는 축약형 실습입니다."
         steps={V40_LITE_STEPS}
         currentStep={safeStep}
         onPrev={() => goToStep(safeStep - 1)}
