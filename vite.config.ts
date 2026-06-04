@@ -14,7 +14,8 @@ export default defineConfig({
         journeyV36Preview: resolve(__dirname, 'journey-v36-preview.html'),
         journeyV37Preview: resolve(__dirname, 'journey-v37-preview.html'),
         journeyV38Preview: resolve(__dirname, 'journey-v38-preview.html'),
-        journeyV39Preview: resolve(__dirname, 'journey-v39-preview.html')
+        journeyV39Preview: resolve(__dirname, 'journey-v39-preview.html'),
+        journeyV40LitePreview: resolve(__dirname, 'journey-v40-lite-preview.html')
       }
     }
   }
