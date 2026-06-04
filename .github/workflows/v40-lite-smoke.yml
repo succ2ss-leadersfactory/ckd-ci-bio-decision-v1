@@ -1,0 +1,70 @@
+name: v40-lite Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/v37-preview-shell
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v40-lite:
+    name: Run v40-lite smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v40-lite static smoke check
+        run: npm run smoke:v40-lite:static
+
+      - name: Run v40-lite scoped TypeScript check
+        run: npm run typecheck:v40-lite
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Run integrated v40-lite smoke check
+        run: npm run smoke:v40-lite
+
+      - name: Write v40-lite smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v40-lite Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v40-lite:static"
+            echo "- npm run typecheck:v40-lite"
+            echo "- npm run build"
+            echo "- npm run smoke:v40-lite"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains the operating route and must not load v40-lite."
+            echo "- /journey-v39-preview.html remains preserved and must not load v40-lite."
+            echo "- /journey-v40-lite-preview.html is the only v40-lite preview route."
+            echo ""
+            echo "## v40-lite scope"
+            echo ""
+            echo "- v40-lite preview route"
+            echo "- v40-lite isolated localStorage keys"
+            echo "- Step 5 Lite metrics screen"
+            echo "- Guardrail check for prohibited scoring/evaluation wording"
+          } >> "$GITHUB_STEP_SUMMARY"
