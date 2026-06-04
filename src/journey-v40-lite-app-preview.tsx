@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { useStored } from './journey-storage';
+import { V40LiteAiWorkflow } from './journey-v40-lite-ai-workflow';
 import {
   V40_LITE_DEFAULT_PARTICIPANT,
   V40_LITE_DEFAULT_PROGRESS,
@@ -190,6 +191,24 @@ function Step5LiteMetrics({ metrics, setMetrics }: { metrics: V40LiteStep5Metric
         </div>
       </details>
 
+      <V40LiteAiWorkflow
+        stepTitle="5단계: 우리 팀에서 지금 무엇을 봐야 하나?"
+        contextLines={[
+          '방문 활동 자체보다 2주 안에 이어질 후속 행동을 보려는 상황입니다.',
+          '팀장은 숫자만 보지 않고 팀원 준비 수준과 고객 반응 신호를 함께 봐야 합니다.',
+          '실제 고객명, 기관명, 제품명, 민감한 성과 수치는 AI에 넣지 않습니다.',
+        ]}
+        inputSummary={[
+          { label: '이번 2주에 꼭 볼 지표', value: metrics.primaryMetric },
+          { label: '함께 봐야 할 현장 신호', value: metrics.fieldSignal },
+          { label: '조심해서 봐야 할 해석', value: metrics.carefulInterpretation },
+          { label: '팀장이 더 확인할 질문', value: metrics.followUpQuestion },
+        ]}
+        aiDraft={metrics.aiDraft}
+        onAiDraftChange={(aiDraft) => setMetrics({ ...metrics, aiDraft })}
+        finalPlaceholder="예: 이번 2주에는 방문 수보다 후속 실행 메모와 고객의 다음 행동 신호를 먼저 보겠습니다. 다만 반응이 좋아 보여도 실제 필요가 확인되기 전에는 성급하게 움직이지 않겠습니다."
+      />
+
       <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6">
         <p className="text-sm font-black text-cyan-100">저장된 Lite 판단 초안</p>
         <div className="mt-4 grid gap-3 text-sm leading-6 md:grid-cols-3">
@@ -202,8 +221,8 @@ function Step5LiteMetrics({ metrics, setMetrics }: { metrics: V40LiteStep5Metric
             <p className="mt-2 text-slate-100">{metrics.fieldSignal || '아직 입력 전입니다.'}</p>
           </div>
           <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">조심할 해석</p>
-            <p className="mt-2 text-slate-100">{metrics.carefulInterpretation || '아직 입력 전입니다.'}</p>
+            <p className="font-black text-cyan-100">팀장 최종 문장</p>
+            <p className="mt-2 text-slate-100">{metrics.aiDraft.finalText || metrics.carefulInterpretation || '아직 입력 전입니다.'}</p>
           </div>
         </div>
       </section>
@@ -270,6 +289,24 @@ function Step6LiteCustomerReaction({ reaction, setReaction }: { reaction: V40Lit
         </div>
       </details>
 
+      <V40LiteAiWorkflow
+        stepTitle="6단계: 고객 반응에서 무엇을 읽을까?"
+        contextLines={[
+          '고객 반응은 좋은 신호일 수도 있지만 아직 확인이 필요한 신호일 수도 있습니다.',
+          '팀장은 고객 반응을 과하게 해석하지 않고 다음 행동으로 이어질 정보만 추려야 합니다.',
+          '실제 고객명, 기관명, 제품명, 민감한 성과 수치는 AI에 넣지 않습니다.',
+        ]}
+        inputSummary={[
+          { label: '의미 있어 보이는 고객 반응', value: reaction.meaningfulReaction },
+          { label: '아직 부족한 정보', value: reaction.missingInformation },
+          { label: '조심해서 읽어야 할 부분', value: reaction.carefulReading },
+          { label: '고객 반응을 더 정확히 보기 위한 질문', value: reaction.nextQuestion },
+        ]}
+        aiDraft={reaction.aiDraft}
+        onAiDraftChange={(aiDraft) => setReaction({ ...reaction, aiDraft })}
+        finalPlaceholder="예: 이 고객 반응은 관심 신호로 보되, 실제 필요와 다음 행동 가능성을 한 번 더 확인하겠습니다. 팀원에게는 반응의 분위기보다 고객이 다음에 무엇을 하기로 했는지를 확인해보겠습니다."
+      />
+
       <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6">
         <p className="text-sm font-black text-cyan-100">저장된 고객 반응 읽기 초안</p>
         <div className="mt-4 grid gap-3 text-sm leading-6 md:grid-cols-3">
@@ -282,8 +319,8 @@ function Step6LiteCustomerReaction({ reaction, setReaction }: { reaction: V40Lit
             <p className="mt-2 text-slate-100">{reaction.missingInformation || '아직 입력 전입니다.'}</p>
           </div>
           <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">조심할 해석</p>
-            <p className="mt-2 text-slate-100">{reaction.carefulReading || '아직 입력 전입니다.'}</p>
+            <p className="font-black text-cyan-100">팀장 최종 문장</p>
+            <p className="mt-2 text-slate-100">{reaction.aiDraft.finalText || reaction.carefulReading || '아직 입력 전입니다.'}</p>
           </div>
         </div>
       </section>
