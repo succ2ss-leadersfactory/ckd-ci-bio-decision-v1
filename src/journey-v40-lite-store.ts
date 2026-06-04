@@ -1,3 +1,5 @@
+import { V40_LITE_EMPTY_AI_DRAFT, type V40LiteAiDraft } from './journey-v40-lite-ai-workflow';
+
 export type V40LiteParticipant = {
   name: string;
   teamName: string;
@@ -13,6 +15,7 @@ export type V40LiteStep5Metrics = {
   fieldSignal: string;
   carefulInterpretation: string;
   followUpQuestion: string;
+  aiDraft: V40LiteAiDraft;
 };
 
 export type V40LiteStep6CustomerReaction = {
@@ -20,6 +23,7 @@ export type V40LiteStep6CustomerReaction = {
   missingInformation: string;
   carefulReading: string;
   nextQuestion: string;
+  aiDraft: V40LiteAiDraft;
 };
 
 export const V40_LITE_STORAGE_KEYS = {
@@ -44,6 +48,7 @@ export const V40_LITE_DEFAULT_STEP5_METRICS: V40LiteStep5Metrics = {
   fieldSignal: '',
   carefulInterpretation: '',
   followUpQuestion: '',
+  aiDraft: V40_LITE_EMPTY_AI_DRAFT,
 };
 
 export const V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION: V40LiteStep6CustomerReaction = {
@@ -51,4 +56,5 @@ export const V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION: V40LiteStep6CustomerReact
   missingInformation: '',
   carefulReading: '',
   nextQuestion: '',
+  aiDraft: V40_LITE_EMPTY_AI_DRAFT,
 };
