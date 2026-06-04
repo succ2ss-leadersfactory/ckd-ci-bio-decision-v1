@@ -70,7 +70,9 @@ for (const marker of [
   'src/journey-v39-final-call-plan-result-store.ts',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
-for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치 Pack', 'Perplexity', 'NotebookLM', 'Studio', '5단계로 넘길 실행전략 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
+for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', 'Perplexity', 'NotebookLM', 'Studio', '5단계 연결 카드', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
+for (const marker of ['AI 전략 리서치 Pack', 'AI 전략 리서치 Pack']) mustNotInclude(files.researchStrategy, marker, 'research strategy old naming');
+for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.config, marker, 'v39 config old naming');
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
 for (const marker of ['V39DashboardAnalysisUxLab', '5단계 진행 가이드', '팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형', '5단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
 for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
