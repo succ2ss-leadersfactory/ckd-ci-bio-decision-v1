@@ -37,7 +37,7 @@ type TeamMember = V38TeamMember;
 type MemberPrep = V38MemberPrep;
 type PrepState = V38PrepState;
 type DeliverableState = Record<string, string[]>;
-type MetricCandidate = { id: string; label: string; source: string };
+type MetricCandidate = { id: string; label: string; source: string; reason?: string };
 
 const TEAM_SITUATION_OPTIONS = [
   '방문은 했는데, 다음 행동으로 이어지지 않는다',
@@ -48,6 +48,8 @@ const TEAM_SITUATION_OPTIONS = [
 ];
 
 const MAX_TEAM_SITUATIONS = 2;
+const MEASURABLE_METRIC_PATTERN = /(율|비율|횟수|건수|수|여부|전환율|완료율|기록률|공유율|방문율|요청|예약|확보|접촉|방문|메모|동행)/;
+const NON_METRIC_PATTERN = /(하고 있는지|해야|않고|어려움|어려움을|보인다|판단|고민|상황|느낌|팀장이|고객이|팀원이|참고|질문|해석|신호|설명|이유)/;
 
 function getSuggestedDeliverables(memberId: string) {
   return V38_SUGGESTED_DELIVERABLES_BY_MEMBER_ID[memberId] ?? [];
@@ -61,24 +63,26 @@ function parseAiPrepDraftByMember(rawText: string, members: TeamMember[]) {
   return parseV38AiPrepDraftByMember(rawText, members);
 }
 
-function buildV39MetricPrompt(teamSituations: string[], customSituation: string) {
-  const customSituationLine = customSituation.trim();
-  const situationLines = [
-    ...teamSituations.map((item) => `- 선택 상황: ${item}`),
-    ...(customSituationLine ? [`- 직접 작성 상황: ${customSituationLine}`] : []),
+function buildSituationSources(teamSituations: string[], customSituation: string) {
+  return [
+    ...teamSituations.map((label, index) => ({ id: `selected-${index + 1}`, title: `선택 상황 ${index + 1}`, label })),
+    ...(customSituation.trim() ? [{ id: 'custom-1', title: '직접 작성 상황', label: customSituation.trim() }] : []),
   ];
+}
+
+function buildV39MetricPrompt(teamSituations: string[], customSituation: string) {
+  const situationSources = buildSituationSources(teamSituations, customSituation);
 
   return [
     '당신은 제약영업 팀장의 실행 판단을 돕는 리더십 코치입니다.',
     '이 실습은 정답을 찾는 것이 아니라, 팀장이 이번 2주 동안 무엇을 보고 어떻게 판단할지 연습하는 과정입니다.',
     '',
     '우리 팀 상황:',
-    ...(situationLines.length > 0 ? situationLines : ['- 아직 선택하지 않았습니다.']),
+    ...(situationSources.length > 0 ? situationSources.map((source) => `- ${source.title}: ${source.label}`) : ['- 아직 선택하지 않았습니다.']),
     '',
     '중요한 반영 기준:',
     '- 선택한 2개 상황과 직접 작성한 상황을 모두 반영해 주세요.',
     '- 직접 작성한 상황은 선택한 2개 상황을 대체하는 것이 아니라, 우리 팀 맥락을 보완하는 정보입니다.',
-    '- 결과가 한쪽 상황에만 치우치지 않도록, 선택 상황과 직접 작성 상황이 각각 어떤 판단에 영향을 주는지 함께 고려해 주세요.',
     '- 핵심 실행 지표 후보와 현장 신호를 섞지 마세요.',
     '- 체크박스로 선택할 것은 핵심 실행 지표 후보뿐입니다.',
     '- 현장 신호, 조심할 해석, 확인 질문은 선택 대상이 아니라 참고 정보입니다.',
@@ -86,10 +90,22 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
     '아래 4가지를 구분해서 정리해 주세요.',
     '',
     '## 1. 핵심 실행 지표 후보',
-    '- 팀장이 이번 2주 동안 실제로 선택해서 볼 수 있는 지표만 3~5개 제안해 주세요.',
-    '- 체크박스 후보로 쓸 수 있게 짧은 지표명으로 작성해 주세요.',
-    '- 각 후보 아래에는 왜 필요한지 한 문장만 덧붙여 주세요.',
-    '- 한 후보 안에 여러 지표를 쉼표로 길게 나열하지 마세요.',
+    '- 각 상황별로 핵심 실행 지표 후보를 정확히 2개씩 제안해 주세요.',
+    '- 선택 상황이 2개이고 직접 작성 상황이 1개 있으면 총 6개 후보가 나와야 합니다.',
+    '- 각 상황은 아래 형식을 반드시 지켜 주세요.',
+    '',
+    '### 선택 상황 1: 상황명',
+    '- 지표명: 방문 후 후속 행동 완료율',
+    '  이유: 방문 이후 실제 다음 행동이 남았는지 보기 위해',
+    '- 지표명: 다음 약속 확보 건수',
+    '  이유: 고객 반응이 다음 접점으로 이어졌는지 보기 위해',
+    '',
+    '작성 기준:',
+    '- 지표명에는 설명 문장을 넣지 마세요.',
+    '- 지표명은 20자 안팎의 짧은 명사형으로 작성하세요.',
+    '- 지표명에는 가능하면 “율, 횟수, 건수, 수, 여부, 전환율, 완료율” 같은 측정 단어를 포함하세요.',
+    '- “~하고 있는지”, “~해야 한다”, “~않고 있다” 같은 문장형 표현은 지표명으로 쓰지 마세요.',
+    '- 한 지표명 안에 여러 지표를 쉼표로 길게 나열하지 마세요.',
     '',
     '## 2. 함께 봐야 할 현장 신호',
     '- 선택 대상이 아니라 참고 신호입니다.',
@@ -114,7 +130,7 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
   ].join('\n');
 }
 
-function normalizeCandidateLabel(rawText: string) {
+function normalizeMetricName(rawText: string) {
   let clean = rawText
     .replace(/^[-*•]\s*/, '')
     .replace(/^\d+[.)]\s*/, '')
@@ -122,37 +138,89 @@ function normalizeCandidateLabel(rawText: string) {
     .replace(/\*\*/g, '')
     .trim();
 
-  const keywordMatch = clean.match(/(?:키워드|지표명|후보|핵심 지표|핵심 실행 지표)\s*[:：]\s*(.+)$/);
-  if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
-
-  if (/^(설명|이유|주의|예시|팀장이|선택 상황|직접 작성 상황)\s*[:：]/.test(clean)) return '';
-  if (/^(핵심 실행 지표 후보|이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) return '';
+  const metricNameMatch = clean.match(/(?:지표명|핵심 실행 지표|핵심 지표)\s*[:：]\s*(.+)$/);
+  if (metricNameMatch?.[1]) clean = metricNameMatch[1].trim();
+  else return '';
 
   clean = clean
-    .replace(/^(핵심 실행 지표 후보|이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)\s*[:：-]\s*/, '')
     .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에|확인해야|관찰해야|살펴봐야|볼 수 있습니다|봐야 합니다)/)[0]
+    .split(/[.!?。]/)[0]
+    .replace(/[,，].+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (clean.length < 2) return '';
+  if (NON_METRIC_PATTERN.test(clean) && !MEASURABLE_METRIC_PATTERN.test(clean)) return '';
+  if (clean.length > 60) return '';
+  return clean;
+}
+
+function normalizeReferenceKeyword(rawText: string) {
+  let clean = rawText
+    .replace(/^[-*•]\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/\*\*/g, '')
+    .trim();
+
+  const keywordMatch = clean.match(/(?:키워드|신호|해석|질문)\s*[:：]\s*(.+)$/);
+  if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
+
+  if (/^(설명|이유|주의|예시)\s*[:：]/.test(clean)) return '';
+  if (/^(함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) return '';
+
+  clean = clean
+    .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에)/)[0]
     .split(/[.!?。]/)[0]
     .replace(/\s+/g, ' ')
     .trim();
 
+  if (clean.length < 2) return '';
   if (clean.length > 44) clean = clean.slice(0, 44).trim();
-  return clean.length >= 2 ? clean : '';
+  return clean;
 }
 
-function extractMetricCandidates(rawText: string, source: string) {
+function sourceTitleFromHeading(line: string) {
+  const heading = line.replace(/^#{1,6}\s*/, '').trim();
+  const match = heading.match(/^(선택 상황\s*\d+|직접 작성 상황)\s*[:：-]?\s*(.*)$/);
+  if (!match) return null;
+  const title = match[1].replace(/\s+/g, ' ').trim();
+  const label = match[2]?.trim();
+  return label ? `${title}: ${label}` : title;
+}
+
+function extractMetricCandidatesBySituation(rawText: string, situationSources: { title: string; label: string }[]) {
+  const fallbackSource = situationSources[0] ? `${situationSources[0].title}: ${situationSources[0].label}` : '핵심 지표';
   const seen = new Set<string>();
   const candidates: MetricCandidate[] = [];
-  const lines = rawText
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
+  let currentSource = fallbackSource;
+  let lastCandidate: MetricCandidate | null = null;
 
-  for (const line of lines) {
-    const label = normalizeCandidateLabel(line);
-    if (!label || seen.has(label)) continue;
-    seen.add(label);
-    candidates.push({ id: `${source}-${candidates.length}-${label}`, label, source });
-    if (candidates.length >= 8) break;
+  for (const rawLine of rawText.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const headingSource = sourceTitleFromHeading(line);
+    if (headingSource) {
+      currentSource = headingSource;
+      lastCandidate = null;
+      continue;
+    }
+
+    const label = normalizeMetricName(line);
+    if (label) {
+      if (seen.has(label)) continue;
+      seen.add(label);
+      const candidate = { id: `${currentSource}-${candidates.length}-${label}`, label, source: currentSource };
+      candidates.push(candidate);
+      lastCandidate = candidate;
+      continue;
+    }
+
+    const reasonMatch = line.match(/(?:이유|설명)\s*[:：]\s*(.+)$/);
+    if (reasonMatch?.[1] && lastCandidate && !lastCandidate.reason) {
+      lastCandidate.reason = reasonMatch[1].trim();
+    }
   }
 
   return candidates;
@@ -167,7 +235,7 @@ function extractReferenceKeywords(rawText: string, limit = 8) {
     .filter(Boolean);
 
   for (const line of lines) {
-    const normalized = normalizeCandidateLabel(line);
+    const normalized = normalizeReferenceKeyword(line);
     if (!normalized) continue;
     const pieces = normalized
       .split(/[,/·;]|\s{2,}/)
@@ -201,7 +269,7 @@ function ReferenceKeywordCards({ title, guide, items, emptyText, tone }: { title
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           {items.map((item) => (
-            <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-black shadow-sm">
+            <span key={item} className="max-w-full whitespace-normal break-keep rounded-full bg-white px-3 py-1 text-xs font-black leading-5 shadow-sm">
               {item}
             </span>
           ))}
@@ -209,6 +277,13 @@ function ReferenceKeywordCards({ title, guide, items, emptyText, tone }: { title
       )}
     </div>
   );
+}
+
+function groupMetricCandidates(candidates: MetricCandidate[]) {
+  return candidates.reduce<Record<string, MetricCandidate[]>>((groups, candidate) => {
+    groups[candidate.source] = [...(groups[candidate.source] ?? []), candidate];
+    return groups;
+  }, {});
 }
 
 export function V39DashboardAnalysisLab() {
@@ -226,8 +301,6 @@ export function V39DashboardAnalysisLab() {
   const [questionKeywords, setQuestionKeywords] = useState<string[]>([]);
   const [selectedCoreExecutionMetrics, setSelectedCoreExecutionMetrics] = useState<string[]>([]);
   const [finalCoreMetric, setFinalCoreMetric] = useState('');
-  const [finalSupportSignal, setFinalSupportSignal] = useState('');
-  const [finalCautionPoint, setFinalCautionPoint] = useState('');
   const [metricRationale, setMetricRationale] = useState('');
   const [selectedMemberTypeIds, setSelectedMemberTypeIds] = useState<string[]>([]);
   const [memberPreps, setMemberPreps] = useState<PrepState>({});
@@ -243,12 +316,14 @@ export function V39DashboardAnalysisLab() {
     [selectedMemberTypeIds],
   );
   const signalPromptMembers = selectedTeamMembers.length > 0 ? selectedTeamMembers : TEAM_MEMBERS;
+  const situationSources = useMemo(() => buildSituationSources(teamSituations, customSituation), [teamSituations, customSituation]);
+  const groupedMetricCandidates = useMemo(() => groupMetricCandidates(metricCandidates), [metricCandidates]);
   const coreMetricItems = useMemo(
     () => [...selectedCoreExecutionMetrics, ...(finalCoreMetric.trim() ? [finalCoreMetric.trim()] : [])],
     [selectedCoreExecutionMetrics, finalCoreMetric],
   );
-  const visibleSupportKeywords = supportKeywords.length > 0 ? supportKeywords : extractReferenceKeywords(finalSupportSignal);
-  const visibleSafetyKeywords = safetyKeywords.length > 0 ? safetyKeywords : extractReferenceKeywords(finalCautionPoint);
+  const visibleSupportKeywords = supportKeywords.length > 0 ? supportKeywords : extractReferenceKeywords(aiRecommendedSupportMetrics);
+  const visibleSafetyKeywords = safetyKeywords.length > 0 ? safetyKeywords : extractReferenceKeywords(aiRecommendedSafetyMetrics);
   const visibleQuestionKeywords = questionKeywords.length > 0 ? questionKeywords : extractReferenceKeywords(aiRecommendedQuestions);
 
   const selectedMetricSummary = useMemo(
@@ -265,12 +340,12 @@ export function V39DashboardAnalysisLab() {
     () => buildV38SignalPrompt({
       selectedMetricSummary,
       metricRationale,
-      aiRecommendedQuestions,
+      aiRecommendedQuestions: visibleQuestionKeywords.join('\n') || aiRecommendedQuestions,
       selectedTeamMembers,
       signalPromptMembers,
       forbiddenItems: FORBIDDEN_ITEMS,
     }),
-    [selectedMetricSummary, metricRationale, aiRecommendedQuestions, selectedTeamMembers, signalPromptMembers],
+    [selectedMetricSummary, metricRationale, visibleQuestionKeywords, aiRecommendedQuestions, selectedTeamMembers, signalPromptMembers],
   );
   const prepPrompt = useMemo(
     () => buildV38PrepPrompt({
@@ -292,6 +367,9 @@ export function V39DashboardAnalysisLab() {
   }).length;
   const completedActionChoiceCount = selectedTeamMembers.filter((member) => (selectedDeliverables[member.id] ?? []).length > 0).length;
   const completedFinalCount = selectedTeamMembers.filter((member) => memberPreps[member.id]?.finalPrep).length;
+  void completedSignalCount;
+  void completedActionChoiceCount;
+  void completedFinalCount;
 
   useEffect(() => {
     const nextResult = createEmptyV39DashboardResult();
@@ -397,7 +475,7 @@ export function V39DashboardAnalysisLab() {
 
   const autoFillMetricSuggestion = () => {
     const parsed = parseAiMetricSuggestion(aiMetricSuggestion);
-    const nextCandidates = extractMetricCandidates(parsed.core, '핵심 지표');
+    const nextCandidates = extractMetricCandidatesBySituation(parsed.core, situationSources);
     const nextSupportKeywords = extractReferenceKeywords(parsed.support, 8);
     const nextSafetyKeywords = extractReferenceKeywords(parsed.safety, 6);
     const nextQuestionKeywords = extractReferenceKeywords(parsed.questions, 6);
@@ -410,12 +488,10 @@ export function V39DashboardAnalysisLab() {
     setSafetyKeywords(nextSafetyKeywords);
     setQuestionKeywords(nextQuestionKeywords);
     setSelectedCoreExecutionMetrics((current) => current.filter((item) => nextCandidates.some((candidate) => candidate.label === item)));
-    setFinalSupportSignal((current) => current || nextSupportKeywords.join(' / '));
-    setFinalCautionPoint((current) => current || nextSafetyKeywords.join(' / '));
     setParseNotice(
       parsed.warnings.length > 0
         ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 핵심 실행 지표 후보는 아래에서 직접 선택해 주세요.`
-        : 'AI 초안을 옮겼습니다. 핵심 실행 지표만 선택하고, 현장 신호와 해석·질문은 참고 카드로 확인하세요.',
+        : 'AI 초안을 옮겼습니다. 상황별 핵심 실행 지표 후보를 확인하고, 실제로 볼 지표만 선택하세요.',
     );
   };
 
@@ -524,7 +600,7 @@ export function V39DashboardAnalysisLab() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h4 className="text-sm font-black text-slate-950">AI에 물어볼 질문</h4>
-                <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 답을 정하는 것이 아니라, 팀장이 볼 지표와 조심할 해석을 가볍게 정리하는 질문입니다.</p>
+                <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 답을 정하는 것이 아니라, 상황별 핵심 실행 지표 후보를 뽑는 질문입니다.</p>
               </div>
               <button type="button" className="rounded-2xl bg-amber-700 px-4 py-3 text-sm font-black text-white" onClick={() => copyPrompt('metric')}>{copiedPrompt === 'metric' ? '복사 완료' : 'AI에 물어볼 질문 복사'}</button>
             </div>
@@ -556,8 +632,8 @@ export function V39DashboardAnalysisLab() {
             <p className="mt-2 text-xs font-bold leading-5 text-slate-600">긴 설명은 여기에서 확인합니다. 화면의 카드에는 짧은 키워드만 보여줍니다.</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <ReviewTextarea label="핵심 실행 지표 후보 원문" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
-              <ReviewTextarea label="함께 봐야 할 현장 신호 원문" value={aiRecommendedSupportMetrics} onChange={(value) => { setAiRecommendedSupportMetrics(value); setSupportKeywords(extractReferenceKeywords(value, 8)); setFinalSupportSignal(extractReferenceKeywords(value, 8).join(' / ')); }} />
-              <ReviewTextarea label="조심해서 봐야 할 해석 원문" value={aiRecommendedSafetyMetrics} onChange={(value) => { setAiRecommendedSafetyMetrics(value); setSafetyKeywords(extractReferenceKeywords(value, 6)); setFinalCautionPoint(extractReferenceKeywords(value, 6).join(' / ')); }} />
+              <ReviewTextarea label="함께 봐야 할 현장 신호 원문" value={aiRecommendedSupportMetrics} onChange={(value) => { setAiRecommendedSupportMetrics(value); setSupportKeywords(extractReferenceKeywords(value, 8)); }} />
+              <ReviewTextarea label="조심해서 봐야 할 해석 원문" value={aiRecommendedSafetyMetrics} onChange={(value) => { setAiRecommendedSafetyMetrics(value); setSafetyKeywords(extractReferenceKeywords(value, 6)); }} />
               <ReviewTextarea label="팀장이 더 확인할 질문 원문" value={aiRecommendedQuestions} onChange={(value) => { setAiRecommendedQuestions(value); setQuestionKeywords(extractReferenceKeywords(value, 6)); }} />
             </div>
           </details>
@@ -565,20 +641,30 @@ export function V39DashboardAnalysisLab() {
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <h4 className="text-sm font-black text-slate-950">핵심 실행 지표 선택</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 분리한 후보 중 이번 2주에 실제로 볼 지표를 선택합니다. 현장 신호와 조심할 해석은 선택하지 않고 참고만 합니다.</p>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 상황별로 제안한 후보 중 이번 2주에 실제로 볼 지표를 선택합니다. 현장 신호와 조심할 해석은 선택하지 않고 참고만 합니다.</p>
           {metricCandidates.length === 0 ? (
-            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">AI 초안을 붙여넣고 “후보와 참고 신호 나누기”를 누르면 선택 후보가 표시됩니다.</div>
+            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">AI 초안을 붙여넣고 “후보와 참고 신호 나누기”를 누르면 상황별 후보가 표시됩니다.</div>
           ) : (
-            <div className="mt-3 grid gap-2 md:grid-cols-2">
-              {metricCandidates.map((candidate) => {
-                const selected = selectedCoreExecutionMetrics.includes(candidate.label);
-                return (
-                  <label key={candidate.id} className={`flex gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${selected ? 'border-amber-700 bg-amber-50 text-amber-950' : 'bg-white text-slate-700'}`}>
-                    <input type="checkbox" checked={selected} onChange={() => toggleCoreExecutionMetric(candidate.label)} />
-                    <span><span className="mr-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-black text-slate-600">{candidate.source}</span>{candidate.label}</span>
-                  </label>
-                );
-              })}
+            <div className="mt-3 grid gap-3 lg:grid-cols-3">
+              {Object.entries(groupedMetricCandidates).map(([source, candidates]) => (
+                <div key={source} className="rounded-2xl border border-amber-100 bg-amber-50 p-3">
+                  <p className="text-xs font-black leading-5 text-amber-900">{source}</p>
+                  <div className="mt-2 grid gap-2">
+                    {candidates.map((candidate) => {
+                      const selected = selectedCoreExecutionMetrics.includes(candidate.label);
+                      return (
+                        <label key={candidate.id} className={`flex min-w-0 gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${selected ? 'border-amber-700 bg-white text-amber-950' : 'bg-white/80 text-slate-700'}`}>
+                          <input type="checkbox" className="mt-1 shrink-0" checked={selected} onChange={() => toggleCoreExecutionMetric(candidate.label)} />
+                          <span className="min-w-0 flex-1 whitespace-normal break-keep leading-5">
+                            <span className="block font-black">{candidate.label}</span>
+                            {candidate.reason && <span className="mt-1 block text-[11px] font-bold text-slate-500">{candidate.reason}</span>}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           <label className="mt-4 block space-y-1">
