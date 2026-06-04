@@ -79,26 +79,31 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
     '- 선택한 2개 상황과 직접 작성한 상황을 모두 반영해 주세요.',
     '- 직접 작성한 상황은 선택한 2개 상황을 대체하는 것이 아니라, 우리 팀 맥락을 보완하는 정보입니다.',
     '- 결과가 한쪽 상황에만 치우치지 않도록, 선택 상황과 직접 작성 상황이 각각 어떤 판단에 영향을 주는지 함께 고려해 주세요.',
-    '- 상황이 3개라면 핵심 실행 지표 후보도 1~2개로 줄이지 말고, 상황을 커버할 수 있을 만큼 제안해 주세요.',
+    '- 핵심 실행 지표 후보와 현장 신호를 섞지 마세요.',
+    '- 체크박스로 선택할 것은 핵심 실행 지표 후보뿐입니다.',
+    '- 현장 신호, 조심할 해석, 확인 질문은 선택 대상이 아니라 참고 정보입니다.',
     '',
-    '아래 4가지만 현실적인 말로 정리해 주세요.',
+    '아래 4가지를 구분해서 정리해 주세요.',
     '',
     '## 1. 핵심 실행 지표 후보',
-    '- 선택 상황 2개와 직접 작성 상황을 모두 커버할 수 있도록 3~5개 후보를 제안해 주세요.',
-    '- 각 후보는 팀장이 체크박스로 선택할 수 있도록 짧은 지표명으로 써 주세요.',
+    '- 팀장이 이번 2주 동안 실제로 선택해서 볼 수 있는 지표만 3~5개 제안해 주세요.',
+    '- 체크박스 후보로 쓸 수 있게 짧은 지표명으로 작성해 주세요.',
     '- 각 후보 아래에는 왜 필요한지 한 문장만 덧붙여 주세요.',
-    '- 한 후보 안에 너무 많은 지표를 쉼표로 길게 나열하지 마세요.',
+    '- 한 후보 안에 여러 지표를 쉼표로 길게 나열하지 마세요.',
     '',
     '## 2. 함께 봐야 할 현장 신호',
-    '- 숫자만으로는 놓칠 수 있는 팀원 또는 고객 반응의 신호를 제안해 주세요.',
-    '- 선택 상황과 직접 작성 상황에서 함께 드러나는 현장 신호를 잡아 주세요.',
+    '- 선택 대상이 아니라 참고 신호입니다.',
+    '- 숫자만으로는 놓칠 수 있는 팀원 또는 고객 반응의 신호를 키워드 중심으로 3~5개 작성해 주세요.',
+    '- 긴 설명문보다 짧은 구절로 써 주세요.',
     '',
     '## 3. 조심해서 봐야 할 해석',
-    '- 숫자나 반응을 잘못 해석할 수 있는 위험을 정리해 주세요.',
-    '- 성급하게 단정하지 않기 위해 볼 것을 한 문장으로 써 주세요.',
+    '- 선택 대상이 아니라 주의할 해석입니다.',
+    '- 숫자나 반응을 잘못 해석할 수 있는 위험을 키워드 중심으로 2~4개 작성해 주세요.',
+    '- 경고문처럼 짧게 써 주세요.',
     '',
     '## 4. 팀장이 더 확인할 질문',
-    '- 팀원이나 고객 반응을 보고 한 번 더 확인해야 할 질문을 제안해 주세요.',
+    '- 선택 대상이 아니라 대화나 점검에서 쓸 질문입니다.',
+    '- 짧은 질문문으로 2~4개 작성해 주세요.',
     '',
     '주의:',
     '- 정답처럼 말하지 마세요.',
@@ -153,6 +158,59 @@ function extractMetricCandidates(rawText: string, source: string) {
   return candidates;
 }
 
+function extractReferenceKeywords(rawText: string, limit = 8) {
+  const seen = new Set<string>();
+  const keywords: string[] = [];
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    const normalized = normalizeCandidateLabel(line);
+    if (!normalized) continue;
+    const pieces = normalized
+      .split(/[,/·;]|\s{2,}/)
+      .map((item) => item.trim())
+      .filter((item) => item.length >= 2 && item.length <= 36);
+    for (const piece of pieces.length > 0 ? pieces : [normalized]) {
+      if (seen.has(piece)) continue;
+      seen.add(piece);
+      keywords.push(piece);
+      if (keywords.length >= limit) return keywords;
+    }
+  }
+
+  return keywords;
+}
+
+function ReferenceKeywordCards({ title, guide, items, emptyText, tone }: { title: string; guide: string; items: string[]; emptyText: string; tone: 'cyan' | 'rose' | 'violet' }) {
+  const toneClass =
+    tone === 'cyan'
+      ? 'border-cyan-100 bg-cyan-50 text-cyan-950'
+      : tone === 'rose'
+        ? 'border-rose-100 bg-rose-50 text-rose-950'
+        : 'border-violet-100 bg-violet-50 text-violet-950';
+
+  return (
+    <div className={`rounded-2xl border p-4 ${toneClass}`}>
+      <h5 className="text-sm font-black">{title}</h5>
+      <p className="mt-1 text-xs font-bold leading-5 opacity-80">{guide}</p>
+      {items.length === 0 ? (
+        <p className="mt-3 rounded-2xl bg-white/70 px-3 py-2 text-xs font-bold opacity-80">{emptyText}</p>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-black shadow-sm">
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function V39DashboardAnalysisLab() {
   const [teamSituations, setTeamSituations] = useState<string[]>([]);
   const [customSituation, setCustomSituation] = useState('');
@@ -163,6 +221,9 @@ export function V39DashboardAnalysisLab() {
   const [aiRecommendedSafetyMetrics, setAiRecommendedSafetyMetrics] = useState('');
   const [aiRecommendedQuestions, setAiRecommendedQuestions] = useState('');
   const [metricCandidates, setMetricCandidates] = useState<MetricCandidate[]>([]);
+  const [supportKeywords, setSupportKeywords] = useState<string[]>([]);
+  const [safetyKeywords, setSafetyKeywords] = useState<string[]>([]);
+  const [questionKeywords, setQuestionKeywords] = useState<string[]>([]);
   const [selectedCoreExecutionMetrics, setSelectedCoreExecutionMetrics] = useState<string[]>([]);
   const [finalCoreMetric, setFinalCoreMetric] = useState('');
   const [finalSupportSignal, setFinalSupportSignal] = useState('');
@@ -186,14 +247,17 @@ export function V39DashboardAnalysisLab() {
     () => [...selectedCoreExecutionMetrics, ...(finalCoreMetric.trim() ? [finalCoreMetric.trim()] : [])],
     [selectedCoreExecutionMetrics, finalCoreMetric],
   );
+  const visibleSupportKeywords = supportKeywords.length > 0 ? supportKeywords : extractReferenceKeywords(finalSupportSignal);
+  const visibleSafetyKeywords = safetyKeywords.length > 0 ? safetyKeywords : extractReferenceKeywords(finalCautionPoint);
+  const visibleQuestionKeywords = questionKeywords.length > 0 ? questionKeywords : extractReferenceKeywords(aiRecommendedQuestions);
 
   const selectedMetricSummary = useMemo(
     () => [
       `핵심 실행 지표: ${coreMetricItems.join(' / ') || '미작성'}`,
-      `함께 봐야 할 현장 신호: ${finalSupportSignal.trim() || '미작성'}`,
-      `조심해서 봐야 할 해석: ${finalCautionPoint.trim() || '미작성'}`,
+      `함께 봐야 할 현장 신호: ${visibleSupportKeywords.join(' / ') || '미작성'}`,
+      `조심해서 봐야 할 해석: ${visibleSafetyKeywords.join(' / ') || '미작성'}`,
     ],
-    [coreMetricItems, finalSupportSignal, finalCautionPoint],
+    [coreMetricItems, visibleSupportKeywords, visibleSafetyKeywords],
   );
 
   const metricPrompt = useMemo(() => buildV39MetricPrompt(teamSituations, customSituation), [teamSituations, customSituation]);
@@ -221,7 +285,7 @@ export function V39DashboardAnalysisLab() {
     [selectedMetricSummary, aiSignalResult, memberPreps, selectedDeliverables, selectedTeamMembers],
   );
 
-  const finalMetricCount = [coreMetricItems.length > 0 ? 'core' : '', finalSupportSignal, finalCautionPoint].filter((value) => value.trim()).length;
+  const finalMetricCount = [coreMetricItems.length > 0 ? 'core' : '', visibleSupportKeywords.length > 0 ? 'support' : '', visibleSafetyKeywords.length > 0 ? 'safety' : ''].filter((value) => value.trim()).length;
   const completedSignalCount = selectedTeamMembers.filter((member) => {
     const current = memberPreps[member.id];
     return Boolean(current?.observedSignal || current?.concernSignal || current?.checkQuestion);
@@ -237,16 +301,16 @@ export function V39DashboardAnalysisLab() {
       aiRecommendedCoreMetrics,
       aiRecommendedSupportMetrics,
       aiRecommendedSafetyMetrics,
-      fitForOurTeam: [coreMetricItems.join('\n'), finalSupportSignal].filter((value) => value.trim()).join('\n\n'),
+      fitForOurTeam: [coreMetricItems.join('\n'), visibleSupportKeywords.join('\n')].filter((value) => value.trim()).join('\n\n'),
       excludedMetrics: '',
       additionalMetricIdea: '',
-      aiRecommendedQuestions,
+      aiRecommendedQuestions: visibleQuestionKeywords.join('\n') || aiRecommendedQuestions,
       parseNotice,
     };
     nextResult.metricSelection = {
       selectedCoreMetricIds: coreMetricItems,
-      selectedSupportMetricIds: finalSupportSignal.trim() ? [finalSupportSignal.trim()] : [],
-      selectedSafetyMetricIds: finalCautionPoint.trim() ? [finalCautionPoint.trim()] : [],
+      selectedSupportMetricIds: visibleSupportKeywords,
+      selectedSafetyMetricIds: visibleSafetyKeywords,
       metricRationale,
     };
     nextResult.memberResult = {
@@ -268,8 +332,9 @@ export function V39DashboardAnalysisLab() {
     aiRecommendedSafetyMetrics,
     aiRecommendedQuestions,
     coreMetricItems,
-    finalSupportSignal,
-    finalCautionPoint,
+    visibleSupportKeywords,
+    visibleSafetyKeywords,
+    visibleQuestionKeywords,
     metricRationale,
     parseNotice,
     selectedMemberTypeIds,
@@ -332,22 +397,25 @@ export function V39DashboardAnalysisLab() {
 
   const autoFillMetricSuggestion = () => {
     const parsed = parseAiMetricSuggestion(aiMetricSuggestion);
-    const nextCandidates = [
-      ...extractMetricCandidates(parsed.core, '핵심 지표'),
-      ...extractMetricCandidates(parsed.support, '현장 신호'),
-    ];
+    const nextCandidates = extractMetricCandidates(parsed.core, '핵심 지표');
+    const nextSupportKeywords = extractReferenceKeywords(parsed.support, 8);
+    const nextSafetyKeywords = extractReferenceKeywords(parsed.safety, 6);
+    const nextQuestionKeywords = extractReferenceKeywords(parsed.questions, 6);
     setAiRecommendedCoreMetrics(parsed.core);
     setAiRecommendedSupportMetrics(parsed.support);
     setAiRecommendedSafetyMetrics(parsed.safety);
     setAiRecommendedQuestions(parsed.questions);
     setMetricCandidates(nextCandidates);
+    setSupportKeywords(nextSupportKeywords);
+    setSafetyKeywords(nextSafetyKeywords);
+    setQuestionKeywords(nextQuestionKeywords);
     setSelectedCoreExecutionMetrics((current) => current.filter((item) => nextCandidates.some((candidate) => candidate.label === item)));
-    setFinalSupportSignal((current) => current || parsed.support);
-    setFinalCautionPoint((current) => current || parsed.safety);
+    setFinalSupportSignal((current) => current || nextSupportKeywords.join(' / '));
+    setFinalCautionPoint((current) => current || nextSafetyKeywords.join(' / '));
     setParseNotice(
       parsed.warnings.length > 0
         ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 핵심 실행 지표 후보는 아래에서 직접 선택해 주세요.`
-        : 'AI 초안을 옮겼습니다. 분리 정리된 후보 중 이번 2주에 볼 핵심 실행 지표를 직접 선택해 주세요.',
+        : 'AI 초안을 옮겼습니다. 핵심 실행 지표만 선택하고, 현장 신호와 해석·질문은 참고 카드로 확인하세요.',
     );
   };
 
@@ -466,30 +534,40 @@ export function V39DashboardAnalysisLab() {
 
         <label className="mt-4 block space-y-1">
           <span className="text-xs font-black text-slate-600">AI 초안 붙여넣기</span>
-          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 자동 분리 후 핵심 실행 지표 후보를 선택합니다." />
+          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 핵심 실행 지표만 선택하고 나머지는 참고 카드로 봅니다." />
         </label>
         <div className="mt-3">
-          <button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 초안에서 지표 후보 분리하기</button>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">상황을 모두 커버할 수 있도록 여러 후보를 분리하고, 그중 핵심 실행 지표를 직접 선택합니다.</p>
+          <button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 초안에서 후보와 참고 신호 나누기</button>
+          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">선택은 핵심 실행 지표만 합니다. 현장 신호, 조심할 해석, 확인 질문은 지표를 해석할 때 참고합니다.</p>
           {parseNotice && <div className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-amber-800">{parseNotice}</div>}
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
-          <h4 className="text-sm font-black text-slate-950">AI 초안에서 분리된 내용 확인</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">설명은 이 영역에서 확인합니다. 아래 최종 선택에서는 후보 중 이번 2주에 실제로 볼 핵심 실행 지표를 고릅니다.</p>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <ReviewTextarea label="핵심 실행 지표 후보" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
-            <ReviewTextarea label="함께 봐야 할 현장 신호" value={aiRecommendedSupportMetrics} onChange={setAiRecommendedSupportMetrics} />
-            <ReviewTextarea label="조심해서 봐야 할 해석" value={aiRecommendedSafetyMetrics} onChange={setAiRecommendedSafetyMetrics} />
-            <ReviewTextarea label="팀장이 더 확인할 질문" value={aiRecommendedQuestions} onChange={setAiRecommendedQuestions} />
+          <h4 className="text-sm font-black text-slate-950">AI가 나눈 후보와 참고 신호</h4>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">선택 대상은 핵심 실행 지표 후보뿐입니다. 나머지는 판단을 돕는 참고 카드로만 봅니다.</p>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <ReferenceKeywordCards title="함께 봐야 할 현장 신호" guide="선택 대상이 아니라 지표를 해석할 때 함께 볼 신호입니다." items={visibleSupportKeywords} emptyText="AI 초안을 분리하면 현장 신호 키워드가 표시됩니다." tone="cyan" />
+            <ReferenceKeywordCards title="조심해서 봐야 할 해석" guide="성급하게 판단하지 않기 위한 주의점입니다." items={visibleSafetyKeywords} emptyText="AI 초안을 분리하면 조심할 해석이 표시됩니다." tone="rose" />
+            <ReferenceKeywordCards title="팀장이 더 확인할 질문" guide="면담이나 점검에서 던질 수 있는 질문입니다." items={visibleQuestionKeywords} emptyText="AI 초안을 분리하면 확인 질문이 표시됩니다." tone="violet" />
           </div>
+
+          <details className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <summary className="cursor-pointer text-sm font-black text-slate-950">AI 원문과 참고 키워드 직접 수정</summary>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">긴 설명은 여기에서 확인합니다. 화면의 카드에는 짧은 키워드만 보여줍니다.</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <ReviewTextarea label="핵심 실행 지표 후보 원문" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
+              <ReviewTextarea label="함께 봐야 할 현장 신호 원문" value={aiRecommendedSupportMetrics} onChange={(value) => { setAiRecommendedSupportMetrics(value); setSupportKeywords(extractReferenceKeywords(value, 8)); setFinalSupportSignal(extractReferenceKeywords(value, 8).join(' / ')); }} />
+              <ReviewTextarea label="조심해서 봐야 할 해석 원문" value={aiRecommendedSafetyMetrics} onChange={(value) => { setAiRecommendedSafetyMetrics(value); setSafetyKeywords(extractReferenceKeywords(value, 6)); setFinalCautionPoint(extractReferenceKeywords(value, 6).join(' / ')); }} />
+              <ReviewTextarea label="팀장이 더 확인할 질문 원문" value={aiRecommendedQuestions} onChange={(value) => { setAiRecommendedQuestions(value); setQuestionKeywords(extractReferenceKeywords(value, 6)); }} />
+            </div>
+          </details>
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <h4 className="text-sm font-black text-slate-950">핵심 실행 지표 선택</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 분리한 후보 중 이번 2주에 실제로 볼 지표를 선택합니다. 상황을 모두 커버할 수 있도록 2~4개 정도를 권장하지만, 강제로 제한하지 않습니다.</p>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 분리한 후보 중 이번 2주에 실제로 볼 지표를 선택합니다. 현장 신호와 조심할 해석은 선택하지 않고 참고만 합니다.</p>
           {metricCandidates.length === 0 ? (
-            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">AI 초안을 붙여넣고 “지표 후보 분리하기”를 누르면 선택 후보가 표시됩니다.</div>
+            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">AI 초안을 붙여넣고 “후보와 참고 신호 나누기”를 누르면 선택 후보가 표시됩니다.</div>
           ) : (
             <div className="mt-3 grid gap-2 md:grid-cols-2">
               {metricCandidates.map((candidate) => {
@@ -513,12 +591,8 @@ export function V39DashboardAnalysisLab() {
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
-          <h4 className="text-sm font-black text-slate-950">함께 볼 신호와 조심할 해석 정리</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">선택한 핵심 실행 지표를 볼 때 같이 확인할 신호와 성급하게 해석하면 안 되는 지점을 남깁니다.</p>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <ReviewTextarea label="함께 볼 현장 신호" value={finalSupportSignal} onChange={setFinalSupportSignal} />
-            <ReviewTextarea label="조심할 해석" value={finalCautionPoint} onChange={setFinalCautionPoint} />
-          </div>
+          <h4 className="text-sm font-black text-slate-950">선택한 지표를 볼 때의 기준</h4>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">위에서 선택한 핵심 실행 지표를 볼 때, 어떤 이유로 이 기준을 보려는지 한 문장만 남깁니다.</p>
           <label className="mt-4 block space-y-1">
             <span className="text-xs font-black text-slate-600">왜 이 기준을 보려고 하나요?</span>
             <textarea className="min-h-20 w-full rounded-2xl border bg-slate-50 px-3 py-2 text-sm leading-6" value={metricRationale} onChange={(event) => setMetricRationale(event.target.value)} placeholder="예: 방문 수보다 방문 이후 다음 행동이 남았는지를 먼저 보고 싶다." />
