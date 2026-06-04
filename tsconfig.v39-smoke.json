@@ -22,6 +22,7 @@
     "src/journey-v39-ai-call-plan-ux-lab.tsx",
     "src/journey-v39-ai-call-plan-result-store.ts",
     "src/journey-v39-compliance-cleanup-lab.tsx",
+    "src/journey-v39-compliance-cleanup-ux-lab.tsx",
     "src/journey-v39-compliance-cleanup-result-store.ts",
     "src/journey-v39-final-call-plan-card.tsx",
     "src/journey-v39-final-call-plan-result-store.ts",
