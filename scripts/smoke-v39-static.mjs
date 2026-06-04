@@ -76,8 +76,9 @@ for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.config, 
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
 for (const marker of ['V39DashboardAnalysisUxLab', '5단계 진행 가이드', '4단계 AI 전략 리서치 연결', '관리 지표 선정 상태', '선택한 핵심 실행 지표', '고객 Data 확인 List로 넘길 기준', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
 for (const marker of ['팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형']) mustNotInclude(files.dashboardUx, marker, 'dashboard UX old wording');
-for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
-for (const marker of ['V39CustomerJudgmentUxLab', '6단계 진행 가이드', '고객 Data에서 기회와 착시를 분리합니다', '고객 Data 판단 상태', '선택 고객 유형', '6단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
+for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow', '고객 Data 확인 List', '고객의 무엇을 확인할 것인가', '기회 신호 기준', '주의 신호 기준', '부족한 정보', '추가 확인 질문']) mustInclude(files.customerJudgment, marker, 'customer judgment');
+for (const marker of ['고객 유형 A~F 카드 보기와 판단 대상 선택', '집중/유지/보류/정보 보완 중 현재 판단']) mustNotInclude(files.customerJudgment, marker, 'customer judgment old priority flow');
+for (const marker of ['V39CustomerJudgmentUxLab', '6단계 진행 가이드', '6단계. 고객의 무엇을 볼 것인가', '5단계에서 넘겨받은 기준', '관리 지표를 고객 Data로 확인하기', '고객 Data 해석 메모', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
 for (const marker of ['V39CustomerPriorityLab', 'V39CustomerJudgmentBridgePanel']) mustInclude(files.customerPriority, marker, 'customer priority');
 for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '고객 판단을 2주 대응 전략으로 바꿉니다', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerPriorityUx, marker, 'customer priority UX wrapper');
 for (const marker of ['V39MemberRoleLab', 'V39CustomerRolePlanningPanel']) mustInclude(files.memberRole, marker, 'member role');
