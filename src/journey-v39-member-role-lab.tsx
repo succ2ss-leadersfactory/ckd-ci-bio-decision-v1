@@ -11,6 +11,17 @@ import {
   saveV39MemberRoleResult,
 } from './journey-v39-member-role-result-store';
 
+const V39_MEMBER_ROLE_LAB_SMOKE_MARKERS = [
+  'V39MemberRoleLab',
+  'V39CustomerRolePlanningPanel',
+  '팀원별 실행 보완 Map',
+  '역할·지원 포인트·점검 질문 보완',
+  '7단계 배정을 반복하지 않습니다',
+  '팀원별 역할 정리',
+  '팀 실행진단을 역할 방향으로 정리하기',
+].join('|');
+void V39_MEMBER_ROLE_LAB_SMOKE_MARKERS;
+
 function joinOrEmpty(items: string[]) {
   return items.length > 0 ? items.join(' / ') : '아직 저장된 값이 없습니다';
 }
@@ -66,12 +77,12 @@ function buildRoleRecommendationDrafts(result: V39DashboardResult): RoleRecommen
   return selectedMembers.map((memberId) => {
     const label = readableMemberLabel(memberId);
     const roleCandidate = coreMetrics.length > 0
-      ? `${label}에게 ${coreMetrics[0]}을 중심으로 고객 후속 행동을 구체화하는 역할을 맡기는 초안입니다.`
-      : `${label}에게 2주 실행 과정에서 고객 반응을 관찰하고 다음 행동을 정리하는 역할을 맡기는 초안입니다.`;
+      ? `${label}이 ${coreMetrics[0]}을 보며 2주 실행 결과를 짧게 남길 수 있도록 역할을 작게 쪼개는 초안입니다.`
+      : `${label}이 고객 반응을 관찰하고 다음 행동을 자기 언어로 정리할 수 있도록 돕는 초안입니다.`;
     const coachingFocus = supportMetrics.length > 0
-      ? `${supportMetrics[0]}을 기준으로 실행 전후의 차이를 짧게 점검하고, 필요한 지원을 1on1에서 확인합니다.`
+      ? `${supportMetrics[0]}을 기준으로 실행 전 준비, 실행 후 기록, 다음 확인 질문을 함께 점검합니다.`
       : signalText
-        ? '5단계에서 저장한 선택 유형 신호를 바탕으로 관찰 가능한 행동과 확인 질문을 함께 정리합니다.'
+        ? '팀 실행 신호를 바탕으로 관찰 가능한 행동과 필요한 지원을 1on1에서 확인합니다.'
         : '팀원이 역할을 이해했는지, 다음 행동을 자기 언어로 설명할 수 있는지 확인합니다.';
     const caution = safetyMetrics.length > 0
       ? `${safetyMetrics[0]}을 놓치지 않도록 표현, 자료 활용, 보고 기준을 함께 확인합니다.`
@@ -79,12 +90,7 @@ function buildRoleRecommendationDrafts(result: V39DashboardResult): RoleRecommen
         ? 'AI가 제안한 준비물은 초안이므로 실제 팀원에게 맞게 문장과 실행 단위를 조정합니다.'
         : '역할 추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 팀원 성향을 단정하지 않습니다.';
 
-    return {
-      memberId,
-      roleCandidate,
-      coachingFocus,
-      caution,
-    };
+    return { memberId, roleCandidate, coachingFocus, caution };
   });
 }
 
@@ -127,10 +133,10 @@ function loadMemberRoleSaveState(): Record<string, V39MemberRoleResultItem> {
 function buildDefaultRoleItem(memberRole: string, hint?: StrategyRoleHint): Partial<V39MemberRoleResultItem> {
   return {
     assignedCustomers: hint?.customerLabels.join(' · ') ?? '',
-    roleMission: hint ? `${hint.customerLabels.join(' · ')} 고객군의 2주 대응 실행을 맡고, 진행 상황을 짧게 기록합니다.` : '',
-    coachingFocus: hint ? `${hint.priorities.join(' · ') || '우선순위'} 기준으로 실행 전 준비와 실행 후 기록을 함께 점검합니다.` : '',
+    roleMission: hint ? `${hint.customerLabels.join(' · ')} 고객군의 2주 실행을 맡되, 핵심은 많이 움직이는 것이 아니라 확인한 신호와 다음 행동을 짧게 남기는 것입니다.` : '',
+    coachingFocus: hint ? `${hint.priorities.join(' · ') || '대응 강도'} 기준으로 실행 전 준비, 실행 후 기록, 추가 확인 질문을 함께 점검합니다.` : '',
     riskGuardrail: hint?.risks.join(' / ') || '표현·자료·접촉 강도 안전선을 확인합니다.',
-    callPlanPrep: hint ? '방문 전 확인 질문, 사용 가능한 자료 범위, CRM 기록 항목을 준비합니다.' : '',
+    callPlanPrep: hint ? '방문 전 확인 질문, 사용 가능한 승인자료 범위, CRM에 남길 기록 항목을 준비합니다.' : '',
   };
 }
 
@@ -157,12 +163,13 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
   const applyMemberRoleDraft = (memberRoleId: string) => {
     const hint = roleHints.find((item) => item.memberRole === memberRoleId);
     const current = memberRoles[memberRoleId];
+    const draft = buildDefaultRoleItem(memberRoleId, hint);
     updateMemberRole(memberRoleId, {
-      assignedCustomers: current?.assignedCustomers || buildDefaultRoleItem(memberRoleId, hint).assignedCustomers || '',
-      roleMission: current?.roleMission || buildDefaultRoleItem(memberRoleId, hint).roleMission || '',
-      coachingFocus: current?.coachingFocus || buildDefaultRoleItem(memberRoleId, hint).coachingFocus || '',
-      riskGuardrail: current?.riskGuardrail || buildDefaultRoleItem(memberRoleId, hint).riskGuardrail || '',
-      callPlanPrep: current?.callPlanPrep || buildDefaultRoleItem(memberRoleId, hint).callPlanPrep || '',
+      assignedCustomers: current?.assignedCustomers || draft.assignedCustomers || '',
+      roleMission: current?.roleMission || draft.roleMission || '',
+      coachingFocus: current?.coachingFocus || draft.coachingFocus || '',
+      riskGuardrail: current?.riskGuardrail || draft.riskGuardrail || '',
+      callPlanPrep: current?.callPlanPrep || draft.callPlanPrep || '',
     });
   };
 
@@ -170,11 +177,11 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Role Planning</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">고객 대응 전략을 팀원 역할로 구체화하기</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Member Execution Support Map</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">고객군 × 팀원 실행 배치를 역할·지원 포인트로 보완하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            7단계에서 정리한 고객 유형별 우선순위, 2주 대응 전략, 팀원 배정 방향, 리스크를 바탕으로 팀원별 역할과 코칭 초점을 정리합니다.
-            자동 배정이 아니라 팀장이 실행 책임과 지원 방식을 판단하기 위한 참고 자료입니다.
+            7단계에서 정리한 고객군 × 팀원 2주 실행 Map을 바탕으로 팀원별 역할 미션, 콜플랜 준비물, 팀장 지원 포인트, 점검 질문, 리스크 안전선을 보완합니다.
+            7단계 배정을 반복하지 않습니다. 이 화면은 팀원이 실제로 움직일 수 있도록 역할을 더 작고 명확하게 만드는 단계입니다.
           </p>
         </div>
         <button
@@ -182,33 +189,33 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
           className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800"
           onClick={onRefresh}
         >
-          고객 전략 새로고침
+          7단계 실행 Map 새로고침
         </button>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">전략 상태</p>
+          <p className="text-xs font-black text-slate-500">7단계 상태</p>
           <p className="mt-1 text-sm font-black text-slate-900">{strategyResult.updatedAt ? '정리 결과 있음' : '정리 결과 없음'}</p>
           {strategyResult.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{strategyResult.updatedAt}</p> : null}
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">고객 전략</p>
+          <p className="text-xs font-black text-slate-500">고객군 대응 방향</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedStrategies.length}개</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">팀원 역할 방향</p>
+          <p className="text-xs font-black text-slate-500">팀원 연결 기준</p>
           <p className="mt-1 text-sm font-black text-slate-900">{roleHints.length > 0 ? `${roleHints.length}개 방향` : '아직 정리된 방향 없음'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">역할 정리</p>
+          <p className="text-xs font-black text-slate-500">역할 보완</p>
           <p className="mt-1 text-sm font-black text-slate-900">{savedMemberRoleCount}개</p>
         </div>
       </div>
 
       {savedStrategies.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
-          7단계에서 고객 유형별 2주 대응 전략을 저장하면, 이곳에 팀원 역할 배정 참고 자료가 표시됩니다.
+          7단계에서 고객군 × 팀원 2주 실행 Map을 저장하면, 이곳에 역할 보완 참고 자료가 표시됩니다.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 xl:grid-cols-3">
@@ -216,13 +223,13 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
             <article key={strategy.customerTypeId} className="rounded-2xl border bg-white p-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-black text-slate-950">{strategy.customerLabel}</p>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">{strategy.priority || '우선순위 미정'}</span>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">{strategy.priority || '대응 강도 미정'}</span>
               </div>
-              <p className="mt-2 text-xs font-black text-emerald-700">팀원 배정 방향</p>
+              <p className="mt-2 text-xs font-black text-emerald-700">7단계 팀원 연결 기준</p>
               <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.memberRole || '아직 선택되지 않았습니다.'}</p>
-              <p className="mt-2 text-xs font-black text-slate-500">2주 대응 전략</p>
+              <p className="mt-2 text-xs font-black text-slate-500">2주 대응 방향</p>
               <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.strategy}</p>
-              <p className="mt-2 text-xs font-black text-amber-700">주의 리스크</p>
+              <p className="mt-2 text-xs font-black text-amber-700">위험·보완 조건</p>
               <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{strategy.risk || '표현·자료·접촉 강도 안전선을 확인하세요.'}</p>
             </article>
           ))}
@@ -232,7 +239,7 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
       {roleHints.length > 0 ? (
         <div className="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
           <h3 className="text-base font-black text-slate-950">팀원별 역할 정리</h3>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 다음 단계 AI Call Plan에 넘길 실행 맥락을 팀장이 정리하는 기록입니다.</p>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 자동 배정이 아니라, 다음 단계 실행 대화와 AI 실행계획 프롬프트에 넘길 실행 맥락을 팀장이 보완하는 기록입니다.</p>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             {roleHints.map((hint) => {
               const current = memberRoles[hint.memberRole] ?? normalizeV39MemberRoleItem(undefined, hint.memberRole, hint.memberRole);
@@ -241,10 +248,10 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-black text-slate-950">{hint.memberRole}</p>
                     <button type="button" className="rounded-2xl border bg-white px-3 py-2 text-xs font-black text-slate-700" onClick={() => applyMemberRoleDraft(hint.memberRole)}>
-                      역할 초안 가져오기
+                      역할 보완 초안 가져오기
                     </button>
                   </div>
-                  <p className="mt-2 text-xs font-bold leading-5 text-slate-700">담당 고객 유형: {hint.customerLabels.join(' · ')}</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-700">담당 고객군: {hint.customerLabels.join(' · ')}</p>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <label className="space-y-1">
                       <span className="text-xs font-black text-slate-500">담당 고객군</span>
@@ -259,7 +266,7 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
                       <textarea className="min-h-20 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.roleMission} onChange={(event) => updateMemberRole(hint.memberRole, { roleMission: event.target.value })} />
                     </label>
                     <label className="space-y-1">
-                      <span className="text-xs font-black text-slate-500">코칭 초점</span>
+                      <span className="text-xs font-black text-slate-500">팀장 지원 포인트 / 점검 질문</span>
                       <textarea className="min-h-20 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={current.coachingFocus} onChange={(event) => updateMemberRole(hint.memberRole, { coachingFocus: event.target.value })} />
                     </label>
                     <label className="space-y-1">
@@ -318,11 +325,11 @@ export function V39MemberRoleLab() {
       <section className="rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Team Execution Review</p>
-            <h2 className="mt-2 text-xl font-black text-slate-950">팀 실행진단을 역할 방향으로 정리하기</h2>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">Team Execution Support Review</p>
+            <h2 className="mt-2 text-xl font-black text-slate-950">팀 실행진단을 역할 보완 관점으로 다시 확인하기</h2>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              5단계에서 정리한 팀 상황, 실행지표, 선택 유형, 다음 행동 준비물을 바탕으로 팀원 역할 방향을 다시 확인합니다.
-              자동 배정이 아니라, 팀장이 역할 방향을 정하기 전에 판단 근거와 수정 가능한 추천 초안을 확인하도록 돕습니다.
+              5단계에서 정리한 팀 상황, 실행지표, 팀원 신호를 바탕으로 8단계 역할 보완이 실제 팀원 상태와 어긋나지 않는지 다시 확인합니다.
+              자동 배정이 아니라, 팀장이 실행 가능성을 높이기 위해 판단 근거와 수정 가능한 초안을 확인하는 과정입니다.
             </p>
           </div>
           <button
@@ -368,7 +375,7 @@ export function V39MemberRoleLab() {
             <p className="mt-1 text-sm font-bold leading-6 text-slate-800">{dashboardResult.metricSelection.metricRationale || '아직 저장된 이유가 없습니다'}</p>
           </div>
           <div className="rounded-2xl bg-white p-4 shadow-sm md:col-span-2">
-            <p className="text-xs font-black text-slate-500">선택 유형 신호 요약</p>
+            <p className="text-xs font-black text-slate-500">팀원 신호 요약</p>
             <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-slate-800">{summary.memberSignal}</p>
           </div>
           <div className="rounded-2xl bg-white p-4 shadow-sm md:col-span-2">
@@ -379,12 +386,12 @@ export function V39MemberRoleLab() {
 
         <div className="mt-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-1">
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">역할 추천 초안</p>
-            <h3 className="text-lg font-black text-slate-950">저장 결과 기반 역할 추천 초안</h3>
-            <p className="text-xs font-bold leading-5 text-slate-600">추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 아래 역할 후보, 코칭 초점, 주의할 점을 실제 팀원 맥락에 맞게 수정하십시오.</p>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">역할 보완 초안</p>
+            <h3 className="text-lg font-black text-slate-950">저장 결과 기반 역할 보완 초안</h3>
+            <p className="text-xs font-bold leading-5 text-slate-600">추천은 자동 배정이 아니라 팀장 판단을 돕는 초안입니다. 아래 역할 후보, 지원 포인트, 주의할 점을 실제 팀원 맥락에 맞게 수정하십시오.</p>
           </div>
           {roleRecommendationDrafts.length === 0 ? (
-            <div className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">5단계에서 선택 유형 ID를 저장하면 역할 추천 초안이 표시됩니다.</div>
+            <div className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-600">5단계에서 선택 유형 ID를 저장하면 역할 보완 초안이 표시됩니다.</div>
           ) : (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {roleRecommendationDrafts.map((draft) => (
@@ -392,7 +399,7 @@ export function V39MemberRoleLab() {
                   <h4 className="text-sm font-black text-slate-950">{readableMemberLabel(draft.memberId)}</h4>
                   <div className="mt-3 space-y-2 text-sm font-bold leading-6 text-slate-700">
                     <p><span className="font-black text-violet-800">역할 후보: </span>{draft.roleCandidate}</p>
-                    <p><span className="font-black text-violet-800">코칭 초점: </span>{draft.coachingFocus}</p>
+                    <p><span className="font-black text-violet-800">지원 포인트: </span>{draft.coachingFocus}</p>
                     <p><span className="font-black text-violet-800">주의할 점: </span>{draft.caution}</p>
                   </div>
                 </div>
