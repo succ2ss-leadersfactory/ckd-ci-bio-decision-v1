@@ -37,6 +37,7 @@ type TeamMember = V38TeamMember;
 type MemberPrep = V38MemberPrep;
 type PrepState = V38PrepState;
 type DeliverableState = Record<string, string[]>;
+type MetricCandidate = { id: string; label: string; source: string };
 
 const TEAM_SITUATION_OPTIONS = [
   '방문은 했는데, 다음 행동으로 이어지지 않는다',
@@ -78,27 +79,26 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
     '- 선택한 2개 상황과 직접 작성한 상황을 모두 반영해 주세요.',
     '- 직접 작성한 상황은 선택한 2개 상황을 대체하는 것이 아니라, 우리 팀 맥락을 보완하는 정보입니다.',
     '- 결과가 한쪽 상황에만 치우치지 않도록, 선택 상황과 직접 작성 상황이 각각 어떤 판단에 영향을 주는지 함께 고려해 주세요.',
-    '- 각 항목은 먼저 짧은 키워드로 정리하고, 필요한 설명은 그 아래 한 문장으로만 덧붙여 주세요.',
+    '- 상황이 3개라면 핵심 실행 지표 후보도 1~2개로 줄이지 말고, 상황을 커버할 수 있을 만큼 제안해 주세요.',
     '',
-    '아래 4가지만 현실적인 말로 짧게 정리해 주세요.',
-    '각 항목은 반드시 아래 형식을 지켜 주세요.',
-    '키워드: 짧은 단어 또는 구절 1~2개',
-    '설명: 왜 그 기준을 봐야 하는지 한 문장',
+    '아래 4가지만 현실적인 말로 정리해 주세요.',
     '',
-    '## 1. 이번 2주에 꼭 볼 지표',
-    '- 팀장이 가장 먼저 확인할 지표 1~2개',
-    '- 선택 상황과 직접 작성 상황을 함께 고려해 주세요.',
+    '## 1. 핵심 실행 지표 후보',
+    '- 선택 상황 2개와 직접 작성 상황을 모두 커버할 수 있도록 3~5개 후보를 제안해 주세요.',
+    '- 각 후보는 팀장이 체크박스로 선택할 수 있도록 짧은 지표명으로 써 주세요.',
+    '- 각 후보 아래에는 왜 필요한지 한 문장만 덧붙여 주세요.',
+    '- 한 후보 안에 너무 많은 지표를 쉼표로 길게 나열하지 마세요.',
     '',
     '## 2. 함께 봐야 할 현장 신호',
-    '- 숫자만으로는 놓칠 수 있는 팀원 또는 고객 반응의 신호 1~2개',
+    '- 숫자만으로는 놓칠 수 있는 팀원 또는 고객 반응의 신호를 제안해 주세요.',
     '- 선택 상황과 직접 작성 상황에서 함께 드러나는 현장 신호를 잡아 주세요.',
     '',
     '## 3. 조심해서 봐야 할 해석',
-    '- 숫자나 반응을 잘못 해석할 수 있는 위험 1~2개',
-    '- 성급하게 단정하지 않기 위해 볼 것 한 문장',
+    '- 숫자나 반응을 잘못 해석할 수 있는 위험을 정리해 주세요.',
+    '- 성급하게 단정하지 않기 위해 볼 것을 한 문장으로 써 주세요.',
     '',
     '## 4. 팀장이 더 확인할 질문',
-    '- 팀원이나 고객 반응을 보고 한 번 더 확인해야 할 질문 1~2개',
+    '- 팀원이나 고객 반응을 보고 한 번 더 확인해야 할 질문을 제안해 주세요.',
     '',
     '주의:',
     '- 정답처럼 말하지 마세요.',
@@ -109,39 +109,48 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
   ].join('\n');
 }
 
-function compactMetricKeyword(rawText: string) {
-  const candidates: string[] = [];
+function normalizeCandidateLabel(rawText: string) {
+  let clean = rawText
+    .replace(/^[-*•]\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/\*\*/g, '')
+    .trim();
+
+  const keywordMatch = clean.match(/(?:키워드|지표명|후보|핵심 지표|핵심 실행 지표)\s*[:：]\s*(.+)$/);
+  if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
+
+  if (/^(설명|이유|주의|예시|팀장이|선택 상황|직접 작성 상황)\s*[:：]/.test(clean)) return '';
+  if (/^(핵심 실행 지표 후보|이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) return '';
+
+  clean = clean
+    .replace(/^(핵심 실행 지표 후보|이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)\s*[:：-]\s*/, '')
+    .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에|확인해야|관찰해야|살펴봐야|볼 수 있습니다|봐야 합니다)/)[0]
+    .split(/[.!?。]/)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (clean.length > 44) clean = clean.slice(0, 44).trim();
+  return clean.length >= 2 ? clean : '';
+}
+
+function extractMetricCandidates(rawText: string, source: string) {
+  const seen = new Set<string>();
+  const candidates: MetricCandidate[] = [];
   const lines = rawText
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
 
   for (const line of lines) {
-    let clean = line
-      .replace(/^[-*•]\s*/, '')
-      .replace(/^\d+[.)]\s*/, '')
-      .replace(/^#{1,6}\s*/, '')
-      .replace(/\*\*/g, '')
-      .trim();
-
-    const keywordMatch = clean.match(/(?:키워드|핵심 키워드|최종 기준)\s*[:：]\s*(.+)$/);
-    if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
-
-    if (/^(설명|이유|주의|예시|팀장이|선택 상황|직접 작성 상황)\s*[:：]/.test(clean)) continue;
-    if (/^(이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) continue;
-
-    clean = clean
-      .replace(/^(이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)\s*[:：-]\s*/, '')
-      .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에|확인해야|관찰해야|살펴봐야)/)[0]
-      .split(/[.!?。]/)[0]
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (clean.length >= 2) candidates.push(clean);
-    if (candidates.length >= 2) break;
+    const label = normalizeCandidateLabel(line);
+    if (!label || seen.has(label)) continue;
+    seen.add(label);
+    candidates.push({ id: `${source}-${candidates.length}-${label}`, label, source });
+    if (candidates.length >= 8) break;
   }
 
-  return candidates.join(' / ').slice(0, 70);
+  return candidates;
 }
 
 export function V39DashboardAnalysisLab() {
@@ -153,6 +162,8 @@ export function V39DashboardAnalysisLab() {
   const [aiRecommendedSupportMetrics, setAiRecommendedSupportMetrics] = useState('');
   const [aiRecommendedSafetyMetrics, setAiRecommendedSafetyMetrics] = useState('');
   const [aiRecommendedQuestions, setAiRecommendedQuestions] = useState('');
+  const [metricCandidates, setMetricCandidates] = useState<MetricCandidate[]>([]);
+  const [selectedCoreExecutionMetrics, setSelectedCoreExecutionMetrics] = useState<string[]>([]);
   const [finalCoreMetric, setFinalCoreMetric] = useState('');
   const [finalSupportSignal, setFinalSupportSignal] = useState('');
   const [finalCautionPoint, setFinalCautionPoint] = useState('');
@@ -171,14 +182,18 @@ export function V39DashboardAnalysisLab() {
     [selectedMemberTypeIds],
   );
   const signalPromptMembers = selectedTeamMembers.length > 0 ? selectedTeamMembers : TEAM_MEMBERS;
+  const coreMetricItems = useMemo(
+    () => [...selectedCoreExecutionMetrics, ...(finalCoreMetric.trim() ? [finalCoreMetric.trim()] : [])],
+    [selectedCoreExecutionMetrics, finalCoreMetric],
+  );
 
   const selectedMetricSummary = useMemo(
     () => [
-      `이번 2주에 꼭 볼 지표: ${finalCoreMetric.trim() || '미작성'}`,
+      `핵심 실행 지표: ${coreMetricItems.join(' / ') || '미작성'}`,
       `함께 봐야 할 현장 신호: ${finalSupportSignal.trim() || '미작성'}`,
       `조심해서 봐야 할 해석: ${finalCautionPoint.trim() || '미작성'}`,
     ],
-    [finalCoreMetric, finalSupportSignal, finalCautionPoint],
+    [coreMetricItems, finalSupportSignal, finalCautionPoint],
   );
 
   const metricPrompt = useMemo(() => buildV39MetricPrompt(teamSituations, customSituation), [teamSituations, customSituation]);
@@ -206,7 +221,7 @@ export function V39DashboardAnalysisLab() {
     [selectedMetricSummary, aiSignalResult, memberPreps, selectedDeliverables, selectedTeamMembers],
   );
 
-  const finalMetricCount = [finalCoreMetric, finalSupportSignal, finalCautionPoint].filter((value) => value.trim()).length;
+  const finalMetricCount = [coreMetricItems.length > 0 ? 'core' : '', finalSupportSignal, finalCautionPoint].filter((value) => value.trim()).length;
   const completedSignalCount = selectedTeamMembers.filter((member) => {
     const current = memberPreps[member.id];
     return Boolean(current?.observedSignal || current?.concernSignal || current?.checkQuestion);
@@ -222,14 +237,14 @@ export function V39DashboardAnalysisLab() {
       aiRecommendedCoreMetrics,
       aiRecommendedSupportMetrics,
       aiRecommendedSafetyMetrics,
-      fitForOurTeam: [finalCoreMetric, finalSupportSignal].filter((value) => value.trim()).join('\n\n'),
+      fitForOurTeam: [coreMetricItems.join('\n'), finalSupportSignal].filter((value) => value.trim()).join('\n\n'),
       excludedMetrics: '',
       additionalMetricIdea: '',
       aiRecommendedQuestions,
       parseNotice,
     };
     nextResult.metricSelection = {
-      selectedCoreMetricIds: finalCoreMetric.trim() ? [finalCoreMetric.trim()] : [],
+      selectedCoreMetricIds: coreMetricItems,
       selectedSupportMetricIds: finalSupportSignal.trim() ? [finalSupportSignal.trim()] : [],
       selectedSafetyMetricIds: finalCautionPoint.trim() ? [finalCautionPoint.trim()] : [],
       metricRationale,
@@ -252,7 +267,7 @@ export function V39DashboardAnalysisLab() {
     aiRecommendedSupportMetrics,
     aiRecommendedSafetyMetrics,
     aiRecommendedQuestions,
-    finalCoreMetric,
+    coreMetricItems,
     finalSupportSignal,
     finalCautionPoint,
     metricRationale,
@@ -297,6 +312,11 @@ export function V39DashboardAnalysisLab() {
       return { ...current, [memberId]: next };
     });
 
+  const toggleCoreExecutionMetric = (label: string) =>
+    setSelectedCoreExecutionMetrics((current) =>
+      current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
+    );
+
   const copyPrompt = async (type: 'metric' | 'signal' | 'prep') => {
     try {
       await navigator.clipboard.writeText(type === 'metric' ? metricPrompt : type === 'signal' ? signalPrompt : prepPrompt);
@@ -312,20 +332,22 @@ export function V39DashboardAnalysisLab() {
 
   const autoFillMetricSuggestion = () => {
     const parsed = parseAiMetricSuggestion(aiMetricSuggestion);
-    const coreKeyword = compactMetricKeyword(parsed.core);
-    const supportKeyword = compactMetricKeyword(parsed.support);
-    const safetyKeyword = compactMetricKeyword(parsed.safety);
+    const nextCandidates = [
+      ...extractMetricCandidates(parsed.core, '핵심 지표'),
+      ...extractMetricCandidates(parsed.support, '현장 신호'),
+    ];
     setAiRecommendedCoreMetrics(parsed.core);
     setAiRecommendedSupportMetrics(parsed.support);
     setAiRecommendedSafetyMetrics(parsed.safety);
     setAiRecommendedQuestions(parsed.questions);
-    setFinalCoreMetric((current) => current || coreKeyword || parsed.core);
-    setFinalSupportSignal((current) => current || supportKeyword || parsed.support);
-    setFinalCautionPoint((current) => current || safetyKeyword || parsed.safety);
+    setMetricCandidates(nextCandidates);
+    setSelectedCoreExecutionMetrics((current) => current.filter((item) => nextCandidates.some((candidate) => candidate.label === item)));
+    setFinalSupportSignal((current) => current || parsed.support);
+    setFinalCautionPoint((current) => current || parsed.safety);
     setParseNotice(
       parsed.warnings.length > 0
-        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 최종 정리 칸은 키워드 중심으로 직접 다듬어 주세요.`
-        : 'AI 초안을 옮겼습니다. 설명은 위 초안에서 확인하고, 최종 정리 칸에는 키워드 중심으로 자동 축약했습니다.',
+        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 핵심 실행 지표 후보는 아래에서 직접 선택해 주세요.`
+        : 'AI 초안을 옮겼습니다. 분리 정리된 후보 중 이번 2주에 볼 핵심 실행 지표를 직접 선택해 주세요.',
     );
   };
 
@@ -386,7 +408,7 @@ export function V39DashboardAnalysisLab() {
           </div>
           <div className="grid gap-3">
             <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm font-black text-orange-950">상황 선택 {teamSituations.length} / 2</div>
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-950">최종 기준 {finalMetricCount} / 3</div>
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-950">핵심 지표 선택 {selectedCoreExecutionMetrics.length}</div>
             <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm font-black text-cyan-950">유형 선택 {selectedMemberTypeIds.length} / 2</div>
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-950">입력 내용은 자동 저장됩니다</div>
           </div>
@@ -444,19 +466,19 @@ export function V39DashboardAnalysisLab() {
 
         <label className="mt-4 block space-y-1">
           <span className="text-xs font-black text-slate-600">AI 초안 붙여넣기</span>
-          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 설명은 위 초안에 남기고, 최종 정리에는 키워드만 남깁니다." />
+          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 자동 분리 후 핵심 실행 지표 후보를 선택합니다." />
         </label>
         <div className="mt-3">
-          <button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 초안에서 필요한 것만 옮기기</button>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동으로 옮겨진 내용 중 설명은 위 초안에서 확인하고, 최종 정리는 키워드 중심으로 다듬습니다.</p>
+          <button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 초안에서 지표 후보 분리하기</button>
+          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">상황을 모두 커버할 수 있도록 여러 후보를 분리하고, 그중 핵심 실행 지표를 직접 선택합니다.</p>
           {parseNotice && <div className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-amber-800">{parseNotice}</div>}
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
-          <h4 className="text-sm font-black text-slate-950">AI 초안에서 꼭 필요한 것만 남기기</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">설명은 이 영역에서 확인합니다. 아래 최종 정리에는 짧은 키워드나 구절만 남깁니다.</p>
+          <h4 className="text-sm font-black text-slate-950">AI 초안에서 분리된 내용 확인</h4>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">설명은 이 영역에서 확인합니다. 아래 최종 선택에서는 후보 중 이번 2주에 실제로 볼 핵심 실행 지표를 고릅니다.</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <ReviewTextarea label="이번 2주에 꼭 볼 지표" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
+            <ReviewTextarea label="핵심 실행 지표 후보" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
             <ReviewTextarea label="함께 봐야 할 현장 신호" value={aiRecommendedSupportMetrics} onChange={setAiRecommendedSupportMetrics} />
             <ReviewTextarea label="조심해서 봐야 할 해석" value={aiRecommendedSafetyMetrics} onChange={setAiRecommendedSafetyMetrics} />
             <ReviewTextarea label="팀장이 더 확인할 질문" value={aiRecommendedQuestions} onChange={setAiRecommendedQuestions} />
@@ -464,12 +486,38 @@ export function V39DashboardAnalysisLab() {
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
-          <h4 className="text-sm font-black text-slate-950">우리 팀이 이번 2주에 볼 것 최종 정리</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">긴 설명을 다시 쓰지 않습니다. AI 초안을 보고 우리 팀 기준으로 남길 키워드나 짧은 구절만 적습니다.</p>
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <ReviewTextarea label="최종 1. 꼭 볼 지표" value={finalCoreMetric} onChange={setFinalCoreMetric} />
-            <ReviewTextarea label="최종 2. 함께 볼 현장 신호" value={finalSupportSignal} onChange={setFinalSupportSignal} />
-            <ReviewTextarea label="최종 3. 조심할 해석" value={finalCautionPoint} onChange={setFinalCautionPoint} />
+          <h4 className="text-sm font-black text-slate-950">핵심 실행 지표 선택</h4>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">AI가 분리한 후보 중 이번 2주에 실제로 볼 지표를 선택합니다. 상황을 모두 커버할 수 있도록 2~4개 정도를 권장하지만, 강제로 제한하지 않습니다.</p>
+          {metricCandidates.length === 0 ? (
+            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">AI 초안을 붙여넣고 “지표 후보 분리하기”를 누르면 선택 후보가 표시됩니다.</div>
+          ) : (
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {metricCandidates.map((candidate) => {
+                const selected = selectedCoreExecutionMetrics.includes(candidate.label);
+                return (
+                  <label key={candidate.id} className={`flex gap-3 rounded-2xl border p-3 text-xs font-bold leading-5 ${selected ? 'border-amber-700 bg-amber-50 text-amber-950' : 'bg-white text-slate-700'}`}>
+                    <input type="checkbox" checked={selected} onChange={() => toggleCoreExecutionMetric(candidate.label)} />
+                    <span><span className="mr-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-black text-slate-600">{candidate.source}</span>{candidate.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+          <label className="mt-4 block space-y-1">
+            <span className="text-xs font-black text-slate-600">직접 추가할 핵심 실행 지표</span>
+            <textarea className="min-h-20 w-full rounded-2xl border bg-slate-50 px-3 py-2 text-sm leading-6" value={finalCoreMetric} onChange={(event) => setFinalCoreMetric(event.target.value)} placeholder="AI 후보에 없지만 꼭 봐야 할 지표가 있으면 짧게 적습니다." />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {coreMetricItems.length === 0 ? <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">아직 선택한 핵심 실행 지표가 없습니다</span> : coreMetricItems.map((item) => <span key={item} className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-800">{item}</span>)}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border bg-white p-4">
+          <h4 className="text-sm font-black text-slate-950">함께 볼 신호와 조심할 해석 정리</h4>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">선택한 핵심 실행 지표를 볼 때 같이 확인할 신호와 성급하게 해석하면 안 되는 지점을 남깁니다.</p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <ReviewTextarea label="함께 볼 현장 신호" value={finalSupportSignal} onChange={setFinalSupportSignal} />
+            <ReviewTextarea label="조심할 해석" value={finalCautionPoint} onChange={setFinalCautionPoint} />
           </div>
           <label className="mt-4 block space-y-1">
             <span className="text-xs font-black text-slate-600">왜 이 기준을 보려고 하나요?</span>
