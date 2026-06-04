@@ -5,6 +5,7 @@ import { V39MemberRoleLab } from './journey-v39-member-role-lab';
 
 const V39_MEMBER_ROLE_UX_SMOKE_MARKERS = [
   '8단계 진행 가이드',
+  '고객 전략을 팀원 역할과 코칭 포인트로 바꿉니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
