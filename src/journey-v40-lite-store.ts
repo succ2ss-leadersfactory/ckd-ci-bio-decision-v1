@@ -11,10 +11,12 @@ export type V40LiteProgress = {
 };
 
 export type V40LiteStep5Metrics = {
+  selectedFocus: string;
   primaryMetric: string;
   fieldSignal: string;
   carefulInterpretation: string;
   followUpQuestion: string;
+  step6Handoff: string;
   aiDraft: V40LiteAiDraft;
 };
 
@@ -44,10 +46,12 @@ export const V40_LITE_DEFAULT_PROGRESS: V40LiteProgress = {
 };
 
 export const V40_LITE_DEFAULT_STEP5_METRICS: V40LiteStep5Metrics = {
+  selectedFocus: '후속 실행으로 이어지는지 보기',
   primaryMetric: '',
   fieldSignal: '',
   carefulInterpretation: '',
   followUpQuestion: '',
+  step6Handoff: '',
   aiDraft: V40_LITE_EMPTY_AI_DRAFT,
 };
 
