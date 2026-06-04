@@ -21,7 +21,7 @@ import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-confi
 import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard 3단계에서 선택한 우리 팀 고민';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -113,7 +113,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'prompt-practice') return <V39PromptPracticeLab />;
   if (current.id === 'research-strategy') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="research" /><V39ResearchStrategyLab /></div>;
   if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
-  if (current.id === 'customer-judgment') return <V39CustomerJudgmentUxLab />;
+  if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
   if (current.id === 'member-role') return <V39MemberRoleUxLab />;
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
