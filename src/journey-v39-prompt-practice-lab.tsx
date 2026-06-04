@@ -14,6 +14,11 @@ const V39_PROMPT_PRACTICE_SMOKE_MARKERS = [
   '방문·면담 기록',
   '고객 활동 Data',
   '사내 시스템/CRM',
+  '고객 Data와 실행 신호 고민',
+  '팀원 실행과 대화 고민',
+  'AI 활용과 실행계획 고민',
+  '후속 연결',
+  '후속 단계 연결 힌트',
   '4단계 AI 전략 리서치로 넘길 질문',
 ].join('|');
 void V39_PROMPT_PRACTICE_SMOKE_MARKERS;
@@ -25,12 +30,17 @@ type RoleOption = {
   useWhen: string;
 };
 
+type ConcernGroupId = 'customer-data' | 'member-execution' | 'ai-execution';
+
 type ConcernOption = {
   id: string;
+  groupId: ConcernGroupId;
   label: string;
   plainQuestion: string;
   context: string;
   task: string;
+  downstreamHint: string;
+  downstreamSteps: string[];
 };
 
 type PromptPracticeResponse = {
@@ -50,6 +60,24 @@ type PromptPracticeResponse = {
   reviewChecks: Record<string, boolean>;
   savedAt: string;
 };
+
+const CONCERN_GROUPS: { id: ConcernGroupId; title: string; description: string }[] = [
+  {
+    id: 'customer-data',
+    title: 'A. 고객 Data와 실행 신호 고민',
+    description: '5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군 × 팀원 실행 Map으로 강하게 이어지는 고민입니다.',
+  },
+  {
+    id: 'member-execution',
+    title: 'B. 팀원 실행과 대화 고민',
+    description: '8단계 팀원별 실행 보완 Map, 9단계 팀원 온도차와 실행 대화로 강하게 이어지는 고민입니다.',
+  },
+  {
+    id: 'ai-execution',
+    title: 'C. AI 활용과 실행계획 고민',
+    description: '10단계 AI 실행계획 Prompt, 11단계 안전 문장, 12~13단계 최종 카드와 토의 질문으로 이어지는 고민입니다.',
+  },
+];
 
 const ROLE_OPTIONS: RoleOption[] = [
   {
@@ -93,73 +121,103 @@ const ROLE_OPTIONS: RoleOption[] = [
 const CONCERN_OPTIONS: ConcernOption[] = [
   {
     id: 'follow-up-gap',
+    groupId: 'customer-data',
     label: '방문은 하는데 다음 대화나 후속조치로 잘 이어지지 않는다',
     plainQuestion: '방문은 하고 있는데 후속조치가 잘 이어지지 않습니다. 어떻게 해야 하나요?',
     context: '우리 팀은 고객 방문과 접촉 활동은 꾸준히 하고 있지만, 방문 이후 다음 대화, 자료 요청 대응, 후속 일정 확인으로 이어지는 비율은 낮습니다. 고연차 팀원은 “현장은 숫자로만 보면 안 됩니다”라고 말하고, 저연차 팀원은 “무엇을 후속조치로 봐야 할지 기준이 필요합니다”라고 말합니다.',
     task: '이 상황에서 팀장이 확인해야 할 원인 가설과, 이번 2주 동안 볼 수 있는 관리 지표 후보를 정리해 주세요. 단순 활동량보다 후속 행동과 고객 대화 품질을 볼 수 있는 기준을 포함해 주세요.',
+    downstreamHint: '관리 지표 → 고객 Data 확인 List → 고객군 × 팀원 실행 Map',
+    downstreamSteps: ['5단계 후속조치 완료율·다음접점 확보건수', '6단계 고객 질문·자료 요청·다음 일정 확인', '7단계 반응 변화 고객군과 후속 대화 담당 연결'],
   },
   {
     id: 'activity-record-blindspot',
+    groupId: 'customer-data',
     label: '영업활동 기록은 남기지만 고객 반응과 다음 행동이 잘 보이지 않는다',
     plainQuestion: '영업활동 기록은 있는데 고객 반응과 다음 행동이 잘 보이지 않습니다. 어떻게 정리하면 좋을까요?',
     context: '우리 팀은 사내 영업활동 기록에는 방문·면담 내용이 남아 있지만, 고객 질문, 자료 요청, 다음 접점, 후속조치가 멈춘 이유는 팀원마다 다르게 적고 있습니다. 숫자는 보이지만 고객 반응의 질과 다음 행동을 비교하기 어렵습니다.',
     task: '영업활동 기록과 고객 활동 Data에서 팀장이 꼭 봐야 할 항목을 정리해 주세요. 고객 반응, 다음 행동, 부족 정보, 조심할 해석을 구분해 이번 2주 관리 기준으로 바꿔 주세요.',
+    downstreamHint: '관리 지표 → 고객 Data 확인 List → 기록 품질 점검',
+    downstreamSteps: ['5단계 고객 질문 기록률·후속조치 완료율', '6단계 기록 품질·부족 정보·추가 확인 질문', '8단계 기록 보완 담당과 점검 질문 연결'],
   },
   {
     id: 'existing-customer-bias',
+    groupId: 'customer-data',
     label: '기존 거래처 중심으로 활동이 몰리고 신규 접점은 계속 뒤로 밀린다',
     plainQuestion: '기존 고객 중심으로만 활동이 몰리는데 신규 접점을 어떻게 봐야 할까요?',
     context: '팀원들은 익숙한 고객군에는 안정적으로 방문하지만, 신규·미접촉 고객군은 접근 경로가 애매하다는 이유로 뒤로 밀리는 경우가 많습니다. 상부에서는 신규 접점 확대를 요구하지만, 현장에서는 방문 제약과 정보 부족을 이야기합니다.',
     task: '기존 고객 편중을 확인할 수 있는 고객 활동 Data 항목과, 신규 접점을 무리 없이 늘리기 위한 2주 실행 기준을 정리해 주세요. 단순 신규 방문 수가 아니라 접근 경로, 고객 반응, 후속 가능성까지 포함해 주세요.',
+    downstreamHint: '관리 지표 → 고객군 편중 확인 → 신규 접점 실행 Map',
+    downstreamSteps: ['5단계 신규접촉 고객수·신규고객 방문비율', '6단계 기존 고객 편중과 미접촉 고객군 확인', '7단계 신규·미접촉 고객군의 안전한 첫 접점 설계'],
   },
   {
     id: 'customer-signal-ambiguity',
+    groupId: 'customer-data',
     label: '고객이 관심을 보인 것 같은데 어떤 신호를 기회로 봐야 할지 애매하다',
     plainQuestion: '고객 반응 중 어떤 것을 기회 신호로 봐야 할지 잘 모르겠습니다.',
     context: '일부 고객은 질문이 늘고 자료를 요청하지만, 이것이 실제 다음 대화로 이어질 수 있는 신호인지 단순 관심인지 판단이 어렵습니다. 팀원들도 같은 반응을 다르게 해석해 실행 방향이 흔들립니다.',
     task: '고객 반응을 기회 신호, 주의 신호, 아직 부족한 정보로 나누는 기준을 정리해 주세요. 고객을 평가하거나 등급화하지 않고, 다음 확인 질문 중심으로 정리해 주세요.',
+    downstreamHint: '고객 Data 확인 List → 기회/주의 신호 → 안전한 다음 질문',
+    downstreamSteps: ['6단계 기회 신호·주의 신호·부족 정보 구분', '7단계 고객군별 대응 강도 조정', '11단계 전환 가능성 단정 표현 제거'],
   },
   {
     id: 'data-interpretation-gap',
+    groupId: 'customer-data',
     label: '팀원마다 같은 고객 Data를 다르게 해석해 실행 방향이 엇갈린다',
     plainQuestion: '같은 고객 Data를 팀원마다 다르게 해석합니다. 어떻게 기준을 맞추면 좋을까요?',
     context: '같은 고객 활동 Data를 보고도 어떤 팀원은 “기회가 있다”고 보고, 다른 팀원은 “아직 움직일 상황이 아니다”라고 판단합니다. 팀 회의에서 고객군별 대응 방향을 정하려 해도 해석 기준이 맞지 않아 결론이 흐려집니다.',
     task: '팀원들이 고객 Data를 해석할 때 함께 쓸 수 있는 기준을 정리해 주세요. 기회 신호, 주의 신호, 부족 정보, 추가 확인 질문을 구분하고 팀 회의에서 설명할 문장도 제안해 주세요.',
+    downstreamHint: '고객 Data 해석 기준 → 실행 Map → 팀 회의 설명 문장',
+    downstreamSteps: ['6단계 Data 분석 관점 통일', '7단계 고객군 × 팀원 실행 Map', '10단계 팀 회의 설명 문장 생성'],
   },
   {
     id: 'junior-senior-temperature-gap',
+    groupId: 'member-execution',
     label: '저연차 팀원은 우선순위를 어려워하고 기존 팀원은 예전 방식이 낫다고 느낀다',
     plainQuestion: '저연차 팀원과 기존 팀원의 실행 온도차를 어떻게 다뤄야 할까요?',
     context: '저연차 팀원은 고객 활동 Data를 보고도 무엇을 먼저 해야 할지 몰라 움직임이 느립니다. 반면 기존 팀원은 “예전에는 이렇게까지 따지지 않았다”고 느끼며 새로운 기준을 부담스러워합니다.',
     task: '저연차 팀원과 기존 팀원이 다르게 받아들일 수 있는 지점을 정리하고, 팀장이 실행 기준을 설명할 때 사용할 첫 문장과 점검 질문을 제안해 주세요.',
+    downstreamHint: '팀원 역할 보완 → 실행 대화 → 첫마디 전환',
+    downstreamSteps: ['8단계 팀원별 역할 미션과 지원 포인트', '9단계 기존 팀원과 저연차 팀원의 수용 차이 점검', '10단계 팀원별 실행 요청 문장 생성'],
   },
   {
     id: 'pressure-vs-field-constraint',
+    groupId: 'member-execution',
     label: '상부는 활동량과 속도를 요구하지만 현장에서는 고객 반응과 방문 제약이 커지고 있다',
     plainQuestion: '상부의 활동량 요구와 현장의 방문 제약 사이에서 어떤 기준으로 설명해야 할까요?',
     context: '상부에서는 활동량, 실행 속도, 신규 접점을 강조합니다. 하지만 현장에서는 고객 일정 변경, 방문 제한, 자료 확인 지연, 후속 대화 제약이 커지고 있습니다. 팀장으로서 숫자와 현장 설명을 함께 정리해야 합니다.',
     task: '상부 보고와 팀 실행관리에서 함께 쓸 수 있는 기준을 정리해 주세요. 활동량, 전환 신호, 고객 반응, 제약요인을 구분하고 이번 2주 동안 확인할 지표 후보를 제안해 주세요.',
+    downstreamHint: '관리 지표 → 제약요인 확인 → 보고/회의 설명 문장',
+    downstreamSteps: ['5단계 활동·전환·품질 지표 균형', '6단계 방문 제한·일정 변경 패턴 확인', '10단계 팀 회의 설명 문장과 중간 점검 방식'],
   },
   {
     id: 'role-assignment-first-message',
+    groupId: 'member-execution',
     label: '팀원에게 역할을 맡기려 해도 지시처럼 들릴까 봐 첫마디가 어렵다',
     plainQuestion: '팀원에게 역할을 맡길 때 지시처럼 들리지 않게 말하려면 어떻게 해야 하나요?',
     context: '고객군별 대응 방향은 어느 정도 정했지만, 팀원에게 역할을 맡기는 첫마디가 어렵습니다. 어떤 팀원은 부담으로 받아들일 수 있고, 어떤 팀원은 “왜 나에게만 맡기나”라고 느낄 수 있습니다.',
     task: '팀원에게 역할을 맡길 때 사용할 수 있는 실행 대화 문장을 정리해 주세요. 역할 기준, 팀장이 지원할 것, 중간 점검 질문, 피해야 할 표현을 포함해 주세요.',
+    downstreamHint: '실행 Map → 역할 보완 → 실행 대화 첫마디',
+    downstreamSteps: ['7단계 팀원 연결 기준 확인', '8단계 역할 미션과 팀장 지원 포인트', '9단계 지시가 아닌 실행 대화 문장'],
   },
   {
     id: 'ai-boundary-anxiety',
+    groupId: 'ai-execution',
     label: 'AI로 실행계획을 만들 수는 있을 것 같은데 어디까지 물어봐도 되는지 불안하다',
     plainQuestion: '제약영업에서 AI에게 어디까지 물어봐도 되는지 불안합니다. 기준을 정리해 주세요.',
     context: 'AI를 쓰면 실행계획 초안이나 팀 회의 문장을 빨리 만들 수 있을 것 같지만, 고객명, 병원명, 제품명, 내부 수치, 미승인 표현이 들어가면 위험할 수 있다는 걱정이 있습니다. 팀원들도 AI 활용 기준을 명확히 알고 싶어 합니다.',
     task: '제약영업 팀장이 AI에게 물어볼 수 있는 것과 피해야 할 것을 구분해 주세요. 안전한 프롬프트 작성 기준, 위험 표현, 대체 문장, 최종 검토 체크리스트를 정리해 주세요.',
+    downstreamHint: 'AI 실행계획 Prompt → 컴플라이언스 점검 → 안전 문장',
+    downstreamSteps: ['10단계 AI 실행계획 Prompt 안전 조건', '11단계 위험 표현 제거', '12단계 최종 카드의 컴플라이언스 포인트'],
   },
   {
     id: 'meeting-message-unclear',
+    groupId: 'ai-execution',
     label: '팀 회의에서 실행 기준을 설명해야 하는데 지표·고객 Data·팀원 역할이 하나로 정리되지 않는다',
     plainQuestion: '팀 회의에서 실행 기준을 어떻게 설명해야 할지 정리가 안 됩니다.',
     context: '이번 2주 동안 무엇을 볼지, 고객 활동 Data에서 무엇을 확인할지, 어떤 팀원이 어떤 역할을 맡을지까지 정해야 합니다. 하지만 팀 회의에서 설명하려고 하면 관리 지표, 고객 Data, 팀원 역할, 컴플라이언스 기준이 따로 노는 느낌입니다.',
     task: '팀 회의에서 사용할 실행 기준 설명 구조를 정리해 주세요. 관리 지표, 고객 Data 확인 List, 팀원 역할, 안전한 표현 기준, 마지막 확인 질문을 하나의 흐름으로 묶어 주세요.',
+    downstreamHint: '통합 실행계획 → 최종 2주 실행 카드 → 강사용 토의 질문',
+    downstreamSteps: ['10단계 팀 회의 설명 문장', '12단계 최종 2주 실행 카드', '13단계 관리 지표 선택 이유와 2주 후 리뷰 질문'],
   },
 ];
 
@@ -177,6 +235,7 @@ const REVIEW_ITEMS = [
   '우리 팀 상황이 실제 장면처럼 들어갔는가?',
   '지시/과제가 분석·정리·실행 기준 중 무엇인지 분명한가?',
   '출력 형식이 후속 단계에서 바로 쓸 수 있게 정리되었는가?',
+  '후속 단계 연결 힌트가 관리 지표·고객 Data·실행 Map·대화 중 어디로 이어지는지 확인했는가?',
   '실제 고객명·병원명·의료진명·제품명·내부 수치·개인정보를 넣지 않았는가?',
 ];
 
@@ -219,17 +278,24 @@ function getConcern(id: string) {
   return CONCERN_OPTIONS.find((item) => item.id === id) ?? CONCERN_OPTIONS[0];
 }
 
+function getConcernGroup(groupId: ConcernGroupId) {
+  return CONCERN_GROUPS.find((item) => item.id === groupId) ?? CONCERN_GROUPS[0];
+}
+
 function getRole(response: PromptPracticeResponse) {
   if (response.customRole.trim()) return response.customRole.trim();
   return ROLE_OPTIONS.find((item) => item.id === response.roleId)?.promptText ?? ROLE_OPTIONS[0].promptText;
 }
 
 function buildStructuredPrompt(response: PromptPracticeResponse) {
-  return `역할:\n${getRole(response)}\n\n맥락:\n${response.context.trim() || getConcern(response.concernId).context}\n\n지시/과제:\n${response.task.trim() || getConcern(response.concernId).task}\n\n형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
+  const concern = getConcern(response.concernId);
+  return `역할:\n${getRole(response)}\n\n맥락:\n${response.context.trim() || concern.context}\n\n지시/과제:\n${response.task.trim() || concern.task}\n\n후속 단계 연결 힌트:\n${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}\n\n형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
 }
 
 function buildOutput(response: PromptPracticeResponse, prompt: string) {
-  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || getConcern(response.concernId).label}\n\n[일반 질문]\n${response.plainQuestion}\n\n[구조화 프롬프트]\n${prompt}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
+  const concern = getConcern(response.concernId);
+  const group = getConcernGroup(concern.groupId);
+  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || concern.label}\n\n[고민 그룹]\n${group.title}\n\n[일반 질문]\n${response.plainQuestion}\n\n[구조화 프롬프트]\n${prompt}\n\n[후속 단계 연결 힌트]\n${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
 }
 
 export function V39PromptPracticeLab() {
@@ -238,6 +304,8 @@ export function V39PromptPracticeLab() {
   const [copyMessage, setCopyMessage] = useState('');
   const structuredPrompt = useMemo(() => response.finalPrompt || buildStructuredPrompt(response), [response]);
   const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
+  const selectedConcern = getConcern(response.concernId);
+  const selectedGroup = getConcernGroup(selectedConcern.groupId);
 
   const update = (patch: Partial<PromptPracticeResponse>) => {
     setResponse({ ...response, ...patch, savedAt: new Date().toISOString() });
@@ -296,15 +364,34 @@ export function V39PromptPracticeLab() {
 
       <SectionCard title="Block 0. 우리 팀에 가까운 고민 선택">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
-          아래 선택지는 프롬프트 연습용 예시입니다. 실제 고객명·병원명·의료진명·제품명·내부 수치 없이, 우리 팀 상황과 비슷한 고민을 고릅니다.
+          아래 선택지는 프롬프트 연습용 예시이자 후속 단계의 출발점입니다. 실제 고객명·병원명·의료진명·제품명·내부 수치 없이, 우리 팀 상황과 비슷한 고민을 고릅니다.
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {CONCERN_OPTIONS.map((item) => {
-            const selected = response.concernId === item.id;
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">현재 선택: {selectedConcern.label}</p>
+          <p className="mt-1">후속 연결: {selectedConcern.downstreamHint}</p>
+          <p className="mt-1 text-cyan-800">이 고민은 {selectedGroup.title.replace(/^[A-C]\.\s*/, '')}에 속합니다.</p>
+        </div>
+        <div className="space-y-4">
+          {CONCERN_GROUPS.map((group) => {
+            const groupConcerns = CONCERN_OPTIONS.filter((item) => item.groupId === group.id);
             return (
-              <button key={item.id} type="button" className={`rounded-2xl border p-4 text-left text-sm font-bold leading-6 ${selected ? 'border-cyan-300 bg-cyan-50 text-cyan-950' : 'bg-white text-slate-700'}`} onClick={() => selectConcern(item.id)}>
-                {item.label}
-              </button>
+              <section key={group.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3">
+                  <h4 className="text-sm font-black text-slate-950">{group.title}</h4>
+                  <p className="mt-1 text-xs font-bold leading-5 text-slate-600">{group.description}</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {groupConcerns.map((item) => {
+                    const selected = response.concernId === item.id;
+                    return (
+                      <button key={item.id} type="button" className={`rounded-2xl border p-4 text-left text-sm font-bold leading-6 ${selected ? 'border-cyan-300 bg-cyan-50 text-cyan-950' : 'bg-white text-slate-700'}`} onClick={() => selectConcern(item.id)}>
+                        <span className="block font-black">{item.label}</span>
+                        <span className="mt-2 block rounded-xl bg-white/70 px-3 py-2 text-xs leading-5 text-slate-600">후속 연결: {item.downstreamHint}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
             );
           })}
         </div>
@@ -342,6 +429,11 @@ export function V39PromptPracticeLab() {
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-950">
           <p className="font-black">이 결과가 4단계 입력값입니다.</p>
           <p className="mt-1">구조화 프롬프트를 바탕으로 다음 단계에서 AI 전략 리서치를 진행합니다. AI는 답을 대신 정하는 것이 아니라, 팀장의 고민을 더 빠르고 넓게 정리하게 돕습니다.</p>
+        </div>
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">후속 단계 연결 힌트</p>
+          <p className="mt-1">{selectedConcern.downstreamHint}</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">{selectedConcern.downstreamSteps.map((step) => <li key={step}>{step}</li>)}</ul>
         </div>
         <div className="grid gap-2 md:grid-cols-2">{REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm font-bold leading-5"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
         <div className="rounded-xl bg-slate-50 p-3 text-sm font-bold text-slate-700">점검 완료: {checkedCount} / {REVIEW_ITEMS.length}</div>
