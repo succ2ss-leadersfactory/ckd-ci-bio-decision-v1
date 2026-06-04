@@ -232,7 +232,7 @@ export function parseV38AiPrepDraftByMember(rawText: string, members: V38ParserM
     .sort((a, b) => a.index - b.index);
 
   if (starts.length === 0) {
-    warnings.push('팀원 이름을 자동으로 찾지 못했습니다. AI 결과에 선택한 팀원 유형 이름이 포함되어 있는지 확인해 주세요.');
+    warnings.push('팀원 이름을 자동으로 찾지 못했습니다. AI 결과에 선택한 유형 이름을 자동으로 찾지 못했습니다. 선택한 유형 이름이 포함되어 있는지 확인해 주세요.');
     return { drafts, warnings };
   }
 
