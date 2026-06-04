@@ -3,6 +3,7 @@ import './index.css';
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { useStored } from './journey-storage';
 import { V40LiteAiWorkflow } from './journey-v40-lite-ai-workflow';
+import { V40LiteStep5DecisionFlow } from './journey-v40-lite-step5-decision-flow';
 import {
   V40_LITE_DEFAULT_PARTICIPANT,
   V40_LITE_DEFAULT_PROGRESS,
@@ -10,19 +11,11 @@ import {
   V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION,
   V40_LITE_STORAGE_KEYS,
   type V40LiteParticipant,
-  type V40LiteStep5Metrics,
   type V40LiteStep6CustomerReaction,
 } from './journey-v40-lite-store';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-
 const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
-const STEP5_FOCUS_OPTIONS = [
-  '후속 실행으로 이어지는지 보기',
-  '팀원별 준비 수준 차이 보기',
-  '고객 반응의 질 보기',
-  '숫자와 실제 움직임의 차이 보기',
-];
 
 const V40_LITE_STEPS: JourneyStep[] = [
   {
@@ -31,9 +24,9 @@ const V40_LITE_STEPS: JourneyStep[] = [
     description: '오늘 실습에서 맡을 C1바이오 영업팀장 역할을 확인합니다.',
   },
   {
-    id: 'lite-step5-metrics',
-    title: '우리 팀에서 지금 무엇을 봐야 하나?',
-    description: '팀원 실행진단을 교육장용으로 압축해, 이번 2주에 볼 지표와 현장 신호를 정리합니다.',
+    id: 'lite-step5-decision-flow',
+    title: '우리 팀 실행이 어디서 끊기는가?',
+    description: 'v39의 5단계 흐름을 유지하되, 현업 팀장 의사결정 순서에 맞게 재배열합니다.',
   },
   {
     id: 'lite-step6-customer-reaction',
@@ -57,7 +50,7 @@ function LiteNotice() {
   return (
     <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
       <p className="font-black">v40-lite 실습 기준</p>
-      <p className="mt-1">v39의 흐름은 유지하되 교육장에서 바로 실습할 수 있게 줄인 화면입니다. 팀장이 현장에서 볼 것, 확인할 것, 조심할 해석을 직접 정리합니다.</p>
+      <p className="mt-1">v39의 기본 틀과 흐름은 유지하되, 교육장에서 바로 실습할 수 있도록 현업 팀장의 판단 순서와 현실 언어로 줄인 화면입니다.</p>
     </div>
   );
 }
@@ -80,7 +73,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40LitePartic
         <div className="space-y-3">
           <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Step 0 · 준비</p>
           <h3 className="text-xl font-black text-slate-950">C1바이오 영업팀장 역할로 들어갑니다</h3>
-          <p className="text-sm leading-6 text-slate-600">이 버전은 v39의 핵심 흐름을 교육장 실습용으로 줄인 화면입니다. 복잡한 분석보다 팀장이 실제로 볼 신호와 다음 행동을 정리하는 데 집중합니다.</p>
+          <p className="text-sm leading-6 text-slate-600">이 버전은 v39의 핵심 실습을 유지하면서 교육장 운영에 맞게 줄인 화면입니다. 팀장으로서 이번 2주에 무엇을 볼지, 누구에게 어떤 말과 행동으로 개입할지 정리합니다.</p>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -99,7 +92,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40LitePartic
 
         <label className="mt-4 flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고, 현장 실행을 위한 문장을 직접 써봅니다.</span>
+          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고, AI가 만든 초안은 반드시 현장 언어로 고쳐 씁니다.</span>
         </label>
       </section>
     </div>
@@ -135,163 +128,6 @@ function LiteTextArea({
         placeholder={placeholder}
       />
     </label>
-  );
-}
-
-function LiteScenarioCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-      <p className="text-xs font-black uppercase tracking-wide text-cyan-700">지금 상황</p>
-      <h4 className="mt-2 text-xl font-black text-slate-950">{title}</h4>
-      <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">{children}</div>
-    </section>
-  );
-}
-
-function LiteChoiceGroup({ value, onChange }: { value: string; onChange: (next: string) => void }) {
-  return (
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <p className="text-xs font-black uppercase tracking-wide text-cyan-700">먼저 볼 관점 선택</p>
-      <h4 className="mt-2 text-lg font-black text-slate-950">이번 2주 실행진단의 초점을 하나 고릅니다</h4>
-      <p className="mt-2 text-sm leading-6 text-slate-600">v39의 팀원 실행진단을 그대로 펼치면 길어지기 때문에, 교육장에서는 먼저 볼 관점을 하나 잡고 들어갑니다.</p>
-      <div className="mt-4 grid gap-2 md:grid-cols-2">
-        {STEP5_FOCUS_OPTIONS.map((option) => {
-          const selected = option === value;
-          return (
-            <button
-              key={option}
-              type="button"
-              className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${selected ? 'border-cyan-700 bg-cyan-700 text-white shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-cyan-300'}`}
-              onClick={() => onChange(option)}
-            >
-              {option}
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function Step5LiteMetrics({ metrics, setMetrics }: { metrics: V40LiteStep5Metrics; setMetrics: (next: V40LiteStep5Metrics) => void }) {
-  const filledCoreCount = [metrics.primaryMetric, metrics.fieldSignal, metrics.carefulInterpretation, metrics.step6Handoff].filter((value) => value.trim().length > 0).length;
-
-  return (
-    <div className="space-y-4">
-      <LiteNotice />
-      <LiteScenarioCard title="활동은 늘었는데, 실행이 이어지는지는 아직 불분명합니다">
-        <p>수도권중부영업팀은 최근 2주 동안 고객 접점은 늘었습니다. 그런데 방문 이후의 다음 행동, 고객 질문의 깊이, 팀원별 준비 수준은 고르게 보이지 않습니다.</p>
-        <p>v39에서는 여러 실행 Data와 지표 후보를 비교했지만, 이 화면에서는 교육장 실습에 맞게 “이번 2주에 실제로 볼 것”만 추립니다.</p>
-        <p>목표는 많은 지표를 고르는 것이 아니라, 다음 단계의 고객 반응 판단으로 넘길 기준을 정하는 것입니다.</p>
-      </LiteScenarioCard>
-
-      <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Step 5 · v39 압축 실습</p>
-            <h3 className="mt-2 text-2xl font-black leading-tight text-slate-950">이번 2주, 우리 팀이 실제로 볼 것만 추립니다</h3>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">팀원 실행진단의 핵심은 숫자 자체가 아니라 “무엇이 다음 행동으로 이어지는가”를 보는 것입니다. 지표, 현장 신호, 조심할 해석, 다음 단계로 넘길 기준을 한 화면에서 정리합니다.</p>
-          </div>
-          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
-            핵심 입력 {filledCoreCount} / 4
-          </div>
-        </div>
-      </section>
-
-      <LiteChoiceGroup value={metrics.selectedFocus} onChange={(selectedFocus) => setMetrics({ ...metrics, selectedFocus })} />
-
-      <div className="grid gap-4">
-        <LiteTextArea
-          required
-          label="이번 2주에 꼭 볼 지표"
-          help="v39의 여러 지표 후보 중 교육장에서 하나로 줄입니다. 이 지표는 다음 고객 반응 판단의 기준이 됩니다."
-          placeholder="예: 방문 후 후속 실행 메모, 고객 질문 기록, 다음 행동 약속 여부"
-          value={metrics.primaryMetric}
-          onChange={(primaryMetric) => setMetrics({ ...metrics, primaryMetric })}
-        />
-        <LiteTextArea
-          required
-          label="함께 봐야 할 현장 신호"
-          help="숫자만으로는 놓칠 수 있는 팀원 움직임이나 고객 반응의 질을 적습니다."
-          placeholder="예: 팀원이 방문 전에 준비한 질문 수준, 고객이 먼저 꺼낸 고민, 후속 약속의 구체성"
-          value={metrics.fieldSignal}
-          onChange={(fieldSignal) => setMetrics({ ...metrics, fieldSignal })}
-        />
-        <LiteTextArea
-          required
-          label="성급하게 보면 안 되는 해석"
-          help="활동이 많아 보이거나 반응이 좋아 보여도 바로 단정하면 안 되는 지점을 적습니다."
-          placeholder="예: 방문 수가 많아도 다음 행동이 없으면 실행으로 보기 어렵다. 질문이 많아도 실제 필요가 확인된 것은 아니다."
-          value={metrics.carefulInterpretation}
-          onChange={(carefulInterpretation) => setMetrics({ ...metrics, carefulInterpretation })}
-        />
-        <LiteTextArea
-          required
-          label="6단계로 넘길 판단 기준"
-          help="다음 화면에서 고객 반응을 읽을 때 꼭 함께 볼 기준을 한 문장으로 남깁니다."
-          placeholder="예: 고객 반응은 분위기보다 후속 행동으로 이어질 가능성을 중심으로 보겠다."
-          value={metrics.step6Handoff}
-          onChange={(step6Handoff) => setMetrics({ ...metrics, step6Handoff })}
-        />
-      </div>
-
-      <details className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
-        <summary className="cursor-pointer text-sm font-black text-slate-900">팀장이 더 확인할 질문</summary>
-        <div className="mt-3">
-          <LiteTextArea
-            label="바로 판단하지 않고 한 번 더 확인할 질문"
-            help="팀원에게 묻거나 다음 회의에서 확인할 질문을 짧게 적습니다."
-            placeholder="예: 이 고객 반응이 실제 필요인지, 단순한 관심 표현인지 무엇으로 확인할 수 있을까?"
-            value={metrics.followUpQuestion}
-            onChange={(followUpQuestion) => setMetrics({ ...metrics, followUpQuestion })}
-          />
-        </div>
-      </details>
-
-      <V40LiteAiWorkflow
-        stepTitle="5단계: 우리 팀에서 지금 무엇을 봐야 하나?"
-        contextLines={[
-          'v39의 팀원 실행진단을 교육장 실습용으로 압축하는 상황입니다.',
-          `이번 2주 실행진단 초점은 ${metrics.selectedFocus || '후속 실행으로 이어지는지 보기'}입니다.`,
-          '팀장은 숫자만 보지 않고 팀원 준비 수준과 고객 반응 신호를 함께 봐야 합니다.',
-          '이 단계 결과는 다음 6단계 고객 반응 판단의 기준으로 넘어갑니다.',
-          '실제 고객명, 기관명, 제품명, 민감한 성과 수치는 AI에 넣지 않습니다.',
-        ]}
-        inputSummary={[
-          { label: '이번 2주 실행진단 초점', value: metrics.selectedFocus },
-          { label: '이번 2주에 꼭 볼 지표', value: metrics.primaryMetric },
-          { label: '함께 봐야 할 현장 신호', value: metrics.fieldSignal },
-          { label: '성급하게 보면 안 되는 해석', value: metrics.carefulInterpretation },
-          { label: '6단계로 넘길 판단 기준', value: metrics.step6Handoff },
-          { label: '팀장이 더 확인할 질문', value: metrics.followUpQuestion },
-        ]}
-        aiDraft={metrics.aiDraft}
-        onAiDraftChange={(aiDraft) => setMetrics({ ...metrics, aiDraft })}
-        finalPlaceholder="예: 이번 2주에는 방문 수보다 후속 실행 메모와 고객의 다음 행동 신호를 먼저 보겠습니다. 6단계에서는 고객 반응을 분위기가 아니라 실제 다음 행동 가능성 중심으로 읽겠습니다."
-      />
-
-      <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6">
-        <p className="text-sm font-black text-cyan-100">5단계 저장 요약 · 6단계로 넘길 내용</p>
-        <div className="mt-4 grid gap-3 text-sm leading-6 md:grid-cols-4">
-          <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">판단 초점</p>
-            <p className="mt-2 text-slate-100">{metrics.selectedFocus || '아직 선택 전입니다.'}</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">볼 지표</p>
-            <p className="mt-2 text-slate-100">{metrics.primaryMetric || '아직 입력 전입니다.'}</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">현장 신호</p>
-            <p className="mt-2 text-slate-100">{metrics.fieldSignal || '아직 입력 전입니다.'}</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 p-4">
-            <p className="font-black text-cyan-100">6단계 연결 기준</p>
-            <p className="mt-2 text-slate-100">{metrics.step6Handoff || metrics.aiDraft.finalText || '아직 입력 전입니다.'}</p>
-          </div>
-        </div>
-      </section>
-    </div>
   );
 }
 
@@ -433,7 +269,7 @@ function V40LitePreviewApp() {
 
   let stepContent = <Step6LiteCustomerReaction reaction={step6CustomerReaction} setReaction={setStep6CustomerReaction} />;
   if (safeStep === 0) stepContent = <EntryStep participant={participant} setParticipant={setParticipant} />;
-  if (safeStep === 1) stepContent = <Step5LiteMetrics metrics={step5Metrics} setMetrics={setStep5Metrics} />;
+  if (safeStep === 1) stepContent = <V40LiteStep5DecisionFlow metrics={step5Metrics} setMetrics={setStep5Metrics} />;
 
   return (
     <>
