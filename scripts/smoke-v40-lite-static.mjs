@@ -25,6 +25,7 @@ const files = {
   html: read('journey-v40-lite-preview.html'),
   app: read('src/journey-v40-lite-app-preview.tsx'),
   store: read('src/journey-v40-lite-store.ts'),
+  aiWorkflow: read('src/journey-v40-lite-ai-workflow.tsx'),
   vite: read('vite.config.ts'),
   tsconfig: read('tsconfig.v40-lite-smoke.json'),
   journeyHtml: read('journey.html'),
@@ -40,6 +41,7 @@ for (const marker of [
 for (const marker of [
   'V40LitePreviewApp',
   'V40_LITE_STEPS',
+  'V40LiteAiWorkflow',
   '우리 팀에서 지금 무엇을 봐야 하나?',
   '이번 2주, 우리 팀이 실제로 볼 것만 추립니다',
   '이번 2주에 꼭 볼 지표',
@@ -57,12 +59,25 @@ for (const marker of [
 ]) mustInclude(files.app, marker, 'v40-lite app');
 
 for (const marker of [
+  'V40LiteAiWorkflow',
+  'separateV40LiteAiResult',
+  'AI 질문 복사',
+  'AI가 준 내용을 여기에 붙여넣기',
+  '현장에서 쓸 만한 제안',
+  '조심할 표현',
+  '더 확인할 질문',
+  'AI 내용 한 줄 정리',
+  '팀장 최종 문장',
+]) mustInclude(files.aiWorkflow, marker, 'v40-lite AI workflow');
+
+for (const marker of [
   'ckd.v40-lite.participant.v1',
   'ckd.v40-lite.progress.v1',
   'ckd.v40-lite.step5.metrics.v1',
   'ckd.v40-lite.step6.customerReaction.v1',
   'V40LiteStep5Metrics',
   'V40LiteStep6CustomerReaction',
+  'aiDraft',
 ]) mustInclude(files.store, marker, 'v40-lite store');
 
 for (const marker of [
@@ -73,6 +88,7 @@ for (const marker of [
 for (const marker of [
   'src/journey-v40-lite-app-preview.tsx',
   'src/journey-v40-lite-store.ts',
+  'src/journey-v40-lite-ai-workflow.tsx',
   'src/journey-shell.tsx',
   'src/journey-storage.ts',
 ]) mustInclude(files.tsconfig, marker, 'v40-lite tsconfig');
