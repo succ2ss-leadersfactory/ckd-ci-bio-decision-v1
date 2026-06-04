@@ -49,9 +49,9 @@ function classifyMetricHeading(line: string): V38MetricSectionKey | null {
   if (/질문|면담/.test(title)) return 'questions';
   if (/맞지|제외|채택|역효과/.test(title)) return 'excluded';
   if (/추가|중장기|생각해볼/.test(title)) return 'additional';
-  if (/안전선|컴플라이언스|리스크/.test(title)) return 'safety';
-  if (/보완|보조|함께/.test(title)) return 'support';
-  if (/핵심|직접 연결|우선/.test(title)) return 'core';
+  if (/안전선|컴플라이언스|리스크|조심|성급|해석/.test(title)) return 'safety';
+  if (/보완|보조|함께|현장 신호/.test(title)) return 'support';
+  if (/핵심|직접 연결|우선|꼭 볼|먼저 볼/.test(title)) return 'core';
   return null;
 }
 
@@ -129,11 +129,9 @@ export function parseV38AiMetricSuggestion(rawText: string): V38MetricParseResul
   };
 
   for (const [key, label] of [
-    ['core', '핵심 지표'],
-    ['support', '보완 지표'],
-    ['safety', '안전선 지표'],
-    ['excluded', '제외 지표'],
-    ['additional', '추가 지표'],
+    ['core', '꼭 볼 지표'],
+    ['support', '함께 볼 현장 신호'],
+    ['safety', '조심할 해석'],
     ['questions', '확인 질문'],
   ] as const) {
     if (!result[key]) warnings.push(`${label} 섹션을 자동으로 찾지 못했습니다.`);
@@ -218,8 +216,8 @@ function cleanMemberDraftSection(section: string, memberName: string) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => {
-      const clean = cleanV38Markdown(line).replace(/^[-*]\s*/, '').trim();
-      return clean && clean !== memberName && !new RegExp(`^\\d+\\.?\\s*${memberName}`).test(clean);
+      const clean = cleanV38Markdown(line);
+      return clean && clean !== memberName && !/^\d+\.?\s*$/.test(clean);
     })
     .join('\n')
     .trim();
@@ -234,14 +232,15 @@ export function parseV38AiPrepDraftByMember(rawText: string, members: V38ParserM
     .sort((a, b) => a.index - b.index);
 
   if (starts.length === 0) {
-    warnings.push('선택한 유형 이름을 자동으로 찾지 못했습니다. AI 2차 결과에 선택한 유형 이름이 포함되어 있는지 확인해 주세요.');
+    warnings.push('팀원 이름을 자동으로 찾지 못했습니다. AI 결과에 선택한 팀원 유형 이름이 포함되어 있는지 확인해 주세요.');
     return { drafts, warnings };
   }
 
   starts.forEach((item, order) => {
     const end = starts[order + 1]?.index ?? rawText.length;
     const section = rawText.slice(item.index, end);
-    drafts[item.member.id] = cleanMemberDraftSection(section, item.member.name);
+    const cleaned = cleanMemberDraftSection(section, item.member.name);
+    if (cleaned) drafts[item.member.id] = cleaned;
   });
 
   for (const member of members) {
