@@ -11,12 +11,25 @@ export type V40LiteProgress = {
 };
 
 export type V40LiteStep5Metrics = {
+  decisionQuestion: string;
+  teamSituations: string[];
+  coreMetric: string;
+  supportSignal: string;
+  safetyLine: string;
+  metricAiDraft: V40LiteAiDraft;
+  selectedBehaviorSignals: string[];
+  behaviorCheckQuestion: string;
+  leaderAction: string;
+  actionAiDraft: V40LiteAiDraft;
+  finalPrep: string;
+  step6Handoff: string;
+
+  // Legacy-compatible fields from the first v40-lite draft. Kept so existing localStorage and old component code do not break while v40 is being realigned.
   selectedFocus: string;
   primaryMetric: string;
   fieldSignal: string;
   carefulInterpretation: string;
   followUpQuestion: string;
-  step6Handoff: string;
   aiDraft: V40LiteAiDraft;
 };
 
@@ -46,12 +59,24 @@ export const V40_LITE_DEFAULT_PROGRESS: V40LiteProgress = {
 };
 
 export const V40_LITE_DEFAULT_STEP5_METRICS: V40LiteStep5Metrics = {
+  decisionQuestion: '방문 이후 후속 행동이 실제로 이어지고 있는가?',
+  teamSituations: [],
+  coreMetric: '',
+  supportSignal: '',
+  safetyLine: '',
+  metricAiDraft: V40_LITE_EMPTY_AI_DRAFT,
+  selectedBehaviorSignals: [],
+  behaviorCheckQuestion: '',
+  leaderAction: '',
+  actionAiDraft: V40_LITE_EMPTY_AI_DRAFT,
+  finalPrep: '',
+  step6Handoff: '',
+
   selectedFocus: '후속 실행으로 이어지는지 보기',
   primaryMetric: '',
   fieldSignal: '',
   carefulInterpretation: '',
   followUpQuestion: '',
-  step6Handoff: '',
   aiDraft: V40_LITE_EMPTY_AI_DRAFT,
 };
 
