@@ -25,7 +25,10 @@ const V39_AI_CALL_PLAN_LAB_SMOKE_MARKERS = [
   '7단계 고객군 × 팀원 실행 Map',
   '8단계 팀원 역할 결과',
   '9단계 실행 대화 요약',
+  '선택한 대화 목적 ID',
   '목적에 맞게 바꾼 첫마디',
+  '팀원 실행 대화 포인트',
+  '9단계 저장 결과 다시 불러오기',
   'AI 초안은 완성본이 아닙니다',
   '팀 회의 설명 문장',
   '팀원별 실행 요청 문장',
@@ -190,7 +193,7 @@ function buildCallPlanContextPrompt(
     '2. 팀 회의 설명 문장 3개를 제안해 주세요.',
     '3. 팀원별 실행 요청 문장을 제안하되, 지시가 아니라 역할 기준·지원 방식·확인 질문이 포함된 실행 대화 문장으로 작성해 주세요.',
     '4. 고객군별로 확인할 Data, 2주 대응 방향, 부족 정보, 다음 확인 질문을 정리해 주세요.',
-    '5. 점검 질문과 중간 점검 방식을 제안해 주세요.',
+    '5. 팀원 실행 대화 포인트와 중간 점검 방식을 제안해 주세요.',
     '6. 컴플라이언스 점검이 필요한 위험 표현 후보를 별도로 표시해 주세요.',
     '',
     '[출력 형식]',
@@ -304,7 +307,7 @@ function V39MemberRoleCallPlanPanel({
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshCustomerJudgment}>6단계 다시 불러오기</button>
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshCustomerStrategy}>7단계 다시 불러오기</button>
           <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshRole}>8단계 다시 불러오기</button>
-          <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshPeopleDialogue}>9단계 다시 불러오기</button>
+          <button type="button" className="rounded-full border bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm" onClick={onRefreshPeopleDialogue}>9단계 저장 결과 다시 불러오기</button>
           <button type="button" className="rounded-full bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800" onClick={copyPrompt}>{copied ? '프롬프트 복사 완료' : 'AI에 붙여넣을 실행계획 프롬프트 복사'}</button>
         </div>
       </div>
