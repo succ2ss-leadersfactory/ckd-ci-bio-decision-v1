@@ -6,7 +6,6 @@ import {
 } from './journey-v38-dashboard-analysis-data';
 import {
   createEmptyV38MemberPrep,
-  parseV38AiMetricSuggestion,
   type V38MemberPrep,
   type V38PrepState,
 } from './journey-v38-dashboard-analysis-parsers';
@@ -19,9 +18,15 @@ const V39_DASHBOARD_ANALYSIS_SMOKE_MARKERS = 'V39DashboardAnalysisLab V38Dashboa
 void V39_DASHBOARD_ANALYSIS_SMOKE_MARKERS;
 
 type TeamMember = V38TeamMember;
-type MemberPrep = V38MemberPrep;
 type PrepState = V38PrepState;
 type MetricCandidate = { id: string; label: string; source: string; reason?: string };
+type AiMetricDraftSections = {
+  core: string;
+  support: string;
+  safety: string;
+  questions: string;
+  warnings: string[];
+};
 
 const TEAM_SITUATION_OPTIONS = [
   '방문은 했는데, 다음 행동으로 이어지지 않는다',
@@ -99,6 +104,37 @@ function buildMetricPrompt(teamSituations: string[], customSituation: string) {
   ].join('\n');
 }
 
+function detectAiSection(line: string): keyof Omit<AiMetricDraftSections, 'warnings'> | null {
+  const clean = line.replace(/^#{1,6}\s*/, '').replace(/\*\*/g, '').trim();
+  if (/^1[.)]?\s*핵심 실행 지표 후보/.test(clean) || /^핵심 실행 지표 후보/.test(clean)) return 'core';
+  if (/^2[.)]?\s*함께 봐야 할 현장 신호/.test(clean) || /^함께 봐야 할 현장 신호/.test(clean)) return 'support';
+  if (/^3[.)]?\s*조심해서 봐야 할 해석/.test(clean) || /^조심해서 봐야 할 해석/.test(clean)) return 'safety';
+  if (/^4[.)]?\s*팀장이 더 확인할 질문/.test(clean) || /^팀장이 더 확인할 질문/.test(clean)) return 'questions';
+  return null;
+}
+
+function parseAiMetricDraftSections(rawText: string): AiMetricDraftSections {
+  const sections: AiMetricDraftSections = { core: '', support: '', safety: '', questions: '', warnings: [] };
+  let current: keyof Omit<AiMetricDraftSections, 'warnings'> | null = null;
+
+  for (const rawLine of rawText.split(/\r?\n/)) {
+    const line = rawLine.trimEnd();
+    const nextSection = detectAiSection(line.trim());
+    if (nextSection) {
+      current = nextSection;
+      continue;
+    }
+    if (current) sections[current] += `${line}\n`;
+  }
+
+  for (const key of ['core', 'support', 'safety', 'questions'] as const) {
+    sections[key] = sections[key].trim();
+    if (!sections[key]) sections.warnings.push(key);
+  }
+
+  return sections;
+}
+
 function normalizeMetricName(rawText: string) {
   let clean = rawText
     .replace(/^[-*•]\s*/, '')
@@ -124,6 +160,10 @@ function normalizeMetricName(rawText: string) {
   return clean;
 }
 
+function isSituationHeading(clean: string) {
+  return /^(선택 상황\s*\d+|직접 작성 상황)\s*[:：-]?/.test(clean);
+}
+
 function normalizeReferenceKeyword(rawText: string) {
   let clean = rawText
     .replace(/^[-*•]\s*/, '')
@@ -132,10 +172,12 @@ function normalizeReferenceKeyword(rawText: string) {
     .replace(/\*\*/g, '')
     .trim();
 
+  if (!clean || isSituationHeading(clean)) return '';
+
   const keywordMatch = clean.match(/(?:키워드|신호|해석|질문)\s*[:：]\s*(.+)$/);
   if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
   if (/^(설명|이유|주의|예시)\s*[:：]/.test(clean)) return '';
-  if (/^(함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) return '';
+  if (/^(핵심 실행 지표 후보|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) return '';
 
   clean = clean
     .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에)/)[0]
@@ -143,6 +185,7 @@ function normalizeReferenceKeyword(rawText: string) {
     .replace(/\s+/g, ' ')
     .trim();
 
+  if (!clean || isSituationHeading(clean)) return '';
   if (clean.length < 2) return '';
   if (clean.length > 44) clean = clean.slice(0, 44).trim();
   return clean;
@@ -166,7 +209,7 @@ function extractMetricCandidatesBySituation(rawText: string, situationSources: {
 
   for (const rawLine of rawText.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (!line) continue;
+    if (!line || /^---+$/.test(line)) continue;
 
     const headingSource = sourceTitleFromHeading(line);
     if (headingSource) {
@@ -204,7 +247,7 @@ function extractReferenceKeywords(rawText: string, limit = 8) {
     const pieces = normalized
       .split(/[,/·;]|\s{2,}/)
       .map((item) => item.trim())
-      .filter((item) => item.length >= 2 && item.length <= 36);
+      .filter((item) => item.length >= 2 && item.length <= 36 && !isSituationHeading(item));
 
     for (const piece of pieces.length > 0 ? pieces : [normalized]) {
       if (seen.has(piece)) continue;
@@ -443,11 +486,11 @@ export function V39DashboardAnalysisLab() {
   };
 
   const splitAiDraft = () => {
-    const parsed = parseV38AiMetricSuggestion(aiMetricSuggestion);
+    const parsed = parseAiMetricDraftSections(aiMetricSuggestion);
     const candidates = extractMetricCandidatesBySituation(parsed.core, situationSources);
-    const nextSupport = extractReferenceKeywords(parsed.support, 8);
-    const nextSafety = extractReferenceKeywords(parsed.safety, 6);
-    const nextQuestions = extractReferenceKeywords(parsed.questions, 6);
+    const nextSupport = extractReferenceKeywords(parsed.support, 12);
+    const nextSafety = extractReferenceKeywords(parsed.safety, 10);
+    const nextQuestions = extractReferenceKeywords(parsed.questions, 10);
 
     setAiRecommendedCoreMetrics(parsed.core);
     setAiRecommendedSupportMetrics(parsed.support);
@@ -460,8 +503,8 @@ export function V39DashboardAnalysisLab() {
     setSelectedCoreMetrics((current) => current.filter((item) => candidates.some((candidate) => candidate.label === item)));
     setParseNotice(
       parsed.warnings.length > 0
-        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 핵심 실행 지표 후보를 직접 확인해 주세요.`
-        : 'AI 초안을 옮겼습니다. 상황별 핵심 실행 지표 후보를 확인하고, 실제로 볼 지표만 선택하세요.',
+        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 섹션은 자동으로 찾지 못했습니다. 붙여넣은 결과의 ## 1~4 제목을 확인해 주세요.`
+        : `AI 초안을 옮겼습니다. 핵심 실행 지표 ${candidates.length}개와 참고 키워드를 분리했습니다.`,
     );
   };
 
