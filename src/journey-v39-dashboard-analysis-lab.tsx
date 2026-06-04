@@ -63,8 +63,8 @@ function parseAiPrepDraftByMember(rawText: string, members: TeamMember[]) {
 function buildV39MetricPrompt(teamSituations: string[], customSituation: string) {
   const customSituationLine = customSituation.trim();
   const situationLines = [
-    ...teamSituations.map((item) => `- ${item}`),
-    ...(customSituationLine ? [`- 우리 팀 추가 상황: ${customSituationLine}`] : []),
+    ...teamSituations.map((item) => `- 선택 상황: ${item}`),
+    ...(customSituationLine ? [`- 직접 작성 상황: ${customSituationLine}`] : []),
   ];
 
   return [
@@ -75,19 +75,23 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
     ...(situationLines.length > 0 ? situationLines : ['- 아직 선택하지 않았습니다.']),
     '',
     '중요한 반영 기준:',
-    '- 참여자가 직접 쓴 “우리 팀 추가 상황”이 있으면 반드시 우선 반영해 주세요.',
-    '- 선택 보기보다 직접 작성한 상황이 더 구체적이면, 직접 작성한 상황을 중심으로 판단해 주세요.',
-    '- 각 항목에는 우리 팀 추가 상황이 어떤 판단에 영향을 주었는지 드러나게 써 주세요.',
+    '- 선택한 2개 상황과 직접 작성한 상황을 모두 반영해 주세요.',
+    '- 직접 작성한 상황은 선택한 2개 상황을 대체하는 것이 아니라, 우리 팀 맥락을 보완하는 정보입니다.',
+    '- 결과가 한쪽 상황에만 치우치지 않도록, 선택 상황과 직접 작성 상황이 각각 어떤 판단에 영향을 주는지 함께 고려해 주세요.',
+    '- 각 항목은 먼저 짧은 키워드로 정리하고, 필요한 설명은 그 아래 한 문장으로만 덧붙여 주세요.',
     '',
     '아래 4가지만 현실적인 말로 짧게 정리해 주세요.',
+    '각 항목은 반드시 아래 형식을 지켜 주세요.',
+    '키워드: 짧은 단어 또는 구절 1~2개',
+    '설명: 왜 그 기준을 봐야 하는지 한 문장',
     '',
     '## 1. 이번 2주에 꼭 볼 지표',
     '- 팀장이 가장 먼저 확인할 지표 1~2개',
-    '- 왜 이 지표를 봐야 하는지 한 문장',
+    '- 선택 상황과 직접 작성 상황을 함께 고려해 주세요.',
     '',
     '## 2. 함께 봐야 할 현장 신호',
     '- 숫자만으로는 놓칠 수 있는 팀원 또는 고객 반응의 신호 1~2개',
-    '- 팀장이 무엇을 관찰해야 하는지 한 문장',
+    '- 선택 상황과 직접 작성 상황에서 함께 드러나는 현장 신호를 잡아 주세요.',
     '',
     '## 3. 조심해서 봐야 할 해석',
     '- 숫자나 반응을 잘못 해석할 수 있는 위험 1~2개',
@@ -103,6 +107,41 @@ function buildV39MetricPrompt(teamSituations: string[], customSituation: string)
     ...FORBIDDEN_ITEMS.map((item) => `- ${item}`),
     '- 팀장이 교육장에서 바로 이해할 수 있는 현실적인 문장으로 써 주세요.',
   ].join('\n');
+}
+
+function compactMetricKeyword(rawText: string) {
+  const candidates: string[] = [];
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    let clean = line
+      .replace(/^[-*•]\s*/, '')
+      .replace(/^\d+[.)]\s*/, '')
+      .replace(/^#{1,6}\s*/, '')
+      .replace(/\*\*/g, '')
+      .trim();
+
+    const keywordMatch = clean.match(/(?:키워드|핵심 키워드|최종 기준)\s*[:：]\s*(.+)$/);
+    if (keywordMatch?.[1]) clean = keywordMatch[1].trim();
+
+    if (/^(설명|이유|주의|예시|팀장이|선택 상황|직접 작성 상황)\s*[:：]/.test(clean)) continue;
+    if (/^(이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)$/.test(clean)) continue;
+
+    clean = clean
+      .replace(/^(이번 2주에 꼭 볼 지표|함께 봐야 할 현장 신호|조심해서 봐야 할 해석|팀장이 더 확인할 질문)\s*[:：-]\s*/, '')
+      .split(/(?:설명\s*[:：]|이유\s*[:：]|왜냐하면|때문입니다|때문에|확인해야|관찰해야|살펴봐야)/)[0]
+      .split(/[.!?。]/)[0]
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (clean.length >= 2) candidates.push(clean);
+    if (candidates.length >= 2) break;
+  }
+
+  return candidates.join(' / ').slice(0, 70);
 }
 
 export function V39DashboardAnalysisLab() {
@@ -273,17 +312,20 @@ export function V39DashboardAnalysisLab() {
 
   const autoFillMetricSuggestion = () => {
     const parsed = parseAiMetricSuggestion(aiMetricSuggestion);
+    const coreKeyword = compactMetricKeyword(parsed.core);
+    const supportKeyword = compactMetricKeyword(parsed.support);
+    const safetyKeyword = compactMetricKeyword(parsed.safety);
     setAiRecommendedCoreMetrics(parsed.core);
     setAiRecommendedSupportMetrics(parsed.support);
     setAiRecommendedSafetyMetrics(parsed.safety);
     setAiRecommendedQuestions(parsed.questions);
-    setFinalCoreMetric((current) => current || parsed.core);
-    setFinalSupportSignal((current) => current || parsed.support);
-    setFinalCautionPoint((current) => current || parsed.safety);
+    setFinalCoreMetric((current) => current || coreKeyword || parsed.core);
+    setFinalSupportSignal((current) => current || supportKeyword || parsed.support);
+    setFinalCautionPoint((current) => current || safetyKeyword || parsed.safety);
     setParseNotice(
       parsed.warnings.length > 0
-        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 아래 칸에서 직접 확인해 주세요.`
-        : 'AI 초안을 옮겼습니다. 우리 팀 상황에 맞게 짧게 고쳐 쓰면 됩니다.',
+        ? `AI 초안을 옮겼습니다. 다만 ${parsed.warnings.length}개 항목은 자동으로 찾지 못했습니다. 최종 정리 칸은 키워드 중심으로 직접 다듬어 주세요.`
+        : 'AI 초안을 옮겼습니다. 설명은 위 초안에서 확인하고, 최종 정리 칸에는 키워드 중심으로 자동 축약했습니다.',
     );
   };
 
@@ -355,7 +397,7 @@ export function V39DashboardAnalysisLab() {
         <p className="text-xs font-black uppercase tracking-wide text-amber-700">Block 0</p>
         <h3 className="text-lg font-black text-slate-950">우리 팀 지표 정하기</h3>
         <p className="mt-2 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-600">
-          우리 팀과 가장 가까운 상황 2개를 고릅니다. 아래에 직접 쓴 우리 팀 상황은 AI 질문에 우선 반영됩니다.
+          우리 팀과 가장 가까운 상황 2개를 고릅니다. 직접 쓴 우리 팀 상황은 선택한 2개 상황과 함께 AI 질문에 반영됩니다.
         </p>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -402,17 +444,17 @@ export function V39DashboardAnalysisLab() {
 
         <label className="mt-4 block space-y-1">
           <span className="text-xs font-black text-slate-600">AI 초안 붙여넣기</span>
-          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 그대로 쓰지 말고 아래에서 우리 팀 말로 줄여 씁니다." />
+          <textarea className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={aiMetricSuggestion} onChange={(event) => setAiMetricSuggestion(event.target.value)} placeholder="외부 AI가 정리한 초안을 붙여넣으세요. 설명은 위 초안에 남기고, 최종 정리에는 키워드만 남깁니다." />
         </label>
         <div className="mt-3">
           <button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={autoFillMetricSuggestion}>AI 초안에서 필요한 것만 옮기기</button>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동으로 옮겨진 내용도 우리 팀 상황에 맞게 짧게 고쳐 쓰면 됩니다.</p>
+          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동으로 옮겨진 내용 중 설명은 위 초안에서 확인하고, 최종 정리는 키워드 중심으로 다듬습니다.</p>
           {parseNotice && <div className="mt-3 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-amber-800">{parseNotice}</div>}
         </div>
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <h4 className="text-sm font-black text-slate-950">AI 초안에서 꼭 필요한 것만 남기기</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">많이 적는 것이 목적이 아닙니다. 이번 2주 동안 팀장이 실제로 볼 것만 남깁니다.</p>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">설명은 이 영역에서 확인합니다. 아래 최종 정리에는 짧은 키워드나 구절만 남깁니다.</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <ReviewTextarea label="이번 2주에 꼭 볼 지표" value={aiRecommendedCoreMetrics} onChange={setAiRecommendedCoreMetrics} />
             <ReviewTextarea label="함께 봐야 할 현장 신호" value={aiRecommendedSupportMetrics} onChange={setAiRecommendedSupportMetrics} />
@@ -423,7 +465,7 @@ export function V39DashboardAnalysisLab() {
 
         <div className="mt-4 rounded-2xl border bg-white p-4">
           <h4 className="text-sm font-black text-slate-950">우리 팀이 이번 2주에 볼 것 최종 정리</h4>
-          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">고정 지표 목록에서 억지로 고르지 않습니다. AI 초안에서 필요한 말을 우리 팀 기준으로 다시 써서 남깁니다.</p>
+          <p className="mt-1 text-xs font-bold leading-5 text-slate-600">긴 설명을 다시 쓰지 않습니다. AI 초안을 보고 우리 팀 기준으로 남길 키워드나 짧은 구절만 적습니다.</p>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <ReviewTextarea label="최종 1. 꼭 볼 지표" value={finalCoreMetric} onChange={setFinalCoreMetric} />
             <ReviewTextarea label="최종 2. 함께 볼 현장 신호" value={finalSupportSignal} onChange={setFinalSupportSignal} />
