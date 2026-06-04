@@ -42,20 +42,25 @@ for (const marker of [
   'V40LitePreviewApp',
   'V40_LITE_STEPS',
   'V40LiteAiWorkflow',
+  'v39의 흐름은 유지하되 교육장에서 바로 실습할 수 있게 줄인 화면입니다',
   '우리 팀에서 지금 무엇을 봐야 하나?',
   '이번 2주, 우리 팀이 실제로 볼 것만 추립니다',
+  '활동은 늘었는데, 실행이 이어지는지는 아직 불분명합니다',
+  '먼저 볼 관점 선택',
+  '이번 2주 실행진단의 초점을 하나 고릅니다',
+  '후속 실행으로 이어지는지 보기',
   '이번 2주에 꼭 볼 지표',
   '함께 봐야 할 현장 신호',
-  '조심해서 봐야 할 해석',
+  '성급하게 보면 안 되는 해석',
+  '6단계로 넘길 판단 기준',
   '팀장이 더 확인할 질문',
-  '저장된 Lite 판단 초안',
+  '5단계 저장 요약 · 6단계로 넘길 내용',
   '고객 반응에서 무엇을 읽을까?',
   '의미 있어 보이는 고객 반응',
   '아직 부족한 정보',
   '조심해서 읽어야 할 부분',
   '고객 반응을 더 정확히 보기 위한 질문',
   '저장된 고객 반응 읽기 초안',
-  '하나의 답을 고르는 화면이 아닙니다',
 ]) mustInclude(files.app, marker, 'v40-lite app');
 
 for (const marker of [
@@ -77,6 +82,8 @@ for (const marker of [
   'ckd.v40-lite.step6.customerReaction.v1',
   'V40LiteStep5Metrics',
   'V40LiteStep6CustomerReaction',
+  'selectedFocus',
+  'step6Handoff',
   'aiDraft',
 ]) mustInclude(files.store, marker, 'v40-lite store');
 
