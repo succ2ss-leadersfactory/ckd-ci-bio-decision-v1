@@ -71,10 +71,11 @@ for (const marker of [
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
 for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', 'Perplexity', 'NotebookLM', 'Studio', '5단계 연결 카드', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
-for (const marker of ['AI 전략 리서치 Pack', 'AI 전략 리서치 Pack']) mustNotInclude(files.researchStrategy, marker, 'research strategy old naming');
+for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.researchStrategy, marker, 'research strategy old naming');
 for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.config, marker, 'v39 config old naming');
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
-for (const marker of ['V39DashboardAnalysisUxLab', '5단계 진행 가이드', '팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형', '5단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
+for (const marker of ['V39DashboardAnalysisUxLab', '5단계 진행 가이드', '4단계 AI 전략 리서치 연결', '관리 지표 선정 상태', '선택한 핵심 실행 지표', '고객 Data 확인 List로 넘길 기준', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
+for (const marker of ['팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형']) mustNotInclude(files.dashboardUx, marker, 'dashboard UX old wording');
 for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
 for (const marker of ['V39CustomerJudgmentUxLab', '6단계 진행 가이드', '고객 Data에서 기회와 착시를 분리합니다', '고객 Data 판단 상태', '선택 고객 유형', '6단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
 for (const marker of ['V39CustomerPriorityLab', 'V39CustomerJudgmentBridgePanel']) mustInclude(files.customerPriority, marker, 'customer priority');
