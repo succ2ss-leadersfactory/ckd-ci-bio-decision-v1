@@ -29,6 +29,7 @@ const files = {
   dashboard: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   customerJudgment: read('src/journey-v39-customer-judgment-lab.tsx'),
   customerPriority: read('src/journey-v39-customer-priority-lab.tsx'),
+  customerPriorityUx: read('src/journey-v39-customer-priority-ux-lab.tsx'),
   memberRole: read('src/journey-v39-member-role-lab.tsx'),
   memberRoleUx: read('src/journey-v39-member-role-ux-lab.tsx'),
   peopleDialogue: read('src/journey-v39-people-dialogue-lab.tsx'),
@@ -42,11 +43,13 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
   'src/journey-v39-app-preview.tsx',
+  'src/journey-v39-customer-priority-lab.tsx',
+  'src/journey-v39-customer-priority-ux-lab.tsx',
   'src/journey-v39-member-role-lab.tsx',
   'src/journey-v39-member-role-ux-lab.tsx',
   'src/journey-v39-people-dialogue-lab.tsx',
@@ -59,6 +62,7 @@ for (const marker of [
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
 for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
 for (const marker of ['V39CustomerPriorityLab', 'V39CustomerJudgmentBridgePanel']) mustInclude(files.customerPriority, marker, 'customer priority');
+for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '고객 판단을 2주 대응 전략으로 바꿉니다', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerPriorityUx, marker, 'customer priority UX wrapper');
 for (const marker of ['V39MemberRoleLab', 'V39CustomerRolePlanningPanel']) mustInclude(files.memberRole, marker, 'member role');
 for (const marker of ['V39MemberRoleUxLab', '8단계 진행 가이드', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.memberRoleUx, marker, 'member role UX wrapper');
 
