@@ -1,25 +1,24 @@
-# v39 Phase 1 Manual QA Execution Sheet
+# v39 Phase 1 브라우저 확인표
 
-## 1. Purpose
+## 1. 이 문서의 용도
 
-This document is a focused manual browser QA sheet for the v39 Phase 1 UI/UX wrapper completion state.
+이 문서는 `/journey-v39-preview.html`을 실제 브라우저에서 열어 보고, 5~13단계가 교육장에서 무리 없이 이어지는지 확인하기 위한 운영용 체크표입니다.
 
-It is used after wrapper application to steps 5 through 13 and before deciding whether v39 can be frozen as a customer-demo candidate.
+자동 검증이 통과해도, 고객 앞에서 보여줄 화면은 직접 한 번 훑어봐야 합니다. 특히 저장한 내용이 다음 화면에 잘 이어지는지, 문장이 너무 개발자스럽거나 평가표처럼 보이지 않는지 확인합니다.
 
-## 2. Baseline
+## 2. 기준 정보
 
-| Item | Value |
+| 항목 | 내용 |
 |---|---|
-| Repository | `succ2ss-leadersfactory/ckd-ci-bio-decision-v1` |
-| Branch | `feature/v37-preview-shell` |
-| Route | `/journey-v39-preview.html` |
-| Latest document commit | `d134a81f2b2197a1c4e12f6dbd36d5c5dea6e729` |
-| Latest wrapper code commit | `a8a45e8e422c329f2537bb9fb5d6f60b198bd3c2` |
-| Current QA state | Pending browser QA |
+| 저장소 | `succ2ss-leadersfactory/ckd-ci-bio-decision-v1` |
+| 브랜치 | `feature/v37-preview-shell` |
+| 확인 화면 | `/journey-v39-preview.html` |
+| 최근 확인 커밋 | `699aee5b62e5db9766e1f68b5f77a80bb1088cbf` |
+| 현재 상태 | 브라우저 확인 전 |
 
-## 3. Automated check status
+## 3. 자동 검증 결과
 
-| Workflow | Status |
+| 항목 | 결과 |
 |---|---|
 | C1Bio MVP CI | success |
 | v35 Smoke | success |
@@ -27,97 +26,92 @@ It is used after wrapper application to steps 5 through 13 and before deciding w
 | v38 Smoke | success |
 | v39 Smoke | success |
 
-v39 Smoke passed static smoke, scoped TypeScript check, Vite build, and integrated smoke.
+v39 Smoke는 정적 검사, TypeScript 검사, Vite 빌드, 통합 smoke를 통과했습니다.
 
-## 4. Wrapper coverage to verify
+## 4. 화면별 확인 범위
 
-| Step | Screen | Wrapper file |
+| 단계 | 화면 | 확인할 것 |
 |---:|---|---|
-| 5 | Team execution diagnosis | `src/journey-v39-dashboard-analysis-ux-lab.tsx` |
-| 6 | Customer Data analysis | `src/journey-v39-customer-judgment-ux-lab.tsx` |
-| 7 | Customer-type response strategy | `src/journey-v39-customer-priority-ux-lab.tsx` |
-| 8 | Member role direction | `src/journey-v39-member-role-ux-lab.tsx` |
-| 9 | Member execution dialogue | `src/journey-v39-people-dialogue-ux-lab.tsx` |
-| 10 | AI execution plan prompt | `src/journey-v39-ai-call-plan-ux-lab.tsx` |
-| 11 | Compliance cleanup | `src/journey-v39-compliance-cleanup-ux-lab.tsx` |
-| 12 | Final two-week execution card | `src/journey-v39-final-call-plan-ux-card.tsx` |
-| 13 | Instructor discussion questions | `src/journey-v39-instructor-discussion-ux-lab.tsx` |
+| 5 | 팀 실행 흐름 읽기 | 팀 신호와 팀원 메모가 자연스럽게 보이는지 |
+| 6 | 고객 반응에서 읽어야 할 것 | 고객 반응을 기회·위험·확인 질문으로 나누는 흐름이 자연스러운지 |
+| 7 | 이번 2주 고객 대응 잡기 | 6단계 판단이 고객 대응안으로 이어지는지 |
+| 8 | 사람별 역할 잡기 | 5단계 팀 신호와 7단계 고객 대응안이 역할 배분으로 이어지는지 |
+| 9 | 팀원에게 꺼낼 첫마디 다듬기 | 역할 메모가 대화 첫마디로 자연스럽게 이어지는지 |
+| 10 | AI에 물어볼 실행 질문 만들기 | 역할과 대화 메모가 AI 질문으로 이어지는지 |
+| 11 | 현장에서 쓰기 전 표현 다듬기 | AI 초안을 현장 표현으로 고치는 흐름이 보이는지 |
+| 12 | 2주 실행 카드 정리 | 고객·팀원·대화·표현이 한 장으로 묶이는지 |
+| 13 | 판단을 함께 뜯어볼 질문 만들기 | 최종 카드가 토의거리로 바뀌는지 |
 
-## 5. End-to-end connection QA
+## 5. 단계 연결 확인
 
-| Flow | Expected result | Result | Notes |
+| 연결 | 확인할 내용 | 결과 | 메모 |
 |---|---|---|---|
-| 5 to 8 | Step 8 reflects step 5 saved result | Pending |  |
-| 6 to 7 | Step 7 reflects step 6 saved result | Pending |  |
-| 7 to 8 | Step 8 reflects step 7 saved result | Pending |  |
-| 8 to 9 | Step 9 reflects step 8 saved result | Pending |  |
-| 8 to 10 | Step 10 reflects step 8 saved result | Pending |  |
-| 9 to 10 | Step 10 reflects step 9 saved result | Pending |  |
-| 10 to 11 | Step 11 reflects step 10 saved result | Pending |  |
-| 11 to 12 | Step 12 reflects step 11 saved result | Pending |  |
-| 12 to 13 | Step 13 reflects step 12 saved result | Pending |  |
+| 5 → 8 | 8단계에서 5단계 팀 신호가 보이는가 | 미확인 |  |
+| 6 → 7 | 7단계에서 6단계 고객 판단이 보이는가 | 미확인 |  |
+| 7 → 8 | 8단계에서 7단계 고객 대응안이 보이는가 | 미확인 |  |
+| 8 → 9 | 9단계에서 8단계 역할 메모가 보이는가 | 미확인 |  |
+| 8 → 10 | 10단계에서 8단계 역할 메모가 보이는가 | 미확인 |  |
+| 9 → 10 | 10단계에서 9단계 대화 메모가 보이는가 | 미확인 |  |
+| 10 → 11 | 11단계에서 10단계 AI 초안이 보이는가 | 미확인 |  |
+| 11 → 12 | 12단계에서 11단계 안전 문장이 보이는가 | 미확인 |  |
+| 12 → 13 | 13단계에서 12단계 최종 카드가 보이는가 | 미확인 |  |
 
-## 6. Browser interaction QA
+## 6. 버튼과 입력 확인
 
-| Item | Expected result | Result | Notes |
+| 항목 | 확인할 내용 | 결과 | 메모 |
 |---|---|---|---|
-| Step navigation | Previous, next, and direct step selection work | Pending |  |
-| Text persistence | Input values remain after step movement | Pending |  |
-| Refresh buttons | Saved values reload correctly | Pending |  |
-| Draft-fill buttons | Drafts populate fields safely | Pending |  |
-| Copy buttons | Prompt and summary copy buttons work | Pending |  |
-| Progress reset | Reset clears progress as intended | Pending |  |
-| Console | No fatal browser console errors | Pending |  |
+| 단계 이동 | 이전/다음/단계 선택이 자연스럽게 되는가 | 미확인 |  |
+| 입력 유지 | 다른 단계로 갔다 와도 입력값이 남아 있는가 | 미확인 |  |
+| 다시 불러오기 | 저장된 내용을 다시 불러오는 버튼이 작동하는가 | 미확인 |  |
+| 초안 채우기 | 저장된 맥락으로 초안을 채우는 버튼이 작동하는가 | 미확인 |  |
+| 복사 | 프롬프트나 요약 복사가 되는가 | 미확인 |  |
+| 초기화 | 진행 초기화가 의도대로 작동하는가 | 미확인 |  |
+| 콘솔 오류 | 브라우저 콘솔에 치명 오류가 없는가 | 미확인 |  |
 
-## 7. Responsive QA
+## 7. 화면 크기 확인
 
-| View | Expected result | Result | Notes |
+| 화면 | 확인할 내용 | 결과 | 메모 |
 |---|---|---|---|
-| PC Chrome | No horizontal overflow | Pending |  |
-| Tablet landscape | Cards remain readable | Pending |  |
-| Tablet portrait | Cards stack naturally | Pending |  |
-| Mobile portrait | Main actions remain reachable | Pending |  |
+| PC Chrome | 가로 스크롤 없이 읽히는가 | 미확인 |  |
+| 태블릿 가로 | 카드와 입력창이 답답하지 않은가 | 미확인 |  |
+| 태블릿 세로 | 카드가 자연스럽게 아래로 쌓이는가 | 미확인 |  |
+| 모바일 세로 | 주요 버튼과 입력창을 누르기 쉬운가 | 미확인 |  |
 
-## 8. Customer-facing wording QA
+## 8. 고객 앞에서 보일 문장 확인
 
-| Item | Expected result | Result | Notes |
+| 항목 | 확인할 내용 | 결과 | 메모 |
 |---|---|---|---|
-| Internal wording | Internal development terms are not visible | Pending |  |
-| Evaluation wording | The flow does not look like scoring or grading | Pending |  |
-| Sensitive input | The UI does not request real field-sensitive information | Pending |  |
-| AI role | AI is framed as support; leader judgment remains primary | Pending |  |
+| 개발자 표현 | preview, shell, internal 같은 말이 화면 본문에 보이지 않는가 | 미확인 |  |
+| 평가 오해 | 점수표나 평가표처럼 보이지 않는가 | 미확인 |  |
+| 민감정보 | 실제 고객·기관·제품·수치 입력을 요구하지 않는가 | 미확인 |  |
+| AI 역할 | AI가 판단자가 아니라 보조 도구로 보이는가 | 미확인 |  |
+| 현장언어 | 문장이 한국 기업 팀장 교육에서 자연스럽게 읽히는가 | 미확인 |  |
 
-## 9. Go / No-Go
-
-Current status:
+## 9. 최종 판단 기준
 
 ```text
-Pending Manual Browser QA
+아래 항목이 모두 괜찮으면 v39를 시연 후보로 동결한다.
+
+자동 검증 success 유지
+배포 화면 접속 가능
+운영 화면 /journey.html 영향 없음
+5~13단계 저장 연결 정상
+고객 앞에서 어색한 내부 문구 없음
+민감정보 입력 유도 없음
+평가·점수화 오해 없음
+PC·태블릿·모바일 화면 사용 가능
+브라우저 콘솔 치명 오류 없음
 ```
 
-Go conditions:
+## 10. 확인 기록
 
-```text
-Automated CI remains success
-Deployment is accessible
-Protected route remains unchanged
-5 to 13 saved-result connections work
-No internal wording is visible
-No sensitive-input request appears
-No scoring or grading misunderstanding is created
-PC, tablet, and mobile display are usable
-No fatal console errors
-```
-
-## 10. QA record
-
-| Item | Record |
+| 항목 | 기록 |
 |---|---|
-| QA date/time |  |
-| QA owner |  |
-| Browser |  |
-| Device |  |
-| Confirmed URL |  |
-| Confirmed commit |  |
-| Final decision | Go / No-Go |
-| Notes |  |
+| 확인 일시 |  |
+| 확인자 |  |
+| 브라우저 |  |
+| 기기 |  |
+| 확인 URL |  |
+| 확인 커밋 |  |
+| 최종 판단 | 동결 / 보류 |
+| 메모 |  |
