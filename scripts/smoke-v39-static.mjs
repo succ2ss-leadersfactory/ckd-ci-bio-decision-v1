@@ -28,6 +28,7 @@ const files = {
   tsconfig: read('tsconfig.v39-smoke.json'),
   dashboard: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   customerJudgment: read('src/journey-v39-customer-judgment-lab.tsx'),
+  customerJudgmentUx: read('src/journey-v39-customer-judgment-ux-lab.tsx'),
   customerPriority: read('src/journey-v39-customer-priority-lab.tsx'),
   customerPriorityUx: read('src/journey-v39-customer-priority-ux-lab.tsx'),
   memberRole: read('src/journey-v39-member-role-lab.tsx'),
@@ -43,11 +44,13 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
   'src/journey-v39-app-preview.tsx',
+  'src/journey-v39-customer-judgment-lab.tsx',
+  'src/journey-v39-customer-judgment-ux-lab.tsx',
   'src/journey-v39-customer-priority-lab.tsx',
   'src/journey-v39-customer-priority-ux-lab.tsx',
   'src/journey-v39-member-role-lab.tsx',
@@ -61,6 +64,7 @@ for (const marker of [
 
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
 for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
+for (const marker of ['V39CustomerJudgmentUxLab', '6단계 진행 가이드', '고객 Data에서 기회와 착시를 분리합니다', '고객 Data 판단 상태', '선택 고객 유형', '6단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
 for (const marker of ['V39CustomerPriorityLab', 'V39CustomerJudgmentBridgePanel']) mustInclude(files.customerPriority, marker, 'customer priority');
 for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '고객 판단을 2주 대응 전략으로 바꿉니다', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.customerPriorityUx, marker, 'customer priority UX wrapper');
 for (const marker of ['V39MemberRoleLab', 'V39CustomerRolePlanningPanel']) mustInclude(files.memberRole, marker, 'member role');
@@ -117,6 +121,7 @@ for (const marker of [
 
 for (const marker of ['v39 Preview', 'C1바이오 v39 Preview']) mustNotInclude(files.html, marker, 'html title');
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step']) mustNotInclude(files.app, marker, 'old app route');
+for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.customerJudgmentUx, marker, 'customer judgment UX wording');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.peopleDialogue, marker, 'people dialogue wording');
 for (const marker of ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']) mustNotInclude(files.finalCard, marker, 'old final card flow');
 for (const marker of ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']) mustNotInclude(files.instructor, marker, 'old instructor flow');
