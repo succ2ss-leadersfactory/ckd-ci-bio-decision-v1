@@ -47,6 +47,12 @@ for (const marker of [
   '조심해서 봐야 할 해석',
   '팀장이 더 확인할 질문',
   '저장된 Lite 판단 초안',
+  '고객 반응에서 무엇을 읽을까?',
+  '의미 있어 보이는 고객 반응',
+  '아직 부족한 정보',
+  '조심해서 읽어야 할 부분',
+  '고객 반응을 더 정확히 보기 위한 질문',
+  '저장된 고객 반응 읽기 초안',
   '하나의 답을 고르는 화면이 아닙니다',
 ]) mustInclude(files.app, marker, 'v40-lite app');
 
@@ -54,7 +60,9 @@ for (const marker of [
   'ckd.v40-lite.participant.v1',
   'ckd.v40-lite.progress.v1',
   'ckd.v40-lite.step5.metrics.v1',
+  'ckd.v40-lite.step6.customerReaction.v1',
   'V40LiteStep5Metrics',
+  'V40LiteStep6CustomerReaction',
 ]) mustInclude(files.store, marker, 'v40-lite store');
 
 for (const marker of [
