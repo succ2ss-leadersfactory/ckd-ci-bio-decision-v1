@@ -19,6 +19,7 @@
     "src/journey-v39-people-dialogue-ux-lab.tsx",
     "src/journey-v39-people-dialogue-result-store.ts",
     "src/journey-v39-ai-call-plan-lab.tsx",
+    "src/journey-v39-ai-call-plan-ux-lab.tsx",
     "src/journey-v39-ai-call-plan-result-store.ts",
     "src/journey-v39-compliance-cleanup-lab.tsx",
     "src/journey-v39-compliance-cleanup-result-store.ts",
