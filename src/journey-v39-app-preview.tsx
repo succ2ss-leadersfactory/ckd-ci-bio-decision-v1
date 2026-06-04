@@ -8,7 +8,7 @@ import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
 import { V39AiCallPlanLab } from './journey-v39-ai-call-plan-lab';
 import { V39ComplianceCleanupLab } from './journey-v39-compliance-cleanup-lab';
-import { V39CustomerJudgmentLab } from './journey-v39-customer-judgment-lab';
+import { V39CustomerJudgmentUxLab } from './journey-v39-customer-judgment-ux-lab';
 import { V39CustomerPriorityUxLab } from './journey-v39-customer-priority-ux-lab';
 import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
@@ -106,7 +106,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'prompt-practice') return <PromptPracticeLab />;
   if (current.id === 'research-strategy') return <ResearchStrategyLab />;
   if (current.id === 'dashboard-analysis') return <V39DashboardAnalysisLab />;
-  if (current.id === 'customer-judgment') return <V39CustomerJudgmentLab />;
+  if (current.id === 'customer-judgment') return <V39CustomerJudgmentUxLab />;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
   if (current.id === 'member-role') return <V39MemberRoleUxLab />;
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
