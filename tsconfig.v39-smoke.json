@@ -8,6 +8,7 @@
     "src/journey-v39-customer-judgment-lab.tsx",
     "src/journey-v39-customer-judgment-result-store.ts",
     "src/journey-v39-customer-priority-lab.tsx",
+    "src/journey-v39-customer-priority-ux-lab.tsx",
     "src/journey-v39-customer-strategy-result-store.ts",
     "src/journey-v39-member-role-lab.tsx",
     "src/journey-v39-member-role-ux-lab.tsx",
