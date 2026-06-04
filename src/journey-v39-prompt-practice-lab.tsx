@@ -5,10 +5,15 @@ const V39_PROMPT_PRACTICE_STORAGE_KEY = 'ckd.v39.promptPractice.v1';
 const V39_PROMPT_PRACTICE_SMOKE_MARKERS = [
   'V39PromptPracticeLab',
   '일반 질문과 구조화 질문의 차이',
+  '우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기',
   '역할·맥락·지시/과제·형식',
   'AI 없이도 할 수 있습니다',
   'AI를 쓰면 좋아지는 점',
   '제약영업 현장을 오래 해본 선배 팀장',
+  '영업활동 기록',
+  '방문·면담 기록',
+  '고객 활동 Data',
+  '사내 시스템/CRM',
   '4단계 AI 전략 리서치로 넘길 질문',
 ].join('|');
 void V39_PROMPT_PRACTICE_SMOKE_MARKERS;
@@ -66,10 +71,10 @@ const ROLE_OPTIONS: RoleOption[] = [
     useWhen: '관리 지표와 실행 기준을 정리할 때',
   },
   {
-    id: 'crm-support',
-    label: 'CRM/영업지원 담당자',
-    promptText: 'CRM과 활동 기록을 보는 담당자 입장에서, 어떤 기록을 더 확인해야 할지 봐주세요.',
-    useWhen: '고객 활동 Data와 기록 품질을 볼 때',
+    id: 'sales-record-support',
+    label: '영업활동 기록/영업지원 담당자',
+    promptText: '영업활동 기록과 고객 활동 Data를 보는 담당자 입장에서, 어떤 기록을 더 확인해야 할지 봐주세요. 필요하면 사내 시스템/CRM에 남긴 활동 기록 관점도 함께 봐주세요.',
+    useWhen: '고객 활동 Data와 방문·면담 기록 품질을 볼 때',
   },
   {
     id: 'compliance',
@@ -87,32 +92,74 @@ const ROLE_OPTIONS: RoleOption[] = [
 
 const CONCERN_OPTIONS: ConcernOption[] = [
   {
-    id: 'crm-follow-up',
-    label: 'CRM 기록은 늘었지만 후속조치가 약하다',
-    plainQuestion: 'CRM 기록은 늘었는데 후속조치가 약합니다. 어떻게 해야 하나요?',
-    context: '우리 팀은 최근 CRM 입력 건수는 늘었지만, 방문 이후 후속 미팅이나 고객 질문 기록으로 이어지는 비율은 낮습니다. 고연차 팀원은 “현장은 숫자로만 보면 안 됩니다”라고 말하고, 저연차 팀원은 “무엇을 후속조치로 봐야 할지 기준이 필요합니다”라고 말합니다.',
+    id: 'follow-up-gap',
+    label: '방문은 하는데 다음 대화나 후속조치로 잘 이어지지 않는다',
+    plainQuestion: '방문은 하고 있는데 후속조치가 잘 이어지지 않습니다. 어떻게 해야 하나요?',
+    context: '우리 팀은 고객 방문과 접촉 활동은 꾸준히 하고 있지만, 방문 이후 다음 대화, 자료 요청 대응, 후속 일정 확인으로 이어지는 비율은 낮습니다. 고연차 팀원은 “현장은 숫자로만 보면 안 됩니다”라고 말하고, 저연차 팀원은 “무엇을 후속조치로 봐야 할지 기준이 필요합니다”라고 말합니다.',
     task: '이 상황에서 팀장이 확인해야 할 원인 가설과, 이번 2주 동안 볼 수 있는 관리 지표 후보를 정리해 주세요. 단순 활동량보다 후속 행동과 고객 대화 품질을 볼 수 있는 기준을 포함해 주세요.',
   },
   {
-    id: 'visit-constraint',
-    label: '대면 방문이 어려워졌는데 대체 접점 기준이 없다',
-    plainQuestion: '방문이 어려운 고객에게 어떻게 대응하면 좋을까요?',
-    context: '일부 고객군은 대면 방문 일정이 줄고 있고, 팀원들은 자료 전달·전화·온라인 접점 등 대체 활동을 하고 있습니다. 하지만 어떤 활동을 의미 있는 후속 접점으로 볼지 기준이 부족합니다.',
-    task: '방문 외 대체 접점을 실행관리 관점에서 볼 수 있는 기준과, 이번 2주 동안 확인할 고객 Data 항목을 제안해 주세요.',
+    id: 'activity-record-blindspot',
+    label: '영업활동 기록은 남기지만 고객 반응과 다음 행동이 잘 보이지 않는다',
+    plainQuestion: '영업활동 기록은 있는데 고객 반응과 다음 행동이 잘 보이지 않습니다. 어떻게 정리하면 좋을까요?',
+    context: '우리 팀은 사내 영업활동 기록에는 방문·면담 내용이 남아 있지만, 고객 질문, 자료 요청, 다음 접점, 후속조치가 멈춘 이유는 팀원마다 다르게 적고 있습니다. 숫자는 보이지만 고객 반응의 질과 다음 행동을 비교하기 어렵습니다.',
+    task: '영업활동 기록과 고객 활동 Data에서 팀장이 꼭 봐야 할 항목을 정리해 주세요. 고객 반응, 다음 행동, 부족 정보, 조심할 해석을 구분해 이번 2주 관리 기준으로 바꿔 주세요.',
   },
   {
-    id: 'record-quality',
-    label: '팀원마다 CRM 기록 품질 차이가 크다',
-    plainQuestion: '팀원마다 CRM 기록 방식이 다른데 어떻게 정리하면 좋을까요?',
-    context: '방문 기록은 있지만 고객 질문, 자료 요청, 다음 접점, 후속조치가 멈춘 이유가 팀원별로 다르게 기록되어 있습니다. 숫자는 보이지만 고객 반응의 질을 비교하기 어렵습니다.',
-    task: 'CRM 기록 품질을 높이기 위해 팀장이 확인할 기준과 팀원에게 설명할 문장을 정리해 주세요.',
+    id: 'existing-customer-bias',
+    label: '기존 거래처 중심으로 활동이 몰리고 신규 접점은 계속 뒤로 밀린다',
+    plainQuestion: '기존 고객 중심으로만 활동이 몰리는데 신규 접점을 어떻게 봐야 할까요?',
+    context: '팀원들은 익숙한 고객군에는 안정적으로 방문하지만, 신규·미접촉 고객군은 접근 경로가 애매하다는 이유로 뒤로 밀리는 경우가 많습니다. 상부에서는 신규 접점 확대를 요구하지만, 현장에서는 방문 제약과 정보 부족을 이야기합니다.',
+    task: '기존 고객 편중을 확인할 수 있는 고객 활동 Data 항목과, 신규 접점을 무리 없이 늘리기 위한 2주 실행 기준을 정리해 주세요. 단순 신규 방문 수가 아니라 접근 경로, 고객 반응, 후속 가능성까지 포함해 주세요.',
   },
   {
-    id: 'safe-conversation',
-    label: '컴플라이언스 때문에 고객 대화가 조심스럽다',
-    plainQuestion: '고객 대화에서 조심해야 할 표현을 정리해 주세요.',
-    context: '고객 질문이 구체적일수록 팀원들이 답변 범위를 넓게 잡을 위험이 있습니다. 승인자료 범위, 표현 안전선, 미승인 표현 가능성을 미리 점검해야 합니다.',
-    task: '제약영업 고객 대화에서 조심해야 할 표현과, 안전하게 후속 질문으로 전환하는 방법을 정리해 주세요.',
+    id: 'customer-signal-ambiguity',
+    label: '고객이 관심을 보인 것 같은데 어떤 신호를 기회로 봐야 할지 애매하다',
+    plainQuestion: '고객 반응 중 어떤 것을 기회 신호로 봐야 할지 잘 모르겠습니다.',
+    context: '일부 고객은 질문이 늘고 자료를 요청하지만, 이것이 실제 다음 대화로 이어질 수 있는 신호인지 단순 관심인지 판단이 어렵습니다. 팀원들도 같은 반응을 다르게 해석해 실행 방향이 흔들립니다.',
+    task: '고객 반응을 기회 신호, 주의 신호, 아직 부족한 정보로 나누는 기준을 정리해 주세요. 고객을 평가하거나 등급화하지 않고, 다음 확인 질문 중심으로 정리해 주세요.',
+  },
+  {
+    id: 'data-interpretation-gap',
+    label: '팀원마다 같은 고객 Data를 다르게 해석해 실행 방향이 엇갈린다',
+    plainQuestion: '같은 고객 Data를 팀원마다 다르게 해석합니다. 어떻게 기준을 맞추면 좋을까요?',
+    context: '같은 고객 활동 Data를 보고도 어떤 팀원은 “기회가 있다”고 보고, 다른 팀원은 “아직 움직일 상황이 아니다”라고 판단합니다. 팀 회의에서 고객군별 대응 방향을 정하려 해도 해석 기준이 맞지 않아 결론이 흐려집니다.',
+    task: '팀원들이 고객 Data를 해석할 때 함께 쓸 수 있는 기준을 정리해 주세요. 기회 신호, 주의 신호, 부족 정보, 추가 확인 질문을 구분하고 팀 회의에서 설명할 문장도 제안해 주세요.',
+  },
+  {
+    id: 'junior-senior-temperature-gap',
+    label: '저연차 팀원은 우선순위를 어려워하고 기존 팀원은 예전 방식이 낫다고 느낀다',
+    plainQuestion: '저연차 팀원과 기존 팀원의 실행 온도차를 어떻게 다뤄야 할까요?',
+    context: '저연차 팀원은 고객 활동 Data를 보고도 무엇을 먼저 해야 할지 몰라 움직임이 느립니다. 반면 기존 팀원은 “예전에는 이렇게까지 따지지 않았다”고 느끼며 새로운 기준을 부담스러워합니다.',
+    task: '저연차 팀원과 기존 팀원이 다르게 받아들일 수 있는 지점을 정리하고, 팀장이 실행 기준을 설명할 때 사용할 첫 문장과 점검 질문을 제안해 주세요.',
+  },
+  {
+    id: 'pressure-vs-field-constraint',
+    label: '상부는 활동량과 속도를 요구하지만 현장에서는 고객 반응과 방문 제약이 커지고 있다',
+    plainQuestion: '상부의 활동량 요구와 현장의 방문 제약 사이에서 어떤 기준으로 설명해야 할까요?',
+    context: '상부에서는 활동량, 실행 속도, 신규 접점을 강조합니다. 하지만 현장에서는 고객 일정 변경, 방문 제한, 자료 확인 지연, 후속 대화 제약이 커지고 있습니다. 팀장으로서 숫자와 현장 설명을 함께 정리해야 합니다.',
+    task: '상부 보고와 팀 실행관리에서 함께 쓸 수 있는 기준을 정리해 주세요. 활동량, 전환 신호, 고객 반응, 제약요인을 구분하고 이번 2주 동안 확인할 지표 후보를 제안해 주세요.',
+  },
+  {
+    id: 'role-assignment-first-message',
+    label: '팀원에게 역할을 맡기려 해도 지시처럼 들릴까 봐 첫마디가 어렵다',
+    plainQuestion: '팀원에게 역할을 맡길 때 지시처럼 들리지 않게 말하려면 어떻게 해야 하나요?',
+    context: '고객군별 대응 방향은 어느 정도 정했지만, 팀원에게 역할을 맡기는 첫마디가 어렵습니다. 어떤 팀원은 부담으로 받아들일 수 있고, 어떤 팀원은 “왜 나에게만 맡기나”라고 느낄 수 있습니다.',
+    task: '팀원에게 역할을 맡길 때 사용할 수 있는 실행 대화 문장을 정리해 주세요. 역할 기준, 팀장이 지원할 것, 중간 점검 질문, 피해야 할 표현을 포함해 주세요.',
+  },
+  {
+    id: 'ai-boundary-anxiety',
+    label: 'AI로 실행계획을 만들 수는 있을 것 같은데 어디까지 물어봐도 되는지 불안하다',
+    plainQuestion: '제약영업에서 AI에게 어디까지 물어봐도 되는지 불안합니다. 기준을 정리해 주세요.',
+    context: 'AI를 쓰면 실행계획 초안이나 팀 회의 문장을 빨리 만들 수 있을 것 같지만, 고객명, 병원명, 제품명, 내부 수치, 미승인 표현이 들어가면 위험할 수 있다는 걱정이 있습니다. 팀원들도 AI 활용 기준을 명확히 알고 싶어 합니다.',
+    task: '제약영업 팀장이 AI에게 물어볼 수 있는 것과 피해야 할 것을 구분해 주세요. 안전한 프롬프트 작성 기준, 위험 표현, 대체 문장, 최종 검토 체크리스트를 정리해 주세요.',
+  },
+  {
+    id: 'meeting-message-unclear',
+    label: '팀 회의에서 실행 기준을 설명해야 하는데 지표·고객 Data·팀원 역할이 하나로 정리되지 않는다',
+    plainQuestion: '팀 회의에서 실행 기준을 어떻게 설명해야 할지 정리가 안 됩니다.',
+    context: '이번 2주 동안 무엇을 볼지, 고객 활동 Data에서 무엇을 확인할지, 어떤 팀원이 어떤 역할을 맡을지까지 정해야 합니다. 하지만 팀 회의에서 설명하려고 하면 관리 지표, 고객 Data, 팀원 역할, 컴플라이언스 기준이 따로 노는 느낌입니다.',
+    task: '팀 회의에서 사용할 실행 기준 설명 구조를 정리해 주세요. 관리 지표, 고객 Data 확인 List, 팀원 역할, 안전한 표현 기준, 마지막 확인 질문을 하나의 흐름으로 묶어 주세요.',
   },
 ];
 
@@ -189,7 +236,6 @@ export function V39PromptPracticeLab() {
   const [storedResponse, setResponse] = useStored<PromptPracticeResponse>(V39_PROMPT_PRACTICE_STORAGE_KEY, DEFAULT_RESPONSE);
   const response = { ...DEFAULT_RESPONSE, ...storedResponse, reviewChecks: storedResponse.reviewChecks ?? {} };
   const [copyMessage, setCopyMessage] = useState('');
-  const currentConcern = getConcern(response.concernId);
   const structuredPrompt = useMemo(() => response.finalPrompt || buildStructuredPrompt(response), [response]);
   const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
 
@@ -232,8 +278,9 @@ export function V39PromptPracticeLab() {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
-        <p className="font-black">3단계. 일반 질문과 구조화 질문의 차이 체감하기</p>
-        <p className="mt-1">AI가 없어도 팀장님들은 이미 고민을 정리하고 질문할 수 있습니다. 다만 AI를 쓰면 역할·맥락·지시/과제·형식으로 질문을 구조화해 답변의 깊이와 활용 가능성을 높일 수 있습니다.</p>
+        <p className="font-black">3단계. 우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기</p>
+        <p className="mt-1">팀장의 고민은 머릿속에 있지만, AI는 그 맥락을 모릅니다. 이번 단계에서는 평소처럼 짧게 묻는 일반 질문과 역할·맥락·지시/과제·형식이 들어간 구조화 질문의 차이를 직접 확인합니다.</p>
+        <p className="mt-1 text-xs font-bold">영업활동 기록, 방문·면담 기록, 고객 활동 Data를 기본 표현으로 사용합니다. 회사마다 부르는 사내 시스템 이름이 다를 수 있으므로 CRM은 필요할 때만 사내 시스템/CRM으로 함께 표시합니다.</p>
       </div>
 
       <section className="grid gap-3 md:grid-cols-2">
@@ -243,11 +290,14 @@ export function V39PromptPracticeLab() {
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
           <p className="font-black">AI를 쓰면 좋아지는 점</p>
-          <p className="mt-1">머릿속 고민을 더 빨리 꺼내고, 누구의 관점으로 볼지 정하고, 답변을 관리 지표·확인 질문·회의 문장 형태로 받을 수 있습니다.</p>
+          <p className="mt-1">머릿속 고민을 더 빨리 꺼내고, 누구의 관점으로 볼지 정하고, 답변을 관리 지표·고객 Data 확인 질문·회의 문장 형태로 받을 수 있습니다.</p>
         </div>
       </section>
 
       <SectionCard title="Block 0. 우리 팀에 가까운 고민 선택">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
+          아래 선택지는 프롬프트 연습용 예시입니다. 실제 고객명·병원명·의료진명·제품명·내부 수치 없이, 우리 팀 상황과 비슷한 고민을 고릅니다.
+        </div>
         <div className="grid gap-3 md:grid-cols-2">
           {CONCERN_OPTIONS.map((item) => {
             const selected = response.concernId === item.id;
@@ -258,7 +308,7 @@ export function V39PromptPracticeLab() {
             );
           })}
         </div>
-        <label className="block space-y-1"><FieldLabel>우리 팀 고민 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customConcern} onChange={(event) => update({ customConcern: event.target.value })} placeholder="예: 대체 접점은 늘었지만 고객 반응을 어떻게 봐야 할지 애매하다" /></label>
+        <label className="block space-y-1"><FieldLabel>우리 팀 고민 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customConcern} onChange={(event) => update({ customConcern: event.target.value })} placeholder="예: 방문·면담 기록은 있는데 고객 반응을 어떻게 봐야 할지 애매하다" /></label>
       </SectionCard>
 
       <SectionCard title="Block 1. 일반 질문으로 먼저 물어보기">
@@ -271,7 +321,7 @@ export function V39PromptPracticeLab() {
       <SectionCard title="Block 2. 역할·맥락·지시/과제·형식으로 재작성">
         <div className="rounded-2xl bg-slate-50 p-4 text-sm font-bold leading-6 text-slate-700">
           <p className="font-black text-slate-950">역할은 “누구의 도움을 받을 것인가”입니다.</p>
-          <p className="mt-1">추상적인 코치·전문가보다, 선배 팀장·본부장·영업기획 담당자·CRM/영업지원 담당자·컴플라이언스 담당자처럼 실제 현업에서 떠올릴 수 있는 사람의 관점을 선택합니다.</p>
+          <p className="mt-1">추상적인 코치·전문가보다, 선배 팀장·본부장·영업기획 담당자·영업활동 기록/영업지원 담당자·컴플라이언스 담당자처럼 실제 현업에서 떠올릴 수 있는 사람의 관점을 선택합니다.</p>
         </div>
         <label className="block space-y-1"><FieldLabel>역할 선택</FieldLabel><select className="w-full rounded-xl border bg-white px-3 py-2 text-sm" value={response.roleId} onChange={(event) => update({ roleId: event.target.value, finalPrompt: '' })}>{ROLE_OPTIONS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.useWhen}</option>)}</select></label>
         <label className="block space-y-1"><FieldLabel>역할 직접 수정</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customRole} onChange={(event) => update({ customRole: event.target.value, finalPrompt: '' })} placeholder={ROLE_OPTIONS[0].promptText} /></label>
