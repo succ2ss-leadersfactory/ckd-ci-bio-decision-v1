@@ -4,6 +4,7 @@
     "src/vite-env.d.ts",
     "src/journey-v39-app-preview.tsx",
     "src/journey-v39-preview-config.ts",
+    "src/journey-v39-research-strategy-lab.tsx",
     "src/journey-v39-dashboard-analysis-lab.tsx",
     "src/journey-v39-dashboard-analysis-ux-lab.tsx",
     "src/journey-v39-customer-judgment-lab.tsx",
