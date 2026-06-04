@@ -131,7 +131,14 @@ for (const marker of ['팀원 실행 Data를 역할 판단의 근거로 정리�
   pass(notIncludes(files['src/journey-v39-dashboard-analysis-ux-lab.tsx'], marker), `dashboard analysis UX wrapper must not expose old marker: ${marker}`);
 }
 
-for (const marker of ['6단계 진행 가이드', '고객 Data에서 기회와 착시를 분리합니다', '고객 Data 판단 상태', '선택 고객 유형', '6단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
+for (const marker of ['고객 Data 확인 List', '고객의 무엇을 확인할 것인가', '기회 신호 기준', '주의 신호 기준', '부족한 정보', '추가 확인 질문']) {
+  pass(includes(files['src/journey-v39-customer-judgment-lab.tsx'], marker), `customer judgment missing data checklist marker: ${marker}`);
+}
+for (const marker of ['고객 유형 A~F 카드 보기와 판단 대상 선택', '집중/유지/보류/정보 보완 중 현재 판단']) {
+  pass(notIncludes(files['src/journey-v39-customer-judgment-lab.tsx'], marker), `customer judgment must not expose old priority marker: ${marker}`);
+}
+
+for (const marker of ['6단계 진행 가이드', '6단계. 고객의 무엇을 볼 것인가', '5단계에서 넘겨받은 기준', '관리 지표를 고객 Data로 확인하기', '고객 Data 해석 메모', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
   pass(includes(files['src/journey-v39-customer-judgment-ux-lab.tsx'], marker), `customer judgment UX wrapper missing marker: ${marker}`);
 }
 
@@ -212,7 +219,7 @@ const tsconfig = files['tsconfig.v39-smoke.json'];
 for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsWith('.ts'))) pass(includes(tsconfig, file), `tsconfig.v39-smoke.json must include ${file}`);
 
 const staticSmoke = files['scripts/smoke-v39-static.mjs'];
-for (const file of ['src/journey-v39-research-strategy-lab.tsx', 'src/journey-v39-dashboard-analysis-ux-lab.tsx', 'src/journey-v39-customer-judgment-ux-lab.tsx', 'src/journey-v39-customer-priority-ux-lab.tsx', 'src/journey-v39-member-role-ux-lab.tsx', 'src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-ai-call-plan-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
+for (const file of ['src/journey-v39-research-strategy-lab.tsx', 'src/journey-v39-dashboard-analysis-ux-lab.tsx', 'src/journey-v39-customer-judgment-lab.tsx', 'src/journey-v39-customer-judgment-ux-lab.tsx', 'src/journey-v39-customer-priority-ux-lab.tsx', 'src/journey-v39-member-role-ux-lab.tsx', 'src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-ai-call-plan-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 
 for (const [doc, markers] of [
   ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', '12단계 저장', '13단계: 강사용 토의 질문', '5→13단계 저장·연결 흐름 정상']],
