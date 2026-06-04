@@ -15,12 +15,13 @@ import { V39InstructorDiscussionLab } from './journey-v39-instructor-discussion-
 import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussion-ux-lab';
 import { V39MemberRoleUxLab } from './journey-v39-member-role-ux-lab';
 import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
+import { V39PromptConcernBridgeCard } from './journey-v39-prompt-concern-bridge-card';
 import { V39PromptPracticeLab } from './journey-v39-prompt-practice-lab';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard 3단계에서 선택한 우리 팀 고민';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -110,8 +111,8 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
   if (current.id === 'prompt-practice') return <V39PromptPracticeLab />;
-  if (current.id === 'research-strategy') return <V39ResearchStrategyLab />;
-  if (current.id === 'dashboard-analysis') return <V39DashboardAnalysisUxLab />;
+  if (current.id === 'research-strategy') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="research" /><V39ResearchStrategyLab /></div>;
+  if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
   if (current.id === 'customer-judgment') return <V39CustomerJudgmentUxLab />;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
   if (current.id === 'member-role') return <V39MemberRoleUxLab />;
