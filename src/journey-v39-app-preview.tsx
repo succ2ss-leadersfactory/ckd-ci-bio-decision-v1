@@ -14,6 +14,7 @@ import { V39DashboardAnalysisUxLab } from './journey-v39-dashboard-analysis-ux-l
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
 import { V39FinalCallPlanUxCard } from './journey-v39-final-call-plan-ux-card';
 import { V39InstructorDiscussionLab } from './journey-v39-instructor-discussion-lab';
+import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussion-ux-lab';
 import { V39MemberRoleUxLab } from './journey-v39-member-role-ux-lab';
 import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
@@ -22,6 +23,7 @@ const rootElement = document.getElementById('journey-root') ?? document.getEleme
 const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
+void V39InstructorDiscussionLab;
 
 type V39Participant = {
   name: string;
@@ -117,7 +119,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'ai-call-plan') return <V39AiCallPlanUxLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupUxLab />;
   if (current.id === 'final-call-plan-card') return <V39FinalCallPlanUxCard />;
-  if (current.id === 'instructor-discussion') return <V39InstructorDiscussionLab />;
+  if (current.id === 'instructor-discussion') return <V39InstructorDiscussionUxLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 준비 중입니다.</p></ShellCard>;
 }
