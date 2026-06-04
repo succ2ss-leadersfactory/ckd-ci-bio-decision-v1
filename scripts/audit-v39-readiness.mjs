@@ -42,6 +42,7 @@ const v39Files = [
   'journey-v39-preview.html',
   'src/journey-v39-app-preview.tsx',
   'src/journey-v39-preview-config.ts',
+  'src/journey-v39-research-strategy-lab.tsx',
   'src/journey-v39-dashboard-analysis-lab.tsx',
   'src/journey-v39-dashboard-analysis-ux-lab.tsx',
   'src/journey-v39-dashboard-result-store.ts',
@@ -89,15 +90,17 @@ pass(includes(html, '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</t
 for (const marker of ['v39 Preview', 'C1바이오 v39 Preview', 'preview shell', 'DOM 후처리']) pass(notIncludes(html, marker), `Client-facing HTML must not expose internal wording: ${marker}`);
 
 const app = files['src/journey-v39-app-preview.tsx'];
-for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) {
+for (const marker of ['V39PreviewApp', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39ComplianceCleanupLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) {
   pass(includes(app, marker), `v39 app missing route/component marker: ${marker}`);
 }
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step', "import './journey-v38-app-preview';", "from './journey-active'"]) pass(notIncludes(app, marker), `v39 app must not expose old route marker: ${marker}`);
 
 const config = files['src/journey-v39-preview-config.ts'];
-for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) pass(includes(config, marker), `v39 config missing marker: ${marker}`);
+for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'AI 전략 리서치', '우리 팀 관리 지표 선정', '고객 Data 확인 List', '팀원 온도차와 실행 대화']) pass(includes(config, marker), `v39 config missing marker: ${marker}`);
+for (const marker of ['AI 전략 리서치 Pack', '팀원 실행진단']) pass(notIncludes(config, marker), `v39 config must not expose outdated marker: ${marker}`);
 
 const expectedImplementationMarkers = [
+  ['src/journey-v39-research-strategy-lab.tsx', 'V39ResearchStrategyLab'],
   ['src/journey-v39-dashboard-analysis-lab.tsx', 'V38DashboardAnalysisLab'],
   ['src/journey-v39-dashboard-analysis-ux-lab.tsx', 'V39DashboardAnalysisUxLab'],
   ['src/journey-v39-customer-judgment-lab.tsx', 'V39CustomerDataJudgmentFlow'],
@@ -116,8 +119,16 @@ const expectedImplementationMarkers = [
 ];
 for (const [file, marker] of expectedImplementationMarkers) pass(includes(files[file], marker), `${file} missing implementation marker: ${marker}`);
 
-for (const marker of ['5단계 진행 가이드', '팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형', '5단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
+for (const marker of ['AI 전략 리서치', 'Perplexity', 'NotebookLM', 'Studio', '5단계 연결 카드', '관리 지표로 바꿀 실행 질문']) {
+  pass(includes(files['src/journey-v39-research-strategy-lab.tsx'], marker), `research strategy missing marker: ${marker}`);
+}
+for (const marker of ['AI 전략 리서치 Pack']) pass(notIncludes(files['src/journey-v39-research-strategy-lab.tsx'], marker), `research strategy must not expose outdated marker: ${marker}`);
+
+for (const marker of ['5단계 진행 가이드', '4단계 AI 전략 리서치 연결', '관리 지표 선정 상태', '선택한 핵심 실행 지표', '고객 Data 확인 List로 넘길 기준', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
   pass(includes(files['src/journey-v39-dashboard-analysis-ux-lab.tsx'], marker), `dashboard analysis UX wrapper missing marker: ${marker}`);
+}
+for (const marker of ['팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형']) {
+  pass(notIncludes(files['src/journey-v39-dashboard-analysis-ux-lab.tsx'], marker), `dashboard analysis UX wrapper must not expose old marker: ${marker}`);
 }
 
 for (const marker of ['6단계 진행 가이드', '고객 Data에서 기회와 착시를 분리합니다', '고객 Data 판단 상태', '선택 고객 유형', '6단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
@@ -201,7 +212,7 @@ const tsconfig = files['tsconfig.v39-smoke.json'];
 for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsWith('.ts'))) pass(includes(tsconfig, file), `tsconfig.v39-smoke.json must include ${file}`);
 
 const staticSmoke = files['scripts/smoke-v39-static.mjs'];
-for (const file of ['src/journey-v39-dashboard-analysis-ux-lab.tsx', 'src/journey-v39-customer-judgment-ux-lab.tsx', 'src/journey-v39-customer-priority-ux-lab.tsx', 'src/journey-v39-member-role-ux-lab.tsx', 'src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-ai-call-plan-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
+for (const file of ['src/journey-v39-research-strategy-lab.tsx', 'src/journey-v39-dashboard-analysis-ux-lab.tsx', 'src/journey-v39-customer-judgment-ux-lab.tsx', 'src/journey-v39-customer-priority-ux-lab.tsx', 'src/journey-v39-member-role-ux-lab.tsx', 'src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-ai-call-plan-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
 
 for (const [doc, markers] of [
   ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', '12단계 저장', '13단계: 강사용 토의 질문', '5→13단계 저장·연결 흐름 정상']],
@@ -219,8 +230,9 @@ if (failures.length > 0) {
   throw new Error(`v39 readiness audit failed: ${failures.length} issue(s)`);
 }
 
-console.log('v39 readiness audit passed');
 if (warnings.length > 0) {
   console.warn('v39 readiness audit warnings:');
   for (const item of warnings) console.warn(`- ${item}`);
 }
+
+console.log('v39 readiness audit passed');
