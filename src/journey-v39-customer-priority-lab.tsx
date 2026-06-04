@@ -17,10 +17,12 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   'V39CustomerPriorityLab',
   'V39CustomerJudgmentBridgePanel',
   '고객군별 2주 대응 방향',
+  '고객군 × 팀원 2주 실행 Map',
   '6단계 고객 Data 확인 List',
   '대응 강도',
   '2주 대응 방향',
   '팀원 연결 기준',
+  '실제 연결 후보',
   '위험·보완 조건',
 ].join('|');
 void V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS;
@@ -126,6 +128,7 @@ function V39CustomerJudgmentBridgePanel() {
   const displayItems = getDisplayItems(sourceResult);
   const checklistCount = displayItems.filter((item) => decisions[item.id]?.reason || decisions[item.id]?.judgmentMemo).length;
   const savedStrategyCount = displayItems.filter((item) => strategies[item.id]?.strategy?.trim()).length;
+  const savedMemberConnectionCount = displayItems.filter((item) => strategies[item.id]?.memberRole?.trim()).length;
 
   const refreshCustomerJudgmentBridge = () => {
     const nextSource = loadSourceJudgmentResult();
@@ -163,16 +166,16 @@ function V39CustomerJudgmentBridgePanel() {
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer Two-Week Direction</p>
-          <h2 className="mt-2 text-2xl font-black text-slate-950">고객군별 2주 대응 방향 정리하기</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Customer × Member Two-Week Execution Map</p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">고객군 × 팀원 2주 실행 Map 만들기</h2>
           <p className="mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-700">
-            6단계 고객 Data 확인 List를 바탕으로 이번 2주 동안 어떤 고객군은 조건부로 움직이고, 어떤 고객군은 정보를 보완하며, 어떤 고객군은 안전선을 먼저 확인할지 정리합니다.
-            이 단계도 고객을 서열화하지 않고, 대응 방향과 보완 조건을 정하는 화면입니다.
+            6단계 고객 Data 확인 List를 바탕으로 고객군별 2주 대응 방향과 팀원 연결 기준을 함께 정리합니다. 고객 대응과 팀원 배치는 실제 현장에서 동시에 일어나므로, 이 화면에서는 “어떤 조건에서 움직일지”와 “누가 어떤 역할로 연결될지”를 하나의 Map으로 남깁니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">확인 List {checklistCount} / {displayItems.length}</div>
           <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">대응 방향 {savedStrategyCount} / {displayItems.length}</div>
+          <div className="rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-emerald-800 shadow-sm">팀원 연결 {savedMemberConnectionCount} / {displayItems.length}</div>
           <button type="button" className="rounded-2xl border bg-white px-4 py-3 text-xs font-black text-slate-600 shadow-sm" onClick={refreshCustomerJudgmentBridge}>6단계 확인 List 새로고침</button>
         </div>
       </div>
@@ -202,12 +205,12 @@ function V39CustomerJudgmentBridgePanel() {
                 <div className="rounded-2xl bg-amber-50 p-3"><span className="font-black text-amber-900">주의·보완 조건</span><br />{buildRiskGuide(current) || '주의 신호, 부족 정보, 안전선을 확인합니다.'}</div>
                 <div className="rounded-2xl bg-sky-50 p-3"><span className="font-black text-sky-900">추가 확인 질문</span><br />{current.nextCheck || '다음 대화 전에 팀원이 확인할 질문을 정리합니다.'}</div>
               </div>
-              <button type="button" className="mt-3 w-full rounded-2xl bg-emerald-700 px-4 py-2 text-xs font-black text-white" onClick={() => applyDirectionDraft(item, current)}>2주 대응 방향 초안 가져오기</button>
+              <button type="button" className="mt-3 w-full rounded-2xl bg-emerald-700 px-4 py-2 text-xs font-black text-white" onClick={() => applyDirectionDraft(item, current)}>2주 실행 Map 초안 가져오기</button>
 
               <div className="mt-3 space-y-3">
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">대응 강도</span><select className="w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={strategy.priority} onChange={(event) => updateStrategy(item.id, { priority: event.target.value })}><option value="">선택하세요</option>{RESPONSE_DIRECTION_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">2주 대응 방향</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.strategy} onChange={(event) => updateStrategy(item.id, { strategy: event.target.value })} placeholder="예: 고객 질문의 구체성을 확인하고, 승인자료 범위 안에서 다음 접점 주제를 준비한다." /></label>
-                <label className="block space-y-1"><span className="text-xs font-black text-slate-500">팀원 연결 기준</span><select className="w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={strategy.memberRole} onChange={(event) => updateStrategy(item.id, { memberRole: event.target.value })}><option value="">선택하세요</option>{MEMBER_ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+                <label className="block space-y-1"><span className="text-xs font-black text-slate-500">팀원 연결 기준 / 실제 연결 후보</span><select className="w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={strategy.memberRole} onChange={(event) => updateStrategy(item.id, { memberRole: event.target.value })}><option value="">선택하세요</option>{MEMBER_ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">위험·보완 조건</span><textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.risk} onChange={(event) => updateStrategy(item.id, { risk: event.target.value })} placeholder="예: 표현 안전선, 부족 정보, 고객 부담 가능성을 먼저 확인한다." /></label>
               </div>
             </article>
