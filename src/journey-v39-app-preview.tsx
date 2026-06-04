@@ -4,7 +4,6 @@ import './index.css';
 import { JourneyShell } from './journey-shell';
 import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { PromptPracticeLab } from './journey-v36-prompt-practice-lab';
-import { ResearchStrategyLab } from './journey-v36-research-strategy-lab';
 import { useStored } from './journey-storage';
 import { V39AiCallPlanUxLab } from './journey-v39-ai-call-plan-ux-lab';
 import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-ux-lab';
@@ -18,9 +17,10 @@ import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussio
 import { V39MemberRoleUxLab } from './journey-v39-member-role-ux-lab';
 import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
+import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -110,7 +110,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
   if (current.id === 'prompt-practice') return <PromptPracticeLab />;
-  if (current.id === 'research-strategy') return <ResearchStrategyLab />;
+  if (current.id === 'research-strategy') return <V39ResearchStrategyLab />;
   if (current.id === 'dashboard-analysis') return <V39DashboardAnalysisUxLab />;
   if (current.id === 'customer-judgment') return <V39CustomerJudgmentUxLab />;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
