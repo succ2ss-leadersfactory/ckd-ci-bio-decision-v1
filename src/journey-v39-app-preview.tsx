@@ -18,6 +18,8 @@ import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab';
+void V39_STATIC_ROUTE_MARKERS;
 
 type V39Participant = {
   name: string;
