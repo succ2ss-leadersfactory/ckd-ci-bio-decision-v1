@@ -26,6 +26,7 @@ const files = {
   app: read('src/journey-v39-app-preview.tsx'),
   config: read('src/journey-v39-preview-config.ts'),
   tsconfig: read('tsconfig.v39-smoke.json'),
+  promptPractice: read('src/journey-v39-prompt-practice-lab.tsx'),
   researchStrategy: read('src/journey-v39-research-strategy-lab.tsx'),
   dashboard: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   dashboardUx: read('src/journey-v39-dashboard-analysis-ux-lab.tsx'),
@@ -47,11 +48,12 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39PromptPracticeLab', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
   'src/journey-v39-app-preview.tsx',
+  'src/journey-v39-prompt-practice-lab.tsx',
   'src/journey-v39-research-strategy-lab.tsx',
   'src/journey-v39-dashboard-analysis-lab.tsx',
   'src/journey-v39-dashboard-analysis-ux-lab.tsx',
@@ -70,6 +72,8 @@ for (const marker of [
   'src/journey-v39-final-call-plan-result-store.ts',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
+for (const marker of ['V39PromptPracticeLab', '일반 질문과 구조화 질문의 차이', '역할·맥락·지시/과제·형식', 'AI 없이도 할 수 있습니다', 'AI를 쓰면 좋아지는 점', '제약영업 현장을 오래 해본 선배 팀장', '4단계 AI 전략 리서치로 넘길 질문']) mustInclude(files.promptPractice, marker, 'prompt practice');
+for (const marker of ['실행관리 코치', 'AI 사고 파트너', '전략적 실행관리 전문가']) mustNotInclude(files.promptPractice, marker, 'prompt practice artificial wording');
 for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', 'Perplexity', 'NotebookLM', 'Studio', '5단계 연결 카드', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
 for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.researchStrategy, marker, 'research strategy old naming');
 for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.config, marker, 'v39 config old naming');
