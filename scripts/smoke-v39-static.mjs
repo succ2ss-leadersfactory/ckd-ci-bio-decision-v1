@@ -26,6 +26,7 @@ const files = {
   app: read('src/journey-v39-app-preview.tsx'),
   config: read('src/journey-v39-preview-config.ts'),
   tsconfig: read('tsconfig.v39-smoke.json'),
+  researchStrategy: read('src/journey-v39-research-strategy-lab.tsx'),
   dashboard: read('src/journey-v39-dashboard-analysis-lab.tsx'),
   dashboardUx: read('src/journey-v39-dashboard-analysis-ux-lab.tsx'),
   customerJudgment: read('src/journey-v39-customer-judgment-lab.tsx'),
@@ -46,11 +47,12 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
   'src/journey-v39-app-preview.tsx',
+  'src/journey-v39-research-strategy-lab.tsx',
   'src/journey-v39-dashboard-analysis-lab.tsx',
   'src/journey-v39-dashboard-analysis-ux-lab.tsx',
   'src/journey-v39-customer-judgment-lab.tsx',
@@ -68,6 +70,7 @@ for (const marker of [
   'src/journey-v39-final-call-plan-result-store.ts',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
+for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치 Pack', 'Perplexity', 'NotebookLM', 'Studio', '5단계로 넘길 실행전략 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
 for (const marker of ['V39DashboardAnalysisLab', 'V38DashboardAnalysisLab']) mustInclude(files.dashboard, marker, 'dashboard');
 for (const marker of ['V39DashboardAnalysisUxLab', '5단계 진행 가이드', '팀원 실행 Data를 역할 판단의 근거로 정리합니다', '팀 실행진단 상태', '선택 팀원 유형', '5단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
 for (const marker of ['V39CustomerJudgmentLab', 'V39CustomerDataJudgmentFlow']) mustInclude(files.customerJudgment, marker, 'customer judgment');
