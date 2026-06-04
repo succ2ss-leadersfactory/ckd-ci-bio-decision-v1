@@ -15,6 +15,7 @@ const V39_RESEARCH_STRATEGY_SMOKE_MARKERS = [
   '3단계 구조화 프롬프트 연결',
   '5단계 연결 카드',
   '관리 지표로 바꿀 실행 질문',
+  '영업활동 기록은 늘었지만 실행 전환이 약한 팀',
 ].join('|');
 void V39_RESEARCH_STRATEGY_SMOKE_MARKERS;
 
@@ -53,10 +54,13 @@ type PromptPracticeSummary = {
   task?: string;
 };
 
+const LEGACY_CRM_THEME = 'CRM 기록은 늘었지만 실행 전환이 약한 팀';
+const ACTIVITY_RECORD_THEME = '영업활동 기록은 늘었지만 실행 전환이 약한 팀';
+
 const RESEARCH_THEMES = [
   '의료진 정보 탐색 변화와 고객 대화 품질',
   '대면 방문 제약과 대체 접점 실행관리',
-  'CRM 기록은 늘었지만 실행 전환이 약한 팀',
+  ACTIVITY_RECORD_THEME,
   '승인자료 활용과 안전한 후속 대화 품질',
   '팀원별 실행 편차와 후속조치 품질 차이',
 ];
@@ -64,7 +68,7 @@ const RESEARCH_THEMES = [
 const THEME_BRIDGE_HINTS: Record<string, string[]> = {
   '의료진 정보 탐색 변화와 고객 대화 품질': ['고객 질문 기록률', '방문 전 사전 준비 메모율', '후속 자료 요청 대응률', '대화 주제 전환 기록 수'],
   '대면 방문 제약과 대체 접점 실행관리': ['대안활동 실행건수', '방문 제한 사유 공유건수', '비대면 후속 접점 확보건수', '자료 전달 후 후속 확인율'],
-  'CRM 기록은 늘었지만 실행 전환이 약한 팀': ['후속조치 완료율', '다음접점 확보건수', '고객 질문 기록률', '실행 제약 공유건수'],
+  [ACTIVITY_RECORD_THEME]: ['후속조치 완료율', '다음접점 확보건수', '고객 질문 기록률', '실행 제약 공유건수'],
   '승인자료 활용과 안전한 후속 대화 품질': ['승인자료 활용 점검률', '위험 표현 수정건수', '자료 제공 후 확인 질문 기록률', '안전 표현 사전 점검건수'],
   '팀원별 실행 편차와 후속조치 품질 차이': ['후속조치 편차 확인건수', '팀원별 다음접점 확보율', '고객 반응 기록 충실도', '동행 후 개선 행동 실행률'],
 };
@@ -82,7 +86,7 @@ const REVIEW_ITEMS = [
 ];
 
 const DEFAULT_RESPONSE: ResearchStrategyResponse = {
-  selectedTheme: RESEARCH_THEMES[2],
+  selectedTheme: ACTIVITY_RECORD_THEME,
   customTheme: '',
   leaderQuestion: '',
   perplexityAnswer: '',
@@ -124,12 +128,24 @@ function TextArea({ value, onChange, placeholder }: { value: string; onChange: (
   return <textarea className="min-h-24 w-full rounded-xl border px-3 py-2 text-sm leading-6" value={value ?? ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />;
 }
 
+function normalizeTheme(theme: string) {
+  return theme === LEGACY_CRM_THEME ? ACTIVITY_RECORD_THEME : theme;
+}
+
+function sanitizeCrmWording(value: string) {
+  return value
+    .replaceAll(LEGACY_CRM_THEME, ACTIVITY_RECORD_THEME)
+    .replaceAll('CRM 기록', '영업활동 기록')
+    .replaceAll('CRM', '영업활동 기록');
+}
+
 function activeTheme(response: ResearchStrategyResponse) {
-  return response.customTheme.trim() || response.selectedTheme;
+  const custom = sanitizeCrmWording(response.customTheme.trim());
+  return custom || normalizeTheme(response.selectedTheme);
 }
 
 function getThemeBridgeHints(theme: string) {
-  return THEME_BRIDGE_HINTS[theme] ?? ['후속조치 완료율', '다음접점 확보건수', '고객 질문 기록률', '실행 제약 공유건수'];
+  return THEME_BRIDGE_HINTS[normalizeTheme(theme)] ?? ['후속조치 완료율', '다음접점 확보건수', '고객 질문 기록률', '실행 제약 공유건수'];
 }
 
 function loadPromptPracticeSummary(): PromptPracticeSummary | null {
@@ -137,8 +153,7 @@ function loadPromptPracticeSummary(): PromptPracticeSummary | null {
   try {
     const raw = window.localStorage.getItem(V39_PROMPT_PRACTICE_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as PromptPracticeSummary;
-    return parsed;
+    return JSON.parse(raw) as PromptPracticeSummary;
   } catch {
     return null;
   }
@@ -147,9 +162,9 @@ function loadPromptPracticeSummary(): PromptPracticeSummary | null {
 function promptPracticePreview(summary: PromptPracticeSummary | null) {
   if (!summary) return '3단계에서 만든 구조화 프롬프트가 있으면 이곳에 연결됩니다. 없더라도 아래에서 우리 팀 관점의 리서치 질문을 직접 입력할 수 있습니다.';
   return [
-    summary.concern ? `[우리 팀 고민]\n${summary.concern}` : '',
-    summary.plainQuestion ? `[일반 질문]\n${summary.plainQuestion}` : '',
-    summary.task ? `[4단계로 넘길 질문]\n${summary.task}` : '',
+    summary.concern ? `[우리 팀 고민]\n${sanitizeCrmWording(summary.concern)}` : '',
+    summary.plainQuestion ? `[일반 질문]\n${sanitizeCrmWording(summary.plainQuestion)}` : '',
+    summary.task ? `[4단계로 넘길 질문]\n${sanitizeCrmWording(summary.task)}` : '',
   ].filter(Boolean).join('\n\n') || '3단계 결과가 저장되어 있지만 요약할 수 있는 항목이 부족합니다.';
 }
 
@@ -401,7 +416,7 @@ function parseNotebookAnswer(answer: string): Partial<ResearchStrategyResponse> 
 
 export function V39ResearchStrategyLab() {
   const [storedResponse, setResponse] = useStored<ResearchStrategyResponse>(V39_RESEARCH_STRATEGY_STORAGE_KEY, DEFAULT_RESPONSE);
-  const response = { ...DEFAULT_RESPONSE, ...storedResponse, reviewChecks: storedResponse.reviewChecks ?? {} };
+  const response = { ...DEFAULT_RESPONSE, ...storedResponse, selectedTheme: normalizeTheme(storedResponse.selectedTheme ?? DEFAULT_RESPONSE.selectedTheme), customTheme: sanitizeCrmWording(storedResponse.customTheme ?? ''), reviewChecks: storedResponse.reviewChecks ?? {} };
   const [copyMessage, setCopyMessage] = useState('');
   const [promptSummary, setPromptSummary] = useState<PromptPracticeSummary | null>(loadPromptPracticeSummary);
   const theme = activeTheme(response);
@@ -425,7 +440,7 @@ export function V39ResearchStrategyLab() {
       setCopyMessage('4단계 리서치 질문으로 가져올 3단계 문장이 없습니다.');
       return;
     }
-    update({ leaderQuestion: question });
+    update({ leaderQuestion: sanitizeCrmWording(question) });
     setCopyMessage('3단계 질문을 4단계 리서치 질문으로 가져왔습니다.');
   };
   const generateSourceBundle = () => {
@@ -519,10 +534,10 @@ ${response.complianceCaution}`;
       </SectionCard>
 
       <SectionCard title="1단계: 리서치 주제 선택과 Perplexity 탐색">
-        <label className="block space-y-1"><FieldLabel>리서치 주제 선택</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={response.selectedTheme} onChange={(event) => update({ selectedTheme: event.target.value })}>{RESEARCH_THEMES.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+        <label className="block space-y-1"><FieldLabel>리서치 주제 선택</FieldLabel><select className="w-full rounded-xl border px-3 py-2" value={normalizeTheme(response.selectedTheme)} onChange={(event) => update({ selectedTheme: event.target.value })}>{RESEARCH_THEMES.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950"><p className="font-black">이 주제는 다음 관리 지표로 연결될 수 있습니다.</p><p className="mt-1">{bridgeHints.join(' · ')}</p></div>
-        <label className="block space-y-1"><FieldLabel>리서치 주제 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.customTheme} onChange={(event) => update({ customTheme: event.target.value })} placeholder="예: 대면 방문 제약 증가와 고객 대화 품질 관리" /><p className="text-xs font-bold text-slate-500">직접 입력하면 선택형 주제보다 우선 반영됩니다. 현재 적용 주제: {theme}</p></label>
-        <label className="block space-y-1"><FieldLabel>우리 팀 관점의 리서치 질문</FieldLabel><TextArea value={response.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 변화가 우리 팀의 고객 대화 품질과 2주 실행관리 지표에 어떤 영향을 주는지 조사해줘." /></label>
+        <label className="block space-y-1"><FieldLabel>리서치 주제 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2" value={response.customTheme} onChange={(event) => update({ customTheme: sanitizeCrmWording(event.target.value) })} placeholder="예: 대면 방문 제약 증가와 고객 대화 품질 관리" /><p className="text-xs font-bold text-slate-500">직접 입력하면 선택형 주제보다 우선 반영됩니다. 현재 적용 주제: {theme}</p></label>
+        <label className="block space-y-1"><FieldLabel>우리 팀 관점의 리서치 질문</FieldLabel><TextArea value={response.leaderQuestion} onChange={(value) => update({ leaderQuestion: sanitizeCrmWording(value) })} placeholder="예: 이 변화가 우리 팀의 고객 대화 품질과 2주 실행관리 지표에 어떤 영향을 주는지 조사해줘." /></label>
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold text-slate-600">Perplexity에 복사해 공개자료와 출처를 탐색합니다.</p><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(perplexityPrompt, 'Perplexity 프롬프트')}>Perplexity 프롬프트 복사</button></div>
         {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{perplexityPrompt}</pre>
