@@ -18,13 +18,13 @@ export const V39_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'research-strategy',
-    title: 'AI 전략 리서치 Pack',
-    description: '이 단계: Perplexity·NotebookLM·Studio를 활용해 공개자료 기반 변화 신호를 찾고 전략회의용 초안과 실행전략 질문을 만듭니다. 가져온 것: 프롬프트 기본 구조와 AI 안전선입니다. 넘길 것: 5단계 관리 지표로 전환할 전략 이슈와 실행 질문입니다.',
+    title: 'AI 전략 리서치',
+    description: '이 단계: Perplexity·NotebookLM·Studio를 활용해 공개자료 기반 변화 신호를 찾고 전략회의용 초안과 실행 질문을 만듭니다. 가져온 것: 프롬프트 기본 구조와 AI 안전선입니다. 넘길 것: 5단계 관리 지표로 전환할 전략 이슈와 실행 질문입니다.',
   },
   {
     id: 'dashboard-analysis',
     title: '우리 팀 관리 지표 선정',
-    description: '이 단계: 4단계 전략 이슈와 우리 팀 상황을 바탕으로 이번 2주 동안 볼 관리 지표 List를 정합니다. 가져온 것: AI 전략 리서치 Pack의 실행 질문과 역할 맥락입니다. 넘길 것: 고객 Data 확인 List로 전환할 핵심 실행 지표와 참고 신호입니다.',
+    description: '이 단계: 4단계 전략 이슈와 우리 팀 상황을 바탕으로 이번 2주 동안 볼 관리 지표 List를 정합니다. 가져온 것: AI 전략 리서치의 실행 질문과 역할 맥락입니다. 넘길 것: 고객 Data 확인 List로 전환할 핵심 실행 지표와 참고 신호입니다.',
   },
   {
     id: 'customer-judgment',
