@@ -6,9 +6,11 @@ import {
   V40_LITE_DEFAULT_PARTICIPANT,
   V40_LITE_DEFAULT_PROGRESS,
   V40_LITE_DEFAULT_STEP5_METRICS,
+  V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION,
   V40_LITE_STORAGE_KEYS,
   type V40LiteParticipant,
   type V40LiteStep5Metrics,
+  type V40LiteStep6CustomerReaction,
 } from './journey-v40-lite-store';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
@@ -25,6 +27,11 @@ const V40_LITE_STEPS: JourneyStep[] = [
     id: 'lite-step5-metrics',
     title: '우리 팀에서 지금 무엇을 봐야 하나?',
     description: '이번 2주 동안 실제로 볼 지표와 현장 신호만 가볍게 추립니다.',
+  },
+  {
+    id: 'lite-step6-customer-reaction',
+    title: '고객 반응에서 무엇을 읽을까?',
+    description: '고객 반응을 기회, 부족한 정보, 조심할 해석으로 나눠 봅니다.',
   },
 ];
 
@@ -204,6 +211,86 @@ function Step5LiteMetrics({ metrics, setMetrics }: { metrics: V40LiteStep5Metric
   );
 }
 
+function Step6LiteCustomerReaction({ reaction, setReaction }: { reaction: V40LiteStep6CustomerReaction; setReaction: (next: V40LiteStep6CustomerReaction) => void }) {
+  const filledCoreCount = [reaction.meaningfulReaction, reaction.missingInformation, reaction.carefulReading].filter((value) => value.trim().length > 0).length;
+
+  return (
+    <div className="space-y-4">
+      <LiteNotice />
+      <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Step 6 Lite</p>
+            <h3 className="mt-2 text-2xl font-black leading-tight text-slate-950">고객 반응에서 무엇을 읽을까?</h3>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">고객 반응을 크게 해석하기보다, 이번 2주 실행에 도움이 되는 신호와 아직 모르는 정보를 나눠 봅니다.</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
+            핵심 입력 {filledCoreCount} / 3
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4">
+        <LiteTextArea
+          required
+          label="의미 있어 보이는 고객 반응"
+          help="이번 2주 실행으로 이어질 가능성이 있는 반응을 하나만 적습니다."
+          placeholder="예: 고객이 후속 자료를 요청함, 비교 질문이 구체화됨, 다음 방문 시 논의할 주제를 먼저 언급함"
+          value={reaction.meaningfulReaction}
+          onChange={(meaningfulReaction) => setReaction({ ...reaction, meaningfulReaction })}
+        />
+        <LiteTextArea
+          required
+          label="아직 부족한 정보"
+          help="반응만 보고 바로 움직이기 전에 더 확인해야 할 정보를 적습니다."
+          placeholder="예: 실제 관심인지 의례적 반응인지, 의사결정에 누가 관여하는지, 다음 행동을 언제 할 수 있는지"
+          value={reaction.missingInformation}
+          onChange={(missingInformation) => setReaction({ ...reaction, missingInformation })}
+        />
+        <LiteTextArea
+          required
+          label="조심해서 읽어야 할 부분"
+          help="고객 반응을 과하게 좋게 보거나, 반대로 놓칠 수 있는 지점을 적습니다."
+          placeholder="예: 질문이 많다고 바로 니즈가 강한 것은 아님, 반응이 적어도 내부 검토 중일 수 있음"
+          value={reaction.carefulReading}
+          onChange={(carefulReading) => setReaction({ ...reaction, carefulReading })}
+        />
+      </div>
+
+      <details className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
+        <summary className="cursor-pointer text-sm font-black text-slate-900">팀장이 더 확인할 질문</summary>
+        <div className="mt-3">
+          <LiteTextArea
+            label="고객 반응을 더 정확히 보기 위한 질문"
+            help="팀원에게 묻거나 다음 방문에서 확인할 질문을 짧게 적습니다."
+            placeholder="예: 이 반응을 다음 행동으로 연결하려면 고객에게 무엇을 더 물어봐야 할까?"
+            value={reaction.nextQuestion}
+            onChange={(nextQuestion) => setReaction({ ...reaction, nextQuestion })}
+          />
+        </div>
+      </details>
+
+      <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6">
+        <p className="text-sm font-black text-cyan-100">저장된 고객 반응 읽기 초안</p>
+        <div className="mt-4 grid gap-3 text-sm leading-6 md:grid-cols-3">
+          <div className="rounded-2xl bg-white/10 p-4">
+            <p className="font-black text-cyan-100">의미 있는 반응</p>
+            <p className="mt-2 text-slate-100">{reaction.meaningfulReaction || '아직 입력 전입니다.'}</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 p-4">
+            <p className="font-black text-cyan-100">부족한 정보</p>
+            <p className="mt-2 text-slate-100">{reaction.missingInformation || '아직 입력 전입니다.'}</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 p-4">
+            <p className="font-black text-cyan-100">조심할 해석</p>
+            <p className="mt-2 text-slate-100">{reaction.carefulReading || '아직 입력 전입니다.'}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function V40LiteResetControl({ onReset }: { onReset: () => void }) {
   return (
     <div className="mx-auto -mt-3 mb-4 flex max-w-6xl justify-end px-4 md:px-6">
@@ -222,6 +309,7 @@ function V40LitePreviewApp() {
   const [participant, setParticipant] = useStored(V40_LITE_STORAGE_KEYS.participant, V40_LITE_DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored(V40_LITE_STORAGE_KEYS.progress, V40_LITE_DEFAULT_PROGRESS);
   const [step5Metrics, setStep5Metrics] = useStored(V40_LITE_STORAGE_KEYS.step5Metrics, V40_LITE_DEFAULT_STEP5_METRICS);
+  const [step6CustomerReaction, setStep6CustomerReaction] = useStored(V40_LITE_STORAGE_KEYS.step6CustomerReaction, V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION);
   const safeStep = clampV40LiteStep(progress.step);
 
   const goToStep = (nextStep: number) => {
@@ -233,11 +321,17 @@ function V40LitePreviewApp() {
     window.localStorage.removeItem(V40_LITE_STORAGE_KEYS.participant);
     window.localStorage.removeItem(V40_LITE_STORAGE_KEYS.progress);
     window.localStorage.removeItem(V40_LITE_STORAGE_KEYS.step5Metrics);
+    window.localStorage.removeItem(V40_LITE_STORAGE_KEYS.step6CustomerReaction);
     setParticipant(V40_LITE_DEFAULT_PARTICIPANT);
     setProgress(V40_LITE_DEFAULT_PROGRESS);
     setStep5Metrics(V40_LITE_DEFAULT_STEP5_METRICS);
+    setStep6CustomerReaction(V40_LITE_DEFAULT_STEP6_CUSTOMER_REACTION);
     scrollV40LiteToTop();
   };
+
+  let stepContent = <Step6LiteCustomerReaction reaction={step6CustomerReaction} setReaction={setStep6CustomerReaction} />;
+  if (safeStep === 0) stepContent = <EntryStep participant={participant} setParticipant={setParticipant} />;
+  if (safeStep === 1) stepContent = <Step5LiteMetrics metrics={step5Metrics} setMetrics={setStep5Metrics} />;
 
   return (
     <>
@@ -250,11 +344,7 @@ function V40LitePreviewApp() {
         onNext={() => goToStep(safeStep + 1)}
         onStepSelect={(step) => goToStep(step)}
       >
-        {safeStep === 0 ? (
-          <EntryStep participant={participant} setParticipant={setParticipant} />
-        ) : (
-          <Step5LiteMetrics metrics={step5Metrics} setMetrics={setStep5Metrics} />
-        )}
+        {stepContent}
       </JourneyShell>
       <V40LiteResetControl onReset={resetV40LiteProgress} />
     </>
