@@ -1,21 +1,21 @@
-# v39 Phase 1 LocalStorage QA Seed
+# v39 Phase 1 빠른 화면 확인용 localStorage 입력 스크립트
 
-## Purpose
+## 1. 이 문서는 언제 쓰나
 
-Use this helper only for browser QA of `/journey-v39-preview.html`.
+`/journey-v39-preview.html`에서 5~13단계 연결 상태를 빠르게 확인하고 싶을 때 사용한다.
 
-It seeds fictional localStorage data so the wrapper status panels for steps 5 through 13 can be checked quickly.
+일일이 모든 칸을 입력하지 않고, 브라우저 콘솔에 아래 스크립트를 한 번 붙여 넣으면 5~13단계에 가상 확인 데이터가 들어간다.
 
-## How to use
+## 2. 사용 방법
 
-1. Open `/journey-v39-preview.html` in Chrome.
-2. Open DevTools Console.
-3. Paste the script below.
-4. Press Enter.
-5. Reload the page.
-6. Move through steps 5 to 13 and check whether each wrapper status panel shows saved data.
+1. Chrome에서 `/journey-v39-preview.html`을 연다.
+2. 개발자 도구 Console을 연다.
+3. 아래 스크립트를 그대로 붙여 넣는다.
+4. Enter를 누른다.
+5. 화면을 새로고침한다.
+6. 5~13단계를 이동하면서 상단 상태 카드가 제대로 바뀌는지 본다.
 
-## Seed script
+## 3. 입력 스크립트
 
 ```js
 (() => {
@@ -198,25 +198,23 @@ It seeds fictional localStorage data so the wrapper status panels for steps 5 th
 })();
 ```
 
-## Expected checks
-
-After reload:
+## 4. 새로고침 후 확인할 것
 
 ```text
-Step 5 should show saved dashboard data.
-Step 6 should show saved customer judgment data.
-Step 7 should show step 6 data.
-Step 8 should show step 5 and step 7 data.
-Step 9 should show step 8 data.
-Step 10 should show step 8 and step 9 data.
-Step 11 should show step 10 data.
-Step 12 should show step 8, step 9, and step 11 data.
-Step 13 should show step 12 data.
+5단계: 팀 실행 흐름 메모가 보이는가
+6단계: 고객 반응 판단 메모가 보이는가
+7단계: 6단계 고객 판단이 이어져 보이는가
+8단계: 5단계 팀 신호와 7단계 고객 대응안이 이어져 보이는가
+9단계: 8단계 역할 메모가 이어져 보이는가
+10단계: 8단계 역할 메모와 9단계 대화 메모가 이어져 보이는가
+11단계: 10단계 AI 초안이 이어져 보이는가
+12단계: 8단계 역할, 9단계 대화, 11단계 안전 문장이 이어져 보이는가
+13단계: 12단계 최종 카드가 토의거리로 이어져 보이는가
 ```
 
-## Reset
+## 5. 입력값 지우기
 
-To clear seeded QA values, use the app reset button or run:
+화면의 진행 초기화 버튼을 누르거나, Console에 아래 스크립트를 붙여 넣는다.
 
 ```js
 [
