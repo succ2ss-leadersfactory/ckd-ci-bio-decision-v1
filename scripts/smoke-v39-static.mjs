@@ -38,6 +38,7 @@ const files = {
   peopleDialogueUx: read('src/journey-v39-people-dialogue-ux-lab.tsx'),
   peopleDialogueStore: read('src/journey-v39-people-dialogue-result-store.ts'),
   aiCallPlan: read('src/journey-v39-ai-call-plan-lab.tsx'),
+  aiCallPlanUx: read('src/journey-v39-ai-call-plan-ux-lab.tsx'),
   compliance: read('src/journey-v39-compliance-cleanup-lab.tsx'),
   finalCard: read('src/journey-v39-final-call-plan-card.tsx'),
   finalCardStore: read('src/journey-v39-final-call-plan-result-store.ts'),
@@ -45,7 +46,7 @@ const files = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', 'people-dialogue', '팀원 온도차와 실행 대화']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
@@ -61,6 +62,8 @@ for (const marker of [
   'src/journey-v39-people-dialogue-lab.tsx',
   'src/journey-v39-people-dialogue-ux-lab.tsx',
   'src/journey-v39-people-dialogue-result-store.ts',
+  'src/journey-v39-ai-call-plan-lab.tsx',
+  'src/journey-v39-ai-call-plan-ux-lab.tsx',
   'src/journey-v39-final-call-plan-card.tsx',
   'src/journey-v39-final-call-plan-result-store.ts',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
@@ -100,6 +103,7 @@ for (const marker of [
 
 for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarOpeningId', 'purposeFitOpening', 'ckd.v39.peopleDialogue.result.v1']) mustInclude(files.peopleDialogueStore, marker, 'people dialogue store');
 for (const marker of ['V39AiCallPlanLab', '9단계 실행 대화 요약', '목적에 맞게 바꾼 첫마디']) mustInclude(files.aiCallPlan, marker, 'AI call plan');
+for (const marker of ['V39AiCallPlanUxLab', '10단계 진행 가이드', '팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 역할 결과', '9단계 실행 대화', '10단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) mustInclude(files.aiCallPlanUx, marker, 'AI call plan UX wrapper');
 for (const marker of ['V39ComplianceCleanupLab', 'V39AiCallPlanCleanupPanel', '12단계 최종 실행 카드에 반영할 안전 문장 정리']) mustInclude(files.compliance, marker, 'compliance');
 
 for (const marker of [
@@ -127,6 +131,7 @@ for (const marker of ['v39 Preview', 'C1바이오 v39 Preview']) mustNotInclude(
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step']) mustNotInclude(files.app, marker, 'old app route');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.dashboardUx, marker, 'dashboard UX wording');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.customerJudgmentUx, marker, 'customer judgment UX wording');
+for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.aiCallPlanUx, marker, 'AI call plan UX wording');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.peopleDialogue, marker, 'people dialogue wording');
 for (const marker of ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']) mustNotInclude(files.finalCard, marker, 'old final card flow');
 for (const marker of ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']) mustNotInclude(files.instructor, marker, 'old instructor flow');
