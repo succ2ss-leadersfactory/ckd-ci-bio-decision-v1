@@ -18,6 +18,7 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '주의 신호 기준',
   '부족한 정보',
   '추가 확인 질문',
+  '영업활동 기록이 실행 판단에 충분한가',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -68,8 +69,8 @@ const DATA_CONTEXT_OPTIONS: DataCheckContext[] = [
     description: '일정 변경, 접근 제한, 대체 접점 필요, 내부 지원 필요 여부를 봅니다.',
   },
   {
-    id: 'crm-quality',
-    label: 'CRM 기록이 실행 판단에 충분한가',
+    id: 'activity-record-quality',
+    label: '영업활동 기록이 실행 판단에 충분한가',
     description: '기록량보다 다음 행동 판단에 필요한 정보가 남아 있는지 확인합니다.',
   },
   {
@@ -287,7 +288,7 @@ function buildDataCheckPrompt(
     '[요청]',
     '선택한 항목별로 고객 Data 확인 List를 작성해 주세요.',
     '1. 확인할 고객 Data 항목',
-    '2. 어디에서 확인할지: CRM 기록, 방문 메모, 후속 질문, 자료 요청, 일정 변경, 팀원 확인 등',
+    '2. 어디에서 확인할지: 영업활동 기록, 방문·면담 메모, 후속 질문, 자료 요청, 일정 변경, 팀원 확인 등',
     '3. 기회 신호 기준: 어떤 경우를 긍정 신호로 볼 수 있는지',
     '4. 주의 신호 기준: 어떤 경우를 과잉해석하면 안 되는지',
     '5. 부족한 정보: 아직 확인해야 할 정보',
