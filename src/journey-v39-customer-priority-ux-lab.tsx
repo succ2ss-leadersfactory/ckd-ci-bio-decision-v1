@@ -1,6 +1,7 @@
 import { loadV39CustomerJudgmentResult } from './journey-v39-customer-judgment-result-store';
 import { loadV39CustomerStrategyResult } from './journey-v39-customer-strategy-result-store';
 import { V39CustomerPriorityLab } from './journey-v39-customer-priority-lab';
+import { V39ActionTriplet, V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 
 const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   '7단계 진행 가이드',
@@ -27,6 +28,12 @@ const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   '말해도 되는 범위는 어디까지인가요? → 안전선 점검 조건',
   '이번 2주 동안 어디에 먼저 움직일지 정합니다',
   '고객 기록에서 본 단서를 2주 행동으로 바꿉니다',
+  'V39StepHero',
+  'V39FlowStrip',
+  'V39ActionTriplet',
+  'V39MinimumChecklist',
+  'V39MiniFlow',
+  'V39SafetyStrip',
 ].join('|');
 void V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS;
 
@@ -91,34 +98,23 @@ export function V39CustomerPriorityUxLab() {
 
   return (
     <section className="space-y-4">
-      <section className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm md:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">7단계 · 이번 2주 동안 어디에 먼저 움직일지 정합니다</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">고객 기록에서 본 단서를 2주 행동으로 바꿉니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">6단계에서 고른 단서는 고객을 줄 세우기 위한 기준이 아닙니다. 지금은 그 단서를 보고, 이번 2주 동안 어떤 고객군은 다시 확인하고, 어떤 조건은 먼저 풀어야 하는지 나누어 봅니다. 말해도 되는 선과 자료 기준은 특정 고객군이 아니라 모든 활동 앞에 놓는 안전장치로 봅니다.</p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-4 lg:w-[42rem]">
-            <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
-              <p className="text-xs font-black text-sky-700">앞에서 고른 단서</p>
-              <p className="mt-1 text-sm font-black text-sky-950">{selectedDataCheckCount || '전체'}개</p>
-            </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <p className="text-xs font-black text-emerald-700">확인 메모</p>
-              <p className="mt-1 text-sm font-black text-emerald-950">{dataCheckMemoCount}건</p>
-            </div>
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
-              <p className="text-xs font-black text-violet-700">2주 행동 메모</p>
-              <p className="mt-1 text-sm font-black text-violet-950">{savedDirectionCount}건</p>
-            </div>
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
-              <p className="text-xs font-black text-amber-700">함께 볼 팀원</p>
-              <p className="mt-1 text-sm font-black text-amber-950">{savedMemberConnectionCount}건</p>
-            </div>
-          </div>
-        </div>
+      <V39FlowStrip currentStep={7} />
+      <V39StepHero
+        eyebrow="7단계 · 이번 2주 동안 어디에 먼저 움직일지 정합니다"
+        icon="🧭"
+        title="고객 기록에서 본 단서를 2주 행동으로 바꿉니다"
+        tone="emerald"
+        description="6단계에서 고른 단서는 고객을 줄 세우기 위한 기준이 아닙니다. 지금은 그 단서를 보고, 이번 2주 동안 어떤 고객군은 다시 확인하고, 어떤 조건은 먼저 풀어야 하는지 나누어 봅니다. 말해도 되는 선과 자료 기준은 특정 고객군이 아니라 모든 활동 앞에 놓는 안전장치로 봅니다."
+        badges={[
+          { label: '앞에서 고른 단서', value: `${selectedDataCheckCount || '전체'}개`, tone: 'sky', icon: '🔎' },
+          { label: '확인 메모', value: `${dataCheckMemoCount}건`, tone: 'emerald', icon: '📝' },
+          { label: '2주 행동 메모', value: `${savedDirectionCount}건`, tone: 'violet', icon: '🧭' },
+          { label: '함께 볼 팀원', value: `${savedMemberConnectionCount}건`, tone: 'amber', icon: '👥' },
+        ]}
+      />
 
-        <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
+      <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
           <p className="font-black">기록을 행동으로 바꾸는 중간 지점입니다</p>
           <p className="mt-1">6단계에서 고객 활동 기록의 단서를 보았다면, 7단계에서는 그 단서를 2주 행동으로 묶습니다. 8단계에서는 이 일을 어떤 팀원이 맡아도 무리 없이 움직일 수 있도록 역할과 지원을 다듬습니다.</p>
         </div>
@@ -129,6 +125,15 @@ export function V39CustomerPriorityUxLab() {
           <p className="mt-2 text-xs font-bold leading-5 text-slate-700">
             6단계에서 고른 것은 “이 고객군이 좋다/나쁘다”가 아니라, 기록에서 먼저 확인할 단서였습니다. 7단계에서는 그 단서를 바탕으로 이번 2주 동안 다시 확인할 고객군과 먼저 풀어야 할 조건을 나눕니다.
           </p>
+          <div className="mt-3">
+            <V39MiniFlow
+              items={[
+                { icon: '🔎', title: '기록에서 단서 보기', body: '반응, 다음 만남, 빠진 정보, 대체 접점, 실행 제약, 말해도 되는 선을 확인합니다.' },
+                { icon: '🧭', title: '2주 행동으로 묶기', body: '다시 확인할 고객군과 먼저 풀어야 할 조건을 나눕니다.' },
+                { icon: '👥', title: '팀원 역할로 넘기기', body: '다음 화면에서 누가 어떻게 움직일지 다듬습니다.' },
+              ]}
+            />
+          </div>
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {EVIDENCE_TO_DIRECTION_MAP.map((item) => (
               <div key={item.evidence} className="rounded-2xl border border-white bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
@@ -150,19 +155,24 @@ export function V39CustomerPriorityUxLab() {
           </div>
         </div>
 
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
-            <p className="font-black">이 화면에서 할 일</p>
-            <p className="mt-1">앞 화면의 단서를 보고, 이번 2주 동안 움직일 곳과 먼저 확인할 조건을 나눕니다.</p>
-          </div>
-          <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
-            <p className="font-black">앞 화면에서 가져온 것</p>
-            <p className="mt-1">고객 활동 기록에서 본 단서, 기회로 볼 수 있는 내용, 조심해야 할 내용, 아직 모르는 정보, 팀원에게 물어볼 질문입니다.</p>
-          </div>
-          <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">
-            <p className="font-black">다음 화면에서 쓸 것</p>
-            <p className="mt-1">8단계에서 팀원 역할을 다듬을 때 참고할 2주 행동 방향과 함께 볼 팀원 후보입니다.</p>
-          </div>
+        <div className="mt-3">
+          <V39ActionTriplet
+            previous={{
+              icon: '🔎',
+              title: '고객 활동 기록에서 본 단서',
+              body: '기회로 볼 수 있는 내용, 조심해야 할 내용, 아직 모르는 정보, 팀원에게 물어볼 질문입니다.',
+            }}
+            current={{
+              icon: '🧭',
+              title: '이번 2주 동안 움직일 곳과 조건을 나눕니다',
+              body: '앞 화면의 단서를 보고 다시 확인할 고객군과 먼저 풀어야 할 조건을 정리합니다.',
+            }}
+            next={{
+              icon: '👥',
+              title: '8단계에서 팀원 역할을 다듬습니다',
+              body: '2주 행동 방향과 함께 볼 팀원 후보가 다음 화면의 역할 정리로 이어집니다.',
+            }}
+          />
         </div>
 
         <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
@@ -170,13 +180,14 @@ export function V39CustomerPriorityUxLab() {
           <p className="mt-1">여기서는 “어디에 어떻게 움직일지”와 “누가 함께 보면 좋을지”까지만 정합니다. 다음 화면에서는 그 일이 팀원에게 무리 없이 전달되도록 역할, 지원, 점검 질문을 다듬습니다.</p>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-          <p className="font-black text-slate-950">최소로 남길 것</p>
-          <p className="mt-1">고객군 후보 또는 먼저 확인할 조건, 확인된 단서, 아직 부족한 정보, 이번 2주 행동, 팀원에게 물어볼 질문, 말해도 되는 선, 다음 회의에서 볼 것만 남기면 충분합니다.</p>
+        <div className="mt-3">
+          <V39MinimumChecklist items={['고객군 후보 또는 먼저 확인할 조건', '확인된 단서', '아직 부족한 정보', '이번 2주 행동', '팀원에게 물어볼 질문', '말해도 되는 선', '다음 회의에서 볼 것']} />
         </div>
 
-        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
-          고객에게 점수를 매기거나 순위를 세우는 시간이 아닙니다. AI가 정리해 준 초안도 그대로 확정하지 않습니다. 확인된 기록을 바탕으로 이번 2주 동안 움직일 곳과 조금 더 살펴볼 조건을 나누는 시간입니다. 팀원 연결도 확정 배정이 아니라 다음 화면에서 다듬을 임시 가설로 봅니다.
+        <div className="mt-3">
+          <V39SafetyStrip>
+            고객에게 점수를 매기거나 순위를 세우는 시간이 아닙니다. AI가 정리해 준 초안도 그대로 확정하지 않습니다. 확인된 기록을 바탕으로 이번 2주 동안 움직일 곳과 조금 더 살펴볼 조건을 나누는 시간입니다. 팀원 연결도 확정 배정이 아니라 다음 화면에서 다듬을 임시 가설로 봅니다.
+          </V39SafetyStrip>
         </div>
       </section>
 
