@@ -141,6 +141,8 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 - `docs/v35-browser-qa-console-snippet.md` v35 브라우저 QA 콘솔 스니펫
 - `docs/v35-cutover-gates.md` v35 cutover gate 기준
 - `docs/v39-5-13-flow-qa-checklist.md` v39 5~13단계 연결 흐름 QA 체크리스트
+- `docs/v39-browser-qa-runbook.md` v39 브라우저 수동 QA 실행 절차서
+- `docs/v39-browser-qa-result.md` v39 브라우저 수동 QA 결과 기록지
 - `docs/DEPLOYMENT_RUNBOOK.md` 배포 런북
 - `docs/pilot-qa-checklist.md` 파일럿 전 QA 체크리스트
 - `docs/manual-test-script.md` 수동 테스트 스크립트
