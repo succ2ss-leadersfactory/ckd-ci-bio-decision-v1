@@ -52,12 +52,12 @@ export function V39PeopleDialogueUxLab() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-violet-700">9단계 진행 가이드 · 팀원 온도차와 실행 대화</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">8단계 역할 미션과 지원 포인트를 팀원이 받아들일 수 있는 말로 바꿉니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 고객군 × 팀원 실행 배치를 정했고, 8단계에서 역할·지원 포인트·점검 질문을 보완했습니다. 이제 그 내용을 팀원에게 어떻게 꺼낼지 정리합니다. 핵심은 실행 지시가 아니라 실행 대화입니다.</p>
+            <h2 className="mt-1 text-xl font-black text-slate-950">8단계 역할 미션과 지원 포인트를 팀원이 받아들일 수 있는 첫 문장으로 바꿉니다</h2>
+            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 고객군별 대응 방향과 1차 연결 후보를 정했고, 8단계에서 역할·지원 포인트·점검 질문을 보완했습니다. 이제 그 내용을 팀원에게 어떻게 꺼낼지 정리합니다. 핵심은 실행 지시가 아니라 실행 대화입니다.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-3 lg:w-[34rem]">
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <p className="text-xs font-black text-emerald-700">앞에서 잡은 역할</p>
+              <p className="text-xs font-black text-emerald-700">8단계 역할 미션</p>
               <p className="mt-1 text-sm font-black text-emerald-950">{savedRoleCount}개 이어 쓸 수 있음</p>
             </div>
             <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
@@ -78,7 +78,7 @@ export function V39PeopleDialogueUxLab() {
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
-            <p className="mt-1">내 첫마디가 기존 팀원과 MZ·저연차 팀원에게 어떻게 다르게 들릴지 미리 보고, 역할 기준·지원 방식·책임 범위를 담은 대화 문장으로 빠르게 바꿀 수 있습니다.</p>
+            <p className="mt-1">8단계 역할 기준을 바탕으로 내 첫마디가 기존 팀원과 MZ·저연차 팀원에게 어떻게 다르게 들릴지 미리 보고, 지원 방식과 책임 범위를 담은 대화 문장으로 빠르게 바꿀 수 있습니다.</p>
           </div>
         </div>
 
