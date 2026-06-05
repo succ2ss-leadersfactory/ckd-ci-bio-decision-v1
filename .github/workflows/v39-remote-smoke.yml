@@ -31,6 +31,14 @@ jobs:
           V39_REMOTE_REPORT_PATH: artifacts/v39-remote-smoke-result.json
         run: npm run smoke:v39:remote
 
+      - name: Upload v39 remote smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v39-remote-smoke-result
+          path: artifacts/v39-remote-smoke-result.json
+          if-no-files-found: warn
+
       - name: Write v39 remote smoke summary
         if: always()
         run: |
@@ -45,6 +53,10 @@ jobs:
             echo "## JSON report path"
             echo ""
             echo "- ${REPORT_PATH}"
+            echo ""
+            echo "## Artifact"
+            echo ""
+            echo "- v39-remote-smoke-result"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
