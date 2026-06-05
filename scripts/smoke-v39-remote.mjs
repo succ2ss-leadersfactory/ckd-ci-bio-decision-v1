@@ -1,8 +1,12 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+
 const DEFAULT_BASE_URL = 'https://ckd-ci-bio-decision-v1.vercel.app';
 const baseUrl = (process.env.V39_REMOTE_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, '');
 const maxAttempts = Number.parseInt(process.env.V39_REMOTE_MAX_ATTEMPTS || '5', 10);
 const retryDelayMs = Number.parseInt(process.env.V39_REMOTE_RETRY_DELAY_MS || '5000', 10);
 const requestTimeoutMs = Number.parseInt(process.env.V39_REMOTE_TIMEOUT_MS || '15000', 10);
+const reportPath = process.env.V39_REMOTE_REPORT_PATH || '';
 
 const routeChecks = [
   {
@@ -56,6 +60,7 @@ const forbiddenV39AssetMarkers = [
 ];
 
 const failures = [];
+const routeResults = [];
 
 function fail(message) {
   failures.push(message);
@@ -171,71 +176,135 @@ async function fetchAssetGraph(initialAssetUrls) {
 
 async function runRouteCheck(check) {
   const url = buildUrl(check.path);
+  const result = {
+    name: check.name,
+    path: check.path,
+    url,
+    ok: false,
+    status: null,
+    finalUrl: null,
+    finalPath: null,
+    contentType: null,
+    moduleScriptCount: 0,
+    assetChunkCount: 0,
+    missingHtmlText: [],
+    forbiddenHtmlTextFound: [],
+    missingAssetMarkers: [],
+    forbiddenAssetMarkersFound: [],
+    errors: [],
+  };
+  routeResults.push(result);
+
   let response;
 
   try {
     response = await fetchWithRetry(url, check.name);
   } catch (error) {
-    fail(`${check.name}: failed to fetch ${url} after ${maxAttempts} attempts. ${error instanceof Error ? error.message : String(error)}`);
+    const message = `${check.name}: failed to fetch ${url} after ${maxAttempts} attempts. ${error instanceof Error ? error.message : String(error)}`;
+    result.errors.push(message);
+    fail(message);
     return;
   }
 
+  result.status = response.status;
+  result.finalUrl = response.url;
+  result.finalPath = new URL(response.url).pathname;
+
   if (!response.ok) {
-    fail(`${check.name}: expected HTTP 2xx for ${url}, got ${response.status}.`);
+    const message = `${check.name}: expected HTTP 2xx for ${url}, got ${response.status}.`;
+    result.errors.push(message);
+    fail(message);
     return;
   }
 
   const finalUrl = new URL(response.url);
   if (check.expectedFinalPath && finalUrl.pathname !== check.expectedFinalPath) {
-    fail(`${check.name}: expected final path ${check.expectedFinalPath}, got ${finalUrl.pathname}.`);
+    const message = `${check.name}: expected final path ${check.expectedFinalPath}, got ${finalUrl.pathname}.`;
+    result.errors.push(message);
+    fail(message);
   }
 
   const contentType = response.headers.get('content-type') || '';
+  result.contentType = contentType;
   if (check.requireHtml && !contentType.includes('text/html')) {
-    fail(`${check.name}: expected text/html content-type, got ${contentType || 'empty content-type'}.`);
+    const message = `${check.name}: expected text/html content-type, got ${contentType || 'empty content-type'}.`;
+    result.errors.push(message);
+    fail(message);
   }
 
   const html = await response.text();
+  const moduleScriptUrls = extractModuleScriptUrls(html);
+  result.moduleScriptCount = moduleScriptUrls.length;
 
-  if (check.requireHtml && !/<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["'][^"']*\/assets\/[^"']+\.js["'])[^>]*>/s.test(html)) {
-    fail(`${check.name}: expected built /assets/*.js module script in ${check.path}.`);
+  if (check.requireHtml && moduleScriptUrls.length === 0) {
+    const message = `${check.name}: expected built /assets/*.js module script in ${check.path}.`;
+    result.errors.push(message);
+    fail(message);
   }
 
   for (const requiredText of check.requiredHtmlText || []) {
     if (!html.includes(requiredText)) {
+      result.missingHtmlText.push(requiredText);
       fail(`${check.name}: expected HTML to include ${requiredText}.`);
     }
   }
 
   for (const forbiddenText of check.forbiddenText || []) {
     if (html.includes(forbiddenText)) {
+      result.forbiddenHtmlTextFound.push(forbiddenText);
       fail(`${check.name}: production HTML must not reference dev source entry ${forbiddenText}.`);
     }
   }
 
   if (check.requireAssetMarkers) {
-    const moduleScriptUrls = extractModuleScriptUrls(html);
     if (moduleScriptUrls.length === 0) {
-      fail(`${check.name}: no module script URLs found.`);
+      const message = `${check.name}: no module script URLs found.`;
+      result.errors.push(message);
+      fail(message);
       return;
     }
 
     const chunks = await fetchAssetGraph(moduleScriptUrls);
     const joinedAssets = chunks.map((chunk) => chunk.text).join('\n');
+    result.assetChunkCount = chunks.length;
     console.log(`${check.name}: fetched ${chunks.length} asset chunk(s).`);
 
     for (const marker of requiredV39AssetMarkers) {
       if (!joinedAssets.includes(marker)) {
+        result.missingAssetMarkers.push(marker);
         fail(`${check.name}: expected v39 asset marker not found: ${marker}`);
       }
     }
 
     for (const marker of forbiddenV39AssetMarkers) {
       if (joinedAssets.includes(marker)) {
+        result.forbiddenAssetMarkersFound.push(marker);
         fail(`${check.name}: forbidden v39 asset marker found: ${marker}`);
       }
     }
   }
+
+  result.ok = result.errors.length === 0 && result.missingHtmlText.length === 0 && result.forbiddenHtmlTextFound.length === 0 && result.missingAssetMarkers.length === 0 && result.forbiddenAssetMarkersFound.length === 0;
+}
+
+async function writeReport(pass) {
+  if (!reportPath) return;
+  const report = {
+    schemaVersion: 1,
+    checkedAt: new Date().toISOString(),
+    baseUrl,
+    maxAttempts,
+    retryDelayMs,
+    requestTimeoutMs,
+    pass,
+    failures,
+    requiredV39AssetMarkers,
+    forbiddenV39AssetMarkers,
+    routeResults,
+  };
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  console.log(`v39 remote smoke JSON report written to ${reportPath}`);
 }
 
 console.log(`Running v39 remote smoke checks against ${baseUrl}`);
@@ -245,7 +314,10 @@ for (const check of routeChecks) {
   await runRouteCheck(check);
 }
 
-if (failures.length > 0) {
+const pass = failures.length === 0;
+await writeReport(pass);
+
+if (!pass) {
   console.error('v39 remote smoke check failed.');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
