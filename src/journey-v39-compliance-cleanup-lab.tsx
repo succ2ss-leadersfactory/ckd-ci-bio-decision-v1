@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   type V39AiCallPlanResult,
+  type V39AiCallPlanResultItem,
   loadV39AiCallPlanResult,
 } from './journey-v39-ai-call-plan-result-store';
 import {
@@ -17,6 +18,7 @@ const V39_COMPLIANCE_CLEANUP_SMOKE_MARKERS = [
   'AI를 쓰면 좋아지는 점',
   'AI 실행계획 초안은 반드시 검토·수정해야 합니다',
   '위험 표현 → 안전 문장',
+  '위험 메모와 점검 초점만 있어도 검토합니다',
   '처방 유도 표현',
   '비교 우위 단정',
   '허가 외·미승인 표현',
@@ -55,8 +57,12 @@ const SAFE_REWRITE_EXAMPLES = [
   },
 ];
 
+function hasAiCallPlanReviewContext(item: V39AiCallPlanResultItem) {
+  return Boolean(item.callPlanDraft.trim() || item.riskMemo.trim() || item.cleanupFocus.trim());
+}
+
 function buildCleanupPrompt(result: V39AiCallPlanResult) {
-  const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
+  const savedItems = Object.values(result.items).filter(hasAiCallPlanReviewContext);
 
   if (savedItems.length === 0) {
     return [
@@ -67,7 +73,7 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
 
   return [
     '당신은 제약영업 컴플라이언스와 팀원 실행 대화 위험을 함께 점검하는 리뷰 파트너입니다.',
-    '아래 문장은 교육용 가상 고객군 기준의 AI Call Plan 초안입니다.',
+    '아래 문장은 교육용 가상 고객군 기준의 AI Call Plan 초안 또는 위험 점검 메모입니다.',
     '실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 수치, 개인정보를 추정하거나 추가하지 마세요.',
     'AI 실행계획 초안은 반드시 검토·수정해야 합니다. 그대로 실행 가능한 최종안처럼 보이게 쓰지 마세요.',
     '팀원을 세대 특성으로 단정하거나, 팀원에게 리스크를 전가하는 표현도 함께 점검해 주세요.',
@@ -75,7 +81,7 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
     '점검 대상:',
     ...savedItems.flatMap((item, index) => [
       `${index + 1}. ${item.title}`,
-      `- AI Call Plan 초안: ${item.callPlanDraft}`,
+      `- AI Call Plan 초안: ${item.callPlanDraft || '아직 작성되지 않았습니다. 위험 메모와 점검 초점을 기준으로 검토해 주세요.'}`,
       `- 위험 메모: ${item.riskMemo || '아직 작성되지 않았습니다.'}`,
       `- 점검 초점: ${item.cleanupFocus || '아직 작성되지 않았습니다.'}`,
       '',
@@ -90,21 +96,24 @@ function buildCleanupPrompt(result: V39AiCallPlanResult) {
 }
 
 function buildDefaultComplianceCleanupResult(result: V39AiCallPlanResult, current: V39ComplianceCleanupResult): Partial<V39ComplianceCleanupResult> {
-  const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
+  const savedItems = Object.values(result.items).filter(hasAiCallPlanReviewContext);
   const firstItem = savedItems[0];
+  const sourceText = firstItem
+    ? firstItem.callPlanDraft || firstItem.riskMemo || firstItem.cleanupFocus
+    : '';
 
   return {
     riskTypes: current.riskTypes || '처방 유도 표현, 비교 우위 단정, 허가 외·미승인 표현, 민감정보 포함, 고객을 등급화하거나 공략 대상으로 표현하는 문장, 팀원에게 부담을 전가하는 표현, 세대 특성 단정 표현을 확인합니다.',
-    safeExpression: current.safeExpression || (firstItem
-      ? `${firstItem.callPlanDraft}\n\n위 문장은 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 다시 수정합니다. 고객을 평가하거나 공략 대상으로 표현하지 않고, 확인할 Data와 다음 질문 중심으로 바꿉니다.`
-      : 'AI Call Plan 초안을 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 안전하게 수정합니다.'),
+    safeExpression: current.safeExpression || (sourceText
+      ? `${sourceText}\n\n위 문장은 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 다시 수정합니다. 고객을 평가하거나 공략 대상으로 표현하지 않고, 확인할 Data와 다음 질문 중심으로 바꿉니다.`
+      : 'AI Call Plan 초안, 위험 메모, 점검 초점을 승인 자료 범위, 질문 중심, 가상 고객군 기준, 팀원 실행 대화 기준으로 안전하게 수정합니다.'),
     finalChecklist: current.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치가 제거되었는지 확인합니다. 처방 유도, 비교 우위 단정, 허가 외 표현이 없는지 확인합니다. 고객을 등급화하거나 공략 대상으로 표현하지 않았는지 확인합니다. 팀원을 세대 특성으로 단정하거나 실행 부담을 일방적으로 전가하는 문장이 없는지 확인합니다.',
     finalCardMemo: current.finalCardMemo || '최종 실행 카드에는 안전하게 수정한 문장, 팀장이 직접 확인한 컴플라이언스 체크포인트, 팀원 실행 대화 기준, 중간 점검 질문만 반영합니다.',
   };
 }
 
 function V39AiCallPlanCleanupPanel({ result, onRefresh }: { result: V39AiCallPlanResult; onRefresh: () => void }) {
-  const savedItems = Object.values(result.items).filter((item) => item.callPlanDraft.trim());
+  const savedItems = Object.values(result.items).filter(hasAiCallPlanReviewContext);
   const [copied, setCopied] = useState(false);
   const [cleanupResult, setCleanupResult] = useState(() => loadV39ComplianceCleanupResult());
   const cleanupPrompt = useMemo(() => buildCleanupPrompt(result), [result]);
@@ -168,6 +177,11 @@ function V39AiCallPlanCleanupPanel({ result, onRefresh }: { result: V39AiCallPla
         <p className="mt-1">AI가 만든 문장은 현장 맥락을 그럴듯하게 정리할 수 있지만, 제약영업 표현 안전선과 팀원 수용성을 놓칠 수 있습니다. 이 단계의 결과물은 “검토 완료된 안전 문장”입니다.</p>
       </div>
 
+      <div className="mt-3 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-xs font-bold leading-5 text-rose-950">
+        <p className="font-black">위험 메모와 점검 초점만 있어도 검토합니다</p>
+        <p className="mt-1">10단계에서 AI 실행계획 초안을 아직 붙여넣지 않았더라도, 위험 메모나 점검 초점이 있으면 11단계 점검 프롬프트와 안전 문장 초안에 반영됩니다.</p>
+      </div>
+
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">AI Call Plan 상태</p>
@@ -209,7 +223,7 @@ function V39AiCallPlanCleanupPanel({ result, onRefresh }: { result: V39AiCallPla
 
       {savedItems.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
-          10단계에서 AI Call Plan 결과를 저장하면, 이곳에 11단계 컴플라이언스 점검 대상 문장이 표시됩니다.
+          10단계에서 AI Call Plan 초안, 위험 메모, 점검 초점 중 하나라도 저장하면, 이곳에 11단계 컴플라이언스 점검 대상 문장이 표시됩니다.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 xl:grid-cols-2">
@@ -217,7 +231,7 @@ function V39AiCallPlanCleanupPanel({ result, onRefresh }: { result: V39AiCallPla
             <article key={item.id} className="rounded-2xl border bg-white p-4 shadow-sm">
               <p className="font-black text-slate-950">{item.title}</p>
               <p className="mt-2 text-xs font-black text-rose-700">AI Call Plan 초안</p>
-              <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.callPlanDraft}</p>
+              <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.callPlanDraft || '아직 작성되지 않았습니다. 위험 메모와 점검 초점을 기준으로 검토합니다.'}</p>
               <p className="mt-3 text-xs font-black text-amber-700">위험 메모</p>
               <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{item.riskMemo || '아직 작성되지 않았습니다.'}</p>
               <p className="mt-3 text-xs font-black text-emerald-700">11단계 점검 초점</p>
