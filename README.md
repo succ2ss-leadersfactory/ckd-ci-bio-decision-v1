@@ -110,7 +110,7 @@ npm run smoke:v39
 npm run smoke:v39:remote
 ```
 
-v39 원격 검증은 GitHub Actions → `v39 Remote Smoke`에서도 수동 실행할 수 있습니다.
+v39 원격 검증은 GitHub Actions → `v39 Remote Smoke`에서도 수동 실행할 수 있습니다. 결과는 `docs/v39-remote-smoke-result.md`에 기록합니다.
 
 ## Vercel
 
@@ -153,6 +153,7 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 - `docs/v39-browser-qa-runbook.md` v39 브라우저 수동 QA 실행 절차서
 - `docs/v39-browser-qa-result.md` v39 브라우저 수동 QA 결과 기록지
 - `docs/v39-browser-qa-console-snippet.md` v39 브라우저 QA 콘솔 스니펫
+- `docs/v39-remote-smoke-result.md` v39 Remote Smoke 결과 기록지
 - `docs/DEPLOYMENT_RUNBOOK.md` 배포 런북
 - `docs/pilot-qa-checklist.md` 파일럿 전 QA 체크리스트
 - `docs/manual-test-script.md` 수동 테스트 스크립트
