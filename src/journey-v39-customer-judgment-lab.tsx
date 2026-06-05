@@ -30,6 +30,7 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '대응 전략은 아직 확정하지 않습니다',
   'AI 결과 1차 분리 정리',
   '붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다',
+  '긍정 단서로 참고할 수 있는 사례',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -56,37 +57,37 @@ const AI_RESULT_EXTRACTION_BUCKETS: AiExtractionBucket[] = [
   {
     title: '무엇을 볼까',
     description: '고객 Data에서 실제로 확인할 항목',
-    aliases: ['무엇을 볼까', '확인할 Data', '확인할 데이터', '확인할 항목', '확인해야 할 Data', '확인해야 할 데이터'],
+    aliases: ['무엇을 볼까', '확인 가능한 데이터 및 기록', '확인할 Data', '확인할 데이터', '확인할 항목', '확인해야 할 Data', '확인해야 할 데이터'],
   },
   {
     title: '기회로 볼 수 있는 경우',
     description: '긍정 단서로 볼 수 있는 조건',
-    aliases: ['기회로 볼 수 있는 경우', '기회 단서', '긍정 단서', '기회 신호', '긍정 신호'],
+    aliases: ['기회로 볼 수 있는 경우', '기회 단서', '긍정 단서', '긍정 단서로 참고할 수 있는 사례', '기회 신호', '긍정 신호'],
   },
   {
     title: '성급하게 해석하면 안 되는 경우',
     description: '과잉해석하거나 단정하면 위험한 부분',
-    aliases: ['성급하게 해석하면 안 되는 경우', '주의 단서', '주의 신호', '과잉해석', '단정하면 위험', '조심할 해석'],
+    aliases: ['성급하게 해석하면 안 되는 경우', '과잉 해석을 피해야 하는 사례', '주의 단서', '주의 신호', '과잉해석', '과잉 해석', '단정하면 위험', '조심할 해석'],
   },
   {
     title: '아직 부족한 정보',
     description: '팀장이 판단 전에 더 확인해야 할 정보',
-    aliases: ['아직 부족한 정보', '부족한 정보', '추가 확인 필요', '더 확인해야 할 정보', '판단 전에 확인'],
+    aliases: ['아직 부족한 정보', '부족한 정보', '추가 확인이 필요한 정보', '추가 확인 필요', '더 확인해야 할 정보', '판단 전에 확인'],
   },
   {
     title: '팀원에게 더 확인할 질문',
     description: '다음 방문·면담 전에 팀원에게 물어볼 문장',
-    aliases: ['팀원에게 더 확인할 질문', '팀원에게 물어볼 질문', '추가 확인 질문', '확인 질문', '팀원 질문'],
+    aliases: ['팀원에게 더 확인할 질문', '팀원에게 물어볼 질문', '추가 확인 질문', '확인 질문', '팀원 질문', '다음 방문·면담 전에 확인할 질문'],
   },
   {
     title: '표현·자료 안전선',
     description: '승인자료 범위와 위험 표현 점검',
-    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현'],
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현', '사용하지 말아야 할 표현', '확인해야 할 자료 범위'],
   },
   {
     title: '7단계로 넘길 메모',
     description: '고객군별 대응 방향을 정할 때 참고할 1~2줄',
-    aliases: ['7단계로 넘길 메모', '7단계', '대응 준비 메모', '다음 단계 메모', '고객군별 대응 방향'],
+    aliases: ['7단계로 넘길 메모', '7단계로 넘길 대응 준비 메모', '7단계', '대응 준비 메모', '다음 단계 메모', '고객군별 대응 방향'],
   },
 ];
 
@@ -196,8 +197,8 @@ function lineMatchesBucket(line: string, bucket: AiExtractionBucket) {
   return bucket.aliases.some((alias) => line.includes(alias));
 }
 
-function lineMatchesAnyBucket(line: string) {
-  return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => lineMatchesBucket(line, bucket));
+function lineMatchesAnotherBucket(line: string, currentBucket: AiExtractionBucket) {
+  return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesBucket(line, bucket));
 }
 
 function extractAiResultBuckets(raw: string) {
@@ -217,8 +218,13 @@ function extractAiResultBuckets(raw: string) {
 
       for (let index = startIndex + 1; index < lines.length; index += 1) {
         const line = lines[index];
-        if (lineMatchesAnyBucket(line)) break;
-        if (/^(요청|주의|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
+        if (lineMatchesAnotherBucket(line, bucket)) break;
+        if (lineMatchesBucket(line, bucket)) {
+          const inlineValue = line.split(/[:：]/).slice(1).join(':').trim();
+          if (inlineValue) items.push(inlineValue);
+          continue;
+        }
+        if (/^(요청|주의:|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
         items.push(line);
         if (items.length >= 4) break;
       }
