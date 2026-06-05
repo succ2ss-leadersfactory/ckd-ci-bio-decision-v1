@@ -7,6 +7,7 @@ const V39_COMPLIANCE_CLEANUP_UX_SMOKE_MARKERS = [
   'AI 실행계획 초안을 안전한 실행 문장으로 정리합니다',
   '10단계 실행계획',
   '점검 대상 문장',
+  '위험 메모와 점검 초점도 점검 대상으로 가져옵니다',
   '11단계 저장 상태',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
@@ -15,10 +16,14 @@ const V39_COMPLIANCE_CLEANUP_UX_SMOKE_MARKERS = [
 ].join('|');
 void V39_COMPLIANCE_CLEANUP_UX_SMOKE_MARKERS;
 
+function hasAiCallPlanReviewContext(item: { callPlanDraft: string; riskMemo: string; cleanupFocus: string }) {
+  return Boolean(item.callPlanDraft.trim() || item.riskMemo.trim() || item.cleanupFocus.trim());
+}
+
 function getComplianceCleanupStatus() {
   const aiCallPlanResult = loadV39AiCallPlanResult();
   const cleanupResult = loadV39ComplianceCleanupResult();
-  const targetCount = Object.values(aiCallPlanResult.items).filter((item) => item.callPlanDraft.trim()).length;
+  const targetCount = Object.values(aiCallPlanResult.items).filter(hasAiCallPlanReviewContext).length;
   const cleanupFieldCount = [
     cleanupResult.riskTypes,
     cleanupResult.safeExpression,
@@ -62,6 +67,11 @@ export function V39ComplianceCleanupUxLab() {
               <p className="mt-1 text-sm font-black text-emerald-950">{cleanupStateLabel}</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-bold leading-5 text-rose-950">
+          <p className="font-black">위험 메모와 점검 초점도 점검 대상으로 가져옵니다</p>
+          <p className="mt-1">10단계에서 AI 실행계획 초안을 아직 붙여넣지 않았더라도, 위험 메모나 다음 단계 점검 초점이 저장되어 있으면 11단계에서 점검 대상으로 보여줍니다.</p>
         </div>
 
         <div className="mt-3 grid gap-2 md:grid-cols-3">
