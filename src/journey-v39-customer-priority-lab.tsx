@@ -38,7 +38,7 @@ type CustomerDirectionItem = {
 const CUSTOMER_DIRECTION_ITEMS: CustomerDirectionItem[] = [
   { id: 'A', label: '대응군 A · 반응 변화 고객군', defaultGuide: '고객 질문과 반응의 구체성을 확인한 뒤, 승인자료 범위 안에서 다음 대화 주제를 준비합니다.', defaultPriority: '조건부 실행', defaultMemberRole: '신재영 대리 · 후속 대화 연결' },
   { id: 'B', label: '대응군 B · 다음 접점 가능 고객군', defaultGuide: '다음 접점의 목적과 준비 자료를 정리하고, 과도한 설득 없이 후속 일정을 확인합니다.', defaultPriority: '조건부 실행', defaultMemberRole: '김재호 차장 · 현장 대응 후 기록 정리' },
-  { id: 'C', label: '대응군 C · 신규·미접촉 고객군', defaultGuide: '신규 접촉 수보다 접근 경로와 반응 차이를 확인하고, 무리한 확대보다 안전한 첫 접점을 설계합니다.', defaultPriority: '정보 보완 후 실행', defaultMemberRole: '박재욱 사원 · CRM·정보 보완' },
+  { id: 'C', label: '대응군 C · 신규·미접촉 고객군', defaultGuide: '신규 접촉 수보다 접근 경로와 반응 차이를 확인하고, 무리한 확대보다 안전한 첫 접점을 설계합니다.', defaultPriority: '정보 보완 후 실행', defaultMemberRole: '박재욱 사원 · 영업활동 기록·정보 보완' },
   { id: 'D', label: '대응군 D · 대체 접점 필요 고객군', defaultGuide: '방문이 어려운 고객에게 자료 확인, 비대면 접점, 협업 요청 등 대체 접점이 실제로 작동하는지 확인합니다.', defaultPriority: '정보 보완 후 실행', defaultMemberRole: '유희관 과장 · 변화 신호 관찰' },
   { id: 'E', label: '대응군 E · 제약요인 확인 고객군', defaultGuide: '실행 부진을 환경 탓으로 단정하지 않고, 고객 제약과 팀 실행 제약을 분리해 보완 조건을 정합니다.', defaultPriority: '접근 강도 조절', defaultMemberRole: '김문호 차장 · 접근 강도 조절' },
   { id: 'F', label: '대응군 F · 표현·자료 안전선 고객군', defaultGuide: '관심 신호가 있어도 승인자료 범위와 표현 안전선을 먼저 확인하고, 답변 가능 범위를 좁힙니다.', defaultPriority: '안전선 선확인', defaultMemberRole: '팀장 직접 점검 필요' },
@@ -49,7 +49,7 @@ const RESPONSE_DIRECTION_OPTIONS = ['조건부 실행', '정보 보완 후 실�
 const MEMBER_ROLE_OPTIONS = [
   '신재영 대리 · 후속 대화 연결',
   '김재호 차장 · 현장 대응 후 기록 정리',
-  '박재욱 사원 · CRM·정보 보완',
+  '박재욱 사원 · 영업활동 기록·정보 보완',
   '유희관 과장 · 변화 신호 관찰',
   '김문호 차장 · 접근 강도 조절',
   '이대은 대리 · 관계 유지 품질 관리',
