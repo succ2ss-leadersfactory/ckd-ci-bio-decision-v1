@@ -25,6 +25,9 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '고객 Data 증거 카드',
   '이번 지표를 확인할 고객 Data 증거를 고르세요',
   '확인 신호 A',
+  'AI 결과에서 가져올 것',
+  '전부 가져오지 마세요',
+  '대응 전략은 아직 확정하지 않습니다',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -377,6 +380,31 @@ function V39CustomerDataJudgmentFlow() {
         <div className="mt-4 flex flex-wrap gap-2"><button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={copyPrompt}>{copied ? '프롬프트 복사 완료' : 'AI 확인 List 프롬프트 복사'}</button><button type="button" className="rounded-2xl border bg-white px-4 py-3 text-sm font-black text-slate-700" onClick={resetFlow}>입력 초기화</button></div>
         <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
         <label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 결과 붙여넣기</span><textarea className="min-h-32 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={result.rawAiSignalResult} onChange={(event) => persist({ rawAiSignalResult: event.target.value })} placeholder="AI가 정리한 고객 Data 확인 List 초안을 붙여넣으세요. 아래 항목별 메모는 팀장이 직접 수정해 확정합니다." /></label>
+        <div className="mt-4 rounded-3xl border border-emerald-100 bg-white p-4">
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI 결과에서 가져올 것</p>
+          <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 필요한 것만 골라 옮깁니다.</h4>
+          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">AI 결과는 정답이 아니라 초안입니다. 긴 설명, 고객 우선순위 판단, 대응 전략 확정 문장은 그대로 쓰지 않습니다.</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              ['무엇을 볼까', '고객 Data에서 실제로 확인할 항목'],
+              ['기회로 볼 수 있는 경우', '긍정 단서로 볼 수 있는 조건'],
+              ['성급하게 해석하면 안 되는 경우', '과잉해석하거나 단정하면 위험한 부분'],
+              ['아직 부족한 정보', '팀장이 판단 전에 더 확인해야 할 정보'],
+              ['팀원에게 더 확인할 질문', '다음 방문·면담 전에 팀원에게 물어볼 문장'],
+              ['표현·자료 안전선', '승인자료 범위와 위험 표현 점검'],
+              ['7단계로 넘길 메모', '고객군별 대응 방향을 정할 때 참고할 1~2줄'],
+              ['버릴 내용', '고객 등급화, 대응 전략 확정, 실제 고객·제품 정보 추정'],
+            ].map(([title, description]) => (
+              <div key={title} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+                <p className="font-black text-slate-950">{title}</p>
+                <p className="mt-1">{description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
+            대응 전략은 아직 확정하지 않습니다. AI가 “집중 공략”, “우선순위 상향”처럼 답해도 6단계에서는 “추가 확인 후 7단계에서 판단”으로 바꿔 적습니다.
+          </div>
+        </div>
       </section>
 
       <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
