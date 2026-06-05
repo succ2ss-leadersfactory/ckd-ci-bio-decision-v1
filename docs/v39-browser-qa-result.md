@@ -14,13 +14,14 @@
 | 확인 브라우저 | 미기록 |
 | 확인 기기 | 미기록 |
 | 확인 네트워크 | 미기록 |
-| 확인 commit | `d529b587a500f4fe2af4e0da2993a9294661a8b7` 이후 QA runbook 추가 기준 |
+| 확인 commit | `84dc5ae24b1f4c76e22f59115c8bce8b70f19432` 이후 QA 문서 추가 기준 |
 | 확인 URL | `/journey-v39-preview.html` |
 
 관련 문서:
 
 ```txt
 docs/v39-browser-qa-runbook.md
+docs/v39-browser-qa-console-snippet.md
 docs/v39-5-13-flow-qa-checklist.md
 ```
 
@@ -150,12 +151,49 @@ v39 Smoke 핵심 단계:
 
 ## 11. Console 확인
 
+Console snippet 문서:
+
+```txt
+docs/v39-browser-qa-console-snippet.md
+```
+
 | 항목 | 결과 | 메모 |
 |---|---|---|
 | Console runtime error 없음 | 미확인 |  |
 | React rendering error 없음 | 미확인 |  |
 | 저장 관련 localStorage error 없음 | 미확인 |  |
 | clipboard 복사 오류 없음 | 미확인 |  |
+| Console snippet 실행 | 미확인 |  |
+| `routeOk` | 미확인 |  |
+| `missingStorageKeys` | 미확인 |  |
+| `parseErrors` | 미확인 |  |
+| `forbiddenTermsFound` | 미확인 |  |
+| `safetyTermsFound` | 미확인 |  |
+| `selectedEvidenceCards` | 미확인 |  |
+| `customerStrategyItems` | 미확인 |  |
+| `memberRoleItems` | 미확인 |  |
+| `aiCallPlanItems` | 미확인 |  |
+| `complianceCleanupFields` | 미확인 |  |
+| `finalCallPlanFields` | 미확인 |  |
+| `pass` | 미확인 |  |
+
+기록 예시:
+
+```txt
+Console snippet 실행: 통과
+routeOk: true
+missingStorageKeys: none
+parseErrors: none
+forbiddenTermsFound: none
+safetyTermsFound: 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출, 처방 수치, 개인정보
+selectedEvidenceCards: 1 이상
+customerStrategyItems: 1 이상
+memberRoleItems: 1 이상
+aiCallPlanItems: 1 이상
+complianceCleanupFields: 1 이상
+finalCallPlanFields: 1 이상
+pass: true
+```
 
 ## 12. 최종 판정
 
@@ -186,6 +224,7 @@ v39 Smoke 핵심 단계:
 ## 14. 다음 조치
 
 - [ ] `/journey-v39-preview.html` 브라우저 수동 QA 수행
+- [ ] `docs/v39-browser-qa-console-snippet.md` 실행
 - [ ] 본 문서의 `미확인` 항목을 실제 결과로 업데이트
 - [ ] 보류 이슈가 있으면 v39 preview 범위에서 수정
 - [ ] 수정 후 v39 Smoke 재확인
