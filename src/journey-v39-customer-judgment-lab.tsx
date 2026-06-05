@@ -28,6 +28,8 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   'AI 결과에서 가져올 것',
   '전부 가져오지 마세요',
   '대응 전략은 아직 확정하지 않습니다',
+  'AI 결과 1차 분리 정리',
+  '붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -43,6 +45,50 @@ type DataCheckItem = {
   checkQuestion: string;
   complianceNote: string;
 };
+
+type AiExtractionBucket = {
+  title: string;
+  description: string;
+  aliases: string[];
+};
+
+const AI_RESULT_EXTRACTION_BUCKETS: AiExtractionBucket[] = [
+  {
+    title: '무엇을 볼까',
+    description: '고객 Data에서 실제로 확인할 항목',
+    aliases: ['무엇을 볼까', '확인할 Data', '확인할 데이터', '확인할 항목', '확인해야 할 Data', '확인해야 할 데이터'],
+  },
+  {
+    title: '기회로 볼 수 있는 경우',
+    description: '긍정 단서로 볼 수 있는 조건',
+    aliases: ['기회로 볼 수 있는 경우', '기회 단서', '긍정 단서', '기회 신호', '긍정 신호'],
+  },
+  {
+    title: '성급하게 해석하면 안 되는 경우',
+    description: '과잉해석하거나 단정하면 위험한 부분',
+    aliases: ['성급하게 해석하면 안 되는 경우', '주의 단서', '주의 신호', '과잉해석', '단정하면 위험', '조심할 해석'],
+  },
+  {
+    title: '아직 부족한 정보',
+    description: '팀장이 판단 전에 더 확인해야 할 정보',
+    aliases: ['아직 부족한 정보', '부족한 정보', '추가 확인 필요', '더 확인해야 할 정보', '판단 전에 확인'],
+  },
+  {
+    title: '팀원에게 더 확인할 질문',
+    description: '다음 방문·면담 전에 팀원에게 물어볼 문장',
+    aliases: ['팀원에게 더 확인할 질문', '팀원에게 물어볼 질문', '추가 확인 질문', '확인 질문', '팀원 질문'],
+  },
+  {
+    title: '표현·자료 안전선',
+    description: '승인자료 범위와 위험 표현 점검',
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현'],
+  },
+  {
+    title: '7단계로 넘길 메모',
+    description: '고객군별 대응 방향을 정할 때 참고할 1~2줄',
+    aliases: ['7단계로 넘길 메모', '7단계', '대응 준비 메모', '다음 단계 메모', '고객군별 대응 방향'],
+  },
+];
 
 const DATA_CHECK_ITEMS: DataCheckItem[] = [
   {
@@ -134,6 +180,56 @@ function compactList(items: string[], limit = 8) {
 
 function splitLines(value: string, limit = 8) {
   return compactList(value.split(/\r?\n/), limit);
+}
+
+function cleanAiResultLine(value: string) {
+  return value
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/^[-*•]\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^\|?\s*/, '')
+    .replace(/\*\*/g, '')
+    .trim();
+}
+
+function lineMatchesBucket(line: string, bucket: AiExtractionBucket) {
+  return bucket.aliases.some((alias) => line.includes(alias));
+}
+
+function lineMatchesAnyBucket(line: string) {
+  return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => lineMatchesBucket(line, bucket));
+}
+
+function extractAiResultBuckets(raw: string) {
+  const lines = raw
+    .split(/\r?\n/)
+    .map(cleanAiResultLine)
+    .filter(Boolean);
+
+  return AI_RESULT_EXTRACTION_BUCKETS.map((bucket) => {
+    const startIndex = lines.findIndex((line) => lineMatchesBucket(line, bucket));
+    const items: string[] = [];
+
+    if (startIndex >= 0) {
+      const firstLine = lines[startIndex];
+      const afterColon = firstLine.split(/[:：]/).slice(1).join(':').trim();
+      if (afterColon) items.push(afterColon);
+
+      for (let index = startIndex + 1; index < lines.length; index += 1) {
+        const line = lines[index];
+        if (lineMatchesAnyBucket(line)) break;
+        if (/^(요청|주의|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
+        items.push(line);
+        if (items.length >= 4) break;
+      }
+    }
+
+    return {
+      title: bucket.title,
+      description: bucket.description,
+      items: compactList(items, 4),
+    };
+  });
 }
 
 function getDashboardBridge() {
@@ -249,6 +345,8 @@ function V39CustomerDataJudgmentFlow() {
   const selectedItemIds = result.selectedCustomerTypeIds;
   const selectedItems = selectedItemIds.map(getDataCheckItem);
   const dashboardBridge = useMemo(() => getDashboardBridge(), [result.updatedAt, result.selectedCustomerTypeIds.length]);
+  const extractedAiBuckets = useMemo(() => extractAiResultBuckets(result.rawAiSignalResult), [result.rawAiSignalResult]);
+  const hasAiRawResult = result.rawAiSignalResult.trim().length > 0;
   const requiredDoneCount = [
     selectedItemIds.length >= 1,
     selectedItems.some((item) => result.decisions[item.id]?.missingInfo?.trim()),
@@ -380,6 +478,24 @@ function V39CustomerDataJudgmentFlow() {
         <div className="mt-4 flex flex-wrap gap-2"><button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={copyPrompt}>{copied ? '프롬프트 복사 완료' : 'AI 확인 List 프롬프트 복사'}</button><button type="button" className="rounded-2xl border bg-white px-4 py-3 text-sm font-black text-slate-700" onClick={resetFlow}>입력 초기화</button></div>
         <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
         <label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 결과 붙여넣기</span><textarea className="min-h-32 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={result.rawAiSignalResult} onChange={(event) => persist({ rawAiSignalResult: event.target.value })} placeholder="AI가 정리한 고객 Data 확인 List 초안을 붙여넣으세요. 아래 항목별 메모는 팀장이 직접 수정해 확정합니다." /></label>
+        {hasAiRawResult && (
+          <div className="mt-4 rounded-3xl border border-violet-100 bg-white p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 결과 1차 분리 정리</p>
+            <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동 분리는 참고용입니다. AI 표현을 그대로 확정하지 말고, 아래 Block 3에서 팀장 언어로 줄여 적으세요.</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {extractedAiBuckets.map((bucket) => (
+                <div key={bucket.title} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
+                  <p className="font-black text-slate-950">{bucket.title}</p>
+                  <p className="mt-1 text-slate-500">{bucket.description}</p>
+                  <div className="mt-2 space-y-1">
+                    {bucket.items.length > 0 ? bucket.items.map((item) => <p key={item} className="rounded-xl bg-white px-3 py-2">{item}</p>) : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-slate-400">AI 결과에서 해당 항목을 명확히 찾지 못했습니다. 필요한 문장을 직접 골라 Block 3에 정리하세요.</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mt-4 rounded-3xl border border-emerald-100 bg-white p-4">
           <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI 결과에서 가져올 것</p>
           <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 필요한 것만 골라 옮깁니다.</h4>
