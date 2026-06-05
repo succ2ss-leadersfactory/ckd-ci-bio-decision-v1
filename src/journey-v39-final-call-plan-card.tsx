@@ -225,7 +225,7 @@ function buildDefaultFinalCallPlanResult(
     memberRoles: current.memberRoles || (savedRoles.length > 0 ? buildRoleSummary(roles) : '팀원별 역할은 고객군 특성, 실행 강점, 코칭 필요점, 부담 편중 가능성을 기준으로 조정합니다.'),
     twoWeekAction: current.twoWeekAction || [
       `핵심 실행 지표: ${joinList(dashboard.metricSelection.selectedCoreMetricIds)}`,
-      savedAiDraft?.callPlanDraft || '1주차에는 고객군별 확인 질문과 사용 가능한 자료 범위를 정리하고, 2주차에는 후속 반응·CRM 기록·팀원 실행 대화 결과를 함께 점검합니다.',
+      savedAiDraft?.callPlanDraft || '1주차에는 고객군별 확인 질문과 사용 가능한 자료 범위를 정리하고, 2주차에는 후속 반응·영업활동 기록·팀원 실행 대화 결과를 함께 점검합니다.',
       dataQuestions ? `추가 확인 질문: ${dataQuestions}` : '',
     ].filter(Boolean).join('\n'),
     compliancePoint: current.compliancePoint || cleanup.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치 입력을 금지하고, 처방 유도·비교 우위 단정·허가 외 표현을 제거합니다.',
