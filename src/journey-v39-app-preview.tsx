@@ -9,6 +9,7 @@ import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-ux-l
 import { V39CustomerJudgmentUxLab } from './journey-v39-customer-judgment-ux-lab';
 import { V39CustomerPriorityUxLab } from './journey-v39-customer-priority-ux-lab';
 import { V39DashboardAnalysisUxLab } from './journey-v39-dashboard-analysis-ux-lab';
+import { V39DirectConcernContextCard } from './journey-v39-direct-concern-context-card';
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
 import { V39FinalCallPlanOnePageGuidance } from './journey-v39-final-call-plan-one-page-guidance';
 import { V39FinalCallPlanTeamSevenUxCard } from './journey-v39-final-call-plan-team-seven-ux-card';
@@ -23,7 +24,7 @@ import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-confi
 import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -113,9 +114,9 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
   if (current.id === 'ai-safety') return <AiSafetyLab />;
   if (current.id === 'prompt-practice') return <V39PromptPracticeLab />;
-  if (current.id === 'research-strategy') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="research" /><V39ResearchStrategyLab /></div>;
-  if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
-  if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
+  if (current.id === 'research-strategy') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="research" /><V39DirectConcernContextCard mode="research" /><V39ResearchStrategyLab /></div>;
+  if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DirectConcernContextCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
+  if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39DirectConcernContextCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
   if (current.id === 'member-role') return <div className="space-y-4"><V39TeamSevenCoachingUxWrapper /><V39MemberRoleUxLab /></div>;
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
