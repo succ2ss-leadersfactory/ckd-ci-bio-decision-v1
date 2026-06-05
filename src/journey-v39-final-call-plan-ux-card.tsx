@@ -8,7 +8,9 @@ const V39_FINAL_CALL_PLAN_UX_SMOKE_MARKERS = [
   '12단계 진행 가이드',
   '고객 실행·팀원 역할·안전 문장을 2주 실행 카드로 통합합니다',
   '8단계 역할 반영',
+  '8단계 역할 미션 없이도 지원 포인트와 안전선을 반영합니다',
   '9·11단계 반영',
+  '11단계 안전 문장·체크리스트·최종 카드 메모',
   '12단계 저장 상태',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
@@ -17,13 +19,23 @@ const V39_FINAL_CALL_PLAN_UX_SMOKE_MARKERS = [
 ].join('|');
 void V39_FINAL_CALL_PLAN_UX_SMOKE_MARKERS;
 
+function hasMemberRoleContext(role: { assignedCustomers: string; roleMission: string; coachingFocus: string; riskGuardrail: string; callPlanPrep: string }) {
+  return Boolean(
+    role.assignedCustomers.trim() ||
+      role.roleMission.trim() ||
+      role.coachingFocus.trim() ||
+      role.riskGuardrail.trim() ||
+      role.callPlanPrep.trim(),
+  );
+}
+
 function getFinalCallPlanStatus() {
   const memberRoleResult = loadV39MemberRoleResult();
   const peopleDialogueResult = loadV39PeopleDialogueResult();
   const cleanupResult = loadV39ComplianceCleanupResult();
   const finalCardResult = loadV39FinalCallPlanResult();
 
-  const roleCount = Object.values(memberRoleResult.roles).filter((role) => role.roleMission.trim()).length;
+  const roleCount = Object.values(memberRoleResult.roles).filter(hasMemberRoleContext).length;
   const hasPeopleDialogue = Boolean(
     peopleDialogueResult.updatedAt ||
     peopleDialogueResult.purposeFitOpening.trim() ||
@@ -33,8 +45,15 @@ function getFinalCallPlanStatus() {
   const hasCleanup = Boolean(
     cleanupResult.updatedAt ||
     cleanupResult.safeExpression.trim() ||
-    cleanupResult.finalChecklist.trim(),
+    cleanupResult.finalChecklist.trim() ||
+    cleanupResult.finalCardMemo.trim(),
   );
+  const cleanupFieldCount = [
+    cleanupResult.riskTypes,
+    cleanupResult.safeExpression,
+    cleanupResult.finalChecklist,
+    cleanupResult.finalCardMemo,
+  ].filter((value) => value.trim()).length;
   const finalFieldCount = [
     finalCardResult.focusCustomers,
     finalCardResult.memberRoles,
@@ -48,6 +67,7 @@ function getFinalCallPlanStatus() {
     roleCount,
     hasPeopleDialogue,
     hasCleanup,
+    cleanupFieldCount,
     finalFieldCount,
     finalUpdatedAt: finalCardResult.updatedAt,
   };
@@ -56,7 +76,7 @@ function getFinalCallPlanStatus() {
 export function V39FinalCallPlanUxCard() {
   const status = getFinalCallPlanStatus();
   const peopleStateLabel = status.hasPeopleDialogue ? '대화 메모 있음' : '대화 메모 없음';
-  const cleanupStateLabel = status.hasCleanup ? '안전 문장 있음' : '안전 문장 없음';
+  const cleanupStateLabel = status.hasCleanup ? `안전 문장 ${status.cleanupFieldCount}개` : '안전 문장 없음';
   const finalStateLabel = status.finalUpdatedAt ? '메모 남김' : '아직 비어 있음';
 
   return (
@@ -81,6 +101,16 @@ export function V39FinalCallPlanUxCard() {
               <p className="mt-1 text-sm font-black text-emerald-950">{finalStateLabel}</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+          <p className="font-black">11단계 안전 문장·체크리스트·최종 카드 메모를 함께 가져옵니다</p>
+          <p className="mt-1">12단계는 11단계의 최종 체크리스트만 보는 화면이 아닙니다. 위험 유형 요약, 안전하게 수정한 문장, 최종 체크리스트, 최종 카드 메모를 모두 최종 실행 카드의 안전 기준으로 사용합니다.</p>
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
+          <p className="font-black">8단계 역할 미션 없이도 지원 포인트와 안전선을 반영합니다</p>
+          <p className="mt-1">역할 미션이 비어 있더라도 담당 고객군, 콜플랜 준비물, 팀장 지원 포인트, 리스크 안전선 중 하나라도 저장되어 있으면 12단계 역할 반영 수에 포함됩니다.</p>
         </div>
 
         <div className="mt-3 grid gap-2 md:grid-cols-3">
