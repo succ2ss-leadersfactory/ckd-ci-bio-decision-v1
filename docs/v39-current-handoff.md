@@ -4,16 +4,16 @@
 
 ## 1. 최신 안정 기준
 
-최신 안정 커밋:
+문서 업데이트 기준 커밋:
 
 ```txt
-5f8ed44ca866a7a56a0ae60d7bc0bb9561648bd8
+942a34379f98a42224f2fe054779df5d3ea84b04
 ```
 
 커밋 메시지:
 
 ```txt
-Align v39 remote smoke result with summary table
+Reference v39 current handoff in README
 ```
 
 최신 확인 결과:
