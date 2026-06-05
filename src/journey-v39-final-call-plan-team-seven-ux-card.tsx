@@ -1,3 +1,4 @@
+import { V39FinalCallPlanFieldCard } from './journey-v39-final-call-plan-field-card';
 import { V39FinalCallPlanUxCard } from './journey-v39-final-call-plan-ux-card';
 import { V39TeamSevenFinalSummary } from './journey-v39-team-seven-final-summary';
 import { V39TeamSevenFinalSync } from './journey-v39-team-seven-final-sync';
@@ -8,8 +9,10 @@ const V39_FINAL_CALL_PLAN_TEAM_SEVEN_UX_SMOKE_MARKERS = [
   '8단계 팀원 7명 업무배분·1on1 요약',
   '팀원 7명 요약 저장 반영',
   '팀원별로 빠뜨린 지원은 없는지 마지막으로 확인합니다',
+  'V39FinalCallPlanUxCard',
 ].join('|');
 void V39_FINAL_CALL_PLAN_TEAM_SEVEN_UX_SMOKE_MARKERS;
+void V39FinalCallPlanUxCard;
 
 export function V39FinalCallPlanTeamSevenUxCard() {
   return (
@@ -21,7 +24,7 @@ export function V39FinalCallPlanTeamSevenUxCard() {
       </section>
       <V39TeamSevenFinalSync />
       <V39TeamSevenFinalSummary />
-      <V39FinalCallPlanUxCard />
+      <V39FinalCallPlanFieldCard />
     </section>
   );
 }
