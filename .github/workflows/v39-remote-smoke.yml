@@ -1,0 +1,66 @@
+name: v39 Remote Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to check, for example https://ckd-ci-bio-decision-v1.vercel.app'
+        required: false
+        default: 'https://ckd-ci-bio-decision-v1.vercel.app'
+
+jobs:
+  remote-smoke-v39:
+    name: Run v39 remote smoke check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v39 remote smoke check
+        env:
+          V39_REMOTE_BASE_URL: ${{ inputs.base_url }}
+        run: npm run smoke:v39:remote
+
+      - name: Write v39 remote smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v39 Remote Smoke Summary"
+            echo ""
+            echo "## Checked base URL"
+            echo ""
+            echo "- ${{ inputs.base_url }}"
+            echo ""
+            echo "## Paths covered"
+            echo ""
+            echo "- /"
+            echo "- /journey.html"
+            echo "- /journey-v39-preview.html"
+            echo ""
+            echo "## What this verifies"
+            echo ""
+            echo "- Root redirect reaches /journey.html"
+            echo "- Operating journey HTML is served"
+            echo "- v39 preview HTML is served"
+            echo "- Production HTML uses /assets/*.js"
+            echo "- Production HTML does not directly reference /src/... dev entries"
+            echo "- v39 preview asset graph contains 5~13 flow markers"
+            echo "- v39 preview asset graph does not contain key forbidden customer-ranking or CRM-only terms"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Confirm Vercel deployment is complete."
+            echo "2. Open /journey.html in a browser and confirm v34 operating screen works."
+            echo "3. Open /journey-v39-preview.html and complete 5~13 browser QA."
+            echo "4. Run docs/v39-browser-qa-console-snippet.md in browser Console."
+            echo "5. Record results in docs/v39-browser-qa-result.md."
+          } >> "$GITHUB_STEP_SUMMARY"
