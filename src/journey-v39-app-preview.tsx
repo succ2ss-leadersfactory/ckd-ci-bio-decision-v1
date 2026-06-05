@@ -17,11 +17,12 @@ import { V39MemberRoleUxLab } from './journey-v39-member-role-ux-lab';
 import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { V39PromptConcernBridgeCard } from './journey-v39-prompt-concern-bridge-card';
 import { V39PromptPracticeLab } from './journey-v39-prompt-practice-lab';
+import { V39TeamSevenCoachingMap } from './journey-v39-team-seven-coaching-map';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard V39TeamSevenCoachingMap 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -115,7 +116,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
   if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
-  if (current.id === 'member-role') return <V39MemberRoleUxLab />;
+  if (current.id === 'member-role') return <div className="space-y-4"><V39TeamSevenCoachingMap /><V39MemberRoleUxLab /></div>;
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanUxLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupUxLab />;
