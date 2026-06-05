@@ -7,21 +7,21 @@ const V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS = [
   '6단계 진행 가이드',
   '고객 Data에서 기회와 착시를 분리합니다',
   '고객 Data 판단 상태',
-  '선택 고객 유형',
+  '선택 확인 신호',
   '6단계 저장 상태',
   '고객 Data에서 신호 찾기',
   'AI 없이도 할 수 있습니다',
   'AI를 쓰면 좋아지는 점',
-  'Data 분석',
   '패턴·편중·부족 정보',
   '고객을 평가하거나 등급화하지 않습니다',
+  '이번 2주 동안 고객 Data에서 볼 신호',
+  '필수 3개만 완료하면 다음 단계로 갈 수 있습니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
   '최소 결과물',
   '6단계. 고객의 무엇을 볼 것인가',
-  '5단계에서 넘겨받은 기준',
-  '관리 지표를 고객 Data로 확인하기',
+  '5단계에서 가져온 기준',
   '고객 Data 해석 메모',
   '팀원별 영업활동 기록 품질 차이',
 ].join('|');
@@ -146,12 +146,19 @@ function getCustomerJudgmentStatus() {
     decision.judgmentMemo.trim()
   )).length;
 
+  const requiredDoneCount = [
+    result.selectedCustomerTypeIds.length >= 1,
+    Object.values(result.decisions).some((decision) => decision.missingInfo.trim()),
+    Object.values(result.decisions).some((decision) => decision.nextCheck.trim()),
+  ].filter(Boolean).length;
+
   return {
     contextCount: result.customerContextSelections.length,
     criteriaCount: result.judgmentCriteriaSelections.length,
     selectedCustomerCount: result.selectedCustomerTypeIds.length,
-    selectedCustomerLabels: result.selectedCustomerTypeIds.map((id) => `확인 항목 ${id}`).join(' · '),
+    selectedCustomerLabels: result.selectedCustomerTypeIds.map((id) => `확인 신호 ${id}`).join(' · '),
     decisionCount,
+    requiredDoneCount,
     hasAiSignal: result.rawAiSignalResult.trim().length > 0,
     updatedAt: result.updatedAt,
   };
@@ -189,17 +196,17 @@ export function V39CustomerJudgmentUxLab() {
             <p className="text-xs font-black uppercase tracking-wide text-emerald-700">6단계 진행 가이드 · 고객 Data에서 신호 찾기</p>
             <h2 className="mt-1 text-xl font-black text-slate-950">6단계. 고객의 무엇을 볼 것인가</h2>
             <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">
-              5단계에서 정한 관리 지표는 팀 전체의 실행 기준입니다. 이번 단계에서는 그 지표를 고객 Data에서 어떻게 분석하고 확인할지 정리합니다. 고객을 평가하거나 등급화하지 않습니다. Data의 패턴·편중·부족 정보·추가 확인 질문을 분리하는 단계입니다.
+              5단계에서 정한 관리 지표를 고객 Data에서 확인할 신호로 바꿉니다. 고객을 평가하지 않고, 기회 신호·주의 신호·부족 정보·추가 확인 질문을 나눕니다. 고객군별 대응 방향은 다음 7단계에서 정합니다.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-3 lg:w-[34rem]">
-            <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
-              <p className="text-xs font-black text-sky-700">고객 Data 분석 상태</p>
-              <p className="mt-1 text-sm font-black text-sky-950">상황 {status.contextCount}개 · 관점 {status.criteriaCount}개</p>
-            </div>
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <p className="text-xs font-black text-emerald-700">선택 확인 항목</p>
-              <p className="mt-1 text-sm font-black text-emerald-950">{status.selectedCustomerCount}개</p>
+              <p className="text-xs font-black text-emerald-700">필수 완료</p>
+              <p className="mt-1 text-sm font-black text-emerald-950">{status.requiredDoneCount} / 3</p>
+            </div>
+            <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
+              <p className="text-xs font-black text-sky-700">선택 확인 신호</p>
+              <p className="mt-1 text-sm font-black text-sky-950">{status.selectedCustomerCount}개</p>
             </div>
             <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
               <p className="text-xs font-black text-violet-700">6단계 저장 상태</p>
@@ -211,23 +218,24 @@ export function V39CustomerJudgmentUxLab() {
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
             <p className="font-black text-slate-950">AI 없이도 할 수 있습니다</p>
-            <p className="mt-1">팀장은 영업활동 기록, 방문·면담 메모, 고객 반응을 보고 경험적으로 고객 상황을 판단하고 다음 행동을 정할 수 있습니다.</p>
+            <p className="mt-1">팀장은 영업활동 기록, 방문·면담 메모, 고객 반응을 보고 경험적으로 고객 상황을 확인하고 다음 행동을 준비할 수 있습니다.</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
-            <p className="mt-1">흩어진 활동 Data를 비교·분류·패턴화하고, 접촉 편중, 후속조치 끊김, 부족 정보, 추가 확인 질문을 더 빠르게 구조화할 수 있습니다.</p>
+            <p className="mt-1">흩어진 활동 Data를 비교·분류·패턴화하고, 기회 신호, 주의 신호, 부족 정보, 추가 확인 질문을 더 빠르게 구조화할 수 있습니다.</p>
           </div>
         </div>
 
         <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-slate-500">5단계에서 넘겨받은 기준</p>
-              <h3 className="mt-1 text-base font-black text-slate-950">관리 지표를 고객 Data로 확인하기 위한 출발점</h3>
+              <p className="text-xs font-black uppercase tracking-wide text-slate-500">5단계에서 가져온 기준</p>
+              <h3 className="mt-1 text-base font-black text-slate-950">이번 2주 동안 고객 Data에서 볼 신호</h3>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 내용은 새로 정하는 기준이 아니라, 5단계에서 가져온 관리 지표와 현장 신호입니다.</p>
             </div>
             <p className="rounded-full border border-white bg-white px-3 py-1 text-xs font-black text-slate-600">핵심 지표 {metricBridge.coreMetrics.length}개</p>
           </div>
-          {!metricBridge.hasDashboardResult && <p className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-500">5단계에서 관리 지표를 선택하면 이곳에 고객 Data 분석 기준이 표시됩니다.</p>}
+          {!metricBridge.hasDashboardResult && <p className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-500">5단계에서 관리 지표를 선택하면 이곳에 고객 Data에서 볼 신호가 표시됩니다.</p>}
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
             <div className="rounded-2xl border border-white bg-white p-4">
               <p className="text-xs font-black text-slate-500">선택한 핵심 실행 지표</p>
@@ -261,7 +269,7 @@ export function V39CustomerJudgmentUxLab() {
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">이 단계에서 하는 일</p>
-            <p className="mt-1">5단계 관리 지표를 고객 Data 관점으로 번역합니다. Data 분석을 통해 패턴, 편중, 기회 신호, 주의 신호, 부족한 정보, 추가 확인 질문을 남깁니다.</p>
+            <p className="mt-1">고객 Data에서 먼저 볼 신호를 고르고, 기회 신호·주의 신호·부족 정보·추가 확인 질문으로 나눕니다.</p>
           </div>
           <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
             <p className="font-black">이전 단계에서 가져온 것</p>
@@ -269,13 +277,13 @@ export function V39CustomerJudgmentUxLab() {
           </div>
           <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">
             <p className="font-black">다음 단계로 넘길 것</p>
-            <p className="mt-1">7단계 고객군별 대응 방향에서 활용할 Data 패턴, 확인 항목, 안전한 확인 질문입니다.</p>
+            <p className="mt-1">7단계 고객군별 대응 방향에서 활용할 고객 Data 확인 신호와 대응 준비 메모입니다.</p>
           </div>
         </div>
 
         <div className="mt-3 rounded-3xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">Data 분석 관점</p>
-          <h3 className="mt-1 text-base font-black text-slate-950">고객 Data에서 어떤 패턴을 먼저 볼까요?</h3>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">고객 Data에서 어떤 패턴을 먼저 볼까요?</p>
+          <h3 className="mt-1 text-base font-black text-slate-950">신호를 고를 때 참고할 예시</h3>
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             {CUSTOMER_DATA_ANALYSIS_PATTERNS.map((pattern) => (
               <div key={pattern} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-700">{pattern}</div>
@@ -285,7 +293,7 @@ export function V39CustomerJudgmentUxLab() {
 
         <div className="mt-3 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-slate-500">가상 고객 Data 예시</p>
-          <h3 className="mt-1 text-base font-black text-slate-950">실제 고객명·병원명 없이도 Data 분석 흐름을 연습합니다</h3>
+          <h3 className="mt-1 text-base font-black text-slate-950">실제 고객명·병원명 없이도 Data 확인 흐름을 연습합니다</h3>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-xs font-bold leading-5 text-slate-700">
               <thead className="text-slate-500">
@@ -302,12 +310,12 @@ export function V39CustomerJudgmentUxLab() {
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs font-bold leading-5 text-slate-600">이 예시는 분석 사고를 돕기 위한 가상 Data입니다. 실제 고객명, 병원명, 의료진명, 제품명, 내부 수치, 개인정보는 입력하지 않습니다.</p>
+          <p className="mt-3 text-xs font-bold leading-5 text-slate-600">이 예시는 확인 사고를 돕기 위한 가상 Data입니다. 실제 고객명, 병원명, 의료진명, 제품명, 내부 수치, 개인정보는 입력하지 않습니다.</p>
         </div>
 
         <div className="mt-3 rounded-3xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">고객 Data 분석 관점 선택</p>
-          <h3 className="mt-1 text-base font-black text-slate-950">5단계에서 정한 관리 지표를 보려면, 고객의 무엇을 확인해야 할까요?</h3>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">고객 Data 확인 관점</p>
+          <h3 className="mt-1 text-base font-black text-slate-950">고객 Data를 볼 때 놓치지 말아야 할 질문</h3>
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {CUSTOMER_DATA_VIEWPOINTS.map((viewpoint) => (
               <div key={viewpoint} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-700">{viewpoint}</div>
@@ -330,22 +338,27 @@ export function V39CustomerJudgmentUxLab() {
 
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-            <p className="font-black text-slate-950">현재 선택 확인 항목</p>
+            <p className="font-black text-slate-950">현재 선택 확인 신호</p>
             <p className="mt-1">{selectedCustomerLabel}</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-            <p className="font-black text-slate-950">확인 항목별 메모</p>
+            <p className="font-black text-slate-950">확인 신호별 메모</p>
             <p className="mt-1">{status.decisionCount}건 정리됨</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-            <p className="font-black text-slate-950">AI가 분석한 신호</p>
+            <p className="font-black text-slate-950">AI가 정리한 초안</p>
             <p className="mt-1">{status.hasAiSignal ? '가져온 답변 있음' : '아직 없음'}</p>
           </div>
         </div>
 
+        <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+          <p className="font-black">필수 3개만 완료하면 다음 단계로 갈 수 있습니다</p>
+          <p className="mt-1">확인 신호 1개 이상 선택, 부족 정보 1개 작성, 추가 확인 질문 1개 작성이면 충분합니다. 나머지는 시간이 있을 때 보완합니다.</p>
+        </div>
+
         <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
           <p className="font-black text-slate-950">최소 결과물</p>
-          <p className="mt-1">고객 Data 분석·확인 List입니다. 고객별 우선순위를 확정하기보다, Data 패턴, 기회 신호, 주의 신호, 부족한 정보, 추가 확인 질문을 분리해 7단계 고객군별 대응 방향으로 넘깁니다.</p>
+          <p className="mt-1">고객 Data 확인 List입니다. 고객별 우선순위를 확정하기보다, Data 패턴, 기회 신호, 주의 신호, 부족 정보, 추가 확인 질문, 7단계 대응 준비 메모를 분리해 넘깁니다.</p>
         </div>
 
         <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
