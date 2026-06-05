@@ -78,6 +78,7 @@ cutover 금지 기준:
 - `/?view=check` 사전점검 화면
 - `/journey.html` v34 보호 운영 경로
 - `/journey-v35-preview.html` v35 preview 검증 경로
+- `/journey-v39-preview.html` v39 5~13단계 연결 흐름 검증 경로
 
 ## Stack
 
@@ -139,6 +140,7 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 - `docs/v35-browser-qa-result.md` v35 브라우저 QA 결과 기록지
 - `docs/v35-browser-qa-console-snippet.md` v35 브라우저 QA 콘솔 스니펫
 - `docs/v35-cutover-gates.md` v35 cutover gate 기준
+- `docs/v39-5-13-flow-qa-checklist.md` v39 5~13단계 연결 흐름 QA 체크리스트
 - `docs/DEPLOYMENT_RUNBOOK.md` 배포 런북
 - `docs/pilot-qa-checklist.md` 파일럿 전 QA 체크리스트
 - `docs/manual-test-script.md` 수동 테스트 스크립트
