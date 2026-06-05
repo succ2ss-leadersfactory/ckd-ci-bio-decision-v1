@@ -103,6 +103,15 @@ npm run smoke:v35:remote
 npm run audit:v35:readiness
 ```
 
+v39 검증용 명령:
+
+```bash
+npm run smoke:v39
+npm run smoke:v39:remote
+```
+
+v39 원격 검증은 GitHub Actions → `v39 Remote Smoke`에서도 수동 실행할 수 있습니다.
+
 ## Vercel
 
 - Framework: Vite
