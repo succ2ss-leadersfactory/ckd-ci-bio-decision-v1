@@ -20,10 +20,6 @@ const V39_FINAL_CALL_PLAN_FIELD_CARD_SMOKE_MARKERS = [
 ].join('|');
 void V39_FINAL_CALL_PLAN_FIELD_CARD_SMOKE_MARKERS;
 
-function textOrEmpty(value: string) {
-  return value.trim();
-}
-
 function joinNonEmpty(items: string[], fallback = '아직 정리되지 않았습니다.') {
   const filtered = items.map((item) => item.trim()).filter(Boolean);
   return filtered.length > 0 ? filtered.join('\n') : fallback;
@@ -173,7 +169,7 @@ export function V39FinalCallPlanFieldCard() {
         </label>
         <label className="space-y-1">
           <span className="text-xs font-black text-slate-600">[필수] 팀원별 역할과 팀장이 도울 것</span>
-          <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={result.memberRoles} onChange={(event) => savePatch({ memberRoles: event.target.value })} placeholder="예: 김민재 프로는 다음 접점 고객군을 맡되, 방문 전 질문과 사용 가능한 자료 범위를 팀장이 함께 점검한다." />
+          <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={result.memberRoles} onChange={(event) => savePatch({ memberRoles: event.target.value })} placeholder="예: 담당 팀원은 다음 접점 고객군을 맡되, 방문 전 질문과 사용 가능한 자료 범위를 팀장이 함께 점검한다." />
         </label>
         <label className="space-y-1">
           <span className="text-xs font-black text-slate-600">[필수] 이번 2주에 실제로 할 일</span>
