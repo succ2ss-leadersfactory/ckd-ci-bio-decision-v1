@@ -8,6 +8,7 @@ import { loadV39PeopleDialogueResult } from './journey-v39-people-dialogue-resul
 
 const V39_AI_CALL_PLAN_UX_SMOKE_MARKERS = [
   '10단계 진행 가이드',
+  '팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다',
   '고객 대응 방향·역할·실행 대화를 AI 실행계획 프롬프트로 연결합니다',
   '5단계 관리 지표',
   '6단계 고객 Data 확인 List',
