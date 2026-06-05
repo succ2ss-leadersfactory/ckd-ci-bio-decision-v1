@@ -10,7 +10,7 @@ import { V39CustomerJudgmentUxLab } from './journey-v39-customer-judgment-ux-lab
 import { V39CustomerPriorityUxLab } from './journey-v39-customer-priority-ux-lab';
 import { V39DashboardAnalysisUxLab } from './journey-v39-dashboard-analysis-ux-lab';
 import { V39FinalCallPlanCard } from './journey-v39-final-call-plan-card';
-import { V39FinalCallPlanUxCard } from './journey-v39-final-call-plan-ux-card';
+import { V39FinalCallPlanTeamSevenUxCard } from './journey-v39-final-call-plan-team-seven-ux-card';
 import { V39InstructorDiscussionLab } from './journey-v39-instructor-discussion-lab';
 import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussion-ux-lab';
 import { V39MemberRoleUxLab } from './journey-v39-member-role-ux-lab';
@@ -22,7 +22,7 @@ import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-confi
 import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard V39TeamSevenCoachingMap 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39PromptPracticeLab V39PromptConcernBridgeCard V39TeamSevenCoachingMap V39FinalCallPlanTeamSevenUxCard 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -120,7 +120,7 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanUxLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupUxLab />;
-  if (current.id === 'final-call-plan-card') return <V39FinalCallPlanUxCard />;
+  if (current.id === 'final-call-plan-card') return <V39FinalCallPlanTeamSevenUxCard />;
   if (current.id === 'instructor-discussion') return <V39InstructorDiscussionUxLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 준비 중입니다.</p></ShellCard>;
