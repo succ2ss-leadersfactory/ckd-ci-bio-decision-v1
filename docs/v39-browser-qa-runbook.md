@@ -28,6 +28,7 @@ docs/v39-browser-qa-result.md
 
 ```txt
 docs/v39-5-13-flow-qa-checklist.md
+docs/v39-browser-qa-console-snippet.md
 ```
 
 ## 2. 사전 확인
@@ -228,7 +229,35 @@ v39 QA 중에도 운영 route는 보호되어야 한다.
 
 - 13단계가 평가표가 아니라 강사용 디브리핑 질문 화면으로 보인다.
 
-## 7. 부분 입력 회귀 테스트
+## 7. Console snippet 실행
+
+5~13단계 최소 입력과 부분 입력 회귀 테스트를 마친 뒤 Console에서 아래 문서의 스니펫을 실행한다.
+
+```txt
+docs/v39-browser-qa-console-snippet.md
+```
+
+필수 기대 결과:
+
+```txt
+routeOk: true
+parseErrors: none
+forbiddenTermsFound: none
+selectedEvidenceCards: 1 이상
+customerStrategyItems: 1 이상
+memberRoleItems: 1 이상
+aiCallPlanItems: 1 이상
+complianceCleanupFields: 1 이상
+finalCallPlanFields: 1 이상
+pass: true
+```
+
+주의:
+
+- `missingScreenMarkers`는 현재 한 단계만 표시되는 UI 구조에서는 일부 발생할 수 있다.
+- `v34FlowKeysFound`는 이전 운영 경로 사용 이력 때문에 존재할 수 있다. v39 조작 중 새로 생성 또는 변경되었는지를 별도로 본다.
+
+## 8. 부분 입력 회귀 테스트
 
 아래 3개는 반드시 별도로 확인한다.
 
@@ -267,7 +296,7 @@ v39 QA 중에도 운영 route는 보호되어야 한다.
 
 - 13단계에서 판단 근거·보완 지점·토의거리 요약이 표시된다.
 
-## 8. 금지 표현 확인
+## 9. 금지 표현 확인
 
 각 단계에서 아래 표현이 참여자 화면에 단독 또는 부적절하게 남아 있지 않은지 확인한다.
 
@@ -285,7 +314,7 @@ v39 QA 중에도 운영 route는 보호되어야 한다.
 - 미승인 효능 표현
 - 세대 특성 단정
 
-## 9. QA 결과 기록 방법
+## 10. QA 결과 기록 방법
 
 QA 완료 후 아래 문서에 결과를 기록한다.
 
@@ -310,7 +339,7 @@ docs/v39-browser-qa-result.md
 - 고객 등급화, 처방 유도, 비교 우위 단정, 세대 단정 표현이 남아 있음
 - Console runtime error 발생
 
-## 10. 권장 실행 순서
+## 11. 권장 실행 순서
 
 ```txt
 1. 최신 커밋 기준 CI 확인
@@ -319,8 +348,9 @@ docs/v39-browser-qa-result.md
 4. 5~13단계 순차 이동
 5. 단계별 최소 입력 수행
 6. 부분 입력 회귀 테스트 3개 수행
-7. 금지 표현 확인
-8. 새로고침 후 저장 유지 확인
-9. Console runtime error 확인
-10. docs/v39-browser-qa-result.md 업데이트
+7. Console snippet 실행
+8. 금지 표현 확인
+9. 새로고침 후 저장 유지 확인
+10. Console runtime error 확인
+11. docs/v39-browser-qa-result.md 업데이트
 ```
