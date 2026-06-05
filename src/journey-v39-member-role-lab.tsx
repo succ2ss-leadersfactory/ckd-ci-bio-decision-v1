@@ -44,7 +44,7 @@ type StrategyRoleHint = {
 const MEMBER_ROLE_SAVE_TARGETS = [
   '신재영 대리 · 후속 대화 연결',
   '이대은 대리 · 관계 유지 품질 관리',
-  '박재욱 사원 · CRM·정보 보완',
+  '박재욱 사원 · 영업활동 기록·정보 보완',
   '유희관 과장 · 변화 신호 관찰',
   '김문호 차장 · 접근 강도 조절',
   '김재호 차장 · 현장 대응 후 기록 정리',
@@ -136,7 +136,7 @@ function buildDefaultRoleItem(memberRole: string, hint?: StrategyRoleHint): Part
     roleMission: hint ? `${hint.customerLabels.join(' · ')} 고객군의 2주 실행을 맡되, 핵심은 많이 움직이는 것이 아니라 확인한 신호와 다음 행동을 짧게 남기는 것입니다.` : '',
     coachingFocus: hint ? `${hint.priorities.join(' · ') || '대응 강도'} 기준으로 실행 전 준비, 실행 후 기록, 추가 확인 질문을 함께 점검합니다.` : '',
     riskGuardrail: hint?.risks.join(' / ') || '표현·자료·접촉 강도 안전선을 확인합니다.',
-    callPlanPrep: hint ? '방문 전 확인 질문, 사용 가능한 승인자료 범위, CRM에 남길 기록 항목을 준비합니다.' : '',
+    callPlanPrep: hint ? '방문 전 확인 질문, 사용 가능한 승인자료 범위, 영업활동 기록에 남길 항목을 준비합니다.' : '',
   };
 }
 
@@ -184,11 +184,7 @@ function V39CustomerRolePlanningPanel({ strategyResult, onRefresh }: { strategyR
             7단계 배정을 반복하지 않습니다. 이 화면은 팀원이 실제로 움직일 수 있도록 역할을 더 작고 명확하게 만드는 단계입니다.
           </p>
         </div>
-        <button
-          type="button"
-          className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800"
-          onClick={onRefresh}
-        >
+        <button type="button" className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-emerald-800" onClick={onRefresh}>
           7단계 실행 Map 새로고침
         </button>
       </div>
@@ -332,11 +328,7 @@ export function V39MemberRoleLab() {
               자동 배정이 아니라, 팀장이 실행 가능성을 높이기 위해 판단 근거와 수정 가능한 초안을 확인하는 과정입니다.
             </p>
           </div>
-          <button
-            type="button"
-            className="rounded-full bg-violet-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-violet-800"
-            onClick={refreshDashboardResult}
-          >
+          <button type="button" className="rounded-full bg-violet-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-violet-800" onClick={refreshDashboardResult}>
             팀 실행진단 새로고침
           </button>
         </div>
