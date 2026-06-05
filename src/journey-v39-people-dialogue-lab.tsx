@@ -189,9 +189,9 @@ const CONVERSATION_SITUATIONS: ConversationSituation[] = [
   },
   {
     id: 'record-missing',
-    label: '고객 질문이 CRM 기록에서 빠졌습니다.',
+    label: '고객 질문이 영업활동 기록에서 빠졌습니다.',
     description: '팀원의 실행 결과를 바로잡아야 하는 상황입니다.',
-    quote: '고객 방문 후 CRM 기록에 방문 사실은 남았지만 고객이 실제로 한 질문과 다음 확인 내용이 빠져 있습니다. 다음 방문 준비가 어려워졌습니다.',
+    quote: '고객 방문 후 영업활동 기록에 방문 사실은 남았지만 고객이 실제로 한 질문과 다음 확인 내용이 빠져 있습니다. 다음 방문 준비가 어려워졌습니다.',
     likelyNewGenPerception: '무엇이 문제인지보다 비난받는 느낌을 먼저 받을 수 있습니다.',
     likelyExistingPerception: '기록 기준이 계속 바뀐다고 느낄 수 있습니다.',
     missingInformation: '무엇이 빠졌는지, 왜 중요한지, 다음부터 무엇을 남겨야 하는지 기준이 필요합니다.',
@@ -325,7 +325,7 @@ function buildDefaultDialogueCard(result: V39PeopleDialogueResult): V39PeopleDia
     likelyQuestions: '왜 제가 맡아야 하나요? / 기존 업무와 어떻게 조정하나요? / 문제가 생기면 어떤 지원을 받을 수 있나요?',
     leaderResponse: '맡기는 이유와 기준은 분명히 설명하겠습니다. 동시에 실행 방법은 함께 조정하고, 리스크가 있는 부분은 제가 사전에 확인하겠습니다.',
     agreementCriteria: purpose?.mustInclude.join(' / ') || '역할 범위, 2주 실행 기준, 보고 시점, 리스크 공유 기준을 합의합니다.',
-    leaderSupport: '방문 전 질문, 자료 사용 범위, 고객 부담 신호, CRM 기록 기준을 함께 점검합니다.',
+    leaderSupport: '방문 전 질문, 자료 사용 범위, 고객 부담 신호, 영업활동 기록 기준을 함께 점검합니다.',
     avoidPhrase: getSelectedFamiliarOpening(result),
     alternativePhrase: result.purposeFitOpening || purpose?.purposeFitOpening || '이 역할을 맡기는 이유와 지원 기준을 먼저 설명드리겠습니다.',
   };
