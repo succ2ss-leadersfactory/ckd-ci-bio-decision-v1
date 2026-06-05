@@ -28,6 +28,7 @@ jobs:
       - name: Run v39 remote smoke check
         env:
           V39_REMOTE_BASE_URL: ${{ inputs.base_url }}
+          V39_REMOTE_REPORT_PATH: artifacts/v39-remote-smoke-result.json
         run: npm run smoke:v39:remote
 
       - name: Write v39 remote smoke summary
@@ -39,6 +40,10 @@ jobs:
             echo "## Checked base URL"
             echo ""
             echo "- ${{ inputs.base_url }}"
+            echo ""
+            echo "## JSON report path"
+            echo ""
+            echo "- artifacts/v39-remote-smoke-result.json"
             echo ""
             echo "## Paths covered"
             echo ""
@@ -59,8 +64,9 @@ jobs:
             echo "## Next required checks"
             echo ""
             echo "1. Confirm Vercel deployment is complete."
-            echo "2. Open /journey.html in a browser and confirm v34 operating screen works."
-            echo "3. Open /journey-v39-preview.html and complete 5~13 browser QA."
-            echo "4. Run docs/v39-browser-qa-console-snippet.md in browser Console."
-            echo "5. Record results in docs/v39-browser-qa-result.md."
+            echo "2. Review the JSON report path in the job workspace when needed."
+            echo "3. Open /journey.html in a browser and confirm v34 operating screen works."
+            echo "4. Open /journey-v39-preview.html and complete 5~13 browser QA."
+            echo "5. Run docs/v39-browser-qa-console-snippet.md in browser Console."
+            echo "6. Record results in docs/v39-browser-qa-result.md and docs/v39-remote-smoke-result.md."
           } >> "$GITHUB_STEP_SUMMARY"
