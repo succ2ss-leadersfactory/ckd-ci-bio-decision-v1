@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   type V39CustomerDecisionResult,
   type V39CustomerJudgmentResult,
@@ -27,6 +27,8 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '고객 Data 증거 카드',
   'AI로 2주 실행 Map 초안 만들기',
   'AI 2주 실행 Map 프롬프트 복사',
+  'AI 결과 1차 분리 정리',
+  '붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다',
   '정보 보완 고객군',
   '안전선 점검 조건',
   '대응군 C · 신규·미접촉 고객군',
@@ -41,6 +43,12 @@ type CustomerDirectionItem = {
   defaultGuide: string;
   defaultPriority: string;
   defaultMemberRole: string;
+};
+
+type AiMapExtractionBucket = {
+  title: string;
+  description: string;
+  aliases: string[];
 };
 
 const CUSTOMER_DIRECTION_ITEMS: CustomerDirectionItem[] = [
@@ -94,6 +102,44 @@ const CUSTOMER_DIRECTION_ITEMS: CustomerDirectionItem[] = [
   },
 ];
 
+const AI_MAP_EXTRACTION_BUCKETS: AiMapExtractionBucket[] = [
+  {
+    title: '고객군 후보 또는 점검 조건',
+    description: '이번 2주 동안 묶어 볼 고객군 후보나 안전선 점검 조건',
+    aliases: ['고객군 후보 또는 점검 조건', '고객군 후보', '점검 조건', '고객군/점검 조건', '구분', '대응군', '조건'],
+  },
+  {
+    title: '확인된 단서',
+    description: '6단계 고객 Data 증거 카드에서 가져온 확인 단서',
+    aliases: ['확인된 단서', '확인된 Data 단서', '확인된 데이터 단서', 'Data 단서', '데이터 단서', '단서'],
+  },
+  {
+    title: '아직 부족한 정보',
+    description: '이번 2주 행동 전에 더 확인해야 할 정보',
+    aliases: ['아직 부족한 정보', '부족한 정보', '추가 확인 정보', '더 확인해야 할 정보', '미확인 정보'],
+  },
+  {
+    title: '이번 2주 행동',
+    description: '확정 명령이 아니라 팀장이 수정할 실행 가설',
+    aliases: ['이번 2주 행동', '2주 행동', '2주 실행', '이번 2주 실행', '실행 행동', '이번 행동', '2주 대응 방향'],
+  },
+  {
+    title: '팀원에게 확인할 질문',
+    description: '방문·면담 전 팀원이 확인할 질문',
+    aliases: ['팀원에게 확인할 질문', '팀원 질문', '확인할 질문', '팀원에게 더 확인할 질문', '추가 확인 질문'],
+  },
+  {
+    title: '표현·자료 안전선',
+    description: '승인자료 범위와 위험 표현 점검',
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현'],
+  },
+  {
+    title: '다음 회의에서 확인할 것',
+    description: '다음 팀 회의나 1on1에서 확인할 후속 포인트',
+    aliases: ['다음 회의에서 확인할 것', '다음 회의 확인', '다음 회의에서 확인', '후속 확인', '회의 확인 포인트'],
+  },
+];
+
 const RESPONSE_DIRECTION_OPTIONS = ['조건부 실행', '정보 보완 후 실행', '관찰/유지', '접근 강도 조절', '안전선 선확인', '팀장 직접 확인'];
 
 const MEMBER_ROLE_OPTIONS = [
@@ -105,6 +151,65 @@ const MEMBER_ROLE_OPTIONS = [
   '이대은 대리 · 관계 유지 품질 관리',
   '팀장 직접 점검 필요',
 ];
+
+function compactList(items: string[], limit = 6) {
+  return items.map((item) => item.trim()).filter(Boolean).slice(0, limit);
+}
+
+function cleanAiMapResultLine(value: string) {
+  return value
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/^[-*•]\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^\|?\s*/, '')
+    .replace(/\*\*/g, '')
+    .trim();
+}
+
+function lineMatchesMapBucket(line: string, bucket: AiMapExtractionBucket) {
+  return bucket.aliases.some((alias) => line.includes(alias));
+}
+
+function lineMatchesAnotherMapBucket(line: string, currentBucket: AiMapExtractionBucket) {
+  return AI_MAP_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesMapBucket(line, bucket));
+}
+
+function extractAiMapResultBuckets(raw: string) {
+  const lines = raw
+    .split(/\r?\n/)
+    .map(cleanAiMapResultLine)
+    .filter(Boolean);
+
+  return AI_MAP_EXTRACTION_BUCKETS.map((bucket) => {
+    const startIndex = lines.findIndex((line) => lineMatchesMapBucket(line, bucket));
+    const items: string[] = [];
+
+    if (startIndex >= 0) {
+      const firstLine = lines[startIndex];
+      const afterColon = firstLine.split(/[:：]/).slice(1).join(':').trim();
+      if (afterColon) items.push(afterColon);
+
+      for (let index = startIndex + 1; index < lines.length; index += 1) {
+        const line = lines[index];
+        if (lineMatchesAnotherMapBucket(line, bucket)) break;
+        if (lineMatchesMapBucket(line, bucket)) {
+          const inlineValue = line.split(/[:：]/).slice(1).join(':').trim();
+          if (inlineValue) items.push(inlineValue);
+          continue;
+        }
+        if (/^(요청|주의:|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
+        items.push(line);
+        if (items.length >= 4) break;
+      }
+    }
+
+    return {
+      title: bucket.title,
+      description: bucket.description,
+      items: compactList(items, 4),
+    };
+  });
+}
 
 function loadSourceJudgmentResult(): V39CustomerJudgmentResult {
   if (typeof window === 'undefined') return normalizeV39CustomerJudgmentResult(undefined);
@@ -223,6 +328,8 @@ function V39CustomerJudgmentBridgePanel() {
   const savedStrategyCount = displayItems.filter((item) => strategies[item.id]?.strategy?.trim()).length;
   const savedMemberConnectionCount = displayItems.filter((item) => strategies[item.id]?.memberRole?.trim()).length;
   const twoWeekMapPrompt = buildTwoWeekMapPrompt(displayItems, decisions);
+  const extractedAiMapBuckets = useMemo(() => extractAiMapResultBuckets(aiMapDraft), [aiMapDraft]);
+  const hasAiMapDraft = aiMapDraft.trim().length > 0;
 
   const refreshCustomerJudgmentBridge = () => {
     const nextSource = loadSourceJudgmentResult();
@@ -309,6 +416,24 @@ function V39CustomerJudgmentBridgePanel() {
             placeholder="AI가 만든 2주 실행 Map 초안을 붙여넣으세요. 아래 카드에서 팀장 언어로 줄여 최종 수정합니다."
           />
         </label>
+        {hasAiMapDraft ? (
+          <section className="mt-3 rounded-3xl border border-sky-100 bg-sky-50 p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
+            <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-600">자동 분리는 복사·검토용입니다. 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
+            <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {extractedAiMapBuckets.map((bucket) => (
+                <div key={bucket.title} className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+                  <p className="font-black text-slate-950">{bucket.title}</p>
+                  <p className="mt-1 text-slate-500">{bucket.description}</p>
+                  <ul className="mt-2 space-y-1">
+                    {bucket.items.length > 0 ? bucket.items.map((item) => <li key={item}>• {item}</li>) : <li className="text-slate-400">AI 초안에서 아직 찾지 못했습니다.</li>}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
           AI 초안은 그대로 확정하지 않습니다. “집중 공략”, “우선순위 상향”, “처방 가능성” 같은 표현은 삭제하거나 “추가 확인 후 7단계에서 판단”으로 바꿉니다.
         </div>
