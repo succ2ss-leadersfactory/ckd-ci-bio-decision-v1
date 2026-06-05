@@ -4,6 +4,7 @@ import { type V39CustomerJudgmentResult, loadV39CustomerJudgmentResult } from '.
 import { type V39CustomerStrategyResult, loadV39CustomerStrategyResult } from './journey-v39-customer-strategy-result-store';
 import {
   type V39MemberRoleResult,
+  type V39MemberRoleResultItem,
   loadV39MemberRoleResult,
 } from './journey-v39-member-role-result-store';
 import {
@@ -24,6 +25,7 @@ const V39_AI_CALL_PLAN_LAB_SMOKE_MARKERS = [
   '6단계 고객 Data 확인 List',
   '7단계 고객군 × 팀원 실행 Map',
   '8단계 팀원 역할 결과',
+  '8단계 역할 미션 없이도 지원 포인트와 안전선을 반영합니다',
   '9단계 실행 대화 요약',
   '선택한 대화 목적 ID',
   '목적에 맞게 바꾼 첫마디',
@@ -42,6 +44,16 @@ function hasDialogueCard(result: V39PeopleDialogueResult) {
 
 function joinList(items: string[], empty = '아직 정리되지 않았습니다.') {
   return items.length > 0 ? items.join(' · ') : empty;
+}
+
+function hasMemberRoleContext(role: V39MemberRoleResultItem) {
+  return Boolean(
+    role.assignedCustomers.trim() ||
+      role.roleMission.trim() ||
+      role.coachingFocus.trim() ||
+      role.riskGuardrail.trim() ||
+      role.callPlanPrep.trim(),
+  );
 }
 
 function buildDashboardSummary(result: V39DashboardResult) {
@@ -153,7 +165,7 @@ function buildCallPlanContextPrompt(
   roleResult: V39MemberRoleResult,
   peopleDialogueResult: V39PeopleDialogueResult,
 ) {
-  const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
+  const savedRoles = Object.values(roleResult.roles).filter(hasMemberRoleContext);
   const peopleDialogueSummary = buildPeopleDialogueSummary(peopleDialogueResult);
 
   return [
@@ -237,7 +249,7 @@ function V39MemberRoleCallPlanPanel({
   onRefreshRole: () => void;
   onRefreshPeopleDialogue: () => void;
 }) {
-  const savedRoles = Object.values(roleResult.roles).filter((role) => role.roleMission.trim());
+  const savedRoles = Object.values(roleResult.roles).filter(hasMemberRoleContext);
   const savedCustomerStrategies = Object.values(customerStrategyResult.strategies).filter((strategy) => strategy.strategy.trim() || strategy.memberRole.trim());
   const [copied, setCopied] = useState(false);
   const [callPlanItems, setCallPlanItems] = useState<Record<string, V39AiCallPlanResultItem>>(buildInitialCallPlanSaveState);
@@ -320,6 +332,11 @@ function V39MemberRoleCallPlanPanel({
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">9단계 실행 대화</p><p className="mt-1 text-sm font-black text-slate-900">{peopleDialogueCompleted ? '불러옴' : '아직 없음'}</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">{peopleDialogueCompleted ? '대화 목적과 첫마디가 반영됩니다.' : '9단계 저장 후 다시 불러오세요.'}</p></div>
       </div>
 
+      <div className="mt-3 rounded-2xl border border-sky-200 bg-white px-4 py-3 text-xs font-bold leading-5 text-sky-950">
+        <p className="font-black">8단계 역할 미션 없이도 지원 포인트와 안전선을 반영합니다</p>
+        <p className="mt-1">역할 미션을 아직 비워 두었더라도 담당 고객군, 콜플랜 준비물, 팀장 지원 포인트, 리스크 안전선 중 하나라도 저장되어 있으면 10단계 프롬프트 입력 맥락으로 가져옵니다.</p>
+      </div>
+
       <div className="mt-4 grid gap-3 xl:grid-cols-3">
         <article className="rounded-2xl border bg-white p-4 shadow-sm xl:col-span-1">
           <p className="text-sm font-black text-slate-950">5단계 관리 지표 요약</p>
@@ -337,14 +354,14 @@ function V39MemberRoleCallPlanPanel({
 
       <div className="mt-4 grid gap-3 xl:grid-cols-3">
         {savedRoles.length === 0 ? (
-          <div className="rounded-2xl bg-white p-4 text-sm font-bold text-slate-600 xl:col-span-2">8단계에서 팀원별 역할을 정리하면, 이곳에 AI 실행계획 프롬프트 입력 맥락이 표시됩니다.</div>
+          <div className="rounded-2xl bg-white p-4 text-sm font-bold text-slate-600 xl:col-span-2">8단계에서 팀원별 역할 미션, 지원 포인트, 콜플랜 준비물, 리스크 안전선 중 하나라도 정리하면, 이곳에 AI 실행계획 프롬프트 입력 맥락이 표시됩니다.</div>
         ) : savedRoles.slice(0, 6).map((role) => (
           <article key={role.memberRoleId} className="rounded-2xl border bg-white p-4 shadow-sm">
             <p className="font-black text-slate-950">{role.memberLabel}</p>
             <p className="mt-2 text-xs font-black text-sky-700">담당 고객군</p>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{role.assignedCustomers || '아직 정리되지 않았습니다.'}</p>
             <p className="mt-2 text-xs font-black text-slate-500">역할 미션</p>
-            <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{role.roleMission}</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{role.roleMission || '아직 정리되지 않았습니다.'}</p>
             <p className="mt-2 text-xs font-black text-slate-500">콜플랜 준비물</p>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-700">{role.callPlanPrep || '방문 전 확인 질문과 사용 가능한 자료 범위 확인'}</p>
             <p className="mt-2 text-xs font-black text-amber-700">리스크 안전선</p>
