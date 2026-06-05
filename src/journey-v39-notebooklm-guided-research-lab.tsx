@@ -5,6 +5,8 @@ const V39_NOTEBOOKLM_GUIDED_RESEARCH_SMOKE_MARKERS = [
   'NotebookLM 사용 순서 안내',
   '소스 묶음은 실행 프롬프트가 아닙니다',
   '소스를 추가한 뒤 채팅창에 프롬프트를 붙여넣습니다',
+  '5단계로 넘길 실행 질문 확정하기',
+  '발표문을 완성하는 시간이 아닙니다',
 ].join('|');
 void V39_NOTEBOOKLM_GUIDED_RESEARCH_SMOKE_MARKERS;
 
@@ -32,6 +34,29 @@ export function V39NotebookLmGuidedResearchLab() {
           </div>
         </div>
       </section>
+
+      <section className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm md:p-5">
+        <p className="text-xs font-black uppercase tracking-wide text-emerald-700">4단계 최종 점검 안내</p>
+        <h2 className="mt-1 text-xl font-black text-slate-950">5단계로 넘길 실행 질문 확정하기</h2>
+        <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">
+          발표문을 완성하는 시간이 아닙니다. AI 리서치 결과를 팀장 언어로 짧게 정리하고, 다음 단계에서 관리 지표로 바꿀 실행 질문을 확정합니다.
+        </p>
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+            <p className="font-black">팀장 설명 메모</p>
+            <p className="mt-1">전략회의나 팀 회의에서 설명할 핵심 메시지만 3줄 이내로 정리합니다.</p>
+          </div>
+          <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
+            <p className="font-black">예상 질문 2개</p>
+            <p className="mt-1">상사·본사 관점 질문 1개와 팀원 관점 질문 1개만 잡고 답변 방향을 적습니다.</p>
+          </div>
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
+            <p className="font-black">최종 확인</p>
+            <p className="mt-1">가장 중요한 것은 5단계 관리 지표로 바꿀 실행 질문이 별도 카드에 남았는지입니다.</p>
+          </div>
+        </div>
+      </section>
+
       <V39ResearchStrategyLab />
     </section>
   );
