@@ -152,6 +152,7 @@ VITE_GOOGLE_SCRIPT_WEBAPP_URL=<Apps Script Web App URL>
 - `docs/v39-current-handoff.md` v39 최신 인수인계 메모
 - `docs/v39-field-language-residual-audit.md` v39 현장언어화 잔여 표현 감사표
 - `docs/v39-ui-ux-enhancement-design.md` v39 UI/UX 고도화 설계서
+- `docs/v39-shared-ux-pilot-qa.md` v39 공통 UX 컴포넌트 6·7단계 시범 적용 QA 가이드
 - `docs/v39-5-13-flow-qa-checklist.md` v39 5~13단계 연결 흐름 QA 체크리스트
 - `docs/v39-browser-qa-runbook.md` v39 브라우저 수동 QA 실행 절차서
 - `docs/v39-browser-qa-result.md` v39 브라우저 수동 QA 결과 기록지
