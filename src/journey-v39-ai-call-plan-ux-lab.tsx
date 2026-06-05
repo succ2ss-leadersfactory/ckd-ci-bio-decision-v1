@@ -8,10 +8,10 @@ import { loadV39PeopleDialogueResult } from './journey-v39-people-dialogue-resul
 
 const V39_AI_CALL_PLAN_UX_SMOKE_MARKERS = [
   '10단계 진행 가이드',
-  '팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다',
+  '고객 대응 방향·역할·실행 대화를 AI 실행계획 프롬프트로 연결합니다',
   '5단계 관리 지표',
   '6단계 고객 Data 확인 List',
-  '7단계 고객군 × 팀원 실행 Map',
+  '7단계 고객군별 2주 대응 방향',
   '8단계 역할 결과',
   '9단계 실행 대화',
   'AI 없이도 할 수 있습니다',
@@ -84,8 +84,8 @@ export function V39AiCallPlanUxLab() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-sky-700">10단계 진행 가이드 · AI 실행계획 Prompt</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군 × 팀원 실행 Map, 8단계 역할 보완, 9단계 실행 대화를 하나의 맥락으로 묶어 AI 실행계획 초안을 요청합니다. AI 초안은 완성본이 아닙니다. 다음 단계에서 컴플라이언스 위험 표현과 실행 대화 위험을 반드시 고칩니다.</p>
+            <h2 className="mt-1 text-xl font-black text-slate-950">고객 대응 방향·역할·실행 대화를 AI 실행계획 프롬프트로 연결합니다</h2>
+            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군별 2주 대응 방향, 8단계 역할 보완, 9단계 실행 대화를 하나의 맥락으로 묶어 AI 실행계획 초안을 요청합니다. AI 초안은 완성본이 아닙니다. 다음 단계에서 컴플라이언스 위험 표현과 실행 대화 위험을 반드시 고칩니다.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-3 lg:w-[34rem]">
             <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
@@ -106,7 +106,7 @@ export function V39AiCallPlanUxLab() {
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
             <p className="font-black text-slate-950">AI 없이도 할 수 있습니다</p>
-            <p className="mt-1">팀장은 관리 지표, 고객 Data, 고객군 대응, 팀원 역할, 실행 대화를 종합해 2주 실행계획을 직접 만들 수 있습니다.</p>
+            <p className="mt-1">팀장은 관리 지표, 고객 Data, 고객군 대응 방향, 팀원 역할, 실행 대화를 종합해 2주 실행계획을 직접 만들 수 있습니다.</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
@@ -121,7 +121,7 @@ export function V39AiCallPlanUxLab() {
           </div>
           <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">
             <p className="font-black">이전 단계에서 가져온 것</p>
-            <p className="mt-1">5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군 × 팀원 실행 Map, 8단계 역할 결과, 9단계 실행 대화입니다.</p>
+            <p className="mt-1">5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군별 2주 대응 방향, 8단계 역할 결과, 9단계 실행 대화입니다.</p>
           </div>
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">다음 단계로 넘길 것</p>
@@ -139,7 +139,7 @@ export function V39AiCallPlanUxLab() {
             <p className="mt-1">{status.savedCustomerDataCount}건</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-            <p className="font-black text-slate-950">7단계 실행 Map</p>
+            <p className="font-black text-slate-950">7단계 대응 방향</p>
             <p className="mt-1">{status.savedCustomerStrategyCount}건</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
