@@ -34,6 +34,7 @@ jobs:
       - name: Write v39 remote smoke summary
         if: always()
         run: |
+          REPORT_PATH="artifacts/v39-remote-smoke-result.json"
           {
             echo "# v39 Remote Smoke Summary"
             echo ""
@@ -43,8 +44,51 @@ jobs:
             echo ""
             echo "## JSON report path"
             echo ""
-            echo "- artifacts/v39-remote-smoke-result.json"
+            echo "- ${REPORT_PATH}"
             echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f "$REPORT_PATH" ]; then
+            node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('fs');
+          const reportPath = 'artifacts/v39-remote-smoke-result.json';
+          const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          const routeRows = (report.routeResults || []).map((route) => {
+            const missingAssets = (route.missingAssetMarkers || []).length;
+            const forbiddenAssets = (route.forbiddenAssetMarkersFound || []).length;
+            const errors = (route.errors || []).length;
+            return `| ${route.name} | ${route.status ?? ''} | ${route.finalPath ?? ''} | ${route.moduleScriptCount ?? 0} | ${route.assetChunkCount ?? 0} | ${missingAssets} | ${forbiddenAssets} | ${errors} |`;
+          });
+          console.log('## Result');
+          console.log('');
+          console.log(`- checkedAt: ${report.checkedAt}`);
+          console.log(`- pass: ${report.pass}`);
+          console.log(`- failureCount: ${(report.failures || []).length}`);
+          console.log('');
+          console.log('## Route details');
+          console.log('');
+          console.log('| route | status | finalPath | moduleScripts | assetChunks | missingMarkers | forbiddenMarkers | errors |');
+          console.log('|---|---:|---|---:|---:|---:|---:|---:|');
+          if (routeRows.length > 0) console.log(routeRows.join('\n'));
+          else console.log('| none |  |  |  |  |  |  |  |');
+          console.log('');
+          if ((report.failures || []).length > 0) {
+            console.log('## Failures');
+            console.log('');
+            for (const failure of report.failures) console.log(`- ${failure}`);
+            console.log('');
+          }
+          NODE
+          else
+            {
+              echo "## Result"
+              echo ""
+              echo "- JSON report was not created. Check the Run v39 remote smoke check logs."
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          {
             echo "## Paths covered"
             echo ""
             echo "- /"
@@ -64,7 +108,7 @@ jobs:
             echo "## Next required checks"
             echo ""
             echo "1. Confirm Vercel deployment is complete."
-            echo "2. Review the JSON report path in the job workspace when needed."
+            echo "2. Review the JSON summary above."
             echo "3. Open /journey.html in a browser and confirm v34 operating screen works."
             echo "4. Open /journey-v39-preview.html and complete 5~13 browser QA."
             echo "5. Run docs/v39-browser-qa-console-snippet.md in browser Console."
