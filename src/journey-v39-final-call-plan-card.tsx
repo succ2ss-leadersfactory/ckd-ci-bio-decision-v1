@@ -41,10 +41,12 @@ const V39_FINAL_CARD_SMOKE_MARKERS = [
   '5단계 관리 지표',
   '6단계 고객 Data 확인 List',
   '7단계 고객군 × 팀원 실행 Map',
+  '7단계 고객군별 2주 대응 방향',
   '8단계 팀원 역할 요약',
   '9단계 실행 대화 요약',
   '10단계 AI 실행계획 초안',
   '11단계 컴플라이언스 요약',
+  '11단계 안전 문장·체크리스트',
   '13단계 강사용 토의에 넘길 최종 실행 카드 저장',
 ].join('|');
 void V39_FINAL_CARD_SMOKE_MARKERS;
@@ -108,15 +110,15 @@ function buildCustomerDataSummary(result: V39CustomerJudgmentResult) {
 
 function buildCustomerStrategySummary(result: V39CustomerStrategyResult) {
   const strategies = Object.values(result.strategies).filter((strategy) => strategy.strategy.trim() || strategy.memberRole.trim());
-  if (strategies.length === 0) return '[7단계 고객군 × 팀원 실행 Map]\n- 아직 고객군별 대응 방향과 팀원 연결 기준이 저장되지 않았습니다.';
+  if (strategies.length === 0) return '[7단계 고객군별 2주 대응 방향]\n- 아직 고객군별 대응 방향과 1차 팀원 연결 후보가 저장되지 않았습니다.';
 
   return [
-    '[7단계 고객군 × 팀원 실행 Map]',
+    '[7단계 고객군별 2주 대응 방향]',
     ...strategies.slice(0, 5).flatMap((strategy, index) => [
       `${index + 1}. ${strategy.customerLabel}`,
       `- 대응 강도: ${strategy.priority || '아직 정리되지 않았습니다.'}`,
       `- 2주 대응 방향: ${strategy.strategy || '아직 정리되지 않았습니다.'}`,
-      `- 팀원 연결 기준/후보: ${strategy.memberRole || '아직 정리되지 않았습니다.'}`,
+      `- 8단계로 넘길 1차 팀원 연결 후보: ${strategy.memberRole || '아직 정리되지 않았습니다.'}`,
       `- 위험·보완 조건: ${strategy.risk || '표현·자료·접촉 강도 안전선 확인'}`,
       '',
     ]),
@@ -195,7 +197,7 @@ function buildFinalCardSummary(
     '[10단계 AI 실행계획 초안]',
     buildAiCallPlanSummary(aiCallPlan),
     '',
-    '[11단계 컴플라이언스 요약]',
+    '[11단계 안전 문장·체크리스트]',
     `- 위험 유형 요약: ${cleanup.riskTypes || '아직 작성되지 않았습니다.'}`,
     `- 안전하게 수정한 문장: ${cleanup.safeExpression || '아직 작성되지 않았습니다.'}`,
     `- 최종 체크리스트: ${cleanup.finalChecklist || '아직 작성되지 않았습니다.'}`,
@@ -230,7 +232,7 @@ function buildDefaultFinalCallPlanResult(
     ].filter(Boolean).join('\n'),
     compliancePoint: current.compliancePoint || cleanup.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치 입력을 금지하고, 처방 유도·비교 우위 단정·허가 외 표현을 제거합니다.',
     firstMessage: current.firstMessage || people.dialogueCard.openingLine || people.purposeFitOpening || '이번 2주는 많이 방문하는 것보다 고객군별 반응 신호를 읽고, 역할 기준과 안전한 표현을 맞추는 데 집중합시다.',
-    discussionMemo: current.discussionMemo || cleanup.finalCardMemo || '강사용 토의에서는 관리 지표, 고객 Data 확인 List, 고객군 × 팀원 실행 Map, 실행 대화 첫마디, 컴플라이언스 수정 포인트를 함께 확인합니다.',
+    discussionMemo: current.discussionMemo || cleanup.finalCardMemo || '강사용 토의에서는 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 실행 대화 첫마디, 컴플라이언스 수정 포인트를 함께 확인합니다.',
   };
 }
 
@@ -292,17 +294,17 @@ function V39FinalExecutionCardPanel({
           <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Final Two-Week Execution Card</p>
           <h2 className="mt-2 text-xl font-black text-slate-950">최종 2주 실행 카드를 완성하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군 × 팀원 실행 Map, 8단계 팀원 역할, 9단계 실행 대화, 10단계 AI 실행계획 초안, 11단계 컴플라이언스 안전 문장을 함께 반영해 최종 2주 실행 카드를 작성합니다.
+            5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군별 2주 대응 방향, 8단계 팀원 역할, 9단계 실행 대화, 10단계 AI 실행계획 초안, 11단계 안전 문장·체크리스트를 함께 반영해 최종 2주 실행 카드를 작성합니다.
             이 카드는 교육 후 바로 가져갈 수 있는 현업 적용 카드입니다.
           </p>
           <div className="mt-4 grid gap-2 md:grid-cols-3">
             <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
               <p className="font-black text-emerald-700">이 단계에서 하는 일</p>
-              <p className="mt-1">고객 실행, 팀원 역할, 실행 대화, AI 초안, 안전선을 하나의 카드로 통합합니다.</p>
+              <p className="mt-1">고객 대응 방향, 팀원 역할, 실행 대화, AI 초안, 안전 문장을 하나의 카드로 통합합니다.</p>
             </div>
             <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
               <p className="font-black text-emerald-700">이전 단계에서 가져온 것</p>
-              <p className="mt-1">5~11단계 전체 결과입니다.</p>
+              <p className="mt-1">5~10단계 실행 맥락과 11단계에서 검토한 안전 문장·최종 체크리스트입니다.</p>
             </div>
             <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
               <p className="font-black text-emerald-700">다음 단계로 넘길 것</p>
@@ -323,7 +325,7 @@ function V39FinalExecutionCardPanel({
       <div className="mt-4 grid gap-3 md:grid-cols-6">
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">관리 지표</p><p className="mt-1 text-sm font-black text-slate-900">{metricCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">5단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">고객 Data</p><p className="mt-1 text-sm font-black text-slate-900">{customerDataCount}건</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">6단계 결과</p></div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">실행 Map</p><p className="mt-1 text-sm font-black text-slate-900">{strategyCount}건</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">7단계 결과</p></div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">대응 방향</p><p className="mt-1 text-sm font-black text-slate-900">{strategyCount}건</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">7단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">팀원 역할</p><p className="mt-1 text-sm font-black text-slate-900">{roleCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">8단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">실행 대화</p><p className="mt-1 text-sm font-black text-slate-900">{peopleReady ? '있음' : '없음'}</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">9단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">AI 초안/안전선</p><p className="mt-1 text-sm font-black text-slate-900">초안 {aiDraftCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">10·11단계 결과</p></div>
@@ -344,7 +346,7 @@ function V39FinalExecutionCardPanel({
           <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildCustomerDataSummary(customerJudgmentResult)}</pre>
         </article>
         <article className="rounded-2xl border bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-violet-700">7단계 고객군 × 팀원 실행 Map</p>
+          <p className="text-xs font-black text-violet-700">7단계 고객군별 2주 대응 방향</p>
           <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildCustomerStrategySummary(customerStrategyResult)}</pre>
         </article>
         <article className="rounded-2xl border bg-white p-4 shadow-sm">
@@ -360,7 +362,7 @@ function V39FinalExecutionCardPanel({
           <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildAiCallPlanSummary(aiCallPlanResult)}</pre>
         </article>
         <article className="rounded-2xl border bg-white p-4 shadow-sm xl:col-span-3">
-          <p className="text-xs font-black text-emerald-700">11단계 컴플라이언스 요약</p>
+          <p className="text-xs font-black text-emerald-700">11단계 안전 문장·체크리스트</p>
           <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{cleanupResult.finalChecklist || '아직 11단계 최종 체크리스트가 저장되지 않았습니다.'}</p>
         </article>
       </div>
@@ -376,7 +378,7 @@ function V39FinalExecutionCardPanel({
             <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Instructor Discussion Preparation</p>
             <h3 className="text-lg font-black text-slate-950">13단계 강사용 토의에 넘길 최종 실행 카드 저장</h3>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
-              강사용 토의 화면에서 참여자의 관리 지표, 고객 Data 확인 List, 고객군 × 팀원 실행 Map, 실행 대화 첫마디, AI 초안 수정 포인트, 컴플라이언스 안전선을 확인할 수 있도록 요약을 저장합니다.
+              강사용 토의 화면에서 참여자의 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 실행 대화 첫마디, AI 초안 수정 포인트, 컴플라이언스 안전선을 확인할 수 있도록 요약을 저장합니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-cyan-50 px-4 py-2 text-xs font-black text-cyan-800" onClick={applyFinalCardDraft}>
