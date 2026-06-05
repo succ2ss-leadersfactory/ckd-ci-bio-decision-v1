@@ -11,6 +11,9 @@ const V39_INSTRUCTOR_DISCUSSION_SMOKE_MARKERS = [
   '13단계 강사용 토의 연결 요약',
   '강사용 핵심 질문',
   '12단계 최종 카드 새로고침',
+  '판단 근거 요약',
+  '보완 지점 요약',
+  '토의거리 요약',
   '관리 지표 선택 이유 질문',
   '고객 Data 확인 List의 부족 정보 질문',
   '고객군 × 팀원 실행 Map의 배치 기준 질문',
@@ -29,8 +32,20 @@ type DiscussionQuestion = {
   guide: string;
 };
 
+function hasFinalCardContext(result: V39FinalCallPlanResult) {
+  return Boolean(
+    result.updatedAt ||
+      result.focusCustomers.trim() ||
+      result.memberRoles.trim() ||
+      result.twoWeekAction.trim() ||
+      result.compliancePoint.trim() ||
+      result.firstMessage.trim() ||
+      result.discussionMemo.trim(),
+  );
+}
+
 function buildInstructorDiscussionGuide(result: V39FinalCallPlanResult) {
-  if (!result.updatedAt) {
+  if (!hasFinalCardContext(result)) {
     return [
       '아직 12단계 최종 실행 카드가 저장되지 않았습니다.',
       '12단계에서 집중 고객군, 팀원 역할, 2주 실행 우선순위, 컴플라이언스 포인트, 팀원에게 말할 첫 문장을 먼저 저장하세요.',
@@ -40,23 +55,15 @@ function buildInstructorDiscussionGuide(result: V39FinalCallPlanResult) {
   return [
     '[13단계 강사용 토의 연결 요약]',
     '',
-    '[집중 고객군]',
-    result.focusCustomers || '아직 작성되지 않았습니다.',
+    '[판단 근거 요약]',
+    `- 집중 고객군 판단 근거: ${result.focusCustomers || '아직 작성되지 않았습니다.'}`,
+    `- 팀원 역할 배치 근거: ${result.memberRoles || '아직 작성되지 않았습니다.'}`,
+    `- 2주 실행 우선순위 근거: ${result.twoWeekAction || '아직 작성되지 않았습니다.'}`,
     '',
-    '[팀원별 역할]',
-    result.memberRoles || '아직 작성되지 않았습니다.',
-    '',
-    '[2주 실행 우선순위]',
-    result.twoWeekAction || '아직 작성되지 않았습니다.',
-    '',
-    '[컴플라이언스 포인트]',
-    result.compliancePoint || '아직 작성되지 않았습니다.',
-    '',
-    '[팀원에게 말할 첫 문장]',
-    result.firstMessage || '아직 작성되지 않았습니다.',
-    '',
-    '[강사용 토의 메모]',
-    result.discussionMemo || '아직 작성되지 않았습니다.',
+    '[보완 지점 요약]',
+    `- 컴플라이언스/표현 안전선: ${result.compliancePoint || '아직 작성되지 않았습니다.'}`,
+    `- 팀원 실행 대화 첫 문장: ${result.firstMessage || '아직 작성되지 않았습니다.'}`,
+    `- 추가 토의 메모: ${result.discussionMemo || '아직 작성되지 않았습니다.'}`,
     '',
     '[강사용 핵심 질문]',
     '1. 관리 지표 선택 이유 질문: 이 참여자는 왜 이 지표를 이번 2주 동안 볼 기준으로 선택했는가?',
@@ -130,6 +137,7 @@ function buildTwoWeekReviewQuestions(result: V39FinalCallPlanResult) {
 
 function V39InstructorDiscussionPanel({ result, onRefresh }: { result: V39FinalCallPlanResult; onRefresh: () => void }) {
   const [copied, setCopied] = useState(false);
+  const hasFinalCard = hasFinalCardContext(result);
   const guide = buildInstructorDiscussionGuide(result);
   const questions = buildDiscussionQuestions(result);
   const reviewQuestions = buildTwoWeekReviewQuestions(result);
@@ -168,20 +176,20 @@ function V39InstructorDiscussionPanel({ result, onRefresh }: { result: V39FinalC
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-slate-500">저장 상태</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.updatedAt ? '최종 카드 있음' : '최종 카드 없음'}</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{hasFinalCard ? '최종 카드 있음' : '최종 카드 없음'}</p>
           {result.updatedAt ? <p className="mt-1 text-xs font-bold text-slate-500">{result.updatedAt}</p> : null}
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">실행 우선순위</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.twoWeekAction.trim() ? '저장됨' : '미작성'}</p>
+          <p className="text-xs font-black text-slate-500">판단 근거</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{result.focusCustomers.trim() || result.memberRoles.trim() || result.twoWeekAction.trim() ? '있음' : '미작성'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">첫 문장</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.firstMessage.trim() ? '저장됨' : '미작성'}</p>
+          <p className="text-xs font-black text-slate-500">보완 지점</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{result.compliancePoint.trim() || result.firstMessage.trim() ? '있음' : '미작성'}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-slate-500">안전선</p>
-          <p className="mt-1 text-sm font-black text-slate-900">{result.compliancePoint.trim() ? '저장됨' : '미작성'}</p>
+          <p className="text-xs font-black text-slate-500">토의거리</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{result.discussionMemo.trim() ? '있음' : '미작성'}</p>
         </div>
       </div>
 
@@ -190,16 +198,32 @@ function V39InstructorDiscussionPanel({ result, onRefresh }: { result: V39FinalC
         <p className="mt-1">질문은 정답 확인용이 아니라 판단 기준을 꺼내는 용도입니다. “왜 그렇게 보았는가”, “무엇을 아직 모르는가”, “누구에게 일이 몰렸는가”, “왜 이 팀원을 먼저 만나야 하는가”, “어떤 표현을 고쳤는가”, “2주 후 무엇으로 확인할 것인가”를 중심으로 운영합니다.</p>
       </div>
 
-      {result.updatedAt ? (
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {questions.map((item) => (
-            <article key={item.title} className="rounded-2xl border bg-white p-4 shadow-sm">
-              <p className="text-xs font-black text-cyan-700">{item.title}</p>
-              <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{item.body}</p>
-              <p className="mt-3 rounded-2xl bg-cyan-50 px-3 py-2 text-xs font-bold leading-5 text-cyan-900">{item.guide}</p>
+      {hasFinalCard ? (
+        <>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <article className="rounded-2xl border border-cyan-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-black text-cyan-700">판단 근거 요약</p>
+              <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{[result.focusCustomers, result.memberRoles, result.twoWeekAction].filter(Boolean).join('\n\n') || '아직 판단 근거가 충분히 정리되지 않았습니다.'}</p>
             </article>
-          ))}
-        </div>
+            <article className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-black text-amber-700">보완 지점 요약</p>
+              <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{[result.compliancePoint, result.firstMessage].filter(Boolean).join('\n\n') || '아직 보완 지점이 충분히 정리되지 않았습니다.'}</p>
+            </article>
+            <article className="rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-black text-violet-700">토의거리 요약</p>
+              <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{result.discussionMemo || '아직 강사용 토의 메모가 정리되지 않았습니다.'}</p>
+            </article>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {questions.map((item) => (
+              <article key={item.title} className="rounded-2xl border bg-white p-4 shadow-sm">
+                <p className="text-xs font-black text-cyan-700">{item.title}</p>
+                <p className="mt-2 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{item.body}</p>
+                <p className="mt-3 rounded-2xl bg-cyan-50 px-3 py-2 text-xs font-bold leading-5 text-cyan-900">{item.guide}</p>
+              </article>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="mt-4 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">
           12단계에서 최종 실행 카드를 저장하면, 이곳에 강사용 토의 참고 자료가 표시됩니다.
