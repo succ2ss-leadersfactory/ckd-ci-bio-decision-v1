@@ -20,8 +20,45 @@ const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   '고객 Data 증거 카드',
   '고객군 후보와 점검 조건을 분리합니다',
   'AI로 2주 실행 Map 초안 만들기',
+  '6단계 증거가 7단계 실행 방향으로 바뀌는 방식',
+  '고객 Data 증거는 고객군이 아닙니다',
+  '고객이 반응했나요? → 반응 확인 고객군',
+  '말해도 되는 범위는 어디까지인가요? → 안전선 점검 조건',
 ].join('|');
 void V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS;
+
+const EVIDENCE_TO_DIRECTION_MAP = [
+  {
+    evidence: '고객이 반응했나요?',
+    direction: '반응 확인 고객군',
+    meaning: '질문·자료 요청·피드백이 있었지만 실제 관심인지 더 확인할 고객군',
+  },
+  {
+    evidence: '다음 만남으로 이어질까요?',
+    direction: '다음 접점 고객군',
+    meaning: '다음 약속·후속 미팅·응답 가능성이 있어 목적과 준비자료를 확인할 고객군',
+  },
+  {
+    evidence: '놓친 고객군이 있나요?',
+    direction: '정보 보완 고객군',
+    meaning: '미접촉·신규 접점·접근 경로·기존 고객 편중을 먼저 확인할 고객군',
+  },
+  {
+    evidence: '방문 외 접점이 작동했나요?',
+    direction: '대체 접점 고객군',
+    meaning: '자료 전달·비대면·전화·메시지 등 방문 외 접점이 필요한 고객군',
+  },
+  {
+    evidence: '실행을 막는 제약은 무엇인가요?',
+    direction: '제약 해소 고객군',
+    meaning: '방문 제한·일정 변경·내부 지원 필요 등 실행 장애를 풀어야 할 고객군',
+  },
+  {
+    evidence: '말해도 되는 범위는 어디까지인가요?',
+    direction: '안전선 점검 조건',
+    meaning: '고객군이 아니라 모든 대응 전에 확인해야 할 표현·자료·컴플라이언스 조건',
+  },
+];
 
 function getSelectedDataCheckCount() {
   const judgmentResult = loadV39CustomerJudgmentResult();
@@ -75,6 +112,22 @@ export function V39CustomerPriorityUxLab() {
               <p className="text-xs font-black text-amber-700">1차 연결 후보</p>
               <p className="mt-1 text-sm font-black text-amber-950">{savedMemberConnectionCount}건</p>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-3xl border border-cyan-100 bg-cyan-50 p-4">
+          <p className="text-xs font-black uppercase tracking-wide text-cyan-700">6단계 증거가 7단계 실행 방향으로 바뀌는 방식</p>
+          <h3 className="mt-1 text-base font-black text-slate-950">고객 Data 증거는 고객군이 아닙니다</h3>
+          <p className="mt-2 text-xs font-bold leading-5 text-slate-700">
+            6단계에서 고른 것은 고객군이 아니라 고객 Data에서 확인할 증거입니다. 7단계에서는 그 증거를 바탕으로 이번 2주 동안 어떻게 움직일지 대응군 또는 점검 조건으로 묶습니다.
+          </p>
+          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {EVIDENCE_TO_DIRECTION_MAP.map((item) => (
+              <div key={item.evidence} className="rounded-2xl border border-white bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+                <p className="font-black text-slate-950">{item.evidence} → {item.direction}</p>
+                <p className="mt-1">{item.meaning}</p>
+              </div>
+            ))}
           </div>
         </div>
 
