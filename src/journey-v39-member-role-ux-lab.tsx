@@ -11,8 +11,10 @@ const V39_MEMBER_ROLE_UX_SMOKE_MARKERS = [
   'AI를 쓰면 좋아지는 점',
   '역할·지원 포인트·점검 질문 보완',
   '7단계 배정을 반복하지 않습니다',
+  '7단계 고객군/조건을 8단계 역할 보완으로 바꿉니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
+  '8단계에서 새로 쓰는 것',
   '다음 단계로 넘길 것',
   '최소 결과물',
 ].join('|');
@@ -51,7 +53,7 @@ export function V39MemberRoleUxLab() {
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-emerald-700">8단계 진행 가이드 · 팀원별 실행 보완 Map</p>
             <h2 className="mt-1 text-xl font-black text-slate-950">고객 전략을 팀원 역할과 코칭 포인트로 바꿉니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 이미 고객군과 팀원 연결의 큰 배치를 정했습니다. 이 단계는 그 배정을 반복하지 않습니다. 각 팀원이 실제로 실행할 수 있도록 역할 미션, 준비물, 지원 포인트, 점검 질문, 리스크 안전선을 보완하는 화면입니다.</p>
+            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 이미 고객군/점검 조건과 팀원 연결의 큰 배치를 정했습니다. 이 단계는 그 배정을 반복하지 않습니다. 각 팀원이 실제로 실행할 수 있도록 역할 미션, 준비물, 지원 포인트, 점검 질문, 리스크 안전선을 보완하는 화면입니다.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-4 lg:w-[42rem]">
             <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
@@ -73,6 +75,11 @@ export function V39MemberRoleUxLab() {
           </div>
         </div>
 
+        <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+          <p className="font-black">7단계 고객군/조건을 8단계 역할 보완으로 바꿉니다</p>
+          <p className="mt-1">7단계가 “이번 2주 동안 어떤 고객군/점검 조건에 어떻게 움직일 것인가”를 정했다면, 8단계는 “그 일을 맡은 팀원이 실제로 움직이려면 무엇을 준비하고, 팀장이 어디를 도와야 하는가”를 정리합니다.</p>
+        </div>
+
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
             <p className="font-black text-slate-950">AI 없이도 할 수 있습니다</p>
@@ -84,14 +91,18 @@ export function V39MemberRoleUxLab() {
           </div>
         </div>
 
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
+        <div className="mt-3 grid gap-2 md:grid-cols-4">
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">이 단계에서 하는 일</p>
             <p className="mt-1">고객군 × 팀원 실행 배치를 역할·지원 포인트·점검 질문 보완으로 바꿉니다. 누가 맡는지를 다시 정하기보다, 어떻게 실행 가능하게 만들지 정리합니다.</p>
           </div>
           <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
             <p className="font-black">이전 단계에서 가져온 것</p>
-            <p className="mt-1">7단계 고객군 × 팀원 2주 실행 Map, 고객군별 대응 방향, 팀원 연결 기준, 위험·보완 조건입니다.</p>
+            <p className="mt-1">7단계 고객군/점검 조건, 2주 대응 방향, 팀원 연결 기준, 위험·보완 조건입니다.</p>
+          </div>
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs font-bold leading-5 text-indigo-950">
+            <p className="font-black">8단계에서 새로 쓰는 것</p>
+            <p className="mt-1">담당 팀원의 역할 미션, 콜플랜 준비물, 팀장 지원 포인트, 점검 질문, 리스크 안전선입니다.</p>
           </div>
           <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">
             <p className="font-black">다음 단계로 넘길 것</p>
@@ -106,7 +117,7 @@ export function V39MemberRoleUxLab() {
 
         <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
           <p className="font-black text-slate-950">최소 결과물</p>
-          <p className="mt-1">팀원별 실행 보완 Map입니다. 담당 고객군, 역할 미션, 콜플랜 준비물, 팀장 지원 포인트, 점검 질문, 리스크 안전선을 남기면 충분합니다.</p>
+          <p className="mt-1">팀원별 실행 보완 Map입니다. 담당 고객군/점검 조건, 역할 미션, 콜플랜 준비물, 팀장 지원 포인트, 점검 질문, 리스크 안전선을 남기면 충분합니다.</p>
         </div>
 
         <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
