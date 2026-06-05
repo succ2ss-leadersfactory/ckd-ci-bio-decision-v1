@@ -14,6 +14,7 @@ const V39_PEOPLE_DIALOGUE_UX_SMOKE_MARKERS = [
   '나 때는 말이야',
   '지금은 말이야',
   '8단계 역할 미션과 지원 포인트',
+  '8단계 역할 보완 결과를 대화 재료로 가져옵니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
@@ -44,6 +45,13 @@ function getSavedSupportCount() {
   return Object.values(roleResult.roles).filter((role) => role.coachingFocus.trim() || role.callPlanPrep.trim() || role.riskGuardrail.trim()).length;
 }
 
+function getRoleBridgeItems() {
+  const roleResult = loadV39MemberRoleResult();
+  return Object.values(roleResult.roles)
+    .filter((role) => role.roleMission.trim() || role.coachingFocus.trim() || role.callPlanPrep.trim() || role.riskGuardrail.trim())
+    .slice(0, 4);
+}
+
 function getPriorityOneOnOneItems() {
   const result = loadV39TeamSevenCoachingMapResult();
   return Object.values(result.decisions).filter((decision) => decision.priorityOneOnOne);
@@ -54,6 +62,7 @@ export function V39PeopleDialogueUxLab() {
   const savedSupportCount = getSavedSupportCount();
   const dialogueSaved = hasSavedDialogueResult();
   const priorityOneOnOneItems = getPriorityOneOnOneItems();
+  const roleBridgeItems = getRoleBridgeItems();
 
   return (
     <section className="space-y-4">
@@ -61,8 +70,8 @@ export function V39PeopleDialogueUxLab() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-violet-700">9단계 진행 가이드 · 팀원 온도차와 실행 대화</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">8단계에서 고른 우선 1on1 대상을 팀원이 받아들일 수 있는 첫 문장으로 바꿉니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 고객군별 대응 방향과 1차 연결 후보를 정했고, 8단계에서 팀원 7명 전체의 업무배분·코칭 필요도·우선 1on1 대상을 보았습니다. 이제 그중 먼저 대화해야 할 팀원에게 어떻게 꺼낼지 정리합니다. 핵심은 실행 지시가 아니라 실행 대화입니다.</p>
+            <h2 className="mt-1 text-xl font-black text-slate-950">8단계 역할 보완 결과를 팀원이 받아들일 수 있는 첫 문장으로 바꿉니다</h2>
+            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">7단계에서 고객군별 대응 방향과 1차 연결 후보를 정했고, 8단계에서 팀원별 역할 미션·준비물·지원 포인트·리스크 안전선을 보완했습니다. 이제 그 내용을 팀원에게 어떻게 꺼낼지 정리합니다. 핵심은 실행 지시가 아니라 실행 대화입니다.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-4 lg:w-[42rem]">
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3">
@@ -83,6 +92,33 @@ export function V39PeopleDialogueUxLab() {
             </div>
           </div>
         </div>
+
+        <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">8단계 역할 보완 결과를 대화 재료로 가져옵니다</p>
+          <p className="mt-1">8단계에서 정한 역할 미션, 콜플랜 준비물, 팀장 지원 포인트, 점검 질문, 리스크 안전선을 그대로 지시하지 말고 “왜 이 역할인지, 어디까지 하면 되는지, 무엇을 지원할지”가 담긴 첫 문장으로 바꿉니다.</p>
+        </div>
+
+        {roleBridgeItems.length > 0 ? (
+          <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+            <p className="font-black">8단계 역할 미션과 지원 포인트</p>
+            <div className="mt-2 grid gap-2 md:grid-cols-2">
+              {roleBridgeItems.map((role) => (
+                <div key={role.memberRoleId} className="rounded-2xl bg-white px-3 py-2 text-slate-700">
+                  <p className="font-black text-slate-950">{role.memberLabel}</p>
+                  <p className="mt-1"><span className="font-black text-emerald-800">담당 고객군/조건: </span>{role.assignedCustomers || '아직 작성되지 않았습니다.'}</p>
+                  <p className="mt-1"><span className="font-black text-emerald-800">역할 미션: </span>{role.roleMission || '아직 작성되지 않았습니다.'}</p>
+                  <p className="mt-1"><span className="font-black text-emerald-800">지원·점검: </span>{role.coachingFocus || role.callPlanPrep || '아직 작성되지 않았습니다.'}</p>
+                  <p className="mt-1"><span className="font-black text-emerald-800">리스크 안전선: </span>{role.riskGuardrail || '아직 작성되지 않았습니다.'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
+            <p className="font-black">8단계 역할 미션과 지원 포인트</p>
+            <p className="mt-1">8단계에서 역할 미션과 지원 포인트를 저장하면, 이곳에 대화 재료가 표시됩니다.</p>
+          </div>
+        )}
 
         <div className="mt-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs font-bold leading-5 text-indigo-950">
           <p className="font-black">8단계 우선 1on1 연결 요약</p>
@@ -110,7 +146,7 @@ export function V39PeopleDialogueUxLab() {
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
-            <p className="mt-1">8단계의 업무배분 판단과 1on1 코칭 목적을 바탕으로 내 첫마디가 기존 팀원과 MZ·저연차 팀원에게 어떻게 다르게 들릴지 미리 보고, 지원 방식과 책임 범위를 담은 대화 문장으로 빠르게 바꿀 수 있습니다.</p>
+            <p className="mt-1">8단계의 역할 미션과 1on1 코칭 목적을 바탕으로 내 첫마디가 기존 팀원과 MZ·저연차 팀원에게 어떻게 다르게 들릴지 미리 보고, 지원 방식과 책임 범위를 담은 대화 문장으로 빠르게 바꿀 수 있습니다.</p>
           </div>
         </div>
 
