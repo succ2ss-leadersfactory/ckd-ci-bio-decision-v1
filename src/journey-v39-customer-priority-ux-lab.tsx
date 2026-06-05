@@ -12,7 +12,7 @@ const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   '대응 강도',
   '팀원 연결 기준',
   '실제 연결 후보',
-  '8단계는 실행 대화로 이어집니다',
+  '8단계는 역할 보완으로 이어집니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
@@ -22,6 +22,7 @@ const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   'AI로 2주 실행 Map 초안 만들기',
   '6단계 증거가 7단계 실행 방향으로 바뀌는 방식',
   '고객 Data 증거는 고객군이 아닙니다',
+  '6~8단계는 지표를 실행으로 바꾸는 짧은 흐름입니다',
   '고객이 반응했나요? → 반응 확인 고객군',
   '말해도 되는 범위는 어디까지인가요? → 안전선 점검 조건',
 ].join('|');
@@ -115,6 +116,11 @@ export function V39CustomerPriorityUxLab() {
           </div>
         </div>
 
+        <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">6~8단계는 지표를 실행으로 바꾸는 짧은 흐름입니다</p>
+          <p className="mt-1">6단계에서 고객 Data 증거를 고르고, 7단계에서 그 증거를 2주 대응 방향으로 묶습니다. 8단계에서는 이 실행을 맡을 팀원이 실제로 움직이도록 역할과 지원 포인트를 보완합니다.</p>
+        </div>
+
         <div className="mt-4 rounded-3xl border border-cyan-100 bg-cyan-50 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-cyan-700">6단계 증거가 7단계 실행 방향으로 바뀌는 방식</p>
           <h3 className="mt-1 text-base font-black text-slate-950">고객 Data 증거는 고객군이 아닙니다</h3>
@@ -158,7 +164,7 @@ export function V39CustomerPriorityUxLab() {
         </div>
 
         <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
-          <p className="font-black">8단계에서 역할을 완성합니다</p>
+          <p className="font-black">8단계는 역할 보완으로 이어집니다</p>
           <p className="mt-1">7단계에서는 “고객군별로 어떻게 움직일지”와 “누가 연결 후보가 될 수 있는지”만 정합니다. 다음 단계에서는 이 후보를 팀원이 실제로 받아들일 수 있도록 역할·지원 포인트·점검 질문으로 보완합니다.</p>
         </div>
 
