@@ -34,6 +34,9 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '기본 초안 가져오기',
   '붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다',
   '긍정 단서로 참고할 수 있는 사례',
+  'AI 초안에서 확인 List 후보 고르기',
+  '선택한 항목으로 최종 List 만들기',
+  '최종 List에는 선택한 문장만 반영됩니다',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -127,7 +130,7 @@ const DATA_CHECK_ITEMS: DataCheckItem[] = [
     opportunityCriteria: '다음 접점이 구체적으로 잡히거나 고객이 확인할 주제를 남기면 기회 단서로 봅니다.',
     cautionCriteria: '“다음에 보자”는 말이나 일정 가능성만으로 고객 의사나 성과 가능성을 단정하지 않습니다.',
     missingInfo: '다음 접점의 목적, 준비 자료, 고객이 기대하는 논의 범위',
-    checkQuestion: '다음 접점은 실제 일정으로 잡힌 것인가요, 가능성만 언급된 것인가요?',
+    checkQuestion: '다음 접점은 실제 일정로 잡힌 것인가요, 가능성만 언급된 것인가요?',
     complianceNote: '다음 접점 확보를 위해 과도한 설득이나 압박 표현을 쓰지 않습니다.',
   },
   {
@@ -174,9 +177,9 @@ const DATA_CHECK_ITEMS: DataCheckItem[] = [
     likelyData: '사용 자료, 전달 메시지, 고객 질문 범위, 수정한 표현, 안전선 점검 기록',
     opportunityCriteria: '고객 질문에 대해 승인자료 범위 안에서 안전하게 답변 가능한 경우 실행 단서로 봅니다.',
     cautionCriteria: '고객 관심이 높아 보일수록 미승인 표현이나 과도한 약속 위험이 커질 수 있습니다.',
-    missingInfo: '답변 가능한 근거자료, 승인자료 범위, 사용하면 안 되는 표현',
-    checkQuestion: '이 고객에게 답변할 때 승인자료 안에서 말할 수 있는 범위는 어디까지인가요?',
-    complianceNote: '미승인 효능 표현, 비교 우위 단정, 처방 유도 문장을 만들지 않습니다.',
+    missingInfo: '고객 질문에 답해도 되는 자료 범위, 피해야 할 표현, 내부 확인 필요 여부',
+    checkQuestion: '이번 대화에서 승인자료 범위 밖으로 나갈 위험이 있는 표현은 무엇인가요?',
+    complianceNote: '미승인 효능, 비교 우위 단정, 처방 유도 표현을 사용하지 않습니다.',
   },
 ];
 
@@ -248,7 +251,6 @@ function splitAiResultCards(raw: string) {
 
   if (currentCard) cards.push(currentCard);
   if (cards.length > 0) return cards;
-
   return [{ cardTitle: 'AI 결과 전체', lines: prefaceLines }];
 }
 
@@ -317,6 +319,24 @@ function getAiBucketText(card: AiExtractedCard | undefined, title: string) {
   return bucket?.items.join('\n') ?? '';
 }
 
+function getBucketCandidateItems(card: AiExtractedCard | undefined, bucketTitle: string) {
+  if (!card) return [];
+  return card.buckets.find((bucket) => bucket.title === bucketTitle)?.items ?? [];
+}
+
+function buildCandidateKey(itemId: string, bucketTitle: string, candidate: string) {
+  return `${itemId}::${bucketTitle}::${candidate}`;
+}
+
+function hasSelectedCandidateForBucket(selectedKeys: string[], itemId: string, bucketTitle: string) {
+  return selectedKeys.some((key) => key.startsWith(`${itemId}::${bucketTitle}::`));
+}
+
+function getSelectedCandidatesForBucket(selectedKeys: string[], itemId: string, bucketTitle: string) {
+  const prefix = `${itemId}::${bucketTitle}::`;
+  return selectedKeys.filter((key) => key.startsWith(prefix)).map((key) => key.slice(prefix.length));
+}
+
 function buildDefaultTwoWeekDirection(item: DataCheckItem) {
   switch (item.id) {
     case 'A':
@@ -372,6 +392,30 @@ function buildDecisionFromAiCard(item: DataCheckItem, card: AiExtractedCard | un
     twoWeekDirection: getAiBucketText(card, '7단계로 넘길 메모') || fallback.twoWeekDirection,
     complianceNote: getAiBucketText(card, '표현·자료 안전선') || fallback.complianceNote,
     judgmentMemo: `${item.label}: AI 결과에서 가져온 초안입니다. 그대로 확정하지 말고 실제 고객 활동 기록과 팀원 설명을 확인한 뒤 줄여 적습니다.`,
+  };
+}
+
+function buildDecisionFromSelectedCandidates(
+  item: DataCheckItem,
+  selectedKeys: string[],
+  card: AiExtractedCard | undefined,
+): V39CustomerDecisionResult {
+  const fallback = buildDecisionFromAiCard(item, card);
+  const pick = (bucketTitle: string, fallbackText: string) => {
+    const selected = getSelectedCandidatesForBucket(selectedKeys, item.id, bucketTitle);
+    return selected.length > 0 ? selected.join('\n') : fallbackText;
+  };
+
+  return {
+    ...fallback,
+    reason: pick('무엇을 볼까', fallback.reason),
+    opportunitySignal: pick('기회로 볼 수 있는 경우', fallback.opportunitySignal),
+    riskSignal: pick('성급하게 해석하면 안 되는 경우', fallback.riskSignal),
+    missingInfo: pick('아직 부족한 정보', fallback.missingInfo),
+    nextCheck: pick('팀원에게 더 확인할 질문', fallback.nextCheck),
+    complianceNote: pick('표현·자료 안전선', fallback.complianceNote),
+    twoWeekDirection: pick('7단계로 넘길 메모', fallback.twoWeekDirection),
+    judgmentMemo: `${item.label}: AI 후보 중 선택한 문장만 가져온 초안입니다. 팀장이 실제 확인 List로 다시 줄이고 수정합니다.`,
   };
 }
 
@@ -474,11 +518,13 @@ function PillList({ items, emptyText }: { items: string[]; emptyText: string }) 
 function V39CustomerDataJudgmentFlow() {
   const [result, setResult] = useState(buildInitialCustomerJudgmentState);
   const [copied, setCopied] = useState(false);
+  const [selectedAiCandidateKeys, setSelectedAiCandidateKeys] = useState<string[]>([]);
   const selectedItemIds = result.selectedCustomerTypeIds;
   const selectedItems = selectedItemIds.map(getDataCheckItem);
   const dashboardBridge = useMemo(() => getDashboardBridge(), [result.updatedAt, result.selectedCustomerTypeIds.length]);
   const extractedAiCards = useMemo(() => extractAiResultCards(result.rawAiSignalResult), [result.rawAiSignalResult]);
   const hasAiRawResult = result.rawAiSignalResult.trim().length > 0;
+  const selectedAiCandidateCount = selectedAiCandidateKeys.length;
   const requiredDoneCount = [
     selectedItemIds.length >= 1,
     selectedItems.some((item) => result.decisions[item.id]?.missingInfo?.trim()),
@@ -532,9 +578,30 @@ function V39CustomerDataJudgmentFlow() {
     });
   };
 
+  const toggleAiCandidate = (candidateKey: string) => {
+    setSelectedAiCandidateKeys((current) => (
+      current.includes(candidateKey)
+        ? current.filter((item) => item !== candidateKey)
+        : [...current, candidateKey]
+    ));
+  };
+
   const applyDraft = (item: DataCheckItem) => {
     const aiCard = hasAiRawResult ? findAiCardForItem(item, extractedAiCards) : undefined;
-    updateDecision(item.id, buildDecisionFromAiCard(item, aiCard));
+    const hasSelectedCandidate = selectedAiCandidateKeys.some((key) => key.startsWith(`${item.id}::`));
+    const nextDecision = hasSelectedCandidate
+      ? buildDecisionFromSelectedCandidates(item, selectedAiCandidateKeys, aiCard)
+      : buildDecisionFromAiCard(item, aiCard);
+    updateDecision(item.id, nextDecision);
+  };
+
+  const applySelectedCandidates = () => {
+    const decisions: Record<string, V39CustomerDecisionResult> = { ...result.decisions };
+    for (const item of selectedItems) {
+      const aiCard = hasAiRawResult ? findAiCardForItem(item, extractedAiCards) : undefined;
+      decisions[item.id] = buildDecisionFromSelectedCandidates(item, selectedAiCandidateKeys, aiCard);
+    }
+    persist({ decisions });
   };
 
   const resetFlow = () => {
@@ -546,6 +613,7 @@ function V39CustomerDataJudgmentFlow() {
     const next = { ...empty, decisions };
     saveV39CustomerJudgmentResult(next);
     setResult(next);
+    setSelectedAiCandidateKeys([]);
   };
 
   return (
@@ -561,6 +629,7 @@ function V39CustomerDataJudgmentFlow() {
           <div className="grid gap-3">
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-950">필수 완료 {requiredDoneCount} / 3</div>
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950">증거 카드 {selectedItemIds.length} / 2</div>
+            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-black text-violet-950">선택한 AI 후보 {selectedAiCandidateCount}개</div>
           </div>
         </div>
       </section>
@@ -606,67 +675,75 @@ function V39CustomerDataJudgmentFlow() {
 
       <section className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6">
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Block 2</p>
-        <h3 className="text-xl font-black text-slate-950">AI 고객 Data 확인 List 프롬프트 준비</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-slate-700">AI에게 판단을 맡기지 않고, 선택한 증거 카드를 고객 Data 확인 List 초안으로 정리하게 합니다. 고객 우선순위와 대응 방향은 7단계에서 정합니다.</p>
+        <h3 className="text-xl font-black text-slate-950">AI 초안에서 확인 List 후보 고르기</h3>
+        <p className="mt-2 text-sm font-bold leading-6 text-slate-700">AI에게 판단을 맡기지 않습니다. AI 결과는 후보 문장 창고로만 보고, 이번 2주 동안 실제로 확인할 문장만 골라 최종 List로 넘깁니다.</p>
         <div className="mt-4 flex flex-wrap gap-2"><button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={copyPrompt}>{copied ? '프롬프트 복사 완료' : 'AI 확인 List 프롬프트 복사'}</button><button type="button" className="rounded-2xl border bg-white px-4 py-3 text-sm font-black text-slate-700" onClick={resetFlow}>입력 초기화</button></div>
         <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
-        <label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 결과 붙여넣기</span><textarea className="min-h-32 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={result.rawAiSignalResult} onChange={(event) => persist({ rawAiSignalResult: event.target.value })} placeholder="AI가 정리한 고객 Data 확인 List 초안을 붙여넣으세요. 아래 항목별 메모는 팀장이 직접 수정해 확정합니다." /></label>
+        <label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 결과 붙여넣기</span><textarea className="min-h-32 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={result.rawAiSignalResult} onChange={(event) => { persist({ rawAiSignalResult: event.target.value }); setSelectedAiCandidateKeys([]); }} placeholder="AI가 정리한 고객 Data 확인 List 초안을 붙여넣으세요. 아래에서 필요한 후보 문장만 선택합니다." /></label>
         {hasAiRawResult && (
           <div className="mt-4 rounded-3xl border border-violet-100 bg-white p-4">
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 결과 1차 분리 정리</p>
-            <h4 className="mt-1 text-base font-black text-slate-950">고객 Data 증거 카드별 분리</h4>
-            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">붙여넣은 결과에서 고객 Data 증거 카드 제목을 먼저 찾고, 각 카드 안의 7개 항목을 다시 나눠 보여줍니다. 자동 분리는 참고용이며, AI 표현을 그대로 확정하지 말고 아래 Block 3에서 팀장 언어로 줄여 적으세요.</p>
+            <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 결과에서 가져올 것</p>
+            <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 선택한 문장만 반영됩니다.</h4>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">아래 후보 중 팀원이 바로 확인할 수 있는 문장만 선택하세요. 고객 등급화, 대응 전략 확정, 실제 고객·제품 정보 추정은 버립니다.</p>
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">대응 전략은 아직 확정하지 않습니다. AI가 “집중 공략”, “우선순위 상향”처럼 답해도 6단계에서는 “추가 확인 후 7단계에서 판단”으로 바꿔 적습니다.</div>
             <div className="mt-3 space-y-4">
-              {extractedAiCards.map((card, cardIndex) => (
-                <section key={`${card.cardTitle}-${cardIndex}`} className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
-                  <p className="text-sm font-black text-violet-950">고객 Data 증거 카드 {cardIndex + 1}. {card.cardTitle}</p>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {card.buckets.map((bucket) => (
-                      <div key={`${card.cardTitle}-${bucket.title}`} className="rounded-2xl border border-white bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
-                        <p className="font-black text-slate-950">{bucket.title}</p>
-                        <p className="mt-1 text-slate-500">{bucket.description}</p>
-                        <div className="mt-2 space-y-1">
-                          {bucket.items.length > 0 ? bucket.items.map((item) => <p key={item} className="rounded-xl bg-slate-50 px-3 py-2">{item}</p>) : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-slate-400">AI 결과에서 해당 항목을 명확히 찾지 못했습니다. 필요한 문장을 직접 골라 Block 3에 정리하세요.</p>}
-                        </div>
+              {selectedItems.map((item) => {
+                const card = findAiCardForItem(item, extractedAiCards);
+                return (
+                  <section key={item.id} className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <p className="text-sm font-black text-violet-950">{item.label}</p>
+                        <p className="mt-1 text-xs font-bold text-slate-600">{card ? `AI 결과 연결됨: ${card.cardTitle}` : '이 카드와 일치하는 AI 결과를 찾지 못했습니다. 필요한 문장은 Block 3에서 직접 작성하세요.'}</p>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
+                      <button type="button" className="rounded-full border bg-white px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyDraft(item)}>{card ? '선택/AI 결과에서 가져오기' : '기본 초안 가져오기'}</button>
+                    </div>
+                    <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      {AI_RESULT_EXTRACTION_BUCKETS.map((bucket) => {
+                        const items = getBucketCandidateItems(card, bucket.title);
+                        return (
+                          <div key={`${item.id}-${bucket.title}`} className="rounded-2xl border border-white bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+                            <p className="font-black text-slate-950">{bucket.title}</p>
+                            <p className="mt-1 text-slate-500">{bucket.description}</p>
+                            <div className="mt-2 space-y-1">
+                              {items.length > 0 ? items.map((candidate) => {
+                                const candidateKey = buildCandidateKey(item.id, bucket.title, candidate);
+                                const checked = selectedAiCandidateKeys.includes(candidateKey);
+                                return (
+                                  <label key={candidateKey} className={`flex cursor-pointer gap-2 rounded-xl px-3 py-2 ${checked ? 'bg-violet-100 text-violet-950' : 'bg-slate-50'}`}>
+                                    <input type="checkbox" className="mt-1" checked={checked} onChange={() => toggleAiCandidate(candidateKey)} />
+                                    <span>{candidate}</span>
+                                  </label>
+                                );
+                              }) : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-slate-400">AI 결과에서 해당 항목을 명확히 찾지 못했습니다. 필요한 문장은 Block 3에서 직접 작성하세요.</p>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 md:flex-row md:items-center md:justify-between">
+              <p className="text-xs font-bold leading-5 text-emerald-950"><span className="font-black">선택한 AI 후보 {selectedAiCandidateCount}개</span><br />선택한 항목으로 최종 List 만들기를 누르면 Block 3 입력칸에 선택한 문장만 반영됩니다.</p>
+              <button type="button" className="rounded-2xl bg-emerald-700 px-4 py-3 text-xs font-black text-white shadow-sm" onClick={applySelectedCandidates}>선택한 항목으로 최종 List 만들기</button>
             </div>
           </div>
         )}
-        <div className="mt-4 rounded-3xl border border-emerald-100 bg-white p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI 결과에서 가져올 것</p>
-          <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 필요한 것만 골라 옮깁니다.</h4>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-600">AI 결과는 정답이 아니라 초안입니다. 긴 설명, 고객 우선순위 판단, 대응 전략 확정 문장은 그대로 쓰지 않습니다.</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              ['무엇을 볼까', '고객 Data에서 실제로 확인할 항목'],
-              ['기회로 볼 수 있는 경우', '긍정 단서로 볼 수 있는 조건'],
-              ['성급하게 해석하면 안 되는 경우', '과잉해석하거나 단정하면 위험한 부분'],
-              ['아직 부족한 정보', '팀장이 판단 전에 더 확인해야 할 정보'],
-              ['팀원에게 더 확인할 질문', '다음 방문·면담 전에 팀원에게 물어볼 문장'],
-              ['표현·자료 안전선', '승인자료 범위와 위험 표현 점검'],
-              ['7단계로 넘길 메모', '고객군별 대응 방향을 정할 때 참고할 1~2줄'],
-              ['버릴 내용', '고객 등급화, 대응 전략 확정, 실제 고객·제품 정보 추정'],
-            ].map(([title, description]) => (
-              <div key={title} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-                <p className="font-black text-slate-950">{title}</p>
-                <p className="mt-1">{description}</p>
-              </div>
-            ))}
+        {!hasAiRawResult ? (
+          <div className="mt-4 rounded-3xl border border-emerald-100 bg-white p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI 결과에서 가져올 것</p>
+            <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 필요한 것만 골라 옮깁니다.</h4>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">AI 결과는 정답이 아니라 초안입니다. 긴 설명, 고객 우선순위 판단, 대응 전략 확정 문장은 그대로 쓰지 않습니다.</p>
           </div>
-          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
-            대응 전략은 아직 확정하지 않습니다. AI가 “집중 공략”, “우선순위 상향”처럼 답해도 6단계에서는 “추가 확인 후 7단계에서 판단”으로 바꿔 적습니다.
-          </div>
-        </div>
+        ) : null}
       </section>
 
       <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
         <p className="text-xs font-black uppercase tracking-wide text-violet-700">Block 3</p>
         <h3 className="text-xl font-black text-slate-950">최종 고객 Data 확인 List</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-slate-700">선택한 증거 카드별로 확인할 Data, 기회 단서, 주의 단서, 부족 정보, 팀원 질문, 7단계로 넘길 메모, 안전선을 정리합니다.</p>
+        <p className="mt-2 text-sm font-bold leading-6 text-slate-700">선택한 AI 후보 문장 또는 기본 초안을 바탕으로 확인할 Data, 기회 단서, 주의 단서, 부족 정보, 팀원 질문, 7단계로 넘길 메모, 안전선을 팀장 언어로 줄여 씁니다.</p>
         <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
           필수 3개만 완료하면 다음 단계로 갈 수 있습니다. 1) 증거 카드 1개 이상 선택 2) 부족 정보 1개 작성 3) 추가 확인 질문 1개 작성
         </div>
@@ -677,9 +754,11 @@ function V39CustomerDataJudgmentFlow() {
             {selectedItems.map((item) => {
               const current = normalizeV39CustomerDecisionResult(result.decisions[item.id], item.id, item.label);
               const matchedAiCard = hasAiRawResult ? findAiCardForItem(item, extractedAiCards) : undefined;
+              const selectedBucketCount = AI_RESULT_EXTRACTION_BUCKETS.filter((bucket) => hasSelectedCandidateForBucket(selectedAiCandidateKeys, item.id, bucket.title)).length;
               return (
                 <article key={item.id} className="rounded-3xl border bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between"><div><p className="text-base font-black text-slate-950">{item.label}</p><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{item.likelyData}</p>{hasAiRawResult ? <p className={`mt-2 text-xs font-black ${matchedAiCard ? 'text-emerald-700' : 'text-amber-700'}`}>{matchedAiCard ? `AI 결과 연결됨: ${matchedAiCard.cardTitle}` : '이 카드와 일치하는 AI 결과를 찾지 못해 기본 초안을 사용합니다.'}</p> : null}</div><button type="button" className="rounded-full border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyDraft(item)}>{matchedAiCard ? 'AI 결과에서 가져오기' : '기본 초안 가져오기'}</button></div>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between"><div><p className="text-base font-black text-slate-950">{item.label}</p><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{item.likelyData}</p>{hasAiRawResult ? <p className={`mt-2 text-xs font-black ${matchedAiCard ? 'text-emerald-700' : 'text-amber-700'}`}>{matchedAiCard ? `AI 결과 연결됨: ${matchedAiCard.cardTitle} · 선택 항목 ${selectedBucketCount}개 영역` : '이 카드와 일치하는 AI 결과를 찾지 못해 기본 초안을 사용합니다.'}</p> : null}</div><button type="button" className="rounded-full border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyDraft(item)}>{matchedAiCard ? '선택/AI 결과에서 가져오기' : '기본 초안 가져오기'}</button></div>
+                  <div className="mt-3 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">여기는 AI 답안을 붙여넣는 곳이 아니라, 팀장이 실제로 사용할 확인 List로 줄여 쓰는 곳입니다.</div>
                   <div className="mt-4 grid gap-3 md:grid-cols-2">
                     <label className="space-y-1"><span className="text-xs font-black text-slate-500">무엇을 볼까</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.reason} onChange={(event) => updateDecision(item.id, { reason: event.target.value })} /></label>
                     <label className="space-y-1"><span className="text-xs font-black text-slate-500">기회로 볼 수 있는 경우</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.opportunitySignal} onChange={(event) => updateDecision(item.id, { opportunitySignal: event.target.value })} /></label>
