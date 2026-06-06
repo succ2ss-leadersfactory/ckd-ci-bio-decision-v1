@@ -5,7 +5,7 @@ import { JourneyShell } from './journey-shell';
 import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { useStored } from './journey-storage';
 import { V39AiCallPlanGuidedUxLab } from './journey-v39-ai-call-plan-guided-ux-lab';
-import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-ux-lab';
+import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-lab';
 import { V39CustomerJudgmentUxLab } from './journey-v39-customer-judgment-ux-lab';
 import { V39CustomerPriorityUxLab } from './journey-v39-customer-priority-ux-lab';
 import { V39DashboardAnalysisUxLab } from './journey-v39-dashboard-analysis-ux-lab';
@@ -21,11 +21,11 @@ import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { V39PromptConcernBridgeCard } from './journey-v39-prompt-concern-bridge-card';
 import { V39PromptPracticeLab } from './journey-v39-prompt-practice-lab';
 import { V39TeamSevenCoachingUxWrapper } from './journey-v39-team-seven-coaching-ux-wrapper';
-import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
+import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero, V39StepNavigationProvider } from './journey-v39-ux-components';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결 V39StepHero V39FlowStrip 1단계 입장 2단계 AI 안전선 3단계 질문 연습 4단계 전략 리서치 hideStepOverview route wrapper order';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결 V39StepHero V39FlowStrip 1단계 입장 2단계 AI 안전선 3단계 질문 연습 4단계 전략 리서치 hideStepOverview route wrapper order V39StepNavigationProvider';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -276,7 +276,7 @@ function V39PreviewApp() {
   };
 
   return (
-    <>
+    <V39StepNavigationProvider onStepSelect={(stepNumber) => goToStep(stepNumber - 1)}>
       <JourneyShell
         title="C1바이오 영업팀장 AI 리더십 Lab Journey"
         subtitle="영업팀장이 AI를 활용해 고객·팀원·실행 데이터를 해석하고 2주 실행전략을 설계하는 실습 과정입니다."
@@ -290,7 +290,7 @@ function V39PreviewApp() {
         {renderV39Step(safeStep, participant, setParticipant)}
       </JourneyShell>
       <V39ResetControl onReset={resetV39Progress} />
-    </>
+    </V39StepNavigationProvider>
   );
 }
 
