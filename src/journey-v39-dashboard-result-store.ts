@@ -1,3 +1,4 @@
+import { getJson, removeStoredPrefix, setJson } from './journey-storage';
 import type { V38PrepState } from './journey-v38-dashboard-analysis-parsers';
 
 export const V39_DASHBOARD_RESULT_SCHEMA_VERSION = 'v39-dashboard-result-v1';
@@ -166,28 +167,18 @@ export function normalizeV39DashboardResult(value: unknown): V39DashboardResult 
 }
 
 export function saveV39DashboardResult(result: V39DashboardResult) {
-  if (typeof window === 'undefined') return;
   const nextResult: V39DashboardResult = {
     ...normalizeV39DashboardResult(result),
     schemaVersion: V39_DASHBOARD_RESULT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
   };
-  window.localStorage.setItem(V39_DASHBOARD_RESULT_STORAGE_KEY, JSON.stringify(nextResult));
+  setJson(V39_DASHBOARD_RESULT_STORAGE_KEY, nextResult);
 }
 
 export function loadV39DashboardResult(): V39DashboardResult {
-  if (typeof window === 'undefined') return createEmptyV39DashboardResult();
-
-  try {
-    const raw = window.localStorage.getItem(V39_DASHBOARD_RESULT_STORAGE_KEY);
-    if (!raw) return createEmptyV39DashboardResult();
-    return normalizeV39DashboardResult(JSON.parse(raw));
-  } catch {
-    return createEmptyV39DashboardResult();
-  }
+  return normalizeV39DashboardResult(getJson<unknown>(V39_DASHBOARD_RESULT_STORAGE_KEY, null));
 }
 
 export function clearV39DashboardResult() {
-  if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(V39_DASHBOARD_RESULT_STORAGE_KEY);
+  removeStoredPrefix(V39_DASHBOARD_RESULT_STORAGE_KEY);
 }
