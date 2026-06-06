@@ -72,7 +72,7 @@ for (const marker of [
   'src/journey-v39-final-call-plan-result-store.ts',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
-for (const marker of ['V39PromptPracticeLab', '일반 질문과 구조화 질문의 차이', '역할·맥락·지시/과제·형식', 'AI 없이도 할 수 있습니다', 'AI를 쓰면 좋아지는 점', '제약영업 현장을 오래 해본 선배 팀장', '4단계 AI 전략 리서치로 넘길 질문']) mustInclude(files.promptPractice, marker, 'prompt practice');
+for (const marker of ['V39PromptPracticeLab', '일반 질문과 구조화 질문의 차이', '역할·맥락·요청·출력 형식', 'AI 없이도 할 수 있습니다', 'AI를 쓰면 좋아지는 점', '제약영업 현장을 오래 해본 선배 팀장', '4단계 AI 전략 리서치로 넘길 질문']) mustInclude(files.promptPractice, marker, 'prompt practice');
 for (const marker of ['실행관리 코치', 'AI 사고 파트너', '전략적 실행관리 전문가']) mustNotInclude(files.promptPractice, marker, 'prompt practice artificial wording');
 for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', 'Perplexity', 'NotebookLM', 'Studio', '5단계 연결 카드', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
 for (const marker of ['AI 전략 리서치 Pack']) mustNotInclude(files.researchStrategy, marker, 'research strategy old naming');
