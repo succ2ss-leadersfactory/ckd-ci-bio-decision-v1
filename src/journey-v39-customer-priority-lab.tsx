@@ -25,6 +25,7 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   'AI 핵심 행동 3~4개 압축',
   '행동 블록 단위로 묶습니다',
   '확인할 기록은 하위 항목으로 표시합니다',
+  '하위 bullet을 부모 행동 안에 묶습니다',
   '팀원 연결 기준',
   '실제 연결 후보',
   '위험·보완 조건',
@@ -193,26 +194,59 @@ function compactList(items: string[], limit = 6) {
   return results;
 }
 
+function isActionStartLine(value: string) {
+  return /^(행동|실행)\s*\d+\s*[.)]?\s*/.test(value.trim());
+}
+
+function stripActionStart(value: string) {
+  return value.trim().replace(/^(행동|실행)\s*\d+\s*[.)]?\s*/, '').trim();
+}
+
+function getActionDetailMatch(value: string) {
+  return value.trim().match(/^(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*(.*)$/);
+}
+
 function isActionDetailLine(value: string) {
-  return /^(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/.test(value.trim());
+  return Boolean(getActionDetailMatch(value));
 }
 
 function parseActionBlocks(actionItems: string[]): AiActionBlock[] {
   const blocks: AiActionBlock[] = [];
   let currentBlock: AiActionBlock | null = null;
+  let currentDetailLabel = '';
 
   for (const item of actionItems) {
     const clean = item.trim();
     if (!clean) continue;
 
-    if (isActionDetailLine(clean)) {
-      if (currentBlock) currentBlock.details.push(clean);
-      else blocks.push({ action: clean, details: [] });
+    if (isActionStartLine(clean)) {
+      const action = stripActionStart(clean) || clean;
+      currentBlock = { action, details: [] };
+      blocks.push(currentBlock);
+      currentDetailLabel = '';
+      continue;
+    }
+
+    const detailMatch = getActionDetailMatch(clean);
+    if (detailMatch) {
+      if (!currentBlock) {
+        currentBlock = { action: '실행 보조 정보 확인', details: [] };
+        blocks.push(currentBlock);
+      }
+      currentDetailLabel = detailMatch[1];
+      const detailValue = detailMatch[2]?.trim();
+      if (detailValue) currentBlock.details.push(`${currentDetailLabel}: ${detailValue}`);
+      continue;
+    }
+
+    if (currentBlock && currentDetailLabel) {
+      currentBlock.details.push(`${currentDetailLabel}: ${clean}`);
       continue;
     }
 
     currentBlock = { action: clean, details: [] };
     blocks.push(currentBlock);
+    currentDetailLabel = '';
   }
 
   return blocks;
@@ -514,7 +548,7 @@ function buildTwoWeekMapPrompt(displayItems: CustomerDirectionItem[], decisions:
     '특히 ### 4. 이번 2주 행동은 3~4개의 행동 블록으로 작성해 주세요.',
     '- 각 행동은 “확인한다, 구분한다, 정리한다, 질문한다, 점검한다, 기록한다” 중심으로 작성합니다.',
     '- 고객을 공략하거나 우선순위를 정하는 표현은 사용하지 않습니다.',
-    '- 각 행동 아래에는 필요한 경우 “확인할 기록:”, “팀원 질문:”, “남길 산출물:”을 하위 항목으로 붙입니다.',
+    '- 각 행동 아래에는 필요한 경우 “확인할 기록:”, “팀원 질문:”, “남길 산출물:”, “실행 시점:”을 하위 항목으로 붙입니다.',
     '- 하위 항목은 독립 행동이 아니라 해당 행동을 실행하기 위한 보조 정보로 작성합니다.',
     '- 가능한 경우 “다음 회의 전”, “1on1 전”, “2주 안에” 같은 실행 시점을 포함합니다.',
     '',
