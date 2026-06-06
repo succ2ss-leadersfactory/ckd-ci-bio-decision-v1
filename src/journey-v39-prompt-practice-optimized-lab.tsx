@@ -6,6 +6,9 @@ const V39_PROMPT_PRACTICE_STORAGE_KEY = 'ckd.v39.promptPractice.v1';
 const V39_PROMPT_PRACTICE_OPTIMIZED_SMOKE_MARKERS = [
   'V39PromptPracticeOptimizedLab',
   '우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기',
+  '일반 질문과 구조화 질문의 차이',
+  '역할·맥락·요청·출력 형식',
+  '4단계 AI 전략 리서치로 넘길 질문',
   '영업활동 기록',
   '방문·면담 기록',
   '고객 활동 Data',
