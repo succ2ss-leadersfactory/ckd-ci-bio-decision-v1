@@ -29,6 +29,7 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '전부 가져오지 마세요',
   '대응 전략은 아직 확정하지 않습니다',
   'AI 결과 1차 분리 정리',
+  '고객 Data 증거 카드별 분리',
   '붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다',
   '긍정 단서로 참고할 수 있는 사례',
 ].join('|');
@@ -51,6 +52,17 @@ type AiExtractionBucket = {
   title: string;
   description: string;
   aliases: string[];
+};
+
+type AiExtractedBucket = {
+  title: string;
+  description: string;
+  items: string[];
+};
+
+type AiExtractedCard = {
+  cardTitle: string;
+  buckets: AiExtractedBucket[];
 };
 
 const AI_RESULT_EXTRACTION_BUCKETS: AiExtractionBucket[] = [
@@ -80,14 +92,14 @@ const AI_RESULT_EXTRACTION_BUCKETS: AiExtractionBucket[] = [
     aliases: ['팀원에게 더 확인할 질문', '팀원에게 물어볼 질문', '추가 확인 질문', '확인 질문', '팀원 질문', '다음 방문·면담 전에 확인할 질문'],
   },
   {
-    title: '표현·자료 안전선',
-    description: '승인자료 범위와 위험 표현 점검',
-    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현', '사용하지 말아야 할 표현', '확인해야 할 자료 범위'],
-  },
-  {
     title: '7단계로 넘길 메모',
     description: '고객군별 대응 방향을 정할 때 참고할 1~2줄',
     aliases: ['7단계로 넘길 메모', '7단계로 넘길 대응 준비 메모', '7단계', '대응 준비 메모', '다음 단계 메모', '고객군별 대응 방향'],
+  },
+  {
+    title: '표현·자료 안전선',
+    description: '승인자료 범위와 위험 표현 점검',
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현', '사용하지 말아야 할 표현', '확인해야 할 자료 범위'],
   },
 ];
 
@@ -201,12 +213,44 @@ function lineMatchesAnotherBucket(line: string, currentBucket: AiExtractionBucke
   return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesBucket(line, bucket));
 }
 
-function extractAiResultBuckets(raw: string) {
+function normalizeAiCardTitle(line: string) {
+  const clean = line.replace(/^#{1,6}\s*/, '').replace(/\*\*/g, '').trim();
+  if (!/고객\s*Data\s*증거\s*카드/i.test(clean)) return null;
+  const title = clean
+    .replace(/^고객\s*Data\s*증거\s*카드\s*(?:[①-⑳]|\d+|[A-F])?\s*[.)·:-]?\s*/i, '')
+    .trim();
+  return title || clean;
+}
+
+function splitAiResultCards(raw: string) {
   const lines = raw
     .split(/\r?\n/)
     .map(cleanAiResultLine)
-    .filter(Boolean);
+    .filter((line) => line && !/^---+$/.test(line));
 
+  const cards: { cardTitle: string; lines: string[] }[] = [];
+  let currentCard: { cardTitle: string; lines: string[] } | null = null;
+  const prefaceLines: string[] = [];
+
+  for (const line of lines) {
+    const cardTitle = normalizeAiCardTitle(line);
+    if (cardTitle) {
+      if (currentCard) cards.push(currentCard);
+      currentCard = { cardTitle, lines: [] };
+      continue;
+    }
+
+    if (currentCard) currentCard.lines.push(line);
+    else prefaceLines.push(line);
+  }
+
+  if (currentCard) cards.push(currentCard);
+  if (cards.length > 0) return cards;
+
+  return [{ cardTitle: 'AI 결과 전체', lines: prefaceLines }];
+}
+
+function extractAiResultBucketsFromLines(lines: string[]) {
   return AI_RESULT_EXTRACTION_BUCKETS.map((bucket) => {
     const startIndex = lines.findIndex((line) => lineMatchesBucket(line, bucket));
     const items: string[] = [];
@@ -214,28 +258,35 @@ function extractAiResultBuckets(raw: string) {
     if (startIndex >= 0) {
       const firstLine = lines[startIndex];
       const afterColon = firstLine.split(/[:：]/).slice(1).join(':').trim();
-      if (afterColon) items.push(afterColon);
+      if (afterColon && !lineMatchesBucket(afterColon, bucket)) items.push(afterColon);
 
       for (let index = startIndex + 1; index < lines.length; index += 1) {
         const line = lines[index];
         if (lineMatchesAnotherBucket(line, bucket)) break;
+        if (normalizeAiCardTitle(line)) break;
         if (lineMatchesBucket(line, bucket)) {
           const inlineValue = line.split(/[:：]/).slice(1).join(':').trim();
           if (inlineValue) items.push(inlineValue);
           continue;
         }
-        if (/^(요청|주의:|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
+        if (/^(요청|주의:|결론|종합|예시|표\s*)/i.test(line)) break;
         items.push(line);
-        if (items.length >= 4) break;
       }
     }
 
     return {
       title: bucket.title,
       description: bucket.description,
-      items: compactList(items, 4),
+      items: compactList(items, 20),
     };
   });
+}
+
+function extractAiResultCards(raw: string): AiExtractedCard[] {
+  return splitAiResultCards(raw).map((card) => ({
+    cardTitle: card.cardTitle,
+    buckets: extractAiResultBucketsFromLines(card.lines),
+  }));
 }
 
 function getDashboardBridge() {
@@ -311,13 +362,16 @@ function buildDataCheckPrompt(
     '',
     '[요청]',
     '선택한 고객 Data 증거 카드별로 고객 Data 확인 List 초안을 작성해 주세요.',
-    '1. 무엇을 볼까: 영업활동 기록, 방문·면담 메모, 후속 질문, 자료 요청, 일정 변경, 팀원 확인 등',
-    '2. 기회로 볼 수 있는 경우: 어떤 경우를 긍정 단서로 볼 수 있는지',
-    '3. 성급하게 해석하면 안 되는 경우: 어떤 경우를 과잉해석하면 안 되는지',
-    '4. 아직 부족한 정보: 판단 전에 확인해야 할 정보',
-    '5. 팀원에게 더 확인할 질문: 다음 방문·면담 전에 준비할 질문',
-    '6. 7단계로 넘길 대응 준비 메모: 고객군별 대응 방향을 정할 때 참고할 1~2줄 메모',
-    '7. 표현·자료 안전선: 사용하면 안 되는 표현과 확인해야 할 자료 범위',
+    '각 증거 카드는 반드시 아래 제목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
+    '',
+    '## 고객 Data 증거 카드 ① 카드명',
+    '### 1. 무엇을 볼까',
+    '### 2. 기회로 볼 수 있는 경우',
+    '### 3. 성급하게 해석하면 안 되는 경우',
+    '### 4. 아직 부족한 정보',
+    '### 5. 팀원에게 더 확인할 질문',
+    '### 6. 7단계로 넘길 대응 준비 메모',
+    '### 7. 표현·자료 안전선',
     '',
     '주의: 7단계에서 고객군별 대응 방향을 정할 예정이므로, 여기서는 고객 우선순위나 대응 전략을 확정하지 말고 확인 List만 작성해 주세요.',
   ].join('\n');
@@ -351,7 +405,7 @@ function V39CustomerDataJudgmentFlow() {
   const selectedItemIds = result.selectedCustomerTypeIds;
   const selectedItems = selectedItemIds.map(getDataCheckItem);
   const dashboardBridge = useMemo(() => getDashboardBridge(), [result.updatedAt, result.selectedCustomerTypeIds.length]);
-  const extractedAiBuckets = useMemo(() => extractAiResultBuckets(result.rawAiSignalResult), [result.rawAiSignalResult]);
+  const extractedAiCards = useMemo(() => extractAiResultCards(result.rawAiSignalResult), [result.rawAiSignalResult]);
   const hasAiRawResult = result.rawAiSignalResult.trim().length > 0;
   const requiredDoneCount = [
     selectedItemIds.length >= 1,
@@ -487,17 +541,24 @@ function V39CustomerDataJudgmentFlow() {
         {hasAiRawResult && (
           <div className="mt-4 rounded-3xl border border-violet-100 bg-white p-4">
             <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 결과 1차 분리 정리</p>
-            <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
-            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">자동 분리는 참고용입니다. AI 표현을 그대로 확정하지 말고, 아래 Block 3에서 팀장 언어로 줄여 적으세요.</p>
-            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {extractedAiBuckets.map((bucket) => (
-                <div key={bucket.title} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-                  <p className="font-black text-slate-950">{bucket.title}</p>
-                  <p className="mt-1 text-slate-500">{bucket.description}</p>
-                  <div className="mt-2 space-y-1">
-                    {bucket.items.length > 0 ? bucket.items.map((item) => <p key={item} className="rounded-xl bg-white px-3 py-2">{item}</p>) : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-slate-400">AI 결과에서 해당 항목을 명확히 찾지 못했습니다. 필요한 문장을 직접 골라 Block 3에 정리하세요.</p>}
+            <h4 className="mt-1 text-base font-black text-slate-950">고객 Data 증거 카드별 분리</h4>
+            <p className="mt-2 text-xs font-bold leading-5 text-slate-600">붙여넣은 결과에서 고객 Data 증거 카드 제목을 먼저 찾고, 각 카드 안의 7개 항목을 다시 나눠 보여줍니다. 자동 분리는 참고용이며, AI 표현을 그대로 확정하지 말고 아래 Block 3에서 팀장 언어로 줄여 적으세요.</p>
+            <div className="mt-3 space-y-4">
+              {extractedAiCards.map((card, cardIndex) => (
+                <section key={`${card.cardTitle}-${cardIndex}`} className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
+                  <p className="text-sm font-black text-violet-950">고객 Data 증거 카드 {cardIndex + 1}. {card.cardTitle}</p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {card.buckets.map((bucket) => (
+                      <div key={`${card.cardTitle}-${bucket.title}`} className="rounded-2xl border border-white bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+                        <p className="font-black text-slate-950">{bucket.title}</p>
+                        <p className="mt-1 text-slate-500">{bucket.description}</p>
+                        <div className="mt-2 space-y-1">
+                          {bucket.items.length > 0 ? bucket.items.map((item) => <p key={item} className="rounded-xl bg-slate-50 px-3 py-2">{item}</p>) : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-slate-400">AI 결과에서 해당 항목을 명확히 찾지 못했습니다. 필요한 문장을 직접 골라 Block 3에 정리하세요.</p>}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                </section>
               ))}
             </div>
           </div>
