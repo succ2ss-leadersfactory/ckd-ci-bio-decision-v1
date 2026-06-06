@@ -26,6 +26,7 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '행동 블록 단위로 묶습니다',
   '확인할 기록은 하위 항목으로 표시합니다',
   '하위 bullet을 부모 행동 안에 묶습니다',
+  '행동 번호 블록 기준으로 분리합니다',
   '팀원 연결 기준',
   '실제 연결 후보',
   '위험·보완 조건',
@@ -75,9 +76,16 @@ type AiMapExtractedCard = {
   buckets: AiMapExtractedBucket[];
 };
 
+type AiActionDetailGroup = {
+  label: string;
+  values: string[];
+};
+
 type AiActionBlock = {
+  index: number;
   action: string;
-  details: string[];
+  notes: string[];
+  detailGroups: AiActionDetailGroup[];
 };
 
 const CUSTOMER_DIRECTION_ITEMS: CustomerDirectionItem[] = [
@@ -194,67 +202,97 @@ function compactList(items: string[], limit = 6) {
   return results;
 }
 
-function isActionStartLine(value: string) {
-  return /^(행동|실행)\s*\d+\s*[.)]?\s*/.test(value.trim());
+function cleanAiMapResultLine(value: string) {
+  return value
+    .replace(/^\s*#{1,6}\s*/, '')
+    .replace(/^\s*[-*•]\s*/, '')
+    .replace(/^\s*\d+[.)]\s*/, '')
+    .replace(/^\s*\|?\s*/, '')
+    .replace(/\*\*/g, '')
+    .trim();
 }
 
-function stripActionStart(value: string) {
-  return value.trim().replace(/^(행동|실행)\s*\d+\s*[.)]?\s*/, '').trim();
+function getActionStartMatch(value: string) {
+  return cleanAiMapResultLine(value).match(/^(?:행동|실행)\s*(\d+)\s*[.)]?\s*(.*)$/);
 }
 
 function getActionDetailMatch(value: string) {
-  return value.trim().match(/^(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*(.*)$/);
+  return cleanAiMapResultLine(value).match(/^(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*(.*)$/);
 }
 
-function isActionDetailLine(value: string) {
-  return Boolean(getActionDetailMatch(value));
+function ensureDetailGroup(block: AiActionBlock, label: string) {
+  let group = block.detailGroups.find((item) => item.label === label);
+  if (!group) {
+    group = { label, values: [] };
+    block.detailGroups.push(group);
+  }
+  return group;
 }
 
 function parseActionBlocks(actionItems: string[]): AiActionBlock[] {
+  const lines = actionItems.map(cleanAiMapResultLine).filter(Boolean);
+  const hasNumberedAction = lines.some((line) => Boolean(getActionStartMatch(line)));
+
+  if (!hasNumberedAction) {
+    return compactList(lines, 6).map((line, index) => ({
+      index: index + 1,
+      action: line,
+      notes: [],
+      detailGroups: [],
+    }));
+  }
+
   const blocks: AiActionBlock[] = [];
   let currentBlock: AiActionBlock | null = null;
   let currentDetailLabel = '';
 
-  for (const item of actionItems) {
-    const clean = item.trim();
-    if (!clean) continue;
-
-    if (isActionStartLine(clean)) {
-      const action = stripActionStart(clean) || clean;
-      currentBlock = { action, details: [] };
+  for (const line of lines) {
+    const actionMatch = getActionStartMatch(line);
+    if (actionMatch) {
+      const index = Number(actionMatch[1] || blocks.length + 1);
+      const action = actionMatch[2]?.trim() || `행동 ${index}`;
+      currentBlock = { index, action, notes: [], detailGroups: [] };
       blocks.push(currentBlock);
       currentDetailLabel = '';
       continue;
     }
 
-    const detailMatch = getActionDetailMatch(clean);
+    const detailMatch = getActionDetailMatch(line);
     if (detailMatch) {
       if (!currentBlock) {
-        currentBlock = { action: '실행 보조 정보 확인', details: [] };
+        currentBlock = { index: blocks.length + 1, action: '실행 보조 정보 확인', notes: [], detailGroups: [] };
         blocks.push(currentBlock);
       }
-      currentDetailLabel = detailMatch[1];
+      currentDetailLabel = detailMatch[1].trim();
       const detailValue = detailMatch[2]?.trim();
-      if (detailValue) currentBlock.details.push(`${currentDetailLabel}: ${detailValue}`);
+      const group = ensureDetailGroup(currentBlock, currentDetailLabel);
+      if (detailValue) group.values.push(detailValue);
       continue;
     }
 
     if (currentBlock && currentDetailLabel) {
-      currentBlock.details.push(`${currentDetailLabel}: ${clean}`);
+      ensureDetailGroup(currentBlock, currentDetailLabel).values.push(line);
       continue;
     }
 
-    currentBlock = { action: clean, details: [] };
-    blocks.push(currentBlock);
-    currentDetailLabel = '';
+    if (currentBlock) currentBlock.notes.push(line);
   }
 
   return blocks;
 }
 
 function summarizeActionBlock(block: AiActionBlock) {
-  const detailText = block.details.slice(0, 2).join(' · ');
-  return detailText ? `${block.action} (${detailText})` : block.action;
+  const detailText = block.detailGroups
+    .slice(0, 2)
+    .map((group) => {
+      const preview = compactList(group.values, 2).join(', ');
+      return preview ? `${group.label}: ${preview}` : group.label;
+    })
+    .join(' · ');
+
+  if (detailText) return `${block.action} (${detailText})`;
+  if (block.notes.length > 0) return `${block.action} (${compactList(block.notes, 2).join(', ')})`;
+  return block.action;
 }
 
 function buildCompactActionText(actionItems: string[], fallback: string) {
@@ -269,16 +307,6 @@ function buildCompactRiskText(parts: string[], fallback: string) {
   return compacted.length > 0 ? compacted.join('\n') : fallback;
 }
 
-function cleanAiMapResultLine(value: string) {
-  return value
-    .replace(/^#{1,6}\s*/, '')
-    .replace(/^[-*•]\s*/, '')
-    .replace(/^\d+[.)]\s*/, '')
-    .replace(/^\|?\s*/, '')
-    .replace(/\*\*/g, '')
-    .trim();
-}
-
 function lineMatchesMapBucketTitle(line: string, bucket: AiMapExtractionBucket) {
   const clean = cleanAiMapResultLine(line);
   return bucket.aliases.some((alias) => clean === alias || clean.startsWith(`${alias}:`) || clean.startsWith(`${alias}：`));
@@ -289,7 +317,7 @@ function lineMatchesAnotherMapBucketTitle(line: string, currentBucket: AiMapExtr
 }
 
 function normalizeAiMapCardTitle(line: string) {
-  const clean = line.replace(/^#{1,6}\s*/, '').replace(/\*\*/g, '').trim();
+  const clean = line.replace(/^\s*#{1,6}\s*/, '').replace(/\*\*/g, '').trim();
   const looksLikeCardHeading =
     /^고객군\/점검\s*조건\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
     /^고객군별\s*2주\s*실행\s*Map\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
@@ -696,7 +724,7 @@ function V39CustomerJudgmentBridgePanel() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
               <h4 className="mt-1 text-base font-black text-slate-950">AI가 찾은 고객군/점검 조건</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">항목별 긴 요약보다 고객군별 실행 카드로 봅니다. “확인할 기록”, “팀원 질문”, “남길 산출물”은 독립 행동이 아니라 해당 행동의 하위 항목으로 표시합니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">항목별 긴 요약보다 고객군별 실행 카드로 봅니다. “확인할 기록”, “팀원 질문”, “남길 산출물”, “실행 시점”은 독립 행동이 아니라 해당 행동의 하위 항목으로 표시합니다.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {extractedAiMapCards.map((card, cardIndex) => {
                   const actionBlocks = parseActionBlocks(getAiMapBucketItems(card, '이번 2주 행동'));
@@ -712,7 +740,7 @@ function V39CustomerJudgmentBridgePanel() {
             <div className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
               <p className="text-xs font-black uppercase tracking-wide text-violet-700">고객군별 2주 실행 카드</p>
               <h4 className="mt-1 text-base font-black text-slate-950">고객군별로 “이번 2주 행동”을 먼저 확인하세요</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 카드는 AI 초안을 고객군/점검 조건별로 나눈 것입니다. 행동 블록을 검토한 뒤, 연결된 카드만 “이 행동을 2주 대응 방향에 반영하기”로 옮길 수 있습니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 카드는 AI 초안을 고객군/점검 조건별로 나눈 것입니다. 행동 번호 블록을 검토한 뒤, 연결된 카드만 “이 행동을 2주 대응 방향에 반영하기”로 옮길 수 있습니다.</p>
               <div className="mt-3 grid gap-4 lg:grid-cols-2">
                 {extractedAiMapCards.map((card, cardIndex) => {
                   const actionItems = getAiMapBucketItems(card, '이번 2주 행동');
@@ -745,17 +773,25 @@ function V39CustomerJudgmentBridgePanel() {
 
                       <div className="mt-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
                         <p className="font-black text-emerald-950">이번 2주 행동</p>
-                        <p className="mt-1 text-emerald-800">행동 블록 단위로 묶습니다. 확인할 기록은 하위 항목으로 표시합니다.</p>
+                        <p className="mt-1 text-emerald-800">행동 번호 블록 기준으로 분리합니다. 확인할 기록은 하위 항목으로 표시합니다.</p>
                         <div className="mt-3 space-y-3">
-                          {actionBlocks.length > 0 ? actionBlocks.map((block, blockIndex) => (
-                            <div key={`${block.action}-${blockIndex}`} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3">
-                              <p className="font-black text-emerald-950">행동 {blockIndex + 1}</p>
+                          {actionBlocks.length > 0 ? actionBlocks.map((block) => (
+                            <div key={`${block.index}-${block.action}`} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3">
+                              <p className="font-black text-emerald-950">행동 {block.index}</p>
                               <p className="mt-1 text-slate-800">{block.action}</p>
-                              {block.details.length > 0 ? (
-                                <ul className="mt-2 space-y-1 text-slate-600">
-                                  {block.details.map((detail) => <li key={detail}>- {detail}</li>)}
+                              {block.notes.length > 0 ? (
+                                <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-600">
+                                  {block.notes.map((note, noteIndex) => <li key={`${block.index}-note-${noteIndex}`}>{note}</li>)}
                                 </ul>
                               ) : null}
+                              {block.detailGroups.map((group) => (
+                                <div key={`${block.index}-${group.label}`} className="mt-3 rounded-xl bg-emerald-50/70 px-3 py-2">
+                                  <p className="font-black text-emerald-800">{group.label}</p>
+                                  <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
+                                    {group.values.map((value, valueIndex) => <li key={`${block.index}-${group.label}-${valueIndex}`}>{value}</li>)}
+                                  </ul>
+                                </div>
+                              ))}
                             </div>
                           )) : <p className="text-emerald-500">AI 초안에서 아직 찾지 못했습니다.</p>}
                         </div>
