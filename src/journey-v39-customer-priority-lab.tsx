@@ -28,9 +28,10 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   'AI로 2주 실행 Map 초안 만들기',
   'AI 2주 실행 Map 프롬프트 복사',
   'AI 결과 1차 분리 정리',
-  '붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다',
   '고객군/점검 조건별 분리',
-  '여러 고객군/점검 조건의 항목을 묶어 보여줍니다',
+  '고객군별 2주 실행 카드',
+  '이번 2주 행동을 먼저 확인하세요',
+  '이 행동을 2주 대응 방향에 반영하기',
   'AI 결과 연결됨',
   'AI 결과에서 가져오기',
   '정보 보완 고객군',
@@ -244,35 +245,6 @@ function extractAiMapResultBucketsFromLines(lines: string[], limit = 20): AiMapE
   });
 }
 
-function extractAiMapResultBuckets(raw: string) {
-  const cards = extractAiMapResultCards(raw);
-  const hasCardContent = cards.some((card) => card.buckets.some((bucket) => bucket.items.length > 0));
-
-  if (hasCardContent) {
-    return AI_MAP_EXTRACTION_BUCKETS.map((bucket) => {
-      const items = cards.flatMap((card) => {
-        const matchedBucket = card.buckets.find((item) => item.title === bucket.title);
-        return (matchedBucket?.items ?? []).map((item) => `${card.cardTitle}: ${item}`);
-      });
-      return {
-        title: bucket.title,
-        description: bucket.description,
-        items: compactList(items, 4),
-      };
-    });
-  }
-
-  const lines = raw
-    .split(/\r?\n/)
-    .map(cleanAiMapResultLine)
-    .filter(Boolean);
-
-  return extractAiMapResultBucketsFromLines(lines, 4).map((bucket) => ({
-    ...bucket,
-    items: compactList(bucket.items, 4),
-  }));
-}
-
 function splitAiMapResultCards(raw: string) {
   const lines = raw
     .split(/\r?\n/)
@@ -319,10 +291,13 @@ function normalizeMatchText(value: string) {
     .trim();
 }
 
+function getAiMapBucketItems(card: AiMapExtractedCard | undefined, title: string) {
+  if (!card) return [];
+  return card.buckets.find((item) => item.title === title)?.items ?? [];
+}
+
 function getAiMapBucketText(card: AiMapExtractedCard | undefined, title: string) {
-  if (!card) return '';
-  const bucket = card.buckets.find((item) => item.title === title);
-  return bucket?.items.join('\n') ?? '';
+  return getAiMapBucketItems(card, title).join('\n');
 }
 
 function aiMapCardHasContent(card: AiMapExtractedCard | undefined) {
@@ -475,6 +450,11 @@ function buildTwoWeekMapPrompt(displayItems: CustomerDirectionItem[], decisions:
     '[요청]',
     '위 단서를 바탕으로 고객군별 2주 실행 Map 초안을 작성해 주세요.',
     '선택한 고객군 후보 또는 점검 조건별로 반드시 아래 제목과 항목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
+    '특히 ### 4. 이번 2주 행동은 4~6개로 구체화해 주세요.',
+    '- 각 행동은 “확인한다, 구분한다, 정리한다, 질문한다, 점검한다, 기록한다” 중심으로 작성합니다.',
+    '- 고객을 공략하거나 우선순위를 정하는 표현은 사용하지 않습니다.',
+    '- 각 행동에는 확인할 기록, 팀원 질문, 남길 산출물 중 하나 이상을 포함합니다.',
+    '- 가능한 경우 “다음 회의 전”, “1on1 전”, “2주 안에” 같은 실행 시점을 포함합니다.',
     '',
     '## 고객군/점검 조건 ① 카드명',
     '### 1. 고객군 후보 또는 점검 조건',
@@ -502,6 +482,17 @@ function SelectionChips({ title, items, empty }: { title: string; items: string[
   );
 }
 
+function CompactBucket({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+  return (
+    <div className="rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+      <p className="font-black text-slate-950">{title}</p>
+      <ul className="mt-1 space-y-1">
+        {items.length > 0 ? items.slice(0, 3).map((item) => <li key={item}>• {item}</li>) : <li className="text-slate-400">{empty}</li>}
+      </ul>
+    </div>
+  );
+}
+
 function V39CustomerJudgmentBridgePanel() {
   const [sourceResult, setSourceResult] = useState<V39CustomerJudgmentResult>(loadSourceJudgmentResult);
   const [decisions, setDecisions] = useState<Record<string, V39CustomerDecisionResult>>(() => loadBridgeDecisions(sourceResult));
@@ -513,7 +504,6 @@ function V39CustomerJudgmentBridgePanel() {
   const savedStrategyCount = displayItems.filter((item) => strategies[item.id]?.strategy?.trim()).length;
   const savedMemberConnectionCount = displayItems.filter((item) => strategies[item.id]?.memberRole?.trim()).length;
   const twoWeekMapPrompt = buildTwoWeekMapPrompt(displayItems, decisions);
-  const extractedAiMapBuckets = useMemo(() => extractAiMapResultBuckets(aiMapDraft), [aiMapDraft]);
   const extractedAiMapCards = useMemo(() => extractAiMapResultCards(aiMapDraft), [aiMapDraft]);
   const hasAiMapDraft = aiMapDraft.trim().length > 0;
 
@@ -588,9 +578,9 @@ function V39CustomerJudgmentBridgePanel() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI로 2주 실행 Map 초안 만들기</p>
-            <h3 className="mt-1 text-lg font-black text-slate-950">AI가 정답을 정하지 않고, 수정 가능한 초안만 만듭니다</h3>
+            <h3 className="mt-1 text-lg font-black text-slate-950">고객군별 2주 실행 카드를 만듭니다</h3>
             <p className="mt-2 max-w-3xl text-xs font-bold leading-5 text-slate-600">
-              6단계 단서를 고객군 후보, 점검 조건, 2주 행동, 팀원 확인 질문, 안전선, 다음 회의 확인 포인트로 정리합니다. 고객 우선순위·등급·처방 가능성 판단은 사용하지 않습니다.
+              6단계 단서를 고객군 후보, 점검 조건, 2주 행동, 팀원 확인 질문, 안전선, 다음 회의 확인 포인트로 정리합니다. 핵심은 “이번 2주 행동”이며, 고객 우선순위·등급·처방 가능성 판단은 사용하지 않습니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl bg-sky-700 px-4 py-3 text-xs font-black text-white shadow-sm" onClick={copyTwoWeekMapPrompt}>{aiMapPromptCopied ? '프롬프트 복사 완료' : 'AI 2주 실행 Map 프롬프트 복사'}</button>
@@ -602,46 +592,78 @@ function V39CustomerJudgmentBridgePanel() {
             className="min-h-28 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6"
             value={aiMapDraft}
             onChange={(event) => setAiMapDraft(event.target.value)}
-            placeholder="AI가 만든 2주 실행 Map 초안을 붙여넣으세요. 아래 카드에서 팀장 언어로 줄여 최종 수정합니다."
+            placeholder="AI가 만든 2주 실행 Map 초안을 붙여넣으세요. 아래 고객군별 실행 카드에서 이번 2주 행동을 먼저 확인합니다."
           />
         </label>
         {hasAiMapDraft ? (
           <section className="mt-3 space-y-3 rounded-3xl border border-sky-100 bg-sky-50 p-4">
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
-              <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 항목 제목과 본문 문장을 구분해서 읽고, 본문 bullet을 새 카드 제목으로 오해하지 않습니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
-              <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                {extractedAiMapBuckets.map((bucket) => (
-                  <div key={bucket.title} className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
-                    <p className="font-black text-slate-950">{bucket.title}</p>
-                    <p className="mt-1 text-slate-500">{bucket.description}</p>
-                    <ul className="mt-2 space-y-1">
-                      {bucket.items.length > 0 ? bucket.items.map((item) => <li key={item}>• {item}</li>) : <li className="text-slate-400">AI 초안에서 아직 찾지 못했습니다.</li>}
-                    </ul>
-                  </div>
-                ))}
+              <h4 className="mt-1 text-base font-black text-slate-950">AI가 찾은 고객군/점검 조건</h4>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">항목별 긴 요약보다 고객군별 실행 카드로 봅니다. 본문 bullet을 새 카드 제목으로 오해하지 않고, 아래 카드에서 “이번 2주 행동”을 먼저 확인합니다.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {extractedAiMapCards.map((card, cardIndex) => {
+                  const actionCount = getAiMapBucketItems(card, '이번 2주 행동').length;
+                  return (
+                    <span key={`${card.cardTitle}-${cardIndex}`} className="rounded-full bg-white px-3 py-2 text-xs font-black text-sky-800 shadow-sm">
+                      {cardIndex + 1}. {card.cardTitle} · 행동 {actionCount}개
+                    </span>
+                  );
+                })}
               </div>
             </div>
 
             <div className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
-              <p className="text-xs font-black uppercase tracking-wide text-violet-700">고객군/점검 조건별 분리</p>
-              <h4 className="mt-1 text-base font-black text-slate-950">선택한 카드별로 AI 초안을 나누어 봅니다</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래에서 연결된 카드만 “AI 결과에서 가져오기”로 입력칸에 옮길 수 있습니다. 연결되지 않으면 기본 초안을 사용합니다.</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {extractedAiMapCards.map((card, cardIndex) => (
-                  <section key={`${card.cardTitle}-${cardIndex}`} className="rounded-2xl border border-white bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
-                    <p className="font-black text-slate-950">{cardIndex + 1}. {card.cardTitle}</p>
-                    <div className="mt-2 space-y-2">
-                      {card.buckets.map((bucket) => (
-                        <div key={`${card.cardTitle}-${bucket.title}`} className="rounded-xl bg-slate-50 px-3 py-2">
-                          <p className="font-black text-slate-700">{bucket.title}</p>
-                          <p className="mt-1 text-slate-500">{bucket.items[0] || 'AI 초안에서 아직 찾지 못했습니다.'}</p>
+              <p className="text-xs font-black uppercase tracking-wide text-violet-700">고객군별 2주 실행 카드</p>
+              <h4 className="mt-1 text-base font-black text-slate-950">고객군별로 “이번 2주 행동”을 먼저 확인하세요</h4>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 카드는 AI 초안을 고객군/점검 조건별로 나눈 것입니다. 실행 행동을 검토한 뒤, 연결된 카드만 “이 행동을 2주 대응 방향에 반영하기”로 옮길 수 있습니다.</p>
+              <div className="mt-3 grid gap-4 lg:grid-cols-2">
+                {extractedAiMapCards.map((card, cardIndex) => {
+                  const actionItems = getAiMapBucketItems(card, '이번 2주 행동');
+                  const clueItems = getAiMapBucketItems(card, '확인된 단서');
+                  const missingItems = getAiMapBucketItems(card, '아직 부족한 정보');
+                  const questionItems = getAiMapBucketItems(card, '팀원에게 확인할 질문');
+                  const safetyItems = getAiMapBucketItems(card, '표현·자료 안전선');
+                  const meetingItems = getAiMapBucketItems(card, '다음 회의에서 확인할 것');
+                  const matchedItem = displayItems.find((candidate) => textMatchesDirectionItem(card.cardTitle, candidate))
+                    ?? displayItems.find((candidate) => textMatchesDirectionItem(getAiMapBucketText(card, '고객군 후보 또는 점검 조건'), candidate));
+                  const matchedDecision = matchedItem ? decisions[matchedItem.id] ?? normalizeV39CustomerDecisionResult(undefined, matchedItem.id, matchedItem.label) : undefined;
+
+                  return (
+                    <section key={`${card.cardTitle}-${cardIndex}`} className="rounded-3xl border border-white bg-white p-4 text-xs font-bold leading-5 text-slate-700 shadow-sm">
+                      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <p className="text-sm font-black text-slate-950">{cardIndex + 1}. {card.cardTitle}</p>
+                          <p className={`mt-1 text-xs font-black ${matchedItem ? 'text-emerald-700' : 'text-amber-700'}`}>{matchedItem ? `AI 결과 연결됨: ${matchedItem.label}` : '연결된 앱 카드가 없어 검토용으로만 표시됩니다.'}</p>
                         </div>
-                      ))}
-                    </div>
-                  </section>
-                ))}
+                        <button
+                          type="button"
+                          disabled={!matchedItem || !matchedDecision}
+                          className={`rounded-2xl px-4 py-2 text-xs font-black shadow-sm ${matchedItem ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-400'}`}
+                          onClick={() => matchedItem && matchedDecision ? applyDirectionDraft(matchedItem, matchedDecision, card) : undefined}
+                        >
+                          이 행동을 2주 대응 방향에 반영하기
+                        </button>
+                      </div>
+
+                      <div className="mt-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
+                        <p className="font-black text-emerald-950">이번 2주 행동</p>
+                        <p className="mt-1 text-emerald-800">확정 지시가 아니라 팀장이 수정할 실행 가설입니다.</p>
+                        <ol className="mt-3 space-y-2 pl-4 list-decimal">
+                          {actionItems.length > 0 ? actionItems.map((item) => <li key={item}>{item}</li>) : <li className="text-emerald-500">AI 초안에서 아직 찾지 못했습니다.</li>}
+                        </ol>
+                      </div>
+
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <CompactBucket title="확인된 단서" items={clueItems} empty="AI 초안에서 아직 찾지 못했습니다." />
+                        <CompactBucket title="아직 부족한 정보" items={missingItems} empty="AI 초안에서 아직 찾지 못했습니다." />
+                        <CompactBucket title="팀원에게 확인할 질문" items={questionItems} empty="AI 초안에서 아직 찾지 못했습니다." />
+                        <CompactBucket title="표현·자료 안전선" items={safetyItems} empty="AI 초안에서 아직 찾지 못했습니다." />
+                        <div className="md:col-span-2"><CompactBucket title="다음 회의에서 확인할 것" items={meetingItems} empty="AI 초안에서 아직 찾지 못했습니다." /></div>
+                      </div>
+                    </section>
+                  );
+                })}
               </div>
             </div>
           </section>
