@@ -23,6 +23,8 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '2주 대응 방향',
   '이번 2주 실행 행동',
   'AI 핵심 행동 3~4개 압축',
+  '행동 블록 단위로 묶습니다',
+  '확인할 기록은 하위 항목으로 표시합니다',
   '팀원 연결 기준',
   '실제 연결 후보',
   '위험·보완 조건',
@@ -70,6 +72,11 @@ type AiMapExtractedBucket = {
 type AiMapExtractedCard = {
   cardTitle: string;
   buckets: AiMapExtractedBucket[];
+};
+
+type AiActionBlock = {
+  action: string;
+  details: string[];
 };
 
 const CUSTOMER_DIRECTION_ITEMS: CustomerDirectionItem[] = [
@@ -186,8 +193,39 @@ function compactList(items: string[], limit = 6) {
   return results;
 }
 
+function isActionDetailLine(value: string) {
+  return /^(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/.test(value.trim());
+}
+
+function parseActionBlocks(actionItems: string[]): AiActionBlock[] {
+  const blocks: AiActionBlock[] = [];
+  let currentBlock: AiActionBlock | null = null;
+
+  for (const item of actionItems) {
+    const clean = item.trim();
+    if (!clean) continue;
+
+    if (isActionDetailLine(clean)) {
+      if (currentBlock) currentBlock.details.push(clean);
+      else blocks.push({ action: clean, details: [] });
+      continue;
+    }
+
+    currentBlock = { action: clean, details: [] };
+    blocks.push(currentBlock);
+  }
+
+  return blocks;
+}
+
+function summarizeActionBlock(block: AiActionBlock) {
+  const detailText = block.details.slice(0, 2).join(' · ');
+  return detailText ? `${block.action} (${detailText})` : block.action;
+}
+
 function buildCompactActionText(actionItems: string[], fallback: string) {
-  const compacted = compactList(actionItems, 4);
+  const blocks = parseActionBlocks(actionItems);
+  const compacted = compactList(blocks.map(summarizeActionBlock), 4);
   return compacted.length > 0 ? compacted.join('\n') : fallback;
 }
 
@@ -473,10 +511,11 @@ function buildTwoWeekMapPrompt(displayItems: CustomerDirectionItem[], decisions:
     '[요청]',
     '위 단서를 바탕으로 고객군별 2주 실행 Map 초안을 작성해 주세요.',
     '선택한 고객군 후보 또는 점검 조건별로 반드시 아래 제목과 항목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
-    '특히 ### 4. 이번 2주 행동은 4~6개로 구체화해 주세요.',
+    '특히 ### 4. 이번 2주 행동은 3~4개의 행동 블록으로 작성해 주세요.',
     '- 각 행동은 “확인한다, 구분한다, 정리한다, 질문한다, 점검한다, 기록한다” 중심으로 작성합니다.',
     '- 고객을 공략하거나 우선순위를 정하는 표현은 사용하지 않습니다.',
-    '- 각 행동에는 확인할 기록, 팀원 질문, 남길 산출물 중 하나 이상을 포함합니다.',
+    '- 각 행동 아래에는 필요한 경우 “확인할 기록:”, “팀원 질문:”, “남길 산출물:”을 하위 항목으로 붙입니다.',
+    '- 하위 항목은 독립 행동이 아니라 해당 행동을 실행하기 위한 보조 정보로 작성합니다.',
     '- 가능한 경우 “다음 회의 전”, “1on1 전”, “2주 안에” 같은 실행 시점을 포함합니다.',
     '',
     '## 고객군/점검 조건 ① 카드명',
@@ -623,13 +662,13 @@ function V39CustomerJudgmentBridgePanel() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
               <h4 className="mt-1 text-base font-black text-slate-950">AI가 찾은 고객군/점검 조건</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">항목별 긴 요약보다 고객군별 실행 카드로 봅니다. 본문 bullet을 새 카드 제목으로 오해하지 않고, 아래 카드에서 “이번 2주 행동”을 먼저 확인합니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">항목별 긴 요약보다 고객군별 실행 카드로 봅니다. “확인할 기록”, “팀원 질문”, “남길 산출물”은 독립 행동이 아니라 해당 행동의 하위 항목으로 표시합니다.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {extractedAiMapCards.map((card, cardIndex) => {
-                  const actionCount = getAiMapBucketItems(card, '이번 2주 행동').length;
+                  const actionBlocks = parseActionBlocks(getAiMapBucketItems(card, '이번 2주 행동'));
                   return (
                     <span key={`${card.cardTitle}-${cardIndex}`} className="rounded-full bg-white px-3 py-2 text-xs font-black text-sky-800 shadow-sm">
-                      {cardIndex + 1}. {card.cardTitle} · 행동 {actionCount}개
+                      {cardIndex + 1}. {card.cardTitle} · 행동 {actionBlocks.length}개
                     </span>
                   );
                 })}
@@ -639,10 +678,11 @@ function V39CustomerJudgmentBridgePanel() {
             <div className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
               <p className="text-xs font-black uppercase tracking-wide text-violet-700">고객군별 2주 실행 카드</p>
               <h4 className="mt-1 text-base font-black text-slate-950">고객군별로 “이번 2주 행동”을 먼저 확인하세요</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 카드는 AI 초안을 고객군/점검 조건별로 나눈 것입니다. 실행 행동을 검토한 뒤, 연결된 카드만 “이 행동을 2주 대응 방향에 반영하기”로 옮길 수 있습니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">아래 카드는 AI 초안을 고객군/점검 조건별로 나눈 것입니다. 행동 블록을 검토한 뒤, 연결된 카드만 “이 행동을 2주 대응 방향에 반영하기”로 옮길 수 있습니다.</p>
               <div className="mt-3 grid gap-4 lg:grid-cols-2">
                 {extractedAiMapCards.map((card, cardIndex) => {
                   const actionItems = getAiMapBucketItems(card, '이번 2주 행동');
+                  const actionBlocks = parseActionBlocks(actionItems);
                   const clueItems = getAiMapBucketItems(card, '확인된 단서');
                   const missingItems = getAiMapBucketItems(card, '아직 부족한 정보');
                   const questionItems = getAiMapBucketItems(card, '팀원에게 확인할 질문');
@@ -671,10 +711,20 @@ function V39CustomerJudgmentBridgePanel() {
 
                       <div className="mt-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
                         <p className="font-black text-emerald-950">이번 2주 행동</p>
-                        <p className="mt-1 text-emerald-800">확정 지시가 아니라 팀장이 수정할 실행 가설입니다.</p>
-                        <ol className="mt-3 space-y-2 pl-4 list-decimal">
-                          {actionItems.length > 0 ? actionItems.map((item) => <li key={item}>{item}</li>) : <li className="text-emerald-500">AI 초안에서 아직 찾지 못했습니다.</li>}
-                        </ol>
+                        <p className="mt-1 text-emerald-800">행동 블록 단위로 묶습니다. 확인할 기록은 하위 항목으로 표시합니다.</p>
+                        <div className="mt-3 space-y-3">
+                          {actionBlocks.length > 0 ? actionBlocks.map((block, blockIndex) => (
+                            <div key={`${block.action}-${blockIndex}`} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3">
+                              <p className="font-black text-emerald-950">행동 {blockIndex + 1}</p>
+                              <p className="mt-1 text-slate-800">{block.action}</p>
+                              {block.details.length > 0 ? (
+                                <ul className="mt-2 space-y-1 text-slate-600">
+                                  {block.details.map((detail) => <li key={detail}>- {detail}</li>)}
+                                </ul>
+                              ) : null}
+                            </div>
+                          )) : <p className="text-emerald-500">AI 초안에서 아직 찾지 못했습니다.</p>}
+                        </div>
                       </div>
 
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
