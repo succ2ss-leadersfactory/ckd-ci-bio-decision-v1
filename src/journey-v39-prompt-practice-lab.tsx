@@ -21,6 +21,8 @@ const V39_PROMPT_PRACTICE_SMOKE_MARKERS = [
   '후속 단계 연결 힌트',
   '상황 설명',
   '4단계 AI 전략 리서치로 넘길 질문',
+  '아직 선택한 고민이 없습니다',
+  'Block 1 선택한 고민 요약',
 ].join('|');
 void V39_PROMPT_PRACTICE_SMOKE_MARKERS;
 
@@ -252,13 +254,13 @@ const REVIEW_ITEMS = [
 ];
 
 const DEFAULT_RESPONSE: PromptPracticeResponse = {
-  concernId: CONCERN_OPTIONS[0].id,
+  concernId: '',
   customConcern: '',
-  plainQuestion: CONCERN_OPTIONS[0].plainQuestion,
+  plainQuestion: '',
   roleId: ROLE_OPTIONS[0].id,
   customRole: '',
-  context: CONCERN_OPTIONS[0].context,
-  task: CONCERN_OPTIONS[0].task,
+  context: '',
+  task: '',
   format: DEFAULT_FORMAT,
   aiPlainAnswer: '',
   aiStructuredAnswer: '',
@@ -286,8 +288,12 @@ function TextArea({ value, onChange, placeholder }: { value: string; onChange: (
   return <textarea className="min-h-24 w-full rounded-xl border px-3 py-2 text-sm leading-6" value={value ?? ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />;
 }
 
+function getSelectedConcern(id: string) {
+  return CONCERN_OPTIONS.find((item) => item.id === id);
+}
+
 function getConcern(id: string) {
-  return CONCERN_OPTIONS.find((item) => item.id === id) ?? CONCERN_OPTIONS[0];
+  return getSelectedConcern(id) ?? CONCERN_OPTIONS[0];
 }
 
 function getConcernGroup(groupId: ConcernGroupId) {
@@ -300,14 +306,41 @@ function getRole(response: PromptPracticeResponse) {
 }
 
 function buildStructuredPrompt(response: PromptPracticeResponse) {
-  const concern = getConcern(response.concernId);
-  return `역할:\n${getRole(response)}\n\n맥락:\n${response.context.trim() || concern.context}\n\n지시/과제:\n${response.task.trim() || concern.task}\n\n후속 단계 연결 힌트:\n${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}\n\n형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
+  const concern = getSelectedConcern(response.concernId);
+  const concernLabel = response.customConcern.trim() || concern?.label || '아직 우리 팀 고민을 선택하지 않았습니다.';
+  const context = response.context.trim() || concern?.context || '아직 구체적인 팀 상황을 입력하지 않았습니다. 먼저 우리 팀에 가까운 고민을 선택하거나 직접 입력해 주세요.';
+  const task = response.task.trim() || concern?.task || '위 상황에서 팀장이 먼저 확인해야 할 질문과 다음 단계로 넘길 실행 기준을 정리해 주세요.';
+  const downstreamHint = concern ? `${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}` : '우리 팀 고민을 선택하면 후속 단계 연결 힌트가 표시됩니다.';
+
+  return `역할:\n${getRole(response)}\n\n우리 팀 고민:\n${concernLabel}\n\n맥락:\n${context}\n\n지시/과제:\n${task}\n\n후속 단계 연결 힌트:\n${downstreamHint}\n\n형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
 }
 
 function buildOutput(response: PromptPracticeResponse, prompt: string) {
-  const concern = getConcern(response.concernId);
-  const group = getConcernGroup(concern.groupId);
-  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || concern.label}\n\n[고민 그룹]\n${group.title}\n\n[상황 설명]\n${concern.situationSummary}\n\n[일반 질문]\n${response.plainQuestion}\n\n[구조화 프롬프트]\n${prompt}\n\n[후속 단계 연결 힌트]\n${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
+  const concern = getSelectedConcern(response.concernId);
+  const group = concern ? getConcernGroup(concern.groupId) : undefined;
+  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || concern?.label || '아직 선택한 고민 없음'}\n\n[고민 그룹]\n${group?.title || '아직 선택한 고민 없음'}\n\n[상황 설명]\n${concern?.situationSummary || '-'}\n\n[일반 질문]\n${response.plainQuestion || '-'}\n\n[구조화 프롬프트]\n${prompt}\n\n[후속 단계 연결 힌트]\n${concern ? `${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}` : '아직 선택한 고민 없음'}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
+}
+
+function SelectedConcernSummary({ concern, group, customConcern, emptyMode = 'compact' }: { concern?: ConcernOption; group?: { id: ConcernGroupId; title: string; description: string }; customConcern: string; emptyMode?: 'compact' | 'block' }) {
+  const custom = customConcern.trim();
+
+  if (!concern && !custom) {
+    return (
+      <div className={`rounded-2xl border border-slate-200 bg-slate-50 p-3 ${emptyMode === 'block' ? 'text-sm' : 'text-xs'} font-bold leading-5 text-slate-600`}>
+        <p className="font-black text-slate-900">아직 선택한 고민이 없습니다.</p>
+        <p className="mt-1">위 Block 0에서 우리 팀에 가장 가까운 고민을 하나 고르면, 이곳에 선택한 고민과 이후 단계 연결 방향이 표시됩니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`rounded-2xl border border-cyan-200 bg-cyan-50 p-3 ${emptyMode === 'block' ? 'text-sm' : 'text-xs'} font-bold leading-5 text-cyan-950`}>
+      <p className="font-black">선택한 고민: {custom || concern?.label}</p>
+      {concern ? <p className="mt-1">상황 설명: {concern.situationSummary}</p> : <p className="mt-1">직접 입력한 고민입니다. 필요하면 위 카드 중 가장 가까운 상황도 함께 선택하세요.</p>}
+      {concern ? <p className="mt-2">후속 연결: {concern.downstreamHint}</p> : null}
+      {group ? <p className="mt-1 text-cyan-800">이 고민은 {group.title.replace(/^[A-C]\.\s*/, '')}에 속합니다.</p> : null}
+    </div>
+  );
 }
 
 export function V39PromptPracticeLab() {
@@ -316,8 +349,8 @@ export function V39PromptPracticeLab() {
   const [copyMessage, setCopyMessage] = useState('');
   const structuredPrompt = useMemo(() => response.finalPrompt || buildStructuredPrompt(response), [response]);
   const checkedCount = REVIEW_ITEMS.filter((item) => response.reviewChecks[item]).length;
-  const selectedConcern = getConcern(response.concernId);
-  const selectedGroup = getConcernGroup(selectedConcern.groupId);
+  const selectedConcern = getSelectedConcern(response.concernId);
+  const selectedGroup = selectedConcern ? getConcernGroup(selectedConcern.groupId) : undefined;
 
   const update = (patch: Partial<PromptPracticeResponse>) => {
     setResponse({ ...response, ...patch, savedAt: new Date().toISOString() });
@@ -378,12 +411,7 @@ export function V39PromptPracticeLab() {
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
           아래 카드는 과정 설명이 아니라 현업 상황 예시입니다. 먼저 “우리 팀 이야기 같다”는 상황을 고르고, 선택 후 요약 박스에서만 이후 단계 연결을 확인합니다.
         </div>
-        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">
-          <p className="font-black">현재 선택한 고민: {selectedConcern.label}</p>
-          <p className="mt-1">상황 설명: {selectedConcern.situationSummary}</p>
-          <p className="mt-2">후속 연결: {selectedConcern.downstreamHint}</p>
-          <p className="mt-1 text-cyan-800">이 고민은 {selectedGroup.title.replace(/^[A-C]\.\s*/, '')}에 속합니다.</p>
-        </div>
+        <SelectedConcernSummary concern={selectedConcern} group={selectedGroup} customConcern={response.customConcern} />
         <div className="space-y-4">
           {CONCERN_GROUPS.map((group) => {
             const groupConcerns = CONCERN_OPTIONS.filter((item) => item.groupId === group.id);
@@ -412,8 +440,9 @@ export function V39PromptPracticeLab() {
       </SectionCard>
 
       <SectionCard title="Block 1. 일반 질문으로 먼저 물어보기">
+        <SelectedConcernSummary concern={selectedConcern} group={selectedGroup} customConcern={response.customConcern} emptyMode="block" />
         <p className="text-sm font-bold leading-6 text-slate-600">먼저 평소처럼 짧게 물어봅니다. 이 답변은 대체로 맞는 말이지만, 우리 팀 상황에 바로 쓰기에는 밋밋할 수 있습니다.</p>
-        <label className="block space-y-1"><FieldLabel>일반 질문</FieldLabel><TextArea value={response.plainQuestion} onChange={(value) => update({ plainQuestion: value })} /></label>
+        <label className="block space-y-1"><FieldLabel>일반 질문</FieldLabel><TextArea value={response.plainQuestion} onChange={(value) => update({ plainQuestion: value })} placeholder="위에서 고민을 선택하면 일반 질문 예시가 자동으로 들어옵니다." /></label>
         <button type="button" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(response.plainQuestion, '일반 질문')}>일반 질문 복사</button>
         <label className="block space-y-1"><FieldLabel>일반 질문에 대한 AI 답변 붙여넣기</FieldLabel><TextArea value={response.aiPlainAnswer} onChange={(value) => update({ aiPlainAnswer: value })} placeholder="AI 답변을 붙여넣고, 답변이 왜 일반론처럼 느껴지는지 확인합니다." /></label>
       </SectionCard>
@@ -425,8 +454,8 @@ export function V39PromptPracticeLab() {
         </div>
         <label className="block space-y-1"><FieldLabel>역할 선택</FieldLabel><select className="w-full rounded-xl border bg-white px-3 py-2 text-sm" value={response.roleId} onChange={(event) => update({ roleId: event.target.value, finalPrompt: '' })}>{ROLE_OPTIONS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.useWhen}</option>)}</select></label>
         <label className="block space-y-1"><FieldLabel>역할 직접 수정</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customRole} onChange={(event) => update({ customRole: event.target.value, finalPrompt: '' })} placeholder={ROLE_OPTIONS[0].promptText} /></label>
-        <label className="block space-y-1"><FieldLabel>맥락: 지금 우리 팀에 무슨 일이 벌어졌는가</FieldLabel><TextArea value={response.context} onChange={(value) => update({ context: value, finalPrompt: '' })} /></label>
-        <label className="block space-y-1"><FieldLabel>지시/과제: AI에게 무엇을 해달라고 할 것인가</FieldLabel><TextArea value={response.task} onChange={(value) => update({ task: value, finalPrompt: '' })} /></label>
+        <label className="block space-y-1"><FieldLabel>맥락: 지금 우리 팀에 무슨 일이 벌어졌는가</FieldLabel><TextArea value={response.context} onChange={(value) => update({ context: value, finalPrompt: '' })} placeholder="고민을 선택하면 상황 맥락이 자동으로 들어옵니다." /></label>
+        <label className="block space-y-1"><FieldLabel>지시/과제: AI에게 무엇을 해달라고 할 것인가</FieldLabel><TextArea value={response.task} onChange={(value) => update({ task: value, finalPrompt: '' })} placeholder="고민을 선택하면 AI에게 요청할 과제가 자동으로 들어옵니다." /></label>
         <label className="block space-y-1"><FieldLabel>형식: 어떤 모양으로 받을 것인가</FieldLabel><TextArea value={response.format} onChange={(value) => update({ format: value, finalPrompt: '' })} /></label>
       </SectionCard>
 
@@ -445,8 +474,14 @@ export function V39PromptPracticeLab() {
         </div>
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-xs font-bold leading-5 text-cyan-950">
           <p className="font-black">후속 단계 연결 힌트</p>
-          <p className="mt-1">{selectedConcern.downstreamHint}</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">{selectedConcern.downstreamSteps.map((step) => <li key={step}>{step}</li>)}</ul>
+          {selectedConcern ? (
+            <>
+              <p className="mt-1">{selectedConcern.downstreamHint}</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">{selectedConcern.downstreamSteps.map((step) => <li key={step}>{step}</li>)}</ul>
+            </>
+          ) : (
+            <p className="mt-1">우리 팀 고민을 선택하면 후속 단계 연결 방향이 표시됩니다.</p>
+          )}
         </div>
         <div className="grid gap-2 md:grid-cols-2">{REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm font-bold leading-5"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
         <div className="rounded-xl bg-slate-50 p-3 text-sm font-bold text-slate-700">점검 완료: {checkedCount} / {REVIEW_ITEMS.length}</div>
