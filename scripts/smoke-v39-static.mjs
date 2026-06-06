@@ -33,11 +33,14 @@ const files = {
   storage: read('src/journey-storage.ts'),
   promptPractice: read('src/journey-v39-prompt-practice-lab.tsx'),
   researchStrategy: read('src/journey-v39-research-strategy-lab.tsx'),
+  dashboardStore: read('src/journey-v39-dashboard-result-store.ts'),
   dashboardUx: read('src/journey-v39-dashboard-analysis-ux-lab.tsx'),
+  customerJudgmentStore: read('src/journey-v39-customer-judgment-result-store.ts'),
   customerJudgment: read('src/journey-v39-customer-judgment-lab.tsx'),
   customerJudgmentUx: read('src/journey-v39-customer-judgment-ux-lab.tsx'),
   customerPriority: read('src/journey-v39-customer-priority-lab.tsx'),
   customerPriorityUx: read('src/journey-v39-customer-priority-ux-lab.tsx'),
+  customerStrategyStore: read('src/journey-v39-customer-strategy-result-store.ts'),
   memberRoleUx: read('src/journey-v39-member-role-ux-lab.tsx'),
   teamSevenCoaching: read('src/journey-v39-team-seven-coaching-map.tsx'),
   teamSevenProfiles: read('src/journey-v39-team-seven-coaching-profiles.ts'),
@@ -63,6 +66,12 @@ for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 �
 for (const marker of ['V39PreviewApp', 'V39PromptPracticeLab', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab', 'removeStoredPrefix']) mustInclude(files.app, marker, 'app route');
 for (const marker of ["removeStoredPrefix('ckd.v39.')", 'v39 full storage reset removeStoredPrefix']) mustInclude(files.app, marker, 'v39 reset all storage');
 for (const marker of ['canUseLocalStorage', 'removeStoredPrefix', 'Storage quota, private-mode, or JSON serialization errors should not break the learning flow']) mustInclude(files.storage, marker, 'storage hardening');
+for (const marker of ['getJson', 'setJson', 'removeStoredPrefix']) mustInclude(files.dashboardStore, marker, 'dashboard safe storage');
+for (const marker of ['window.localStorage.setItem', 'window.localStorage.getItem', 'window.localStorage.removeItem']) mustNotInclude(files.dashboardStore, marker, 'dashboard direct localStorage');
+for (const marker of ['getJson', 'setJson', 'removeStoredPrefix']) mustInclude(files.customerJudgmentStore, marker, 'customer judgment safe storage');
+for (const marker of ['window.localStorage.setItem', 'window.localStorage.getItem', 'window.localStorage.removeItem']) mustNotInclude(files.customerJudgmentStore, marker, 'customer judgment direct localStorage');
+for (const marker of ['getJson', 'setJson', 'removeStoredPrefix']) mustInclude(files.customerStrategyStore, marker, 'customer strategy safe storage');
+for (const marker of ['window.localStorage.setItem', 'window.localStorage.getItem', 'window.localStorage.removeItem']) mustNotInclude(files.customerStrategyStore, marker, 'customer strategy direct localStorage');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', '코칭 대상 선정']) mustInclude(files.config, marker, 'v39 config');
 
 for (const marker of [
