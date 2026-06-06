@@ -5,7 +5,7 @@ import { JourneyShell } from './journey-shell';
 import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { useStored } from './journey-storage';
 import { V39AiCallPlanGuidedUxLab } from './journey-v39-ai-call-plan-guided-ux-lab';
-import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-lab';
+import { V39ComplianceCleanupUxLab } from './journey-v39-compliance-cleanup-ux-lab';
 import { V39CustomerJudgmentUxLab } from './journey-v39-customer-judgment-ux-lab';
 import { V39CustomerPriorityUxLab } from './journey-v39-customer-priority-ux-lab';
 import { V39DashboardAnalysisUxLab } from './journey-v39-dashboard-analysis-ux-lab';
