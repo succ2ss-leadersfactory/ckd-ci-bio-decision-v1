@@ -5,6 +5,7 @@ const V39_PREVIEW_CONFIG_SMOKE_MARKERS = [
   'AI 전략 리서치',
   '고객 Data 확인 List',
   '고객군별 2주 대응 방향',
+  '코칭 대상 선정',
   'AI 실행계획 Prompt',
   '컴플라이언스 위험 표현 제거',
   '최종 2주 실행 카드',
