@@ -6,7 +6,7 @@ const V39_PROMPT_PRACTICE_SMOKE_MARKERS = [
   'V39PromptPracticeLab',
   '일반 질문과 구조화 질문의 차이',
   '우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기',
-  '역할·맥락·지시/과제·형식',
+  '역할·맥락·요청·출력 형식',
   'AI 없이도 할 수 있습니다',
   'AI를 쓰면 좋아지는 점',
   '제약영업 현장을 오래 해본 선배 팀장',
@@ -17,8 +17,13 @@ const V39_PROMPT_PRACTICE_SMOKE_MARKERS = [
   '고객 Data와 실행 신호 고민',
   '팀원 실행과 대화 고민',
   'AI 활용과 실행계획 고민',
-  '후속 연결',
-  '후속 단계 연결 힌트',
+  '결과 활용 목적',
+  'AI 답변 1차 분리 정리',
+  '[원인 가설]',
+  '[팀장이 확인할 질문]',
+  '[2주 관리 지표 후보]',
+  '[조심할 해석]',
+  '[팀 회의 첫 설명 문장]',
   '상황 설명',
   '4단계 AI 전략 리서치로 넘길 질문',
   '아직 선택한 고민이 없습니다',
@@ -236,20 +241,42 @@ const CONCERN_OPTIONS: ConcernOption[] = [
 ];
 
 const DEFAULT_FORMAT = [
-  '1. 원인 가설 3개',
-  '2. 팀장이 확인할 질문 5개',
-  '3. 2주 관리 지표 후보 5개',
-  '4. 조심할 해석 3개',
-  '5. 팀 회의에서 사용할 첫 설명 문장 1개',
+  '아래 5개 제목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
+  '',
+  '[원인 가설]',
+  '- 3개 bullet로 작성',
+  '',
+  '[팀장이 확인할 질문]',
+  '- 5개 bullet로 작성',
+  '',
+  '[2주 관리 지표 후보]',
+  '- 5개 bullet로 작성',
+  '- 각 지표는 “지표명 / 무엇을 보는지 / 조심할 해석” 형식으로 작성',
+  '',
+  '[조심할 해석]',
+  '- 3개 bullet로 작성',
+  '',
+  '[팀 회의 첫 설명 문장]',
+  '- 팀장이 회의에서 바로 말할 수 있는 문장 1개',
 ].join('\n');
+
+const STRUCTURED_ANSWER_SECTION_TITLES = [
+  '원인 가설',
+  '팀장이 확인할 질문',
+  '2주 관리 지표 후보',
+  '조심할 해석',
+  '팀 회의 첫 설명 문장',
+] as const;
+
+type StructuredAnswerSectionTitle = typeof STRUCTURED_ANSWER_SECTION_TITLES[number];
 
 const REVIEW_ITEMS = [
   '일반 질문과 구조화 질문의 차이를 비교했는가?',
   '역할을 “누구의 도움을 받을 것인가”로 정했는가?',
   '우리 팀 상황이 실제 장면처럼 들어갔는가?',
-  '지시/과제가 분석·정리·실행 기준 중 무엇인지 분명한가?',
+  '요청이 분석·정리·실행 기준 중 무엇인지 분명한가?',
   '출력 형식이 후속 단계에서 바로 쓸 수 있게 정리되었는가?',
-  '후속 단계 연결 힌트가 관리 지표·고객 Data·실행 Map·대화 중 어디로 이어지는지 확인했는가?',
+  '결과 활용 목적이 관리 지표·고객 활동 기록·팀원 질문 중 어디로 이어지는지 확인했는가?',
   '실제 고객명·병원명·의료진명·제품명·내부 수치·개인정보를 넣지 않았는가?',
 ];
 
@@ -305,20 +332,103 @@ function getRole(response: PromptPracticeResponse) {
   return ROLE_OPTIONS.find((item) => item.id === response.roleId)?.promptText ?? ROLE_OPTIONS[0].promptText;
 }
 
+function buildResultPurpose(concern?: ConcernOption) {
+  if (!concern) {
+    return '이 답변은 이후에 ① 이번 2주 동안 볼 관리 지표 후보, ② 고객 활동 기록에서 확인할 항목, ③ 팀원에게 물어볼 실행·기록 보완 질문으로 활용할 예정입니다.';
+  }
+
+  if (concern.groupId === 'customer-data') {
+    return '이 답변은 이후에 ① 이번 2주 동안 볼 관리 지표 후보, ② 고객 활동 기록에서 확인할 항목, ③ 팀원에게 물어볼 기록 보완 질문으로 활용할 예정입니다.';
+  }
+
+  if (concern.groupId === 'member-execution') {
+    return '이 답변은 이후에 ① 팀원별 실행 역할 보완, ② 팀원에게 꺼낼 첫 문장, ③ 팀장이 중간에 확인할 질문으로 활용할 예정입니다.';
+  }
+
+  return '이 답변은 이후에 ① 안전한 AI 질문 초안, ② 실행계획 설명 문장, ③ 표현·자료 안전선 점검 기준으로 활용할 예정입니다.';
+}
+
 function buildStructuredPrompt(response: PromptPracticeResponse) {
   const concern = getSelectedConcern(response.concernId);
   const concernLabel = response.customConcern.trim() || concern?.label || '아직 우리 팀 고민을 선택하지 않았습니다.';
   const context = response.context.trim() || concern?.context || '아직 구체적인 팀 상황을 입력하지 않았습니다. 먼저 우리 팀에 가까운 고민을 선택하거나 직접 입력해 주세요.';
   const task = response.task.trim() || concern?.task || '위 상황에서 팀장이 먼저 확인해야 할 질문과 다음 단계로 넘길 실행 기준을 정리해 주세요.';
-  const downstreamHint = concern ? `${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}` : '우리 팀 고민을 선택하면 후속 단계 연결 힌트가 표시됩니다.';
+  const resultPurpose = buildResultPurpose(concern);
 
-  return `역할:\n${getRole(response)}\n\n우리 팀 고민:\n${concernLabel}\n\n맥락:\n${context}\n\n지시/과제:\n${task}\n\n후속 단계 연결 힌트:\n${downstreamHint}\n\n형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
+  return `역할:\n${getRole(response)}\n\n우리 팀 고민:\n${concernLabel}\n\n맥락:\n${context}\n\n요청:\n${task}\n\n결과 활용 목적:\n${resultPurpose}\n\n출력 형식:\n${response.format.trim() || DEFAULT_FORMAT}\n\n주의사항:\n- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 사용하지 마세요.\n- 고객을 점수화하거나 등급화하지 마세요.\n- 처방 가능성, 전환 가능성, 공략, 비교 우위 단정 표현은 피하세요.\n- AI 답변은 초안이며, 최종 판단과 수정은 팀장이 합니다.`;
 }
 
 function buildOutput(response: PromptPracticeResponse, prompt: string) {
   const concern = getSelectedConcern(response.concernId);
   const group = concern ? getConcernGroup(concern.groupId) : undefined;
-  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || concern?.label || '아직 선택한 고민 없음'}\n\n[고민 그룹]\n${group?.title || '아직 선택한 고민 없음'}\n\n[상황 설명]\n${concern?.situationSummary || '-'}\n\n[일반 질문]\n${response.plainQuestion || '-'}\n\n[구조화 프롬프트]\n${prompt}\n\n[후속 단계 연결 힌트]\n${concern ? `${concern.downstreamHint}\n- ${concern.downstreamSteps.join('\n- ')}` : '아직 선택한 고민 없음'}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
+  return `[3단계 결과: 일반 질문을 구조화 프롬프트로 바꾸기]\n\n[우리 팀 고민]\n${response.customConcern || concern?.label || '아직 선택한 고민 없음'}\n\n[고민 그룹]\n${group?.title || '아직 선택한 고민 없음'}\n\n[상황 설명]\n${concern?.situationSummary || '-'}\n\n[일반 질문]\n${response.plainQuestion || '-'}\n\n[구조화 프롬프트]\n${prompt}\n\n[결과 활용 목적]\n${buildResultPurpose(concern)}\n\n[일반 질문과 구조화 질문의 차이 메모]\n${response.differenceMemo || '-'}\n\n[4단계 AI 전략 리서치로 넘길 질문]\n${response.task || '-'}`;
+}
+
+function normalizeAiSectionHeading(line: string) {
+  return line
+    .trim()
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/^\[|\]$/g, '')
+    .replace(/[:：]$/g, '')
+    .trim();
+}
+
+function parseStructuredAiAnswer(text: string) {
+  const parsed = STRUCTURED_ANSWER_SECTION_TITLES.reduce<Record<StructuredAnswerSectionTitle, string>>((acc, title) => {
+    acc[title] = '';
+    return acc;
+  }, {} as Record<StructuredAnswerSectionTitle, string>);
+
+  let currentTitle: StructuredAnswerSectionTitle | null = null;
+
+  text.split(/\r?\n/).forEach((line) => {
+    const normalized = normalizeAiSectionHeading(line);
+    const matchedTitle = STRUCTURED_ANSWER_SECTION_TITLES.find((title) => normalized === title);
+
+    if (matchedTitle) {
+      currentTitle = matchedTitle;
+      return;
+    }
+
+    if (currentTitle) {
+      parsed[currentTitle] = [parsed[currentTitle], line].filter(Boolean).join('\n');
+    }
+  });
+
+  return parsed;
+}
+
+function hasParsedStructuredAnswer(parsed: Record<StructuredAnswerSectionTitle, string>) {
+  return STRUCTURED_ANSWER_SECTION_TITLES.some((title) => parsed[title].trim());
+}
+
+function StructuredAnswerExtraction({ answer }: { answer: string }) {
+  const parsed = useMemo(() => parseStructuredAiAnswer(answer), [answer]);
+  const hasAnswer = answer.trim().length > 0;
+  const hasParsed = hasParsedStructuredAnswer(parsed);
+
+  if (!hasAnswer) return null;
+
+  return (
+    <section className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm font-bold leading-6 text-cyan-950">
+      <p className="font-black">AI 답변 1차 분리 정리</p>
+      <p className="mt-1 text-xs font-bold text-cyan-800">AI 답변은 최종안이 아닙니다. 아래 분리 내용은 팀장이 검토·수정할 초안입니다.</p>
+      {!hasParsed ? (
+        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+          고정 제목을 찾지 못했습니다. AI 답변에 [원인 가설], [팀장이 확인할 질문], [2주 관리 지표 후보], [조심할 해석], [팀 회의 첫 설명 문장] 제목이 그대로 들어 있는지 확인하세요.
+        </div>
+      ) : null}
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {STRUCTURED_ANSWER_SECTION_TITLES.map((title) => (
+          <article key={title} className="rounded-2xl border border-white bg-white p-3 text-xs leading-5 text-slate-700 shadow-sm">
+            <p className="font-black text-slate-950">{title}</p>
+            <pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-5">{parsed[title].trim() || '아직 분리된 내용이 없습니다.'}</pre>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function SelectedConcernSummary({ concern, group, customConcern, emptyMode = 'compact' }: { concern?: ConcernOption; group?: { id: ConcernGroupId; title: string; description: string }; customConcern: string; emptyMode?: 'compact' | 'block' }) {
@@ -337,7 +447,7 @@ function SelectedConcernSummary({ concern, group, customConcern, emptyMode = 'co
     <div className={`rounded-2xl border border-cyan-200 bg-cyan-50 p-3 ${emptyMode === 'block' ? 'text-sm' : 'text-xs'} font-bold leading-5 text-cyan-950`}>
       <p className="font-black">선택한 고민: {custom || concern?.label}</p>
       {concern ? <p className="mt-1">상황 설명: {concern.situationSummary}</p> : <p className="mt-1">직접 입력한 고민입니다. 필요하면 위 카드 중 가장 가까운 상황도 함께 선택하세요.</p>}
-      {concern ? <p className="mt-2">후속 연결: {concern.downstreamHint}</p> : null}
+      <p className="mt-2">결과 활용 목적: {buildResultPurpose(concern)}</p>
       {group ? <p className="mt-1 text-cyan-800">이 고민은 {group.title.replace(/^[A-C]\.\s*/, '')}에 속합니다.</p> : null}
     </div>
   );
@@ -364,6 +474,7 @@ export function V39PromptPracticeLab() {
       plainQuestion: concern.plainQuestion,
       context: concern.context,
       task: concern.task,
+      format: DEFAULT_FORMAT,
       finalPrompt: '',
       aiPlainAnswer: '',
       aiStructuredAnswer: '',
@@ -373,7 +484,7 @@ export function V39PromptPracticeLab() {
 
   const generatePrompt = () => {
     update({ finalPrompt: buildStructuredPrompt(response) });
-    setCopyMessage('역할·맥락·지시/과제·형식 구조로 프롬프트를 만들었습니다. 실제 말투에 맞게 한 번 더 다듬어보세요.');
+    setCopyMessage('결과 활용 목적과 고정 출력 제목을 포함한 구조화 프롬프트를 만들었습니다. 실제 말투에 맞게 한 번 더 다듬어보세요.');
   };
 
   const copyText = async (text: string, label: string) => {
@@ -392,7 +503,7 @@ export function V39PromptPracticeLab() {
     <div className="space-y-4">
       <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
         <p className="font-black">3단계. 우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기</p>
-        <p className="mt-1">팀장의 고민은 머릿속에 있지만, AI는 그 맥락을 모릅니다. 이번 단계에서는 평소처럼 짧게 묻는 일반 질문과 역할·맥락·지시/과제·형식이 들어간 구조화 질문의 차이를 직접 확인합니다.</p>
+        <p className="mt-1">팀장의 고민은 머릿속에 있지만, AI는 그 맥락을 모릅니다. 이번 단계에서는 평소처럼 짧게 묻는 일반 질문과 역할·맥락·요청·출력 형식이 들어간 구조화 질문의 차이를 직접 확인합니다.</p>
         <p className="mt-1 text-xs font-bold">영업활동 기록, 방문·면담 기록, 고객 활동 Data를 기본 표현으로 사용합니다. 회사마다 부르는 사내 시스템 이름이 다를 수 있으므로 CRM은 필요할 때만 사내 시스템/CRM으로 함께 표시합니다.</p>
       </div>
 
@@ -409,7 +520,7 @@ export function V39PromptPracticeLab() {
 
       <SectionCard title="Block 0. 우리 팀에 가까운 고민 선택">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">
-          아래 카드는 과정 설명이 아니라 현업 상황 예시입니다. 먼저 “우리 팀 이야기 같다”는 상황을 고르고, 선택 후 요약 박스에서만 이후 단계 연결을 확인합니다.
+          아래 카드는 과정 설명이 아니라 현업 상황 예시입니다. 먼저 “우리 팀 이야기 같다”는 상황을 고르고, 선택 후 요약 박스에서만 이후 활용 방향을 확인합니다.
         </div>
         <SelectedConcernSummary concern={selectedConcern} group={selectedGroup} customConcern={response.customConcern} />
         <div className="space-y-4">
@@ -436,7 +547,7 @@ export function V39PromptPracticeLab() {
             );
           })}
         </div>
-        <label className="block space-y-1"><FieldLabel>우리 팀 고민 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customConcern} onChange={(event) => update({ customConcern: event.target.value })} placeholder="예: 방문·면담 기록은 있는데 고객 반응을 어떻게 봐야 할지 애매하다" /></label>
+        <label className="block space-y-1"><FieldLabel>우리 팀 고민 직접 입력</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customConcern} onChange={(event) => update({ customConcern: event.target.value, finalPrompt: '' })} placeholder="예: 방문·면담 기록은 있는데 고객 반응을 어떻게 봐야 할지 애매하다" /></label>
       </SectionCard>
 
       <SectionCard title="Block 1. 일반 질문으로 먼저 물어보기">
@@ -447,7 +558,7 @@ export function V39PromptPracticeLab() {
         <label className="block space-y-1"><FieldLabel>일반 질문에 대한 AI 답변 붙여넣기</FieldLabel><TextArea value={response.aiPlainAnswer} onChange={(value) => update({ aiPlainAnswer: value })} placeholder="AI 답변을 붙여넣고, 답변이 왜 일반론처럼 느껴지는지 확인합니다." /></label>
       </SectionCard>
 
-      <SectionCard title="Block 2. 역할·맥락·지시/과제·형식으로 재작성">
+      <SectionCard title="Block 2. 역할·맥락·요청·출력 형식으로 재작성">
         <div className="rounded-2xl bg-slate-50 p-4 text-sm font-bold leading-6 text-slate-700">
           <p className="font-black text-slate-950">역할은 “누구의 도움을 받을 것인가”입니다.</p>
           <p className="mt-1">추상적인 코치·전문가보다, 선배 팀장·본부장·영업기획 담당자·영업활동 기록/영업지원 담당자·컴플라이언스 담당자처럼 실제 현업에서 떠올릴 수 있는 사람의 관점을 선택합니다.</p>
@@ -455,15 +566,20 @@ export function V39PromptPracticeLab() {
         <label className="block space-y-1"><FieldLabel>역할 선택</FieldLabel><select className="w-full rounded-xl border bg-white px-3 py-2 text-sm" value={response.roleId} onChange={(event) => update({ roleId: event.target.value, finalPrompt: '' })}>{ROLE_OPTIONS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.useWhen}</option>)}</select></label>
         <label className="block space-y-1"><FieldLabel>역할 직접 수정</FieldLabel><input className="w-full rounded-xl border px-3 py-2 text-sm" value={response.customRole} onChange={(event) => update({ customRole: event.target.value, finalPrompt: '' })} placeholder={ROLE_OPTIONS[0].promptText} /></label>
         <label className="block space-y-1"><FieldLabel>맥락: 지금 우리 팀에 무슨 일이 벌어졌는가</FieldLabel><TextArea value={response.context} onChange={(value) => update({ context: value, finalPrompt: '' })} placeholder="고민을 선택하면 상황 맥락이 자동으로 들어옵니다." /></label>
-        <label className="block space-y-1"><FieldLabel>지시/과제: AI에게 무엇을 해달라고 할 것인가</FieldLabel><TextArea value={response.task} onChange={(value) => update({ task: value, finalPrompt: '' })} placeholder="고민을 선택하면 AI에게 요청할 과제가 자동으로 들어옵니다." /></label>
-        <label className="block space-y-1"><FieldLabel>형식: 어떤 모양으로 받을 것인가</FieldLabel><TextArea value={response.format} onChange={(value) => update({ format: value, finalPrompt: '' })} /></label>
+        <label className="block space-y-1"><FieldLabel>요청: AI에게 무엇을 해달라고 할 것인가</FieldLabel><TextArea value={response.task} onChange={(value) => update({ task: value, finalPrompt: '' })} placeholder="고민을 선택하면 AI에게 요청할 과제가 자동으로 들어옵니다." /></label>
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">결과 활용 목적</p>
+          <p className="mt-1">{buildResultPurpose(selectedConcern)}</p>
+        </div>
+        <label className="block space-y-1"><FieldLabel>출력 형식: 자동 분리를 위해 제목을 바꾸지 않기</FieldLabel><TextArea value={response.format} onChange={(value) => update({ format: value, finalPrompt: '' })} /></label>
       </SectionCard>
 
       <SectionCard title="Block 3. 구조화 질문 생성과 답변 차이 비교">
         <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={generatePrompt}>구조화 프롬프트 생성</button><button type="button" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(structuredPrompt, '구조화 프롬프트')}>구조화 프롬프트 복사</button></div>
         {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
         <textarea className="min-h-72 w-full rounded-xl border px-3 py-2 font-mono text-xs leading-5" value={structuredPrompt} onChange={(event) => update({ finalPrompt: event.target.value })} />
-        <label className="block space-y-1"><FieldLabel>구조화 질문에 대한 AI 답변 붙여넣기</FieldLabel><TextArea value={response.aiStructuredAnswer} onChange={(value) => update({ aiStructuredAnswer: value })} placeholder="구조화 질문으로 받은 답변을 붙여넣고, 일반 질문 답변과 차이를 비교합니다." /></label>
+        <label className="block space-y-1"><FieldLabel>구조화 질문에 대한 AI 답변 붙여넣기</FieldLabel><TextArea value={response.aiStructuredAnswer} onChange={(value) => update({ aiStructuredAnswer: value })} placeholder="구조화 질문으로 받은 답변을 붙여넣으면 아래에 5개 영역으로 1차 분리됩니다." /></label>
+        <StructuredAnswerExtraction answer={response.aiStructuredAnswer} />
         <label className="block space-y-1"><FieldLabel>일반 질문과 구조화 질문의 차이 메모</FieldLabel><TextArea value={response.differenceMemo} onChange={(value) => update({ differenceMemo: value })} placeholder="예: 일반 질문은 원칙 중심이었지만, 구조화 질문은 우리 팀 상황·관리 지표·회의 문장까지 나왔다." /></label>
       </SectionCard>
 
@@ -473,15 +589,9 @@ export function V39PromptPracticeLab() {
           <p className="mt-1">구조화 프롬프트를 바탕으로 다음 단계에서 AI 전략 리서치를 진행합니다. AI는 답을 대신 정하는 것이 아니라, 팀장의 고민을 더 빠르고 넓게 정리하게 돕습니다.</p>
         </div>
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-xs font-bold leading-5 text-cyan-950">
-          <p className="font-black">후속 단계 연결 힌트</p>
-          {selectedConcern ? (
-            <>
-              <p className="mt-1">{selectedConcern.downstreamHint}</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5">{selectedConcern.downstreamSteps.map((step) => <li key={step}>{step}</li>)}</ul>
-            </>
-          ) : (
-            <p className="mt-1">우리 팀 고민을 선택하면 후속 단계 연결 방향이 표시됩니다.</p>
-          )}
+          <p className="font-black">결과 활용 목적</p>
+          <p className="mt-1">{buildResultPurpose(selectedConcern)}</p>
+          {selectedConcern ? <p className="mt-2 text-cyan-800">참고 흐름: {selectedConcern.downstreamHint}</p> : null}
         </div>
         <div className="grid gap-2 md:grid-cols-2">{REVIEW_ITEMS.map((item) => <label key={item} className="flex items-start gap-2 rounded-xl border p-3 text-sm font-bold leading-5"><input type="checkbox" className="mt-1" checked={Boolean(response.reviewChecks[item])} onChange={(event) => update({ reviewChecks: { ...response.reviewChecks, [item]: event.target.checked } })} /><span>{item}</span></label>)}</div>
         <div className="rounded-xl bg-slate-50 p-3 text-sm font-bold text-slate-700">점검 완료: {checkedCount} / {REVIEW_ITEMS.length}</div>
