@@ -129,6 +129,10 @@ export function V39StepHero({
 }
 
 const journeySteps = [
+  { step: 1, label: '입장', icon: '🚪' },
+  { step: 2, label: '안전선', icon: '🛡️' },
+  { step: 3, label: '질문 연습', icon: '✍️' },
+  { step: 4, label: '전략 리서치', icon: '🔭' },
   { step: 5, label: '지표', icon: '🎯' },
   { step: 6, label: '단서', icon: '🔎' },
   { step: 7, label: '행동', icon: '🧭' },
