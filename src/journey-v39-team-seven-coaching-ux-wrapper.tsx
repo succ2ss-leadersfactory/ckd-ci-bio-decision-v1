@@ -1,4 +1,5 @@
 import { V39TeamSevenCoachingMap } from './journey-v39-team-seven-coaching-map';
+import { V39TeamSevenTextPolish } from './journey-v39-team-seven-text-polish';
 import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 
 const V39_TEAM_SEVEN_COACHING_UX_WRAPPER_SMOKE_MARKERS = [
@@ -23,28 +24,29 @@ void V39_TEAM_SEVEN_COACHING_UX_WRAPPER_SMOKE_MARKERS;
 
 export function V39TeamSevenCoachingUxWrapper() {
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" data-v39-team-seven-polish="true">
+      <V39TeamSevenTextPolish />
       <V39FlowStrip currentStep={8} />
       <V39StepHero
-        eyebrow="8단계 · 코칭 대상 선정"
+        eyebrow="8단계 · 먼저 앉아 이야기할 사람 고르기"
         icon="👥"
-        title="누구와 먼저 1on1을 해야 하는지 정합니다"
+        title="일을 나누기 전에, 먼저 이야기할 팀원을 떠올립니다"
         tone="indigo"
-        description="7단계에서 정리한 고객군별 2주 대응 방향을 바로 팀원 배치표로 바꾸지 않습니다. 먼저 7명의 팀원 유형을 자세히 보며 실제 우리 팀과 닮은 신호를 찾고, 그다음 필요할 때만 익명으로 실제 고민 팀원을 추가합니다. 핵심은 일을 나누는 것이 아니라, 지금 팀장이 먼저 확인하고 도와야 할 대화 대상을 고르는 것입니다."
+        description="7단계에서 정한 방향을 곧바로 배정표로 만들지 않습니다. 먼저 7명의 장면을 보며 우리 팀에서 떠오르는 사람을 생각해 봅니다. 지금 필요한 것은 일을 맡길 사람을 정하는 것이 아니라, 팀장이 먼저 만나 확인하고 도와야 할 사람을 고르는 일입니다."
         badges={[
-          { label: '참조 모델', value: '7명 유형', tone: 'indigo', icon: '👥' },
-          { label: '직접 등록', value: '7명 확인 후', tone: 'sky', icon: '✍️' },
-          { label: '우선 1on1', value: '1~2명', tone: 'emerald', icon: '💬' },
-          { label: 'AI 역할', value: '판단 보정', tone: 'amber', icon: '🧭' },
+          { label: '먼저 볼 것', value: '7명 장면', tone: 'indigo', icon: '👥' },
+          { label: '직접 추가', value: '익명으로만', tone: 'sky', icon: '✍️' },
+          { label: '오늘 고를 사람', value: '1~2명', tone: 'emerald', icon: '💬' },
+          { label: 'AI 사용', value: '생각 정리', tone: 'amber', icon: '🧭' },
         ]}
       />
 
       <section className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
         <V39MiniFlow
           items={[
-            { icon: '👥', title: '7명 팀원 유형 자세히 보기', body: '업무 스타일, 고객 대응 방식, 최근 변화 신호, 오해하기 쉬운 지점까지 보며 실제 팀원과 비슷한 장면을 떠올립니다.' },
-            { icon: '✍️', title: '7명 유형을 먼저 본 뒤 익명으로 추가', body: '충분히 맞는 유형이 없을 때만 실명과 민감정보 없이 역할, 관찰 신호, 강점, 리스크, 팀장 고민 질문을 적습니다.' },
-            { icon: '🧭', title: 'AI로 코칭 필요 신호 정리', body: 'AI는 대화문을 만들지 않습니다. 관찰 사실과 해석, 미루면 생길 비용, 9단계로 넘길 코칭 초점만 정리합니다.' },
+            { icon: '👥', title: '7명의 장면을 읽습니다', body: '업무 스타일, 고객 대응, 최근 말과 행동을 보며 실제 팀원이 떠오르는지 살펴봅니다.' },
+            { icon: '✍️', title: '필요하면 익명으로 추가합니다', body: '딱 맞는 사람이 없을 때만 이름 없이 역할, 보이는 행동, 강점, 걱정되는 지점을 적습니다.' },
+            { icon: '🧭', title: 'AI로 생각을 정리합니다', body: '대화문을 만들기 전에 먼저 만나야 하는 이유와 다음 화면으로 넘길 대화 초점만 정리합니다.' },
           ]}
         />
 
@@ -52,18 +54,18 @@ export function V39TeamSevenCoachingUxWrapper() {
           <V39MinimumChecklist
             tone="indigo"
             items={[
-              '7명 팀원 유형 자세히 확인',
-              '실제 고민 팀원 익명 등록 여부 판단',
-              '우선 1on1 대상 1~2명',
-              '선택 이유',
-              '9단계로 넘길 코칭 초점',
+              '7명의 장면 훑어보기',
+              '익명 추가 여부 판단',
+              '먼저 1on1할 팀원 1~2명',
+              '그 사람을 고른 이유',
+              '다음 화면으로 넘길 대화 초점',
             ]}
           />
         </div>
 
         <div className="mt-3">
           <V39SafetyStrip>
-            이번 화면은 사람을 평가하거나 줄 세우는 화면이 아닙니다. 팀원의 성격을 단정하지 말고, 관찰 가능한 신호와 팀장이 먼저 확인해야 할 대화 필요성을 정리합니다. AI는 판단을 대신 정하지 않고, 관찰 사실과 해석을 분리하도록 돕는 도구입니다. 실제 고객명, 병원명, 의료진명, 제품명, 내부 수치, 평가등급, 개인정보는 입력하지 않습니다.
+            이 화면은 팀원을 평가하거나 줄 세우는 시간이 아닙니다. 성격을 단정하지 말고, 실제로 보인 말과 행동만 보고 판단합니다. 실제 이름, 고객명, 기관명, 제품명, 내부 숫자, 평가등급, 개인 사정은 입력하지 않습니다.
           </V39SafetyStrip>
         </div>
       </section>
