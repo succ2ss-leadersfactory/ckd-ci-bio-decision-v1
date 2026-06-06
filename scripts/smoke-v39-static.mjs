@@ -55,6 +55,7 @@ const visibleFiles = {
   aiCallPlanUx: stripSmokeMarkers(files.aiCallPlanUx),
   finalCard: stripSmokeMarkers(files.finalCard),
   instructor: stripSmokeMarkers(files.instructor),
+  peopleDialogue: stripSmokeMarkers(files.peopleDialogue),
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
@@ -65,6 +66,7 @@ for (const marker of [
   'src/journey-v39-app-preview.tsx',
   'src/journey-v39-team-seven-coaching-map.tsx',
   'src/journey-v39-team-seven-coaching-profiles.ts',
+  'src/journey-v39-people-dialogue-lab.tsx',
   'src/journey-v39-ai-call-plan-lab.tsx',
   'src/journey-v39-ai-call-plan-ux-lab.tsx',
   'src/journey-v39-final-call-plan-card.tsx',
@@ -81,7 +83,8 @@ for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '�
 for (const marker of ['V39MemberRoleUxLab', '코칭 대상 선정으로 전환됨']) mustInclude(files.memberRoleUx, marker, 'member role UX compatibility');
 for (const marker of ['V39TeamSevenCoachingMap', '코칭 대상 선정', 'AI로 코칭 필요 신호 정리하기', 'MZ 성장 탐색형']) mustInclude(files.teamSevenCoaching, marker, 'team seven coaching');
 for (const marker of ['TEAM_MEMBER_PROFILES', 'DIRECT_PROFILE', '문교원 사원', '왜 해야 하는지', '어디까지 하면 되는지']) mustInclude(files.teamSevenProfiles, marker, 'team seven profiles');
-for (const marker of ['V39PeopleDialogueLab', '팀장의 첫마디를 목적에 맞게 바꾸기', 'DIALOGUE_PURPOSES']) mustInclude(files.peopleDialogue, marker, 'people dialogue');
+for (const marker of ['V39PeopleDialogueLab', '팀장의 첫마디를 목적에 맞게 바꾸기', 'DIALOGUE_PURPOSES', '8단계 우선 1on1 대상', '8단계 코칭 초점을 대화 카드로 가져오기', 'loadV39TeamSevenCoachingMapResult']) mustInclude(files.peopleDialogue, marker, 'people dialogue');
+for (const marker of ['loadV39MemberRoleResult', 'journey-v39-member-role-result-store', '역할 정리 결과', '8단계 역할 결과']) mustNotInclude(visibleFiles.peopleDialogue, marker, 'people dialogue old role flow');
 for (const marker of ['V39PeopleDialogueUxLab', '9단계 진행 가이드', '10단계 AI 실행계획 프롬프트']) mustInclude(files.peopleDialogueUx, marker, 'people dialogue UX wrapper');
 for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'ckd.v39.peopleDialogue.result.v1']) mustInclude(files.peopleDialogueStore, marker, 'people dialogue store');
 for (const marker of ['V39AiCallPlanLab', '8단계 코칭 대상 선정 요약', '9단계 실행 대화 요약']) mustInclude(files.aiCallPlan, marker, 'AI call plan');
