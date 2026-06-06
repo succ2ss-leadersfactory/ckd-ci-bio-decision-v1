@@ -1,6 +1,14 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 type V39Tone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 'rose' | 'slate';
+
+type V39StepNavigator = (stepNumber: number) => void;
+
+const V39StepNavigationContext = createContext<V39StepNavigator | null>(null);
+
+export function V39StepNavigationProvider({ onStepSelect, children }: { onStepSelect: V39StepNavigator; children: ReactNode }) {
+  return <V39StepNavigationContext.Provider value={onStepSelect}>{children}</V39StepNavigationContext.Provider>;
+}
 
 const toneClass = {
   emerald: {
@@ -129,22 +137,25 @@ export function V39StepHero({
 }
 
 const journeySteps = [
-  { step: 1, label: '입장', icon: '🚪' },
-  { step: 2, label: '안전선', icon: '🛡️' },
-  { step: 3, label: '질문 연습', icon: '✍️' },
+  { step: 1, label: '입장·역할 설정', icon: '🚪' },
+  { step: 2, label: 'AI 사용 안전선', icon: '🛡️' },
+  { step: 3, label: 'AI 질문 연습', icon: '✍️' },
   { step: 4, label: '전략 리서치', icon: '🔭' },
-  { step: 5, label: '지표', icon: '🎯' },
-  { step: 6, label: '단서', icon: '🔎' },
-  { step: 7, label: '행동', icon: '🧭' },
-  { step: 8, label: '역할', icon: '👥' },
-  { step: 9, label: '대화', icon: '💬' },
-  { step: 10, label: 'AI 초안', icon: '✨' },
-  { step: 11, label: '안전선', icon: '🛡️' },
-  { step: 12, label: '실행 메모', icon: '✅' },
-  { step: 13, label: '질문', icon: '🗣️' },
+  { step: 5, label: '관리 지표 선정', icon: '🎯' },
+  { step: 6, label: '고객 기록 단서', icon: '🔎' },
+  { step: 7, label: '2주 행동 방향', icon: '🧭' },
+  { step: 8, label: '팀원 역할 보완', icon: '👥' },
+  { step: 9, label: '팀원 실행 대화', icon: '💬' },
+  { step: 10, label: 'AI 초안 질문', icon: '✨' },
+  { step: 11, label: '표현 안전선', icon: '🛡️' },
+  { step: 12, label: '2주 실행 메모', icon: '✅' },
+  { step: 13, label: '함께 볼 질문', icon: '🗣️' },
 ];
 
-export function V39FlowStrip({ currentStep }: { currentStep: number }) {
+export function V39FlowStrip({ currentStep, onStepSelect }: { currentStep: number; onStepSelect?: V39StepNavigator }) {
+  const contextStepSelect = useContext(V39StepNavigationContext);
+  const handleStepSelect = onStepSelect ?? contextStepSelect;
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -154,15 +165,34 @@ export function V39FlowStrip({ currentStep }: { currentStep: number }) {
           const badgeClass = isCurrent
             ? 'border-emerald-300 bg-emerald-50 text-emerald-950 shadow-sm'
             : isDone
-              ? 'border-slate-200 bg-slate-50 text-slate-700'
-              : 'border-slate-100 bg-white text-slate-400';
+              ? 'border-slate-200 bg-slate-50 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900'
+              : 'border-slate-100 bg-white text-slate-500 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900';
+
+          const chipContent = (
+            <>
+              <span aria-hidden="true">{item.icon}</span>
+              <span>{item.step}. {item.label}</span>
+            </>
+          );
 
           return (
             <div key={item.step} className="flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-black ${badgeClass}`} aria-current={isCurrent ? 'step' : undefined}>
-                <span aria-hidden="true">{item.icon}</span>
-                <span>{item.step}. {item.label}</span>
-              </div>
+              {handleStepSelect ? (
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-black transition ${badgeClass}`}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  aria-label={`${item.step}단계 ${item.label}로 이동`}
+                  title={`${item.step}단계 ${item.label}로 이동`}
+                  onClick={() => handleStepSelect(item.step)}
+                >
+                  {chipContent}
+                </button>
+              ) : (
+                <div className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-black ${badgeClass}`} aria-current={isCurrent ? 'step' : undefined}>
+                  {chipContent}
+                </div>
+              )}
               {index < journeySteps.length - 1 ? <span className="text-xs font-black text-slate-300" aria-hidden="true">→</span> : null}
             </div>
           );
