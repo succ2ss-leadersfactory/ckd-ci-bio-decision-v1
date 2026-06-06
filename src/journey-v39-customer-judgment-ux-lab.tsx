@@ -24,6 +24,8 @@ const V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS = [
   '최소 결과물',
   '6단계. 고객의 무엇을 볼 것인가',
   '5단계에서 가져온 기준',
+  '5단계에서 가져온 관리 지표',
+  '이번 지표를 확인할 고객 Data 증거를 고르기 전에 먼저 봅니다',
   '5단계에서 넘겨받은 기준',
   '관리 지표를 고객 Data로 확인하기',
   '고객 Data 해석 메모',
@@ -39,10 +41,35 @@ const V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS = [
 ].join('|');
 void V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS;
 
+function uniqueItems(items: string[]) {
+  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean)));
+}
+
+function MetricChipList({ items, emptyText }: { items: string[]; emptyText: string }) {
+  const visibleItems = uniqueItems(items);
+
+  if (visibleItems.length === 0) {
+    return <p className="mt-2 rounded-2xl bg-white/70 px-3 py-2 text-xs font-bold leading-5 text-slate-500">{emptyText}</p>;
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {visibleItems.map((item) => (
+        <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-black leading-5 text-slate-800 shadow-sm">
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function getV39CustomerJudgmentStatus() {
   const result = loadV39CustomerJudgmentResult();
   const dashboard = loadV39DashboardResult();
   const selectedEvidenceCardCount = result.selectedCustomerTypeIds.length;
+  const coreMetrics = uniqueItems(dashboard.metricSelection.selectedCoreMetricIds);
+  const supportSignals = uniqueItems(dashboard.metricSelection.selectedSupportMetricIds);
+  const safetySignals = uniqueItems(dashboard.metricSelection.selectedSafetyMetricIds);
   const requiredDoneCount = [
     selectedEvidenceCardCount >= 1,
     Object.values(result.decisions).some((decision) => decision.missingInfo.trim()),
@@ -50,15 +77,19 @@ function getV39CustomerJudgmentStatus() {
   ].filter(Boolean).length;
   const hasDashboardMetric = Boolean(
     dashboard.updatedAt ||
-    dashboard.metricSelection.selectedCoreMetricIds.length ||
-    dashboard.metricSelection.selectedSupportMetricIds.length ||
-    dashboard.metricSelection.selectedSafetyMetricIds.length,
+    coreMetrics.length ||
+    supportSignals.length ||
+    safetySignals.length,
   );
 
   return {
     requiredDoneCount,
     selectedEvidenceCardCount,
     hasDashboardMetric,
+    coreMetrics,
+    supportSignals,
+    safetySignals,
+    metricRationale: dashboard.metricSelection.metricRationale.trim(),
     savedStateLabel: result.updatedAt ? '메모 남김' : '아직 비어 있음',
     aiDraftLabel: result.rawAiSignalResult.trim() ? 'AI 초안 있음' : 'AI 초안 없음',
   };
@@ -91,6 +122,32 @@ export function V39CustomerJudgmentUxLab() {
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
           <p className="font-black">지표가 현장 행동으로 바뀌는 흐름입니다</p>
           <p className="mt-1">6단계에서는 고객 활동 기록에서 볼 단서를 고릅니다. 7단계에서는 그 단서를 보고 이번 2주 동안 어떻게 움직일지 정합니다. 8단계에서는 그 일을 맡을 팀원이 실제로 움직일 수 있도록 역할과 지원을 다듬습니다.</p>
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
+          <p className="font-black text-slate-950">5단계에서 가져온 관리 지표</p>
+          <p className="mt-1">이번 지표를 확인할 고객 Data 증거를 고르기 전에 먼저 봅니다. 아래 지표와 신호를 고객 활동 기록에서 어떻게 확인할지 생각한 뒤, Block 1의 증거 카드를 선택하세요.</p>
+          {status.hasDashboardMetric ? (
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border border-white bg-cyan-50 px-4 py-3">
+                <p className="font-black text-cyan-950">🎯 핵심 관리 지표</p>
+                <MetricChipList items={status.coreMetrics} emptyText="아직 핵심 관리 지표가 없습니다." />
+              </div>
+              <div className="rounded-2xl border border-white bg-emerald-50 px-4 py-3">
+                <p className="font-black text-emerald-950">🔎 함께 볼 현장 신호</p>
+                <MetricChipList items={status.supportSignals} emptyText="함께 볼 현장 신호가 아직 없습니다." />
+              </div>
+              <div className="rounded-2xl border border-white bg-amber-50 px-4 py-3">
+                <p className="font-black text-amber-950">⚠️ 조심할 해석</p>
+                <MetricChipList items={status.safetySignals} emptyText="조심할 해석이 아직 없습니다." />
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
+              5단계에서 선택한 관리 지표가 아직 없습니다. 지금도 아래에서 직접 단서를 고를 수 있지만, 먼저 5단계에서 이번 2주 동안 볼 지표를 정하면 선택 기준이 더 분명해집니다.
+            </div>
+          )}
+          {status.metricRationale ? <p className="mt-3 rounded-2xl bg-white/70 px-3 py-2 text-xs font-bold leading-5 text-slate-700">선택 이유: {status.metricRationale}</p> : null}
         </div>
 
         <div className="mt-3">
