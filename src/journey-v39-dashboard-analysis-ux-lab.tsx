@@ -1,5 +1,6 @@
 import { V39DashboardAnalysisLab } from './journey-v39-dashboard-analysis-lab';
 import { loadV39DashboardResult } from './journey-v39-dashboard-result-store';
+import { V39ActionTriplet, V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 
 const V39_RESEARCH_STRATEGY_STORAGE_KEY = 'ckd.v39.researchStrategy.v2';
 
@@ -19,6 +20,15 @@ const V39_DASHBOARD_ANALYSIS_UX_SMOKE_MARKERS = [
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
   '최소 결과물',
+  '5단계 · 우리 팀 관리 지표 선정',
+  '4단계 전략 이슈를 이번 2주 동안 볼 관리 지표로 바꿉니다',
+  '전략 질문 → 관리 지표 → 고객 활동 기록 확인',
+  'V39StepHero',
+  'V39FlowStrip',
+  'V39ActionTriplet',
+  'V39MinimumChecklist',
+  'V39MiniFlow',
+  'V39SafetyStrip',
 ].join('|');
 void V39_DASHBOARD_ANALYSIS_UX_SMOKE_MARKERS;
 
@@ -95,33 +105,41 @@ export function V39DashboardAnalysisUxLab() {
 
   return (
     <section className="space-y-4">
+      <V39FlowStrip currentStep={5} />
+      <V39StepHero
+        eyebrow="5단계 · 우리 팀 관리 지표 선정"
+        icon="🎯"
+        title="4단계 전략 이슈를 이번 2주 동안 볼 관리 지표로 바꿉니다"
+        tone="violet"
+        description="이 단계에서는 팀원 유형을 고르지 않습니다. 4단계 전략 리서치에서 남긴 실행 질문과 우리 팀 상황을 바탕으로, 고객 활동 기록에서 무엇을 확인할지 기준이 되는 관리 지표만 정리합니다."
+        badges={[
+          { label: '관리 지표', value: `${status.selectedMetricCount}개`, tone: 'violet', icon: '🎯' },
+          { label: '4단계 질문', value: status.hasBridgeQuestions ? '있음' : '아직 없음', tone: 'sky', icon: '🔭' },
+          { label: '메모 상태', value: savedStateLabel, tone: 'emerald', icon: '📝' },
+        ]}
+      />
+
       <section className="rounded-3xl border border-violet-100 bg-white p-4 shadow-sm md:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-wide text-violet-700">5단계 진행 가이드 · 우리 팀 관리 지표 선정</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">4단계 전략 이슈를 이번 2주 동안 볼 관리 지표로 바꿉니다</h2>
-            <p className="mt-2 max-w-4xl text-sm font-bold leading-6 text-slate-600">이 단계에서는 팀원 유형을 고르지 않습니다. 4단계 AI 전략 리서치에서 남긴 실행 질문과 우리 팀 상황을 바탕으로, 6단계 고객 Data 확인 List로 넘길 관리 기준만 정리합니다.</p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-3 lg:w-[34rem]">
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
-              <p className="text-xs font-black text-violet-700">관리 지표 선정 상태</p>
-              <p className="mt-1 text-sm font-black text-violet-950">상황 {status.teamSituationCount}개 · 지표 {status.selectedMetricCount}개</p>
-            </div>
-            <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
-              <p className="text-xs font-black text-sky-700">4단계 연결 질문</p>
-              <p className="mt-1 text-sm font-black text-sky-950">{status.hasBridgeQuestions ? '가져온 질문 있음' : '아직 없음'}</p>
-            </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <p className="text-xs font-black text-emerald-700">현재 메모</p>
-              <p className="mt-1 text-sm font-black text-emerald-950">{savedStateLabel}</p>
-            </div>
+        <V39MiniFlow
+          items={[
+            { icon: '🔭', title: '전략 질문 가져오기', body: '4단계에서 남긴 리서치 질문과 우리 팀 상황을 가져옵니다.' },
+            { icon: '🎯', title: '관리 지표로 바꾸기', body: '이번 2주 동안 볼 활동·전환·품질 지표를 고릅니다.' },
+            { icon: '🔎', title: '고객 기록 확인으로 넘기기', body: '다음 화면에서 고객 활동 기록에서 확인할 단서로 바꿉니다.' },
+          ]}
+        />
+
+        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
+          <p className="font-black">4단계 전략 리서치 연결</p>
+          <p className="mt-1">{status.researchTheme ? `선택 주제: ${status.researchTheme}` : '4단계에서 선택한 리서치 주제가 아직 저장되지 않았습니다.'}</p>
+          <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-slate-700">
+            {status.bridgeQuestions ? status.bridgeQuestions : '4단계의 “관리 지표로 바꿀 실행 질문”이 여기에 표시됩니다. 이 질문을 참고해 아래에서 우리 팀 상황과 관리 지표를 정리하세요.'}
           </div>
         </div>
 
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
             <p className="font-black text-slate-950">AI 없이도 할 수 있습니다</p>
-            <p className="mt-1">팀장은 경험을 바탕으로 방문 건수, CRM 입력, 신규 접촉 수 같은 익숙한 지표를 정하고 팀원에게 설명할 수 있습니다.</p>
+            <p className="mt-1">팀장은 경험을 바탕으로 방문 건수, 영업활동 기록 입력, 신규 접촉 수 같은 익숙한 지표를 정하고 팀원에게 설명할 수 있습니다.</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
             <p className="font-black">AI를 쓰면 좋아지는 점</p>
@@ -129,18 +147,10 @@ export function V39DashboardAnalysisUxLab() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
-          <p className="font-black">4단계 AI 전략 리서치 연결</p>
-          <p className="mt-1">{status.researchTheme ? `선택 주제: ${status.researchTheme}` : '4단계에서 선택한 리서치 주제가 아직 저장되지 않았습니다.'}</p>
-          <div className="mt-2 rounded-2xl bg-white/80 px-3 py-2 text-slate-700">
-            {status.bridgeQuestions ? status.bridgeQuestions : '4단계의 “관리 지표로 바꿀 실행 질문”이 여기에 표시됩니다. 이 질문을 참고해 아래에서 우리 팀 상황과 관리 지표를 정리하세요.'}
-          </div>
-        </div>
-
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-xs font-bold leading-5 text-orange-950">
             <p className="font-black">활동 지표</p>
-            <p className="mt-1">무엇을 했는가를 봅니다. 예: 신규접촉 고객수, 대체접점 실행건수, CRM 입력건수.</p>
+            <p className="mt-1">무엇을 했는가를 봅니다. 예: 신규접촉 고객수, 대체접점 실행건수, 영업활동 기록 입력건수.</p>
           </div>
           <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
             <p className="font-black">전환 지표</p>
@@ -152,25 +162,24 @@ export function V39DashboardAnalysisUxLab() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
-          <p className="font-black">선택 기준</p>
-          <p className="mt-1">권장: 핵심 실행 지표 2~4개를 선택하되, 전환 지표 또는 품질 지표를 최소 1개 이상 포함합니다. 방문을 많이 했는지보다, 방문 이후 무엇이 남았는지를 보게 하기 위한 장치입니다.</p>
-          {status.selectedMetricCount > 0 && !status.hasTransitionOrQuality ? <p className="mt-2 rounded-2xl bg-white px-3 py-2 text-amber-900">현재 선택은 활동 지표 중심으로 보입니다. 후속조치 완료율, 다음접점 확보건수, 고객 질문 기록률처럼 전환·품질 지표를 하나 이상 추가해 보세요.</p> : null}
-        </div>
-
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">
-            <p className="font-black">이 단계에서 하는 일</p>
-            <p className="mt-1">전략 이슈와 우리 팀 상황을 바탕으로 이번 2주 동안 실제로 볼 관리 지표를 고릅니다.</p>
-          </div>
-          <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
-            <p className="font-black">이전 단계에서 가져온 것</p>
-            <p className="mt-1">AI 전략 리서치 주제, 전략 이슈, 관리 지표로 바꿀 실행 질문입니다.</p>
-          </div>
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">
-            <p className="font-black">다음 단계로 넘길 것</p>
-            <p className="mt-1">6단계 고객 Data 확인 List로 넘길 핵심 실행 지표, 참고 신호, 조심할 해석, 확인 질문입니다.</p>
-          </div>
+        <div className="mt-3">
+          <V39ActionTriplet
+            previous={{
+              icon: '🔭',
+              title: '전략 리서치 주제와 실행 질문',
+              body: '4단계에서 찾은 변화 신호와 우리 팀에 필요한 질문을 가져옵니다.',
+            }}
+            current={{
+              icon: '🎯',
+              title: '이번 2주 동안 볼 지표를 고릅니다',
+              body: '활동 지표에만 머무르지 않고 전환·품질 지표까지 함께 봅니다.',
+            }}
+            next={{
+              icon: '🔎',
+              title: '6단계에서 고객 활동 기록의 단서로 바꿉니다',
+              body: '선택한 지표가 고객 기록에서 어떻게 보이는지 확인합니다.',
+            }}
+          />
         </div>
 
         <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -188,10 +197,30 @@ export function V39DashboardAnalysisUxLab() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">
-          <p className="font-black text-slate-950">최소 결과물</p>
-          <p className="mt-1">이 화면에서는 고객 Data 확인 List로 넘길 기준만 남기면 됩니다. 핵심 실행 지표 2~4개, 함께 볼 현장 신호, 조심할 해석, 팀장이 확인할 질문, 그리고 “왜 이 지표를 보려는지” 한 문장을 정리합니다.</p>
+        <div className="mt-3">
+          <V39MinimumChecklist
+            tone="violet"
+            items={[
+              '핵심 실행 지표 2~4개',
+              '전환 또는 품질 지표 1개 이상',
+              '함께 볼 현장 신호',
+              '조심할 해석',
+              '팀장이 확인할 질문',
+            ]}
+          />
         </div>
+
+        <div className="mt-3">
+          <V39SafetyStrip>
+            방문을 많이 했는지만 보지 않습니다. 이번 2주 동안 고객 반응, 다음 접점, 기록의 질, 말해도 되는 선까지 함께 볼 수 있는 지표를 남깁니다.
+          </V39SafetyStrip>
+        </div>
+
+        {status.selectedMetricCount > 0 && !status.hasTransitionOrQuality ? (
+          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
+            현재 선택은 활동 지표 중심으로 보입니다. 후속조치 완료율, 다음접점 확보건수, 고객 질문 기록률처럼 전환·품질 지표를 하나 이상 추가해 보세요.
+          </div>
+        ) : null}
       </section>
 
       <V39DashboardAnalysisLab />
