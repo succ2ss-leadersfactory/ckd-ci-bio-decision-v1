@@ -36,6 +36,7 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '정보 보완 고객군',
   '안전선 점검 조건',
   '표현·자료 안전선 점검',
+  '항목 제목과 본문 문장을 구분해서 읽습니다',
   '대응군 C · 신규·미접촉 고객군',
   '대응군 F · 표현·자료 안전선 고객군',
 ].join('|');
@@ -182,12 +183,13 @@ function cleanAiMapResultLine(value: string) {
     .trim();
 }
 
-function lineMatchesMapBucket(line: string, bucket: AiMapExtractionBucket) {
-  return bucket.aliases.some((alias) => line.includes(alias));
+function lineMatchesMapBucketTitle(line: string, bucket: AiMapExtractionBucket) {
+  const clean = cleanAiMapResultLine(line);
+  return bucket.aliases.some((alias) => clean === alias || clean.startsWith(`${alias}:`) || clean.startsWith(`${alias}：`));
 }
 
-function lineMatchesAnotherMapBucket(line: string, currentBucket: AiMapExtractionBucket) {
-  return AI_MAP_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesMapBucket(line, bucket));
+function lineMatchesAnotherMapBucketTitle(line: string, currentBucket: AiMapExtractionBucket) {
+  return AI_MAP_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesMapBucketTitle(line, bucket));
 }
 
 function normalizeAiMapCardTitle(line: string) {
@@ -213,24 +215,24 @@ function normalizeAiMapCardTitle(line: string) {
 
 function extractAiMapResultBucketsFromLines(lines: string[], limit = 20): AiMapExtractedBucket[] {
   return AI_MAP_EXTRACTION_BUCKETS.map((bucket) => {
-    const startIndex = lines.findIndex((line) => lineMatchesMapBucket(line, bucket));
+    const startIndex = lines.findIndex((line) => lineMatchesMapBucketTitle(line, bucket));
     const items: string[] = [];
 
     if (startIndex >= 0) {
       const firstLine = lines[startIndex];
       const afterColon = firstLine.split(/[:：]/).slice(1).join(':').trim();
-      if (afterColon && !lineMatchesMapBucket(afterColon, bucket)) items.push(afterColon);
+      if (afterColon && !lineMatchesMapBucketTitle(afterColon, bucket)) items.push(afterColon);
 
       for (let index = startIndex + 1; index < lines.length; index += 1) {
         const line = lines[index];
-        if (lineMatchesAnotherMapBucket(line, bucket)) break;
+        if (lineMatchesAnotherMapBucketTitle(line, bucket)) break;
         if (normalizeAiMapCardTitle(line)) break;
-        if (lineMatchesMapBucket(line, bucket)) {
+        if (lineMatchesMapBucketTitle(line, bucket)) {
           const inlineValue = line.split(/[:：]/).slice(1).join(':').trim();
           if (inlineValue) items.push(inlineValue);
           continue;
         }
-        if (/^(요청|주의:|안전선|결론|종합|예시|표\s*)/i.test(line)) break;
+        if (/^(요청|주의:|결론|종합|예시|표\s*)/i.test(line)) break;
         items.push(line);
       }
     }
@@ -609,7 +611,7 @@ function V39CustomerJudgmentBridgePanel() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
               <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 항목 제목과 본문 문장을 구분해서 읽습니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
               <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {extractedAiMapBuckets.map((bucket) => (
                   <div key={bucket.title} className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
