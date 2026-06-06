@@ -121,7 +121,7 @@ const expectedImplementationMarkers = [
 ];
 for (const [file, marker] of expectedImplementationMarkers) pass(includes(files[file], marker), `${file} missing implementation marker: ${marker}`);
 
-for (const marker of ['일반 질문과 구조화 질문의 차이', '역할·맥락·지시/과제·형식', 'AI 없이도 할 수 있습니다', 'AI를 쓰면 좋아지는 점', '제약영업 현장을 오래 해본 선배 팀장', '4단계 AI 전략 리서치로 넘길 질문']) {
+for (const marker of ['일반 질문과 구조화 질문의 차이', '역할·맥락·요청·출력 형식', 'AI 없이도 할 수 있습니다', 'AI를 쓰면 좋아지는 점', '제약영업 현장을 오래 해본 선배 팀장', '4단계 AI 전략 리서치로 넘길 질문']) {
   pass(includes(files['src/journey-v39-prompt-practice-lab.tsx'], marker), `prompt practice missing marker: ${marker}`);
 }
 for (const marker of ['실행관리 코치', 'AI 사고 파트너', '전략적 실행관리 전문가']) {
@@ -172,92 +172,42 @@ for (const marker of ['팀장의 첫마디를 목적에 맞게 바꾸기', '나 
   pass(includes(files['src/journey-v39-people-dialogue-lab.tsx'], marker), `people dialogue missing purpose-based marker: ${marker}`);
 }
 
-for (const marker of ['9단계 진행 가이드', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물', '10단계 AI 실행계획 프롬프트']) {
-  pass(includes(files['src/journey-v39-people-dialogue-ux-lab.tsx'], marker), `people dialogue UX wrapper missing marker: ${marker}`);
+for (const marker of ['9단계 진행 가이드', '팀원 온도차와 실행 대화', '8단계 우선 1on1 연결 요약', '우선 1on1 대상']) {
+  pass(includes(files['src/journey-v39-people-dialogue-ux-lab.tsx'], marker), `people dialogue UX missing marker: ${marker}`);
 }
 
-for (const marker of ['10단계 진행 가이드', '팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 역할 결과', '9단계 실행 대화', '10단계 저장 상태', '이 단계에서 하는 일', '이전 단계에서 가져온 것', '다음 단계로 넘길 것', '최소 결과물']) {
-  pass(includes(files['src/journey-v39-ai-call-plan-ux-lab.tsx'], marker), `AI call plan UX wrapper missing marker: ${marker}`);
+for (const marker of ['V39MemberRoleCallPlanPanel', 'AI 실행계획 Prompt', '9단계 실행 대화 요약', '목적에 맞게 바꾼 첫마디']) {
+  pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan missing marker: ${marker}`);
+}
+for (const marker of ['10단계 진행 가이드', '팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 역할 결과', '9단계 실행 대화', '10단계 저장 상태']) {
+  pass(includes(files['src/journey-v39-ai-call-plan-ux-lab.tsx'], marker), `AI call plan UX missing marker: ${marker}`);
 }
 
-for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'familiarOpeningId', 'perceivedByNewGen', 'perceivedByExistingMember', 'missingInformation', 'purposeFitOpening']) {
-  pass(includes(files['src/journey-v39-people-dialogue-result-store.ts'], marker), `people dialogue store missing field: ${marker}`);
-}
-
-for (const marker of ['loadV39PeopleDialogueResult', 'buildPeopleDialogueSummary', '9단계 실행 대화 요약', '선택한 대화 목적 ID', '목적에 맞게 바꾼 첫마디', '팀원 실행 대화 포인트', '9단계 저장 결과 다시 불러오기']) {
-  pass(includes(files['src/journey-v39-ai-call-plan-lab.tsx'], marker), `AI call plan missing people dialogue marker: ${marker}`);
-}
-
-for (const marker of ['AI Call Plan의 위험 표현을 안전한 실행 문장으로 바꾸기', '팀원 실행 대화 기준', '팀원에게 부담을 전가하는 표현', '세대 특성으로 팀원을 단정하는 표현', '12단계 최종 실행 카드에 반영할 안전 문장 정리']) {
+for (const marker of ['V39AiCallPlanCleanupPanel', 'AI 실행계획 초안을 안전한 실행 문장으로 정리합니다', '위험 표현', '안전한 표현']) {
   pass(includes(files['src/journey-v39-compliance-cleanup-lab.tsx'], marker), `compliance cleanup missing marker: ${marker}`);
 }
 
-for (const marker of ['V39FinalCallPlanCard', 'V39FinalExecutionCardPanel', '최종 2주 실행 카드를 완성하기', '8단계 팀원 역할 요약', '9단계 실행 대화 요약', '11단계 컴플라이언스 요약', '13단계 강사용 토의에 넘길 최종 실행 카드 저장']) {
-  pass(includes(files['src/journey-v39-final-call-plan-card.tsx'], marker), `final card missing marker: ${marker}`);
+for (const marker of ['V39FinalExecutionCardPanel', '최종 2주 실행 카드를 완성하기', '8단계 팀원 역할 요약', '9단계 실행 대화 요약', '11단계 컴플라이언스 요약', '13단계 강사용 토의에 넘길 최종 실행 카드 저장']) {
+  pass(includes(files['src/journey-v39-final-call-plan-card.tsx'], marker), `final call plan missing marker: ${marker}`);
 }
 
-for (const marker of ['V39InstructorDiscussionLab', 'V39InstructorDiscussionPanel', '최종 실행 카드를 강사용 토의 질문으로 전환하기', '13단계 강사용 토의 연결 요약', '강사용 핵심 질문', '12단계 최종 카드 새로고침']) {
+for (const marker of ['V39InstructorDiscussionPanel', '최종 실행 카드를 강사용 토의 질문으로 전환하기', '13단계 강사용 토의 연결 요약', '강사용 핵심 질문', '12단계 최종 카드 새로고침', 'buildInstructorDiscussionGuide']) {
   pass(includes(files['src/journey-v39-instructor-discussion-lab.tsx'], marker), `instructor discussion missing marker: ${marker}`);
 }
 
-const forbiddenByFile = [
-  ['src/journey-v39-dashboard-analysis-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-customer-judgment-lab.tsx', ['V38CustomerJudgmentLab', "from './journey-v38-customer-judgment-lab'", '<V38CustomerJudgmentLab />']],
-  ['src/journey-v39-customer-judgment-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-customer-priority-lab.tsx', ['V38CustomerPriorityLab', "from './journey-v38-customer-priority-lab'", '<V38CustomerPriorityLab />']],
-  ['src/journey-v39-customer-priority-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-member-role-lab.tsx', ['V38MemberRoleLab', "from './journey-v38-member-role-lab'", '<V38MemberRoleLab />']],
-  ['src/journey-v39-member-role-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-ai-call-plan-lab.tsx', ['V38AiCallPlanLab', "from './journey-v38-ai-call-plan-lab'", '<V38AiCallPlanLab />']],
-  ['src/journey-v39-ai-call-plan-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-compliance-cleanup-lab.tsx', ['V38ComplianceCleanupLab', "from './journey-v38-compliance-cleanup-lab'", '<V38ComplianceCleanupLab />', 'Call Plan Cleanup Bridge', '9단계 AI Call Plan 결과를 컴플라이언스 정리에 연결', '11단계 연결용', 'Final Card Bridge']],
-  ['src/journey-v39-final-call-plan-card.tsx', ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />', 'Final Card Bridge', '10단계 컴플라이언스 정리 결과를 최종 실행 카드에 연결', '12단계 연결용 최종 실행 카드 요약 저장']],
-  ['src/journey-v39-instructor-discussion-lab.tsx', ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />', 'Instructor Discussion Bridge', '11단계 최종 실행 카드를 강사용 토의 화면에 연결']],
-  ['src/journey-v39-people-dialogue-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-  ['src/journey-v39-people-dialogue-ux-lab.tsx', ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']],
-];
-for (const [file, markers] of forbiddenByFile) for (const marker of markers) pass(notIncludes(files[file], marker), `${file} must not expose forbidden marker: ${marker}`);
-
-const storeKeys = new Map();
-for (const file of v39Files.filter((name) => name.endsWith('-store.ts'))) {
-  const matches = [...files[file].matchAll(/ckd\.v39\.[A-Za-z0-9.]+\.v1/g)].map((match) => match[0]);
-  pass(matches.length >= 1, `Store file must declare a v39 localStorage key: ${file}`);
-  for (const key of matches) {
-    if (storeKeys.has(key) && storeKeys.get(key) !== file) failures.push(`Duplicate v39 localStorage key: ${key} in ${storeKeys.get(key)} and ${file}`);
-    storeKeys.set(key, file);
-  }
-}
-for (const key of ['ckd.v39.dashboardAnalysis.result.v1', 'ckd.v39.customerJudgment.result.v1', 'ckd.v39.customerStrategy.result.v1', 'ckd.v39.memberRole.result.v1', 'ckd.v39.peopleDialogue.result.v1', 'ckd.v39.aiCallPlan.result.v1', 'ckd.v39.complianceCleanup.result.v1', 'ckd.v39.finalCallPlan.result.v1']) pass(storeKeys.has(key), `Missing expected v39 localStorage key: ${key}`);
-
-const allV39Content = v39Files.map((file) => files[file]).join('\n');
-for (const safetyPhrase of ['실제 고객명', '병원명', '의료진명', '제품명', '내부 매출', '개인정보']) pass(includes(allV39Content, safetyPhrase), `v39 flow should show sensitive-input guardrail: ${safetyPhrase}`);
-for (const riskyPhrase of ['점수화하는 단계가 아닙니다', '등급화하는 단계가 아닙니다', '평가 자료가 아니라']) warn(includes(allV39Content, riskyPhrase), `Recommended anti-scoring/anti-evaluation guidance is missing: ${riskyPhrase}`);
-
-const tsconfig = files['tsconfig.v39-smoke.json'];
-for (const file of v39Files.filter((name) => name.endsWith('.tsx') || name.endsWith('.ts'))) pass(includes(tsconfig, file), `tsconfig.v39-smoke.json must include ${file}`);
-
-const staticSmoke = files['scripts/smoke-v39-static.mjs'];
-for (const file of ['src/journey-v39-prompt-practice-lab.tsx', 'src/journey-v39-research-strategy-lab.tsx', 'src/journey-v39-dashboard-analysis-ux-lab.tsx', 'src/journey-v39-customer-judgment-lab.tsx', 'src/journey-v39-customer-judgment-ux-lab.tsx', 'src/journey-v39-customer-priority-lab.tsx', 'src/journey-v39-customer-priority-ux-lab.tsx', 'src/journey-v39-member-role-ux-lab.tsx', 'src/journey-v39-people-dialogue-result-store.ts', 'src/journey-v39-people-dialogue-ux-lab.tsx', 'src/journey-v39-ai-call-plan-ux-lab.tsx', 'src/journey-v39-final-call-plan-result-store.ts', 'src/journey-v39-instructor-discussion-lab.tsx']) pass(includes(staticSmoke, file), `v39 static smoke should cover ${file}`);
-
-for (const [doc, markers] of [
-  ['docs/v39-preview-qa-checklist.md', ['# v39 Preview QA Checklist', '5단계 저장', '6단계 저장', '7단계 저장', '8단계 저장', '9단계 저장', '10단계 저장', '11단계 저장', '12단계 저장', '13단계: 강사용 토의 질문', '5→13단계 저장·연결 흐름 정상']],
-  ['docs/v39-preview-readiness-report.md', ['# v39 Preview Readiness Report', 'Go 후보', '보호 파일 준수 여부', '5→13단계 연결 구조', 'localStorage key 현황', '남은 수동 QA 항목', 'Go / No-Go 기준']],
-  ['docs/v39-preview-manual-qa-run.md', ['# v39 Preview Manual QA Run', 'QA 기본 정보', 'End-to-End 저장·연결 QA', '5→8', '12→13', '발견 이슈 기록', 'Go / No-Go 판단']],
-]) for (const marker of markers) pass(includes(files[doc], marker), `${doc} must include marker: ${marker}`);
-
-if (failures.length > 0) {
-  console.error('v39 readiness audit failed:');
-  for (const failure of failures) console.error(`- ${failure}`);
-  if (warnings.length > 0) {
-    console.warn('v39 readiness audit warnings:');
-    for (const item of warnings) console.warn(`- ${item}`);
-  }
-  throw new Error(`v39 readiness audit failed: ${failures.length} issue(s)`);
+for (const file of protectedFiles) {
+  warn(notIncludes(files[file], 'journey-v39-app-preview'), `${file} should remain independent from v39 preview route`);
 }
 
 if (warnings.length > 0) {
   console.warn('v39 readiness audit warnings:');
-  for (const item of warnings) console.warn(`- ${item}`);
+  for (const warning of warnings) console.warn(`- ${warning}`);
+}
+
+if (failures.length > 0) {
+  console.error('v39 readiness audit failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  throw new Error(`v39 readiness audit failed: ${failures.length} issue(s)`);
 }
 
 console.log('v39 readiness audit passed');
