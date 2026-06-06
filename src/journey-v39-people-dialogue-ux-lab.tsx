@@ -6,6 +6,7 @@ import { V39ActionTriplet, V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39Sa
 const V39_PEOPLE_DIALOGUE_UX_SMOKE_MARKERS = [
   '9단계 진행 가이드',
   '팀원 온도차와 실행 대화',
+  'Step 8 → Step 9',
   '8단계 우선 1on1 연결 요약',
   '우선 1on1 대상',
   'AI 없이도 할 수 있습니다',
@@ -15,8 +16,6 @@ const V39_PEOPLE_DIALOGUE_UX_SMOKE_MARKERS = [
   '지금은 말이야',
   '8단계 코칭 대상과 초점',
   '8단계 코칭 대상 선정 결과를 대화 재료로 가져옵니다',
-  '8단계 역할 미션과 지원 포인트',
-  '8단계 역할 보완 결과를 대화 재료로 가져옵니다',
   '이 단계에서 하는 일',
   '이전 단계에서 가져온 것',
   '다음 단계로 넘길 것',
