@@ -21,10 +21,11 @@ import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { V39PromptConcernBridgeCard } from './journey-v39-prompt-concern-bridge-card';
 import { V39PromptPracticeLab } from './journey-v39-prompt-practice-lab';
 import { V39TeamSevenCoachingUxWrapper } from './journey-v39-team-seven-coaching-ux-wrapper';
+import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결 V39StepHero V39FlowStrip 1단계 입장 2단계 AI 안전선 3단계 질문 연습 4단계 전략 리서치';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -83,6 +84,31 @@ function ShellCard({ title, children }: { title: string; children: ReactNode }) 
 function EntryStep({ participant, setParticipant }: { participant: V39Participant; setParticipant: (next: V39Participant) => void }) {
   return (
     <div className="space-y-4">
+      <V39FlowStrip currentStep={1} />
+      <V39StepHero
+        eyebrow="1단계 · 입장과 역할 부여"
+        icon="🚪"
+        title="오늘은 C1바이오 영업팀장 역할로 판단합니다"
+        tone="indigo"
+        description="이 앱은 정답을 맞히는 퀴즈가 아닙니다. 교육용 가상 상황에서 영업팀장이 고객 활동 기록, 팀원 실행 상황, AI 초안을 활용해 2주 실행전략을 정리하는 실습 도구입니다. 먼저 팀 정보와 이름을 입력하고, 오늘의 역할을 확인합니다."
+        badges={[
+          { label: '오늘 역할', value: '영업팀장', tone: 'indigo', icon: '👤' },
+          { label: '실습 방식', value: '판단 기록', tone: 'emerald', icon: '📝' },
+          { label: '안전 기준', value: '가상 자료만', tone: 'amber', icon: '🛡️' },
+        ]}
+      />
+      <section className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
+        <V39MiniFlow
+          items={[
+            { icon: '🚪', title: '역할 확인', body: '오늘은 C1바이오 영업팀장 입장에서 판단합니다.' },
+            { icon: '🛡️', title: '안전선 확인', body: '다음 화면에서 AI 입력 금지 기준을 먼저 확인합니다.' },
+            { icon: '✍️', title: '질문 연습으로 이동', body: '좋은 AI 질문을 만들기 위한 기본 구조를 익힙니다.' },
+          ]}
+        />
+        <div className="mt-3">
+          <V39MinimumChecklist tone="indigo" items={['팀명 선택', '이름 또는 닉네임 입력', '영업팀장 역할 확인']} />
+        </div>
+      </section>
       <ComplianceNotice />
       <ShellCard title="C1바이오 영업팀장 역할 부여">
         <p>당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 외부 환경, 고객군 반응, 팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.</p>
@@ -108,13 +134,102 @@ function EntryStep({ participant, setParticipant }: { participant: V39Participan
   );
 }
 
+function V39AiSafetyStep() {
+  return (
+    <div className="space-y-4">
+      <V39FlowStrip currentStep={2} />
+      <V39StepHero
+        eyebrow="2단계 · AI 안전선 확인"
+        icon="🛡️"
+        title="AI를 쓰기 전에 말해도 되는 선부터 확인합니다"
+        tone="amber"
+        description="제약영업 실습에서는 AI에게 실제 고객명, 기관명, 제품명, 내부 수치, 개인정보를 넣지 않습니다. 이 단계는 이후 모든 AI 실습에서 지켜야 할 기준을 먼저 맞추는 시간입니다."
+        badges={[
+          { label: '목적', value: '입력 금지 기준 확인', tone: 'amber', icon: '🛡️' },
+          { label: '다음 단계', value: '질문 연습', tone: 'violet', icon: '✍️' },
+          { label: '적용 범위', value: '전체 AI 실습', tone: 'emerald', icon: '✅' },
+        ]}
+      />
+      <V39SafetyStrip>
+        실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다. AI는 판단을 대신 정하는 도구가 아니라, 팀장의 생각을 정리하고 넓히는 도구입니다.
+      </V39SafetyStrip>
+      <AiSafetyLab />
+    </div>
+  );
+}
+
+function V39PromptPracticeStep() {
+  return (
+    <div className="space-y-4">
+      <V39FlowStrip currentStep={3} />
+      <V39StepHero
+        eyebrow="3단계 · 질문 연습"
+        icon="✍️"
+        title="AI에게 잘 묻기 전에, 내 고민을 먼저 정리합니다"
+        tone="violet"
+        description="좋은 답은 좋은 질문에서 시작됩니다. 이 단계에서는 AI에게 바로 답을 요구하지 않고, 역할·상황·요청·출력 형식을 담아 질문을 구조화하는 연습을 합니다."
+        badges={[
+          { label: '앞 단계', value: '안전선 확인', tone: 'amber', icon: '🛡️' },
+          { label: '지금 할 일', value: '질문 구조 연습', tone: 'violet', icon: '✍️' },
+          { label: '다음 단계', value: '전략 리서치', tone: 'sky', icon: '🔭' },
+        ]}
+      />
+      <section className="rounded-3xl border border-violet-100 bg-white p-4 shadow-sm md:p-5">
+        <V39MiniFlow
+          items={[
+            { icon: '🧑‍💼', title: '역할을 정하기', body: 'AI에게 어떤 관점으로 봐야 하는지 알려줍니다.' },
+            { icon: '📌', title: '상황을 넣기', body: '현장 맥락과 제한 조건을 짧게 정리합니다.' },
+            { icon: '📋', title: '원하는 형식 말하기', body: '표, 체크리스트, 질문 목록처럼 필요한 결과 형태를 지정합니다.' },
+          ]}
+        />
+      </section>
+      <V39PromptPracticeLab />
+    </div>
+  );
+}
+
+function V39ResearchStrategyStep() {
+  return (
+    <div className="space-y-4">
+      <V39FlowStrip currentStep={4} />
+      <V39StepHero
+        eyebrow="4단계 · 전략 리서치"
+        icon="🔭"
+        title="공개자료에서 변화 신호를 찾고, 우리 팀 질문으로 바꿉니다"
+        tone="sky"
+        description="외부 자료를 많이 모으는 것이 목적이 아닙니다. 공개자료에서 우리 팀에 영향을 줄 변화 신호를 찾고, 다음 단계에서 볼 관리 지표로 이어질 질문을 정리합니다."
+        badges={[
+          { label: '앞 단계', value: '질문 구조', tone: 'violet', icon: '✍️' },
+          { label: '지금 할 일', value: '변화 신호 찾기', tone: 'sky', icon: '🔭' },
+          { label: '다음 단계', value: '관리 지표 선정', tone: 'emerald', icon: '🎯' },
+        ]}
+      />
+      <section className="rounded-3xl border border-sky-100 bg-white p-4 shadow-sm md:p-5">
+        <V39MiniFlow
+          items={[
+            { icon: '🔭', title: '공개자료 보기', body: '시장, 고객, 제도, 경쟁 환경의 변화 신호를 찾습니다.' },
+            { icon: '🧠', title: '우리 팀 질문으로 바꾸기', body: '자료 요약이 아니라 팀장이 봐야 할 질문으로 전환합니다.' },
+            { icon: '🎯', title: '지표로 넘기기', body: '다음 화면에서 2주 동안 볼 관리 지표를 고르는 기준이 됩니다.' },
+          ]}
+        />
+        <div className="mt-3">
+          <V39MinimumChecklist tone="sky" items={['공개자료 기반 변화 신호', '우리 팀에 줄 영향', '다음 단계로 넘길 실행 질문']} />
+        </div>
+      </section>
+      <V39PromptConcernBridgeCard mode="research" />
+      <V39DirectConcernContextCard mode="research" />
+      <V39NotebookLmGuidedResearchLab />
+    </div>
+  );
+}
+
 function renderV39Step(step: number, participant: V39Participant, setParticipant: (next: V39Participant) => void) {
   const current = V39_VISIBLE_APP_STEPS[step];
 
   if (current.id === 'entry') return <EntryStep participant={participant} setParticipant={setParticipant} />;
-  if (current.id === 'ai-safety') return <AiSafetyLab />;
-  if (current.id === 'prompt-practice') return <V39PromptPracticeLab />;
-  if (current.id === 'research-strategy') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="research" /><V39DirectConcernContextCard mode="research" /><V39NotebookLmGuidedResearchLab /></div>;
+  if (current.id === 'ai-safety') return <V39AiSafetyStep />;
+  if (current.id === 'prompt-practice') return <V39PromptPracticeStep />;
+  if (current.id === 'research-strategy') return <V39ResearchStrategyStep />;
   if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DirectConcernContextCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
   if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39DirectConcernContextCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
