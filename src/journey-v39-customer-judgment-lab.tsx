@@ -340,8 +340,10 @@ function buildDashboardMemoForItem(item: DataCheckItem) {
   return `${item.label}: ${item.likelyData}를 확인하고, 기회 단서와 과잉해석 위험을 분리합니다.`;
 }
 
-function buildDecisionFromItem(item: DataCheckItem): Partial<V39CustomerDecisionResult> {
+function buildDecisionFromItem(item: DataCheckItem): V39CustomerDecisionResult {
   return {
+    customerTypeId: item.id,
+    customerLabel: item.label,
     priorityDecision: '',
     reason: item.checkTarget,
     nextCheck: item.checkQuestion,
@@ -354,11 +356,13 @@ function buildDecisionFromItem(item: DataCheckItem): Partial<V39CustomerDecision
   };
 }
 
-function buildDecisionFromAiCard(item: DataCheckItem, card: AiExtractedCard | undefined): Partial<V39CustomerDecisionResult> {
-  if (!card) return buildDecisionFromItem(item);
+function buildDecisionFromAiCard(item: DataCheckItem, card: AiExtractedCard | undefined): V39CustomerDecisionResult {
   const fallback = buildDecisionFromItem(item);
+  if (!card) return fallback;
 
   return {
+    customerTypeId: item.id,
+    customerLabel: item.label,
     priorityDecision: '',
     reason: getAiBucketText(card, '무엇을 볼까') || fallback.reason,
     opportunitySignal: getAiBucketText(card, '기회로 볼 수 있는 경우') || fallback.opportunitySignal,
@@ -369,6 +373,94 @@ function buildDecisionFromAiCard(item: DataCheckItem, card: AiExtractedCard | un
     complianceNote: getAiBucketText(card, '표현·자료 안전선') || fallback.complianceNote,
     judgmentMemo: `${item.label}: AI 결과에서 가져온 초안입니다. 그대로 확정하지 말고 실제 고객 활동 기록과 팀원 설명을 확인한 뒤 줄여 적습니다.`,
   };
+}
+
+function getDashboardBridge() {
+  if (typeof window === 'undefined') {
+    return { coreMetrics: [], fieldSignals: [], cautions: [], questions: [], rationale: '', teamSituations: [] };
+  }
+  const result = loadV39DashboardResult();
+  return {
+    coreMetrics: compactList(result.metricSelection.selectedCoreMetricIds, 6),
+    fieldSignals: compactList(result.metricSelection.selectedSupportMetricIds, 6),
+    cautions: compactList(result.metricSelection.selectedSafetyMetricIds, 6),
+    questions: splitLines(result.metricResult.aiRecommendedQuestions, 6),
+    rationale: result.metricSelection.metricRationale.trim() || result.metricResult.additionalMetricIdea.trim(),
+    teamSituations: compactList(result.teamSituations, 4),
+  };
+}
+
+function getDataCheckItem(id: string) {
+  return DATA_CHECK_ITEMS.find((item) => item.id === id) ?? DATA_CHECK_ITEMS[0];
+}
+
+function buildInitialCustomerJudgmentState(): ReturnType<typeof loadV39CustomerJudgmentResult> {
+  if (typeof window === 'undefined') return createEmptyV39CustomerJudgmentResult();
+  const saved = loadV39CustomerJudgmentResult();
+  const normalized = normalizeV39CustomerJudgmentResult(saved);
+  const decisions = { ...normalized.decisions };
+
+  for (const item of DATA_CHECK_ITEMS) {
+    decisions[item.id] = normalizeV39CustomerDecisionResult(decisions[item.id], item.id, item.label);
+  }
+
+  return { ...normalized, decisions };
+}
+
+function buildDataCheckPrompt(
+  selectedItemIds: string[],
+  decisions: Record<string, V39CustomerDecisionResult>,
+) {
+  const dashboardBridge = getDashboardBridge();
+  const selectedItems = selectedItemIds.map(getDataCheckItem);
+
+  return [
+    '당신은 제약영업 팀장의 고객 Data 확인 List 작성을 돕는 AI 사고 파트너입니다.',
+    '',
+    '[안전선]',
+    '- 아래 내용은 교육용 가상 고객 Data 확인 실습입니다.',
+    '- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보를 추정하거나 요구하지 마세요.',
+    '- 고객을 점수화하거나 등급화하지 마세요.',
+    '- 미승인 효능 표현, 비교 우위 단정, 처방 유도 문장, 과도한 설득 문장을 만들지 마세요.',
+    '- 답변은 고객 우선순위 결정이 아니라, 팀장이 고객 Data에서 확인해야 할 증거·부족 정보·추가 질문을 분리하는 초안으로 작성하세요.',
+    '',
+    '[5단계에서 가져온 기준]',
+    dashboardBridge.coreMetrics.length > 0 ? dashboardBridge.coreMetrics.map((item) => `- 핵심 실행 지표: ${item}`).join('\n') : '- 핵심 실행 지표: 아직 선택되지 않음',
+    dashboardBridge.fieldSignals.length > 0 ? dashboardBridge.fieldSignals.map((item) => `- 함께 볼 현장 신호: ${item}`).join('\n') : '- 함께 볼 현장 신호: 아직 없음',
+    dashboardBridge.cautions.length > 0 ? dashboardBridge.cautions.map((item) => `- 조심할 해석: ${item}`).join('\n') : '- 조심할 해석: 아직 없음',
+    dashboardBridge.questions.length > 0 ? dashboardBridge.questions.map((item) => `- 팀장이 확인할 질문: ${item}`).join('\n') : '- 팀장이 확인할 질문: 아직 없음',
+    dashboardBridge.rationale ? `- 왜 이 지표를 보는가: ${dashboardBridge.rationale}` : '- 왜 이 지표를 보는가: 아직 없음',
+    '',
+    '[선택한 고객 Data 증거 카드]',
+    ...selectedItems.flatMap((item) => {
+      const decision = decisions[item.id] ?? normalizeV39CustomerDecisionResult(undefined, item.id, item.label);
+      return [
+        `- ${item.label}`,
+        `  · 무엇을 볼까: ${decision.reason || item.checkTarget}`,
+        `  · 기회로 볼 수 있는 경우: ${decision.opportunitySignal || item.opportunityCriteria}`,
+        `  · 성급하게 해석하면 안 되는 경우: ${decision.riskSignal || item.cautionCriteria}`,
+        `  · 아직 부족한 정보: ${decision.missingInfo || item.missingInfo}`,
+        `  · 팀원에게 더 확인할 질문: ${decision.nextCheck || item.checkQuestion}`,
+        `  · 7단계로 넘길 메모: ${decision.twoWeekDirection || '아직 작성되지 않았습니다.'}`,
+        `  · 표현·자료 안전선: ${decision.complianceNote || item.complianceNote}`,
+      ];
+    }),
+    '',
+    '[요청]',
+    '선택한 고객 Data 증거 카드별로 고객 Data 확인 List 초안을 작성해 주세요.',
+    '각 증거 카드는 반드시 아래 제목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
+    '',
+    '## 고객 Data 증거 카드 ① 카드명',
+    '### 1. 무엇을 볼까',
+    '### 2. 기회로 볼 수 있는 경우',
+    '### 3. 성급하게 해석하면 안 되는 경우',
+    '### 4. 아직 부족한 정보',
+    '### 5. 팀원에게 더 확인할 질문',
+    '### 6. 7단계로 넘길 대응 준비 메모',
+    '### 7. 표현·자료 안전선',
+    '',
+    '주의: 7단계에서 고객군별 대응 방향을 정할 예정이므로, 여기서는 고객 우선순위나 대응 전략을 확정하지 말고 확인 List만 작성해 주세요.',
+  ].join('\n');
 }
 
 function PillList({ items, emptyText }: { items: string[]; emptyText: string }) {
