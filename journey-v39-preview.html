@@ -7,6 +7,34 @@
 </head>
 <body>
   <div id="journey-root"></div>
+  <script>
+    window.__normalizeV39ActionPaste = function normalizeV39ActionPaste(text) {
+      const actionNumbers = {
+        '①': '1', '②': '2', '③': '3', '④': '4', '⑤': '5',
+        '⑥': '6', '⑦': '7', '⑧': '8', '⑨': '9', '⑩': '10',
+        '⑪': '11', '⑫': '12', '⑬': '13', '⑭': '14', '⑮': '15',
+        '⑯': '16', '⑰': '17', '⑱': '18', '⑲': '19', '⑳': '20'
+      };
+      return text.replace(/(행동|실행)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
+        return label + ' ' + actionNumbers[marker] + '. ';
+      });
+    };
+
+    document.addEventListener('paste', function (event) {
+      const target = event.target;
+      if (!(target instanceof HTMLTextAreaElement)) return;
+      const pastedText = event.clipboardData && event.clipboardData.getData('text/plain');
+      if (!pastedText) return;
+      const normalizedText = window.__normalizeV39ActionPaste(pastedText);
+      if (normalizedText === pastedText) return;
+
+      event.preventDefault();
+      const start = target.selectionStart || 0;
+      const end = target.selectionEnd || 0;
+      target.setRangeText(normalizedText, start, end, 'end');
+      target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: normalizedText }));
+    }, true);
+  </script>
   <script type="module" src="/src/journey-v39-app-preview.tsx"></script>
 </body>
 </html>
