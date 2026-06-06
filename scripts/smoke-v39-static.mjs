@@ -31,7 +31,8 @@ const files = {
   config: read('src/journey-v39-preview-config.ts'),
   tsconfig: read('tsconfig.v39-smoke.json'),
   storage: read('src/journey-storage.ts'),
-  promptPractice: read('src/journey-v39-prompt-practice-lab.tsx'),
+  promptPracticeOptimized: read('src/journey-v39-prompt-practice-optimized-lab.tsx'),
+  promptConcernBridge: read('src/journey-v39-prompt-concern-bridge-card.tsx'),
   researchStrategy: read('src/journey-v39-research-strategy-lab.tsx'),
   dashboardStore: read('src/journey-v39-dashboard-result-store.ts'),
   dashboardUx: read('src/journey-v39-dashboard-analysis-ux-lab.tsx'),
@@ -56,6 +57,8 @@ const files = {
 };
 
 const visibleFiles = {
+  promptPracticeOptimized: stripSmokeMarkers(files.promptPracticeOptimized),
+  promptConcernBridge: stripSmokeMarkers(files.promptConcernBridge),
   customerJudgmentUx: stripSmokeMarkers(files.customerJudgmentUx),
   customerPriorityUx: stripSmokeMarkers(files.customerPriorityUx),
   aiCallPlanUx: stripSmokeMarkers(files.aiCallPlanUx),
@@ -65,7 +68,8 @@ const visibleFiles = {
 };
 
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
-for (const marker of ['V39PreviewApp', 'V39PromptPracticeLab', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab', 'removeStoredPrefix']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PreviewApp', 'V39PromptPracticeOptimizedLab', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab', 'removeStoredPrefix']) mustInclude(files.app, marker, 'app route');
+for (const marker of ['V39PromptPracticeLab', "from './journey-v39-prompt-practice-lab'"]) mustNotInclude(files.app, marker, 'old prompt practice route import');
 for (const marker of ["removeStoredPrefix('ckd.v39.')", 'v39 full storage reset removeStoredPrefix']) mustInclude(files.app, marker, 'v39 reset all storage');
 for (const marker of ['canUseLocalStorage', 'removeStoredPrefix', 'Storage quota, private-mode, or JSON serialization errors should not break the learning flow']) mustInclude(files.storage, marker, 'storage hardening');
 for (const marker of ['getJson', 'setJson', 'removeStoredPrefix']) mustInclude(files.dashboardStore, marker, 'dashboard safe storage');
@@ -87,7 +91,10 @@ for (const marker of [
   'src/journey-v39-instructor-discussion-lab.tsx',
 ]) mustInclude(files.tsconfig, marker, 'tsconfig');
 
-for (const marker of ['V39PromptPracticeLab', '일반 질문과 구조화 질문의 차이', '제약영업 현장을 오래 해본 선배 팀장']) mustInclude(files.promptPractice, marker, 'prompt practice');
+for (const marker of ['V39PromptPracticeOptimizedLab', '우리 팀 고민을 AI가 알아듣는 질문으로 바꾸기', '사내 영업활동 시스템', '관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정', '코칭 대상 선정 → 실행 대화 → 2주 실행계획']) mustInclude(files.promptPracticeOptimized, marker, 'optimized prompt practice');
+for (const marker of ['사내 시스템/CRM', '고객군 × 팀원 실행 Map', '신규 접점 실행 Map', '팀원 역할 보완', '8단계 기록 보완 담당', '8단계 팀원별 역할 미션과 지원 포인트', '실행 Map → 역할 보완']) mustNotInclude(visibleFiles.promptPracticeOptimized, marker, 'optimized prompt old flow wording');
+for (const marker of ['V39PromptConcernBridgeCard', '관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정', '코칭 대상 선정 → 실행 대화 첫마디 → 2주 실행계획', 'getJson']) mustInclude(files.promptConcernBridge, marker, 'prompt concern bridge');
+for (const marker of ['고객군 × 팀원 실행 Map', '신규 접점 실행 Map', '팀원 역할 보완', '실행 Map → 역할 보완', 'window.localStorage.getItem']) mustNotInclude(visibleFiles.promptConcernBridge, marker, 'prompt concern bridge old flow wording');
 for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
 for (const marker of ['V39DashboardAnalysisUxLab', '관리 지표 선정 상태', '고객 Data 확인 List로 넘길 기준']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
 for (const marker of ['V39CustomerJudgmentLab', '고객 Data 확인 List', '고객의 무엇을 확인할 것인가']) mustInclude(files.customerJudgment, marker, 'customer judgment');
