@@ -25,10 +25,29 @@ v38 Smoke: success
 v40-lite Smoke: success
 ```
 
-## 3. Updated file
+Additional verified marker cleanup commit:
+
+```text
+7031d2955d01a8e7ceb7dbd674b4c01aee376bac
+```
+
+Actions result:
+
+```text
+C1Bio MVP CI: success
+v39 Smoke: success
+v35 Smoke: success
+v36 Smoke: success
+v38 Smoke: success
+v40-lite Smoke: success
+```
+
+## 3. Updated files
 
 ```text
 src/journey-v39-people-dialogue-lab.tsx
+src/journey-v39-people-dialogue-ux-lab.tsx
+scripts/smoke-v39-static.mjs
 ```
 
 ## 4. Previous issue
@@ -91,7 +110,34 @@ The block displays:
 
 When the learner clicks the button, Step 9 dialogue card fields are prefilled with the selected coaching target context.
 
-## 7. Fields connected to the dialogue card
+## 7. Step 9 UX wrapper alignment
+
+The Step 9 UX wrapper now presents the Step 8 to Step 9 connection clearly before the detailed lab screen.
+
+Key visible language:
+
+```text
+8단계 우선 1on1 연결 요약
+우선 1on1 대상
+8단계 코칭 대상과 초점
+8단계 코칭 대상 선정 결과를 대화 재료로 가져옵니다
+코칭 대상, 선택 이유, 코칭 초점
+```
+
+The old UX smoke markers were cleaned up. These old internal markers should not return:
+
+```text
+8단계 역할 미션과 지원 포인트
+8단계 역할 보완 결과를 대화 재료로 가져옵니다
+```
+
+This keeps the wrapper, the lab screen, and the smoke criteria aligned around the same concept:
+
+```text
+코칭 대상 → 실행 대화
+```
+
+## 8. Fields connected to the dialogue card
 
 The Step 8 target can fill or influence:
 
@@ -106,7 +152,7 @@ The Step 8 target can fill or influence:
 대체 문장
 ```
 
-## 8. Prompt connection
+## 9. Prompt connection
 
 Step 9 AI prompt now includes:
 
@@ -129,7 +175,7 @@ Step 8 AI = who to talk with and why
 Step 9 AI = how to open and structure the conversation
 ```
 
-## 9. Static smoke update
+## 10. Static smoke update
 
 The v39 static smoke script now checks for Step 8 to Step 9 connection markers:
 
@@ -148,7 +194,7 @@ journey-v39-member-role-result-store
 8단계 역할 결과
 ```
 
-## 10. Future caution
+## 11. Future caution
 
 The Step 9 screen may still use the word `역할` inside ordinary conversation content, such as role criteria or responsibility boundaries. That is acceptable.
 
@@ -160,12 +206,15 @@ Avoid restoring:
 8단계 역할 결과
 역할 정리 결과
 member-role-result-store as Step 9 source
+8단계 역할 미션과 지원 포인트
+8단계 역할 보완 결과를 대화 재료로 가져옵니다
 ```
 
 Prefer:
 
 ```text
 8단계 우선 1on1 대상
+코칭 대상과 초점
 코칭 초점
 대화 카드
 실행 대화
