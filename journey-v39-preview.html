@@ -15,33 +15,54 @@
         '⑪': '11', '⑫': '12', '⑬': '13', '⑭': '14', '⑮': '15',
         '⑯': '16', '⑰': '17', '⑱': '18', '⑲': '19', '⑳': '20'
       };
-      const detailLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*$/;
-      const detailLineLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/;
-      const actionStart = /^\s*#{0,6}\s*(행동|실행)\s*(\d+|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])/;
+      const detailLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료|팀원 질문|팀원에게 확인할 질문|확인 질문|남길 산출물|산출물|결과물|정리 결과|남길 결과|실행 시점|시점|타이밍|언제|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*$/;
+      const detailLineLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료|팀원 질문|팀원에게 확인할 질문|확인 질문|남길 산출물|산출물|결과물|정리 결과|남길 결과|실행 시점|시점|타이밍|언제|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/;
+      const actionStart = /^\s*#{0,6}\s*(행동|실행|실행안|실행 행동|액션|Action|Step)\s*(\d+|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])/i;
       const sectionStart = /^\s*#{1,6}\s*(\d+[.)]\s*)?(고객군 후보|확인된 단서|아직 부족한 정보|이번 2주 행동|팀원에게 확인할 질문|표현·자료 안전선|다음 회의에서 확인할 것)/;
 
       function normalizeGeminiCustomerHeadings(value) {
         return value
           .replace(/^(\s*#{1,6}\s*)고객군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)대상\s*고객군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)고객\s*세그먼트\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)세그먼트\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)대응군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
           .replace(/^(\s*#{1,6}\s*)점검\s*조건\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,6}\s*)고객군\s*\/\s*조건\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ');
+          .replace(/^(\s*#{1,6}\s*)고객군\s*\/\s*조건\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)(?:Group|Segment|Customer Group|Case)\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s*[:：.-]?\s+/gim, '$1고객군/점검 조건 $2 ')
+          .replace(/^(\s*#{1,6}\s*)([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+)[.)]\s+([^\n#]*고객군[^\n]*)$/gm, '$1고객군/점검 조건 $2 $3')
+          .replace(/^(\s*#{1,6}\s*)([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+)[.)]\s+([^\n#]*점검\s*조건[^\n]*)$/gm, '$1고객군/점검 조건 $2 $3');
       }
 
-      function normalizeCircledActionNumbers(value) {
+      function normalizeActionLabels(value) {
         return value
-          .replace(/(행동|실행)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
-            return label + ' ' + actionNumbers[marker] + '. ';
+          .replace(/(행동|실행|실행안|실행 행동|액션)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
+            return '행동 ' + actionNumbers[marker] + '. ';
           })
-          .replace(/(행동|실행)\s*(\d+)\s*[:：]\s*/g, '$1 $2. ');
+          .replace(/(?:Action|Step)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/gi, function (_match, marker) {
+            return '행동 ' + actionNumbers[marker] + '. ';
+          })
+          .replace(/(행동|실행|실행안|실행 행동|액션)\s*(\d+)\s*[:：)]\s*/g, '행동 $2. ')
+          .replace(/(?:Action|Step)\s*(\d+)\s*[:：).]\s*/gi, '행동 $1. ');
       }
 
-      function safeDetailLabel(label) {
-        if (label === '팀원 질문' || label === '팀원에게 확인할 질문') return '보완 사항';
+      function normalizeDetailLabel(label) {
+        if (/^(확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료)$/.test(label)) return '확인할 기록';
+        if (/^(결과물|정리 결과|남길 결과)$/.test(label)) return '남길 산출물';
+        if (/^(시점|타이밍|언제)$/.test(label)) return '실행 시점';
+        if (/^(확인 질문)$/.test(label)) return '팀원 질문';
         return label;
       }
 
+      function safeDetailLabel(label) {
+        const normalized = normalizeDetailLabel(label);
+        if (normalized === '팀원 질문' || normalized === '팀원에게 확인할 질문') return '보완 사항';
+        return normalized;
+      }
+
       function safeDetailValue(label, values) {
-        if (label === '팀원 질문' || label === '팀원에게 확인할 질문') return '팀원 질문 - ' + values.join(', ');
+        const normalized = normalizeDetailLabel(label);
+        if (normalized === '팀원 질문' || normalized === '팀원에게 확인할 질문') return '팀원 질문 - ' + values.join(', ');
         return values.join(', ');
       }
 
@@ -100,7 +121,7 @@
         return output.join('\n');
       }
 
-      return collapseNestedDetailBullets(normalizeCircledActionNumbers(normalizeGeminiCustomerHeadings(text)));
+      return collapseNestedDetailBullets(normalizeActionLabels(normalizeGeminiCustomerHeadings(text)));
     };
 
     document.addEventListener('paste', function (event) {
