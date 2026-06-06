@@ -21,6 +21,8 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '6단계 고객 Data 확인 List',
   '대응 강도',
   '2주 대응 방향',
+  '이번 2주 실행 행동',
+  'AI 핵심 행동 3~4개 압축',
   '팀원 연결 기준',
   '실제 연결 후보',
   '위험·보완 조건',
@@ -172,7 +174,27 @@ const MEMBER_ROLE_OPTIONS = [
 ];
 
 function compactList(items: string[], limit = 6) {
-  return items.map((item) => item.trim()).filter(Boolean).slice(0, limit);
+  const seen = new Set<string>();
+  const results: string[] = [];
+  for (const item of items) {
+    const clean = item.trim();
+    if (!clean || seen.has(clean)) continue;
+    seen.add(clean);
+    results.push(clean);
+    if (results.length >= limit) break;
+  }
+  return results;
+}
+
+function buildCompactActionText(actionItems: string[], fallback: string) {
+  const compacted = compactList(actionItems, 4);
+  return compacted.length > 0 ? compacted.join('\n') : fallback;
+}
+
+function buildCompactRiskText(parts: string[], fallback: string) {
+  const lines = parts.flatMap((part) => part.split('\n'));
+  const compacted = compactList(lines, 4);
+  return compacted.length > 0 ? compacted.join('\n') : fallback;
 }
 
 function cleanAiMapResultLine(value: string) {
@@ -407,17 +429,18 @@ function inferPriorityFromAiCard(item: CustomerDirectionItem, card: AiMapExtract
 
 function buildStrategyFromAiCard(item: CustomerDirectionItem, decision: V39CustomerDecisionResult, card: AiMapExtractedCard | undefined) {
   const missingInfo = getAiMapBucketText(card, '아직 부족한 정보');
-  const action = getAiMapBucketText(card, '이번 2주 행동');
+  const actionItems = getAiMapBucketItems(card, '이번 2주 행동');
   const safety = getAiMapBucketText(card, '표현·자료 안전선');
   const nextMeeting = getAiMapBucketText(card, '다음 회의에서 확인할 것');
   const confirmedClue = getAiMapBucketText(card, '확인된 단서');
-  const risk = [missingInfo, safety, nextMeeting].map((value) => value.trim()).filter(Boolean).join('\n');
+  const fallbackAction = confirmedClue || defaultDirection(item, decision);
+  const fallbackRisk = buildRiskGuide(decision) || '표현·자료·접촉 강도 안전선을 다시 확인합니다.';
 
   return {
     priority: inferPriorityFromAiCard(item, card),
     memberRole: item.defaultMemberRole,
-    strategy: action || confirmedClue || defaultDirection(item, decision),
-    risk: risk || buildRiskGuide(decision) || '표현·자료·접촉 강도 안전선을 다시 확인합니다.',
+    strategy: buildCompactActionText(actionItems, fallbackAction),
+    risk: buildCompactRiskText([missingInfo, safety, nextMeeting], fallbackRisk),
   };
 }
 
@@ -695,15 +718,15 @@ function V39CustomerJudgmentBridgePanel() {
               <p className="mt-3 text-xs font-black text-emerald-700">6단계 고객 Data 증거 요약</p>
               <p className="mt-1 whitespace-pre-wrap text-xs font-bold leading-5 text-slate-700">{sourceSummary}</p>
               <div className="mt-3 grid gap-2 text-xs font-bold leading-5 text-slate-700">
-                <div className="rounded-2xl bg-emerald-50 p-3"><span className="font-black text-emerald-900">기회 단서</span><br />{current.opportunitySignal || '6단계에서 기회 단서를 정리하면 표시됩니다.'}</div>
-                <div className="rounded-2xl bg-amber-50 p-3"><span className="font-black text-amber-900">주의·보완 조건</span><br />{buildRiskGuide(current) || '주의 단서, 부족 정보, 안전선을 확인합니다.'}</div>
-                <div className="rounded-2xl bg-sky-50 p-3"><span className="font-black text-sky-900">팀원 확인 질문</span><br />{current.nextCheck || '다음 대화 전에 팀원이 확인할 질문을 정리합니다.'}</div>
+                <div className="rounded-2xl bg-emerald-50 p-3"><span className="font-black text-emerald-900">기회 단서</span><br />{current.opportunitySignal || <span className="text-emerald-600/70">6단계 기회 단서 없음 · 위 AI 실행 카드에서 이번 2주 행동을 확인하세요.</span>}</div>
+                <div className="rounded-2xl bg-amber-50 p-3"><span className="font-black text-amber-900">주의·보완 조건</span><br />{buildRiskGuide(current) || <span className="text-amber-700/70">6단계 주의·보완 조건이 부족합니다. AI 초안과 현장 기록을 함께 확인하세요.</span>}</div>
+                <div className="rounded-2xl bg-sky-50 p-3"><span className="font-black text-sky-900">팀원 확인 질문</span><br />{current.nextCheck || <span className="text-sky-700/70">다음 대화 전에 확인할 질문을 직접 보완하세요.</span>}</div>
               </div>
-              <button type="button" className="mt-3 w-full rounded-2xl bg-emerald-700 px-4 py-2 text-xs font-black text-white" onClick={() => applyDirectionDraft(item, current, matchedAiCard)}>{hasMatchedAiCard ? 'AI 결과에서 가져오기' : '6단계 단서로 실행 Map 초안 가져오기'}</button>
+              <button type="button" className="mt-3 w-full rounded-2xl bg-emerald-700 px-4 py-2 text-xs font-black text-white" onClick={() => applyDirectionDraft(item, current, matchedAiCard)}>{hasMatchedAiCard ? 'AI 핵심 행동 3~4개 가져오기' : '6단계 단서로 실행 Map 초안 가져오기'}</button>
 
               <div className="mt-3 space-y-3">
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">2주 대응 방식</span><select className="w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={strategy.priority} onChange={(event) => updateStrategy(item.id, { priority: event.target.value })}><option value="">선택하세요</option>{RESPONSE_DIRECTION_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
-                <label className="block space-y-1"><span className="text-xs font-black text-slate-500">2주 대응 방향</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.strategy} onChange={(event) => updateStrategy(item.id, { strategy: event.target.value })} placeholder="예: 고객 질문의 구체성을 확인하고, 승인자료 범위 안에서 다음 접점 주제를 준비한다." /></label>
+                <label className="block space-y-1"><span className="text-xs font-black text-slate-500">이번 2주 실행 행동</span><textarea className="min-h-32 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.strategy} onChange={(event) => updateStrategy(item.id, { strategy: event.target.value })} placeholder="예: 다음 회의 전, 고객 질문의 구체성을 확인하고 승인자료 범위 안에서 다음 접점 주제를 정리한다." /></label>
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">팀원 연결 기준 / 실제 연결 후보</span><select className="w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={strategy.memberRole} onChange={(event) => updateStrategy(item.id, { memberRole: event.target.value })}><option value="">선택하세요</option>{MEMBER_ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
                 <label className="block space-y-1"><span className="text-xs font-black text-slate-500">위험·보완 조건</span><textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={strategy.risk} onChange={(event) => updateStrategy(item.id, { risk: event.target.value })} placeholder="예: 표현 안전선, 부족 정보, 고객 부담 가능성을 먼저 확인한다." /></label>
               </div>
