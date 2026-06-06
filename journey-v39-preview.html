@@ -4,6 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>
+  <style>
+    .v39-action-details,
+    .v39-card-support-details {
+      margin-top: 0.75rem;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 0.9rem;
+      background: rgba(236, 253, 245, 0.72);
+      padding: 0.65rem 0.8rem;
+    }
+    .v39-card-support-details {
+      border-color: rgba(124, 58, 237, 0.14);
+      background: rgba(245, 243, 255, 0.72);
+    }
+    .v39-action-details > summary,
+    .v39-card-support-details > summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 900;
+      font-size: 0.75rem;
+      color: #047857;
+      user-select: none;
+    }
+    .v39-card-support-details > summary {
+      color: #6d28d9;
+    }
+    .v39-action-details > summary::-webkit-details-marker,
+    .v39-card-support-details > summary::-webkit-details-marker {
+      display: none;
+    }
+    .v39-action-details > summary::before,
+    .v39-card-support-details > summary::before {
+      content: '＋ ';
+      font-weight: 900;
+    }
+    .v39-action-details[open] > summary::before,
+    .v39-card-support-details[open] > summary::before {
+      content: '－ ';
+    }
+    .v39-action-details > div,
+    .v39-card-support-details > div {
+      margin-top: 0.55rem !important;
+    }
+  </style>
 </head>
 <body>
   <div id="journey-root"></div>
@@ -138,6 +181,64 @@
       target.setRangeText(normalizedText, start, end, 'end');
       target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: normalizedText }));
     }, true);
+
+    function simplifyV39AiActionCards() {
+      const actionBlocks = Array.from(document.querySelectorAll('div')).filter(function (element) {
+        if (element.dataset.v39ActionDetailsWrapped === 'true') return false;
+        const firstStrongText = Array.from(element.children).slice(0, 2).map(function (child) {
+          return (child.textContent || '').trim();
+        }).join(' ');
+        return /^행동\s+\d+\b/.test(firstStrongText) && element.textContent && element.textContent.includes('확인');
+      });
+
+      actionBlocks.forEach(function (block) {
+        const detailChildren = Array.from(block.children).filter(function (child) {
+          const text = (child.textContent || '').trim();
+          return /^(확인할 기록|확인 기록|남길 산출물|실행 시점|보완 사항|주의할 점|확인 기준|남길 메모)/.test(text);
+        });
+        if (detailChildren.length === 0) {
+          block.dataset.v39ActionDetailsWrapped = 'true';
+          return;
+        }
+
+        const details = document.createElement('details');
+        details.className = 'v39-action-details';
+        const summary = document.createElement('summary');
+        summary.textContent = '세부 보조 정보 보기';
+        details.appendChild(summary);
+        detailChildren.forEach(function (child) {
+          details.appendChild(child);
+        });
+        block.appendChild(details);
+        block.dataset.v39ActionDetailsWrapped = 'true';
+      });
+
+      const supportGrids = Array.from(document.querySelectorAll('section > div.grid')).filter(function (grid) {
+        if (grid.dataset.v39SupportWrapped === 'true') return false;
+        const text = grid.textContent || '';
+        return text.includes('확인된 단서') && text.includes('아직 부족한 정보') && text.includes('표현·자료 안전선');
+      });
+
+      supportGrids.forEach(function (grid) {
+        const details = document.createElement('details');
+        details.className = 'v39-card-support-details';
+        const summary = document.createElement('summary');
+        summary.textContent = '단서·부족정보·안전선 보기';
+        details.appendChild(summary);
+        grid.parentNode.insertBefore(details, grid);
+        details.appendChild(grid);
+        grid.dataset.v39SupportWrapped = 'true';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      simplifyV39AiActionCards();
+      const observer = new MutationObserver(function () {
+        window.requestAnimationFrame(simplifyV39AiActionCards);
+      });
+      const root = document.getElementById('journey-root');
+      if (root) observer.observe(root, { childList: true, subtree: true });
+    });
   </script>
   <script type="module" src="/src/journey-v39-app-preview.tsx"></script>
 </body>
