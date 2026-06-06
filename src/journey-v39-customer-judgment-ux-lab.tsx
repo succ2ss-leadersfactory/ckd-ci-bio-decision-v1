@@ -29,10 +29,10 @@ const V39_CUSTOMER_JUDGMENT_UX_SMOKE_MARKERS = [
   '5단계에서 넘겨받은 기준',
   '관리 지표를 고객 Data로 확인하기',
   '고객 Data 해석 메모',
-  '팀원별 영업활동 기록 품질 차이',
   'Block 1부터 바로 실습',
   '방문·면담 기록에서 먼저 확인할 단서만 고릅니다',
   '고객에게 점수를 매기거나 줄 세우는 시간이 아닙니다',
+  '8단계에서는 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다',
   'V39StepHero',
   'V39FlowStrip',
   'V39ActionTriplet',
@@ -121,7 +121,7 @@ export function V39CustomerJudgmentUxLab() {
       <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
           <p className="font-black">지표가 현장 행동으로 바뀌는 흐름입니다</p>
-          <p className="mt-1">6단계에서는 고객 활동 기록에서 볼 단서를 고릅니다. 7단계에서는 그 단서를 보고 이번 2주 동안 어떻게 움직일지 정합니다. 8단계에서는 그 일을 맡을 팀원이 실제로 움직일 수 있도록 역할과 지원을 다듬습니다.</p>
+          <p className="mt-1">6단계에서는 고객 활동 기록에서 볼 단서를 고릅니다. 7단계에서는 그 단서를 보고 이번 2주 동안 어떻게 움직일지 정합니다. 8단계에서는 이 대응 방향을 실행으로 옮기기 위해 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다.</p>
         </div>
 
         <div className="mt-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">
