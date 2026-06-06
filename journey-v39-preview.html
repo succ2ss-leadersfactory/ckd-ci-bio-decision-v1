@@ -26,6 +26,16 @@
         });
       }
 
+      function safeDetailLabel(label) {
+        if (label === '팀원 질문' || label === '팀원에게 확인할 질문') return '보완 사항';
+        return label;
+      }
+
+      function safeDetailValue(label, values) {
+        if (label === '팀원 질문' || label === '팀원에게 확인할 질문') return '팀원 질문 - ' + values.join(', ');
+        return values.join(', ');
+      }
+
       function collapseNestedDetailBullets(value) {
         const lines = value.split(/\r?\n/);
         const output = [];
@@ -71,7 +81,7 @@
           }
 
           if (values.length > 0) {
-            output.push(label + ': ' + values.join(', '));
+            output.push(safeDetailLabel(label) + ': ' + safeDetailValue(label, values));
             index = cursor - 1;
           } else {
             output.push(line);
