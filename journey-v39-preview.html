@@ -40,20 +40,18 @@
 <body>
   <div id="journey-root"></div>
   <script>
-    window.__V39_STEP7_VISIBLE_DECISION_MARKERS = 'AI 결과 전체 붙여넣기|고객군별 AI 결과 전체 보기|AI 초안을 아래 실행 행동에 반영하기|AI 결과에서 읽어온 2주 행동 초안|팀원 연결 기준 숨김|노란 경고 박스 삭제|7단계는 고객군별 대응 방향 정리';
+    window.__V39_STEP7_VISIBLE_DECISION_MARKERS = 'AI 결과 전체 붙여넣기|고객군별 AI 결과 전체 보기|AI 초안을 아래 실행 행동에 반영하기|AI 결과에서 읽어온 2주 행동 초안|팀원 연결 기준 숨김|노란 경고 박스 안전 삭제|7단계는 고객군별 대응 방향 정리|빈 화면 방지';
 
     function textOf(element) {
       return (element && element.textContent ? element.textContent : '').trim();
     }
 
-    function closestVisibleBlock(element) {
-      return element.closest('label, article, section, div');
-    }
-
     function hideStep7WarningBoxes() {
-      Array.from(document.querySelectorAll('div, p, section')).forEach(function (element) {
+      Array.from(document.querySelectorAll('div.rounded-2xl, p')).forEach(function (element) {
         var text = textOf(element);
-        if (text.includes('AI 초안은 그대로 확정하지 않습니다') && text.includes('집중 공략')) {
+        var isWarningText = text.includes('AI 초안은 그대로 확정하지 않습니다') && text.includes('집중 공략');
+        var isSmallWarningBlock = text.length < 260;
+        if (isWarningText && isSmallWarningBlock) {
           element.style.display = 'none';
           element.setAttribute('data-v39-hidden-warning', 'true');
         }
@@ -66,17 +64,6 @@
         if (text.includes('팀원 연결 기준 / 실제 연결 후보')) {
           label.style.display = 'none';
           label.setAttribute('data-v39-hidden-member-connection', 'true');
-        }
-      });
-
-      Array.from(document.querySelectorAll('span, p')).forEach(function (node) {
-        var text = textOf(node);
-        if (text === '팀원 연결 기준 / 실제 연결 후보') {
-          var block = closestVisibleBlock(node);
-          if (block) {
-            block.style.display = 'none';
-            block.setAttribute('data-v39-hidden-member-connection', 'true');
-          }
         }
       });
     }
