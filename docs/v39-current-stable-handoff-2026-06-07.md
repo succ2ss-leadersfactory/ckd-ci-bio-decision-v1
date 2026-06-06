@@ -35,13 +35,13 @@ Production route remains untouched:
 Latest verified commit before this refresh:
 
 ```text
-873b3871af48757c8ba821b6f78599cee0398c91
+d02ede4829d7c11489b9fdfdb7e60aab40a53954
 ```
 
 Commit message:
 
 ```text
-Add v39 current stable handoff
+Add v39 browser QA result template
 ```
 
 Actions result:
@@ -354,6 +354,7 @@ docs/v39-step3-optimized-prompt-practice-note.md
 docs/v39-steps1-7-pre-browser-qa-final-check.md
 docs/v39-deployment-browser-qa-runbook.md
 docs/v39-current-stable-handoff-2026-06-07.md
+docs/v39-browser-qa-result-template.md
 ```
 
 ## 12. Next recommended work
@@ -383,6 +384,12 @@ Step 7 reads Step 6 evidence and persists after refresh
 Step 8 opens as coaching target selection
 진행 초기화 clears all v39 scoped values
 No CRM-first or old work-allocation wording appears
+```
+
+Use this result template:
+
+```text
+docs/v39-browser-qa-result-template.md
 ```
 
 ## 13. Important note about live URL verification
