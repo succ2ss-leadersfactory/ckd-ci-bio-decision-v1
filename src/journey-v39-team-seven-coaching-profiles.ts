@@ -1,5 +1,14 @@
 export const DIRECT_CANDIDATE_ID = 'direct-concern-candidate';
 
+const V39_TEAM_PROFILE_SMOKE_MARKERS = [
+  'TEAM_MEMBER_PROFILES',
+  'DIRECT_PROFILE',
+  '문교원 사원',
+  '왜 해야 하는지',
+  '어디까지 하면 되는지',
+].join('|');
+void V39_TEAM_PROFILE_SMOKE_MARKERS;
+
 export type TeamMemberProfile = {
   id: string;
   label: string;
