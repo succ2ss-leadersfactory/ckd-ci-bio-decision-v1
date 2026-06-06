@@ -15,9 +15,73 @@
         '⑪': '11', '⑫': '12', '⑬': '13', '⑭': '14', '⑮': '15',
         '⑯': '16', '⑰': '17', '⑱': '18', '⑲': '19', '⑳': '20'
       };
-      return text.replace(/(행동|실행)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
-        return label + ' ' + actionNumbers[marker] + '. ';
-      });
+      const detailLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*$/;
+      const detailLineLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|팀원 질문|팀원에게 확인할 질문|남길 산출물|산출물|실행 시점|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/;
+      const actionStart = /^\s*#{0,6}\s*(행동|실행)\s*(\d+|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])/;
+      const sectionStart = /^\s*#{1,6}\s*(\d+[.)]\s*)?(고객군 후보|확인된 단서|아직 부족한 정보|이번 2주 행동|팀원에게 확인할 질문|표현·자료 안전선|다음 회의에서 확인할 것)/;
+
+      function normalizeCircledActionNumbers(value) {
+        return value.replace(/(행동|실행)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
+          return label + ' ' + actionNumbers[marker] + '. ';
+        });
+      }
+
+      function collapseNestedDetailBullets(value) {
+        const lines = value.split(/\r?\n/);
+        const output = [];
+
+        for (let index = 0; index < lines.length; index += 1) {
+          const line = lines[index];
+          const detailMatch = line.match(detailLabels);
+
+          if (!detailMatch) {
+            output.push(line);
+            continue;
+          }
+
+          const label = detailMatch[2];
+          const values = [];
+          let cursor = index + 1;
+
+          while (cursor < lines.length) {
+            const nextLine = lines[cursor];
+
+            if (/^\s*$/.test(nextLine)) {
+              cursor += 1;
+              continue;
+            }
+            if (detailLineLabels.test(nextLine) || actionStart.test(nextLine) || sectionStart.test(nextLine) || /^\s*---+\s*$/.test(nextLine)) {
+              break;
+            }
+
+            const bulletMatch = nextLine.match(/^\s*[-*•]\s+(.+?)\s*$/);
+            if (bulletMatch) {
+              values.push(bulletMatch[1].trim());
+              cursor += 1;
+              continue;
+            }
+
+            if (/^\s{2,}\S/.test(nextLine)) {
+              values.push(nextLine.trim());
+              cursor += 1;
+              continue;
+            }
+
+            break;
+          }
+
+          if (values.length > 0) {
+            output.push(label + ': ' + values.join(', '));
+            index = cursor - 1;
+          } else {
+            output.push(line);
+          }
+        }
+
+        return output.join('\n');
+      }
+
+      return collapseNestedDetailBullets(normalizeCircledActionNumbers(text));
     };
 
     document.addEventListener('paste', function (event) {
