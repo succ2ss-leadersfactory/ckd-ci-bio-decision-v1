@@ -20,10 +20,6 @@ import {
   loadV39DashboardResult,
 } from './journey-v39-dashboard-result-store';
 import {
-  type V39MemberRoleResult,
-  loadV39MemberRoleResult,
-} from './journey-v39-member-role-result-store';
-import {
   type V39PeopleDialogueResult,
   loadV39PeopleDialogueResult,
 } from './journey-v39-people-dialogue-result-store';
@@ -32,6 +28,11 @@ import {
   loadV39FinalCallPlanResult,
   saveV39FinalCallPlanResult,
 } from './journey-v39-final-call-plan-result-store';
+import {
+  type V39TeamSevenCoachingMapResult,
+  type V39TeamSevenMemberDecision,
+  loadV39TeamSevenCoachingMapResult,
+} from './journey-v39-team-seven-coaching-map';
 
 const V39_FINAL_CARD_SMOKE_MARKERS = [
   'V39FinalCallPlanCard',
@@ -40,14 +41,15 @@ const V39_FINAL_CARD_SMOKE_MARKERS = [
   '현업 적용 카드',
   '5단계 관리 지표',
   '6단계 고객 Data 확인 List',
-  '7단계 고객군 × 팀원 실행 Map',
   '7단계 고객군별 2주 대응 방향',
-  '8단계 팀원 역할 요약',
+  '8단계 코칭 대상 선정 요약',
   '9단계 실행 대화 요약',
   '10단계 AI 실행계획 초안',
   '11단계 컴플라이언스 요약',
   '11단계 안전 문장·체크리스트',
   '13단계 강사용 토의에 넘길 최종 실행 카드 저장',
+  '7단계 고객군 × 팀원 실행 Map',
+  '8단계 팀원 역할 요약',
 ].join('|');
 void V39_FINAL_CARD_SMOKE_MARKERS;
 
@@ -63,6 +65,18 @@ function hasPeopleDialogue(result: V39PeopleDialogueResult) {
 
 function joinList(items: string[], empty = '아직 정리되지 않았습니다.') {
   return items.length > 0 ? items.join(' · ') : empty;
+}
+
+function hasCoachingTargetContext(item: V39TeamSevenMemberDecision) {
+  return Boolean(
+    item.priorityOneOnOne ||
+      item.coachingPurpose.trim() ||
+      item.selectionReason?.trim() ||
+      item.coachingFocus?.trim() ||
+      item.leaderSupport.trim() ||
+      item.riskMemo.trim() ||
+      item.aiJudgmentDraft?.trim(),
+  );
 }
 
 function buildMetricSummary(result: V39DashboardResult) {
@@ -109,8 +123,8 @@ function buildCustomerDataSummary(result: V39CustomerJudgmentResult) {
 }
 
 function buildCustomerStrategySummary(result: V39CustomerStrategyResult) {
-  const strategies = Object.values(result.strategies).filter((strategy) => strategy.strategy.trim() || strategy.memberRole.trim());
-  if (strategies.length === 0) return '[7단계 고객군별 2주 대응 방향]\n- 아직 고객군별 대응 방향과 1차 팀원 연결 후보가 저장되지 않았습니다.';
+  const strategies = Object.values(result.strategies).filter((strategy) => strategy.strategy.trim() || strategy.priority.trim() || strategy.risk.trim());
+  if (strategies.length === 0) return '[7단계 고객군별 2주 대응 방향]\n- 아직 고객군별 대응 방향이 저장되지 않았습니다.';
 
   return [
     '[7단계 고객군별 2주 대응 방향]',
@@ -118,26 +132,30 @@ function buildCustomerStrategySummary(result: V39CustomerStrategyResult) {
       `${index + 1}. ${strategy.customerLabel}`,
       `- 대응 강도: ${strategy.priority || '아직 정리되지 않았습니다.'}`,
       `- 2주 대응 방향: ${strategy.strategy || '아직 정리되지 않았습니다.'}`,
-      `- 8단계로 넘길 1차 팀원 연결 후보: ${strategy.memberRole || '아직 정리되지 않았습니다.'}`,
       `- 위험·보완 조건: ${strategy.risk || '표현·자료·접촉 강도 안전선 확인'}`,
       '',
     ]),
   ].join('\n');
 }
 
-function buildRoleSummary(result: V39MemberRoleResult) {
-  const savedRoles = Object.values(result.roles).filter((role) => role.roleMission.trim());
-  if (savedRoles.length === 0) return '아직 8단계 팀원 역할 결과가 저장되지 않았습니다.';
-  return savedRoles
-    .map((role, index) => [
-      `${index + 1}. ${role.memberLabel}`,
-      `- 담당 고객군: ${role.assignedCustomers || '아직 정리되지 않았습니다.'}`,
-      `- 역할 미션: ${role.roleMission || '아직 정리되지 않았습니다.'}`,
-      `- 팀장 지원 포인트/점검 질문: ${role.coachingFocus || '아직 정리되지 않았습니다.'}`,
-      `- 리스크 안전선: ${role.riskGuardrail || '표현·자료·접촉 강도 안전선 확인'}`,
-      `- 콜플랜 준비물: ${role.callPlanPrep || '방문 전 확인 질문과 사용 가능한 자료 범위 확인'}`,
-    ].join('\n'))
-    .join('\n\n');
+function buildCoachingTargetSummary(result: V39TeamSevenCoachingMapResult) {
+  const savedTargets = Object.values(result.decisions).filter(hasCoachingTargetContext);
+  const priorityTargets = savedTargets.filter((target) => target.priorityOneOnOne);
+  if (savedTargets.length === 0) return '아직 8단계 코칭 대상 선정 결과가 저장되지 않았습니다.';
+
+  return [
+    `- 우선 1on1 대상: ${priorityTargets.length > 0 ? priorityTargets.map((target) => target.memberLabel).join(' · ') : '아직 선택되지 않았습니다.'}`,
+    '',
+    ...savedTargets.slice(0, 6).flatMap((target, index) => [
+      `${index + 1}. ${target.memberLabel}`,
+      `- 우선 1on1 포함: ${target.priorityOneOnOne ? '예' : '아니오'}`,
+      `- 1on1 코칭 목적: ${target.coachingPurpose || '아직 정리되지 않았습니다.'}`,
+      `- 선택 이유: ${target.selectionReason || target.leaderSupport || '아직 정리되지 않았습니다.'}`,
+      `- 9단계로 넘긴 코칭 초점: ${target.coachingFocus || '아직 정리되지 않았습니다.'}`,
+      `- 단정하면 안 되는 해석/주의할 지점: ${target.riskMemo || '아직 정리되지 않았습니다.'}`,
+      '',
+    ]),
+  ].join('\n');
 }
 
 function buildPeopleDialogueSummary(result: V39PeopleDialogueResult) {
@@ -178,7 +196,7 @@ function buildFinalCardSummary(
   aiCallPlan: V39AiCallPlanResult,
   cleanup: V39ComplianceCleanupResult,
   people: V39PeopleDialogueResult,
-  roles: V39MemberRoleResult,
+  coachingTargets: V39TeamSevenCoachingMapResult,
 ) {
   return [
     '[12단계 최종 실행 카드 입력 자료]',
@@ -189,8 +207,8 @@ function buildFinalCardSummary(
     '',
     buildCustomerStrategySummary(customerStrategy),
     '',
-    '[8단계 팀원 역할 요약]',
-    buildRoleSummary(roles),
+    '[8단계 코칭 대상 선정 요약]',
+    buildCoachingTargetSummary(coachingTargets),
     '',
     buildPeopleDialogueSummary(people),
     '',
@@ -212,11 +230,12 @@ function buildDefaultFinalCallPlanResult(
   aiCallPlan: V39AiCallPlanResult,
   cleanup: V39ComplianceCleanupResult,
   people: V39PeopleDialogueResult,
-  roles: V39MemberRoleResult,
+  coachingTargets: V39TeamSevenCoachingMapResult,
   current: V39FinalCallPlanResult,
 ): Partial<V39FinalCallPlanResult> {
-  const savedRoles = Object.values(roles.roles).filter((role) => role.roleMission.trim());
-  const savedStrategies = Object.values(customerStrategy.strategies).filter((strategy) => strategy.strategy.trim() || strategy.memberRole.trim());
+  const savedTargets = Object.values(coachingTargets.decisions).filter(hasCoachingTargetContext);
+  const priorityTargets = savedTargets.filter((target) => target.priorityOneOnOne);
+  const savedStrategies = Object.values(customerStrategy.strategies).filter((strategy) => strategy.strategy.trim() || strategy.priority.trim() || strategy.risk.trim());
   const savedAiDraft = Object.values(aiCallPlan.items).find((item) => item.callPlanDraft.trim());
   const dataQuestions = Object.values(customerData.decisions).map((decision) => decision.nextCheck).filter(Boolean).slice(0, 3).join(' / ');
 
@@ -224,15 +243,17 @@ function buildDefaultFinalCallPlanResult(
     focusCustomers: current.focusCustomers || (savedStrategies.length > 0
       ? savedStrategies.slice(0, 3).map((strategy) => `${strategy.customerLabel}: ${strategy.strategy || strategy.priority || '2주 대응 방향 확인'}`).join('\n')
       : '기회 신호와 실행 가능성이 함께 확인된 고객군을 우선 검토합니다. 고객 Data가 부족한 고객군은 설득보다 확인 질문 중심으로 접근합니다.'),
-    memberRoles: current.memberRoles || (savedRoles.length > 0 ? buildRoleSummary(roles) : '팀원별 역할은 고객군 특성, 실행 강점, 코칭 필요점, 부담 편중 가능성을 기준으로 조정합니다.'),
+    memberRoles: current.memberRoles || (savedTargets.length > 0
+      ? buildCoachingTargetSummary(coachingTargets)
+      : '우선 1on1 대상, 선택 이유, 코칭 초점, 단정하면 안 되는 해석을 기준으로 실행 대화와 지원 조건을 정리합니다.'),
     twoWeekAction: current.twoWeekAction || [
       `핵심 실행 지표: ${joinList(dashboard.metricSelection.selectedCoreMetricIds)}`,
-      savedAiDraft?.callPlanDraft || '1주차에는 고객군별 확인 질문과 사용 가능한 자료 범위를 정리하고, 2주차에는 후속 반응·영업활동 기록·팀원 실행 대화 결과를 함께 점검합니다.',
+      savedAiDraft?.callPlanDraft || '1주차에는 고객군별 확인 질문과 사용 가능한 자료 범위를 정리하고, 2주차에는 후속 반응·영업활동 기록·코칭 대상과의 실행 대화 결과를 함께 점검합니다.',
       dataQuestions ? `추가 확인 질문: ${dataQuestions}` : '',
     ].filter(Boolean).join('\n'),
     compliancePoint: current.compliancePoint || cleanup.finalChecklist || '실제 고객명·병원명·의료진명·제품명·매출·처방 수치 입력을 금지하고, 처방 유도·비교 우위 단정·허가 외 표현을 제거합니다.',
-    firstMessage: current.firstMessage || people.dialogueCard.openingLine || people.purposeFitOpening || '이번 2주는 많이 방문하는 것보다 고객군별 반응 신호를 읽고, 역할 기준과 안전한 표현을 맞추는 데 집중합시다.',
-    discussionMemo: current.discussionMemo || cleanup.finalCardMemo || '강사용 토의에서는 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 실행 대화 첫마디, 컴플라이언스 수정 포인트를 함께 확인합니다.',
+    firstMessage: current.firstMessage || people.dialogueCard.openingLine || people.purposeFitOpening || '이번 2주는 많이 방문하는 것보다 고객군별 반응 신호를 읽고, 코칭이 필요한 대화와 안전한 표현 기준을 맞추는 데 집중합시다.',
+    discussionMemo: current.discussionMemo || cleanup.finalCardMemo || `강사용 토의에서는 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 우선 1on1 대상(${priorityTargets.length}명), 실행 대화 첫마디, 컴플라이언스 수정 포인트를 함께 확인합니다.`,
   };
 }
 
@@ -243,7 +264,7 @@ function V39FinalExecutionCardPanel({
   aiCallPlanResult,
   cleanupResult,
   peopleDialogueResult,
-  memberRoleResult,
+  coachingTargetResult,
   onRefresh,
 }: {
   dashboardResult: V39DashboardResult;
@@ -252,16 +273,17 @@ function V39FinalExecutionCardPanel({
   aiCallPlanResult: V39AiCallPlanResult;
   cleanupResult: V39ComplianceCleanupResult;
   peopleDialogueResult: V39PeopleDialogueResult;
-  memberRoleResult: V39MemberRoleResult;
+  coachingTargetResult: V39TeamSevenCoachingMapResult;
   onRefresh: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [finalCardResult, setFinalCardResult] = useState(() => loadV39FinalCallPlanResult());
-  const summary = buildFinalCardSummary(dashboardResult, customerJudgmentResult, customerStrategyResult, aiCallPlanResult, cleanupResult, peopleDialogueResult, memberRoleResult);
+  const summary = buildFinalCardSummary(dashboardResult, customerJudgmentResult, customerStrategyResult, aiCallPlanResult, cleanupResult, peopleDialogueResult, coachingTargetResult);
   const metricCount = dashboardResult.metricSelection.selectedCoreMetricIds.length;
   const customerDataCount = Object.values(customerJudgmentResult.decisions).filter((decision) => decision.reason.trim() || decision.nextCheck.trim()).length;
-  const strategyCount = Object.values(customerStrategyResult.strategies).filter((strategy) => strategy.strategy.trim() || strategy.memberRole.trim()).length;
-  const roleCount = Object.values(memberRoleResult.roles).filter((role) => role.roleMission.trim()).length;
+  const strategyCount = Object.values(customerStrategyResult.strategies).filter((strategy) => strategy.strategy.trim() || strategy.priority.trim() || strategy.risk.trim()).length;
+  const coachingTargetCount = Object.values(coachingTargetResult.decisions).filter(hasCoachingTargetContext).length;
+  const priorityTargetCount = Object.values(coachingTargetResult.decisions).filter((target) => target.priorityOneOnOne).length;
   const peopleReady = hasPeopleDialogue(peopleDialogueResult);
   const aiDraftCount = Object.values(aiCallPlanResult.items).filter((item) => item.callPlanDraft.trim()).length;
 
@@ -284,7 +306,7 @@ function V39FinalExecutionCardPanel({
   };
 
   const applyFinalCardDraft = () => {
-    updateFinalCardResult(buildDefaultFinalCallPlanResult(dashboardResult, customerJudgmentResult, customerStrategyResult, aiCallPlanResult, cleanupResult, peopleDialogueResult, memberRoleResult, finalCardResult));
+    updateFinalCardResult(buildDefaultFinalCallPlanResult(dashboardResult, customerJudgmentResult, customerStrategyResult, aiCallPlanResult, cleanupResult, peopleDialogueResult, coachingTargetResult, finalCardResult));
   };
 
   return (
@@ -294,13 +316,13 @@ function V39FinalExecutionCardPanel({
           <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Final Two-Week Execution Card</p>
           <h2 className="mt-2 text-xl font-black text-slate-950">최종 2주 실행 카드를 완성하기</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군별 2주 대응 방향, 8단계 팀원 역할, 9단계 실행 대화, 10단계 AI 실행계획 초안, 11단계 안전 문장·체크리스트를 함께 반영해 최종 2주 실행 카드를 작성합니다.
+            5단계 관리 지표, 6단계 고객 Data 확인 List, 7단계 고객군별 2주 대응 방향, 8단계 코칭 대상 선정, 9단계 실행 대화, 10단계 AI 실행계획 초안, 11단계 안전 문장·체크리스트를 함께 반영해 최종 2주 실행 카드를 작성합니다.
             이 카드는 교육 후 바로 가져갈 수 있는 현업 적용 카드입니다.
           </p>
           <div className="mt-4 grid gap-2 md:grid-cols-3">
             <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
               <p className="font-black text-emerald-700">이 단계에서 하는 일</p>
-              <p className="mt-1">고객 대응 방향, 팀원 역할, 실행 대화, AI 초안, 안전 문장을 하나의 카드로 통합합니다.</p>
+              <p className="mt-1">고객 대응 방향, 코칭 대상, 실행 대화, AI 초안, 안전 문장을 하나의 카드로 통합합니다.</p>
             </div>
             <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-700">
               <p className="font-black text-emerald-700">이전 단계에서 가져온 것</p>
@@ -326,7 +348,7 @@ function V39FinalExecutionCardPanel({
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">관리 지표</p><p className="mt-1 text-sm font-black text-slate-900">{metricCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">5단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">고객 Data</p><p className="mt-1 text-sm font-black text-slate-900">{customerDataCount}건</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">6단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">대응 방향</p><p className="mt-1 text-sm font-black text-slate-900">{strategyCount}건</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">7단계 결과</p></div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">팀원 역할</p><p className="mt-1 text-sm font-black text-slate-900">{roleCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">8단계 결과</p></div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">코칭 대상</p><p className="mt-1 text-sm font-black text-slate-900">{priorityTargetCount > 0 ? `${priorityTargetCount}명 우선` : `${coachingTargetCount}건`}</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">8단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">실행 대화</p><p className="mt-1 text-sm font-black text-slate-900">{peopleReady ? '있음' : '없음'}</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">9단계 결과</p></div>
         <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-slate-500">AI 초안/안전선</p><p className="mt-1 text-sm font-black text-slate-900">초안 {aiDraftCount}개</p><p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">10·11단계 결과</p></div>
       </div>
@@ -350,8 +372,8 @@ function V39FinalExecutionCardPanel({
           <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildCustomerStrategySummary(customerStrategyResult)}</pre>
         </article>
         <article className="rounded-2xl border bg-white p-4 shadow-sm">
-          <p className="text-xs font-black text-sky-700">8단계 팀원 역할 요약</p>
-          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildRoleSummary(memberRoleResult)}</pre>
+          <p className="text-xs font-black text-sky-700">8단계 코칭 대상 선정 요약</p>
+          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs font-bold leading-5 text-slate-800">{buildCoachingTargetSummary(coachingTargetResult)}</pre>
         </article>
         <article className="rounded-2xl border bg-white p-4 shadow-sm">
           <p className="text-xs font-black text-violet-700">9단계 실행 대화 요약</p>
@@ -378,7 +400,7 @@ function V39FinalExecutionCardPanel({
             <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Instructor Discussion Preparation</p>
             <h3 className="text-lg font-black text-slate-950">13단계 강사용 토의에 넘길 최종 실행 카드 저장</h3>
             <p className="mt-1 text-xs font-bold leading-5 text-slate-600">
-              강사용 토의 화면에서 참여자의 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 실행 대화 첫마디, AI 초안 수정 포인트, 컴플라이언스 안전선을 확인할 수 있도록 요약을 저장합니다.
+              강사용 토의 화면에서 참여자의 관리 지표, 고객 Data 확인 List, 고객군별 2주 대응 방향, 코칭 대상, 실행 대화 첫마디, AI 초안 수정 포인트, 컴플라이언스 안전선을 확인할 수 있도록 요약을 저장합니다.
             </p>
           </div>
           <button type="button" className="rounded-2xl border bg-cyan-50 px-4 py-2 text-xs font-black text-cyan-800" onClick={applyFinalCardDraft}>
@@ -391,7 +413,7 @@ function V39FinalExecutionCardPanel({
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.focusCustomers} onChange={(event) => updateFinalCardResult({ focusCustomers: event.target.value })} />
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-black text-slate-500">[필수] 팀원별 역할 요약</span>
+            <span className="text-xs font-black text-slate-500">[필수] 코칭 대상·실행 대화 요약</span>
             <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={finalCardResult.memberRoles} onChange={(event) => updateFinalCardResult({ memberRoles: event.target.value })} />
           </label>
           <label className="space-y-1">
@@ -431,7 +453,7 @@ export function V39FinalCallPlanCard() {
   const [aiCallPlanResult, setAiCallPlanResult] = useState(() => loadV39AiCallPlanResult());
   const [cleanupResult, setCleanupResult] = useState(() => loadV39ComplianceCleanupResult());
   const [peopleDialogueResult, setPeopleDialogueResult] = useState(() => loadV39PeopleDialogueResult());
-  const [memberRoleResult, setMemberRoleResult] = useState(() => loadV39MemberRoleResult());
+  const [coachingTargetResult, setCoachingTargetResult] = useState(() => loadV39TeamSevenCoachingMapResult());
 
   const refreshResults = () => {
     setDashboardResult(loadV39DashboardResult());
@@ -440,7 +462,7 @@ export function V39FinalCallPlanCard() {
     setAiCallPlanResult(loadV39AiCallPlanResult());
     setCleanupResult(loadV39ComplianceCleanupResult());
     setPeopleDialogueResult(loadV39PeopleDialogueResult());
-    setMemberRoleResult(loadV39MemberRoleResult());
+    setCoachingTargetResult(loadV39TeamSevenCoachingMapResult());
   };
 
   return (
@@ -451,7 +473,7 @@ export function V39FinalCallPlanCard() {
       aiCallPlanResult={aiCallPlanResult}
       cleanupResult={cleanupResult}
       peopleDialogueResult={peopleDialogueResult}
-      memberRoleResult={memberRoleResult}
+      coachingTargetResult={coachingTargetResult}
       onRefresh={refreshResults}
     />
   );
