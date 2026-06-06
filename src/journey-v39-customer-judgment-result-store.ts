@@ -1,3 +1,5 @@
+import { getJson, removeStoredPrefix, setJson } from './journey-storage';
+
 export const V39_CUSTOMER_JUDGMENT_RESULT_SCHEMA_VERSION = 1;
 
 export const V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY = 'ckd.v39.customerJudgment.result.v1';
@@ -124,26 +126,16 @@ export function normalizeV39CustomerJudgmentResult(
 }
 
 export function saveV39CustomerJudgmentResult(result: V39CustomerJudgmentResult) {
-  window.localStorage.setItem(
-    V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY,
-    JSON.stringify({
-      ...normalizeV39CustomerJudgmentResult(result),
-      updatedAt: new Date().toISOString(),
-    }),
-  );
+  setJson(V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY, {
+    ...normalizeV39CustomerJudgmentResult(result),
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 export function loadV39CustomerJudgmentResult(): V39CustomerJudgmentResult {
-  const raw = window.localStorage.getItem(V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY);
-  if (!raw) return createEmptyV39CustomerJudgmentResult();
-
-  try {
-    return normalizeV39CustomerJudgmentResult(JSON.parse(raw));
-  } catch {
-    return createEmptyV39CustomerJudgmentResult();
-  }
+  return normalizeV39CustomerJudgmentResult(getJson<unknown>(V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY, null));
 }
 
 export function clearV39CustomerJudgmentResult() {
-  window.localStorage.removeItem(V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY);
+  removeStoredPrefix(V39_CUSTOMER_JUDGMENT_RESULT_STORAGE_KEY);
 }
