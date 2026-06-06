@@ -30,18 +30,18 @@ Production route remains untouched:
 /journey.html
 ```
 
-## 2. Latest stable commit before this handoff
+## 2. Latest verified stable commit
 
-Latest verified commit:
+Latest verified commit before this refresh:
 
 ```text
-140938588f4133e23f5e74e8ffbfac3da427cd31
+873b3871af48757c8ba821b6f78599cee0398c91
 ```
 
 Commit message:
 
 ```text
-Add v39 deployment browser QA runbook
+Add v39 current stable handoff
 ```
 
 Actions result:
@@ -353,6 +353,7 @@ docs/v39-step6-7-coaching-flow-note.md
 docs/v39-step3-optimized-prompt-practice-note.md
 docs/v39-steps1-7-pre-browser-qa-final-check.md
 docs/v39-deployment-browser-qa-runbook.md
+docs/v39-current-stable-handoff-2026-06-07.md
 ```
 
 ## 12. Next recommended work
