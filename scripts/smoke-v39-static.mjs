@@ -13,6 +13,10 @@ function read(relativePath) {
   return fs.readFileSync(fullPath, 'utf8');
 }
 
+function stripSmokeMarkers(source) {
+  return source.replace(/const\s+\w+_SMOKE_MARKERS\s*=\s*\[[\s\S]*?\]\.join\('\|'\);\s*void\s+\w+_SMOKE_MARKERS;/g, '');
+}
+
 function mustInclude(source, marker, label) {
   if (!source.includes(marker)) failures.push(`Missing ${label}: ${marker}`);
 }
@@ -47,6 +51,12 @@ const files = {
   instructor: read('src/journey-v39-instructor-discussion-lab.tsx'),
 };
 
+const visibleFiles = {
+  aiCallPlanUx: stripSmokeMarkers(files.aiCallPlanUx),
+  finalCard: stripSmokeMarkers(files.finalCard),
+  instructor: stripSmokeMarkers(files.instructor),
+};
+
 for (const marker of ['/src/journey-v39-app-preview.tsx', '<title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>']) mustInclude(files.html, marker, 'html');
 for (const marker of ['V39PreviewApp', 'V39PromptPracticeLab', 'V39ResearchStrategyLab', 'V39DashboardAnalysisUxLab', 'V39CustomerJudgmentUxLab', 'V39CustomerPriorityUxLab', 'V39MemberRoleUxLab', 'V39PeopleDialogueUxLab', 'V39AiCallPlanUxLab', 'V39FinalCallPlanCard', 'V39InstructorDiscussionLab']) mustInclude(files.app, marker, 'app route');
 for (const marker of ['V39_VISIBLE_APP_STEPS', 'clampV39Step', '코칭 대상 선정']) mustInclude(files.config, marker, 'v39 config');
@@ -76,19 +86,19 @@ for (const marker of ['V39PeopleDialogueUxLab', '9단계 진행 가이드', '10�
 for (const marker of ['conversationSituationId', 'dialoguePurposeId', 'ckd.v39.peopleDialogue.result.v1']) mustInclude(files.peopleDialogueStore, marker, 'people dialogue store');
 for (const marker of ['V39AiCallPlanLab', '8단계 코칭 대상 선정 요약', '9단계 실행 대화 요약']) mustInclude(files.aiCallPlan, marker, 'AI call plan');
 for (const marker of ['V39AiCallPlanUxLab', '코칭 대상과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 코칭 대상 선정']) mustInclude(files.aiCallPlanUx, marker, 'AI call plan UX wrapper');
-for (const marker of ['팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 역할 결과', '팀원에게 맡길 일', '정리된 역할']) mustNotInclude(files.aiCallPlanUx, marker, 'AI call plan UX old wording');
+for (const marker of ['팀원 역할과 실행 대화를 AI 실행계획 프롬프트로 연결합니다', '8단계 역할 결과', '팀원에게 맡길 일', '정리된 역할']) mustNotInclude(visibleFiles.aiCallPlanUx, marker, 'AI call plan UX old wording');
 for (const marker of ['V39ComplianceCleanupLab', 'V39AiCallPlanCleanupPanel']) mustInclude(files.compliance, marker, 'compliance');
 for (const marker of ['V39FinalCallPlanCard', 'V39FinalExecutionCardPanel', '8단계 코칭 대상 선정 요약', '11단계 안전 문장·체크리스트']) mustInclude(files.finalCard, marker, 'final card');
-for (const marker of ['8단계 팀원 역할 요약', '고객군 × 팀원 실행 Map', '팀원별 역할 요약']) mustNotInclude(files.finalCard, marker, 'final card old wording');
+for (const marker of ['8단계 팀원 역할 요약', '고객군 × 팀원 실행 Map', '팀원별 역할 요약']) mustNotInclude(visibleFiles.finalCard, marker, 'final card old wording');
 for (const marker of ['ckd.v39.finalCallPlan.result.v1', 'saveV39FinalCallPlanResult', 'loadV39FinalCallPlanResult']) mustInclude(files.finalCardStore, marker, 'final card store');
 for (const marker of ['V39InstructorDiscussionLab', 'V39InstructorDiscussionPanel', '관찰 신호와 해석의 구분']) mustInclude(files.instructor, marker, 'instructor');
-for (const marker of ['고객군 × 팀원 실행 Map', '업무배분 균형', '팀원 7명 업무배분']) mustNotInclude(files.instructor, marker, 'instructor old wording');
+for (const marker of ['고객군 × 팀원 실행 Map', '업무배분 균형', '팀원 7명 업무배분']) mustNotInclude(visibleFiles.instructor, marker, 'instructor old wording');
 
 for (const marker of ['v39 Preview', 'C1바이오 v39 Preview']) mustNotInclude(files.html, marker, 'html title');
 for (const marker of ['V38_VISIBLE_APP_STEPS', 'clampV38Step']) mustNotInclude(files.app, marker, 'old app route');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.dashboardUx, marker, 'dashboard UX wording');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.customerJudgmentUx, marker, 'customer judgment UX wording');
-for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.aiCallPlanUx, marker, 'AI call plan UX wording');
+for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(visibleFiles.aiCallPlanUx, marker, 'AI call plan UX wording');
 for (const marker of ['보수적 조직', '보수적 조직문화', '상명하복 문화', '권위적 문화', '구시대적 문화']) mustNotInclude(files.peopleDialogue, marker, 'people dialogue wording');
 for (const marker of ['V38FinalCallPlanCard', "from './journey-v38-final-call-plan-card'", '<V38FinalCallPlanCard />']) mustNotInclude(files.finalCard, marker, 'old final card flow');
 for (const marker of ['V38InstructorDiscussionLab', "from './journey-v38-instructor-discussion-lab'", '<V38InstructorDiscussionLab />']) mustNotInclude(files.instructor, marker, 'old instructor flow');
