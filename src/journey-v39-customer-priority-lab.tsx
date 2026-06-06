@@ -37,6 +37,7 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   '안전선 점검 조건',
   '표현·자료 안전선 점검',
   '항목 제목과 본문 문장을 구분해서 읽습니다',
+  '본문 bullet을 새 카드 제목으로 오해하지 않습니다',
   '대응군 C · 신규·미접촉 고객군',
   '대응군 F · 표현·자료 안전선 고객군',
 ].join('|');
@@ -197,9 +198,7 @@ function normalizeAiMapCardTitle(line: string) {
   const looksLikeCardHeading =
     /^고객군\/점검\s*조건\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
     /^고객군별\s*2주\s*실행\s*Map\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
-    /^대응군\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
-    /^(반응 확인|다음 접점|정보 보완|대체 접점|제약 해소|안전선 점검|표현·자료 안전선|표현 자료 안전선)/i.test(clean) ||
-    line.trim().startsWith('##');
+    /^대응군\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean);
 
   if (!looksLikeCardHeading) return null;
   const matchedItem = CUSTOMER_DIRECTION_ITEMS.find((item) => clean.includes(item.label));
@@ -611,7 +610,7 @@ function V39CustomerJudgmentBridgePanel() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
               <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 항목 제목과 본문 문장을 구분해서 읽습니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 항목 제목과 본문 문장을 구분해서 읽고, 본문 bullet을 새 카드 제목으로 오해하지 않습니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
               <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {extractedAiMapBuckets.map((bucket) => (
                   <div key={bucket.title} className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
