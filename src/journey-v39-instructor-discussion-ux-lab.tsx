@@ -15,6 +15,7 @@ const V39_INSTRUCTOR_DISCUSSION_UX_SMOKE_MARKERS = [
   '교육장에서 함께 이야기할 질문거리로 바꿉니다',
   '왜 그렇게 판단했는지, 어디가 막힐지 함께 봅니다',
   '2주 실행 메모 → 함께 볼 질문 → 2주 후 회고',
+  '동료 팀장들과 함께 복기할 질문으로 바꿉니다',
   'V39StepHero',
   'V39FlowStrip',
   'V39ActionTriplet',
@@ -60,37 +61,37 @@ function getInstructorDiscussionStatus() {
 
 export function V39InstructorDiscussionUxLab() {
   const status = getInstructorDiscussionStatus();
-  const finalCardStateLabel = status.hasFinalCard ? '실행 메모 있음' : '실행 메모 없음';
-  const discussionReadyLabel = status.completedFieldCount >= 5 ? '함께 이야기할 준비됨' : '조금 더 보완 필요';
+  const finalCardStateLabel = status.hasFinalCard ? '메모 있음' : '메모 없음';
+  const discussionReadyLabel = status.completedFieldCount >= 5 ? '함께 볼 준비됨' : '조금 더 보완 필요';
 
   return (
     <section className="space-y-4">
       <V39FlowStrip currentStep={13} />
       <V39StepHero
-        eyebrow="13단계 · 교육장에서 함께 이야기할 질문거리로 바꿉니다"
+        eyebrow="13단계 · 함께 복기할 질문 만들기"
         icon="🗣️"
-        title="왜 그렇게 판단했는지, 어디가 막힐지 함께 봅니다"
+        title="왜 그렇게 봤는지, 어디서 막힐지 함께 이야기합니다"
         tone="cyan"
-        description="마지막 화면은 채점표가 아닙니다. 팀장이 어떤 근거로 2주 실행 메모를 만들었는지, 현장에 가져가면 어디서 막힐 수 있는지, 표현이나 역할 배분을 어떻게 더 안전하게 고칠 수 있는지 함께 이야기하기 위한 질문을 정리합니다."
+        description="마지막 화면은 평가표가 아닙니다. 내가 만든 2주 메모를 놓고, 어떤 근거로 그렇게 판단했는지, 실제 현장에서는 어디서 막힐 수 있는지, 동료 팀장이라면 무엇을 다르게 볼지 함께 이야기할 질문을 남깁니다."
         badges={[
-          { label: '2주 실행 메모', value: finalCardStateLabel, tone: 'cyan', icon: '✅' },
-          { label: '이야기할 거리', value: `${status.completedFieldCount}개 항목`, tone: 'violet', icon: '🗣️' },
-          { label: '마무리 상태', value: discussionReadyLabel, tone: 'emerald', icon: '📌' },
+          { label: '2주 메모', value: finalCardStateLabel, tone: 'cyan', icon: '✅' },
+          { label: '함께 볼 거리', value: `${status.completedFieldCount}개 항목`, tone: 'violet', icon: '🗣️' },
+          { label: '마무리', value: discussionReadyLabel, tone: 'emerald', icon: '📌' },
         ]}
       />
 
       <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
         <V39MiniFlow
           items={[
-            { icon: '✅', title: '2주 실행 메모', body: '앞 화면에서 만든 실행 메모를 가져옵니다.' },
-            { icon: '🗣️', title: '함께 볼 질문', body: '왜 그렇게 봤는지, 어디가 막힐지, 함께 물어볼 질문으로 나눕니다.' },
-            { icon: '🔁', title: '2주 후 회고', body: '현업 적용 뒤 무엇을 유지하고 바꿀지 다시 봅니다.' },
+            { icon: '✅', title: '내 2주 메모 보기', body: '앞 화면에서 만든 실행 메모를 가져옵니다.' },
+            { icon: '🗣️', title: '함께 물어볼 질문 만들기', body: '왜 그렇게 봤는지, 어디가 막힐지, 다르게 볼 수 있는 점을 나눕니다.' },
+            { icon: '🔁', title: '2주 후 다시 보기', body: '현업에서 해 본 뒤 유지할 것과 바꿀 것을 다시 봅니다.' },
           ]}
         />
 
         <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">
-          <p className="font-black">근거, 걱정되는 부분, 함께 물어볼 질문으로 나눕니다</p>
-          <p className="mt-1">최종 실행 메모를 다시 읽는 화면이 아닙니다. “왜 이렇게 봤는가”, “현장에서 어디가 막힐 수 있는가”, “다른 팀장이라면 무엇을 다르게 볼 수 있는가”를 나눠 보는 화면입니다.</p>
+          <p className="font-black">내 판단을 한 번 더 꺼내 봅니다</p>
+          <p className="mt-1">최종 메모를 다시 읽는 화면이 아닙니다. “왜 이렇게 봤는가”, “현장에서 어디가 막힐 수 있는가”, “다른 팀장이라면 무엇을 다르게 볼 수 있는가”를 함께 나눠 보는 화면입니다.</p>
         </div>
 
         <div className="mt-3">
@@ -98,17 +99,17 @@ export function V39InstructorDiscussionUxLab() {
             previous={{
               icon: '✅',
               title: '2주 실행 메모',
-              body: '먼저 볼 고객군, 팀원 역할, 2주 행동, 말해도 되는 선, 첫 문장을 가져옵니다.',
+              body: '다시 볼 고객 흐름, 먼저 만날 팀원, 2주 행동, 말해도 되는 선, 첫 문장을 가져옵니다.',
             }}
             current={{
               icon: '🗣️',
-              title: '함께 이야기할 질문으로 바꿉니다',
+              title: '함께 볼 질문으로 바꿉니다',
               body: '왜 그렇게 봤는지, 어디가 막힐 수 있는지, 다른 팀장은 무엇을 다르게 볼지 묻습니다.',
             }}
             next={{
               icon: '🔁',
               title: '2주 후 다시 봅니다',
-              body: '실행 결과를 보고 유지할 것과 바꿀 것을 회고합니다.',
+              body: '실행해 본 뒤 유지할 것과 바꿀 것을 회고합니다.',
             }}
           />
         </div>
@@ -134,7 +135,7 @@ export function V39InstructorDiscussionUxLab() {
             items={[
               '왜 그렇게 봤는지',
               '어디가 막힐 수 있는지',
-              '함께 물어볼 질문',
+              '동료 팀장에게 물어볼 질문',
               '2주 후 다시 볼 질문',
             ]}
           />
