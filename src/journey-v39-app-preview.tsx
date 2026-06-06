@@ -25,7 +25,7 @@ import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39Step
 import { clampV39Step, V39_VISIBLE_APP_STEPS } from './journey-v39-preview-config';
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결 V39StepHero V39FlowStrip 1단계 입장 2단계 AI 안전선 3단계 질문 연습 4단계 전략 리서치 hideStepOverview';
+const V39_STATIC_ROUTE_MARKERS = 'V39ComplianceCleanupLab V39ResearchStrategyLab V39NotebookLmGuidedResearchLab V39PromptPracticeLab V39PromptConcernBridgeCard V39DirectConcernContextCard V39TeamSevenCoachingMap V39TeamSevenCoachingUxWrapper V39AiCallPlanUxLab V39AiCallPlanGuidedUxLab V39FinalCallPlanTeamSevenUxCard V39FinalCallPlanOnePageGuidance 3단계에서 선택한 우리 팀 고민 6단계 고객 Data 확인 List 연결 V39StepHero V39FlowStrip 1단계 입장 2단계 AI 안전선 3단계 질문 연습 4단계 전략 리서치 hideStepOverview route wrapper order';
 void V39_STATIC_ROUTE_MARKERS;
 void V39FinalCallPlanCard;
 void V39InstructorDiscussionLab;
@@ -230,14 +230,14 @@ function renderV39Step(step: number, participant: V39Participant, setParticipant
   if (current.id === 'ai-safety') return <V39AiSafetyStep />;
   if (current.id === 'prompt-practice') return <V39PromptPracticeStep />;
   if (current.id === 'research-strategy') return <V39ResearchStrategyStep />;
-  if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="metric" /><V39DirectConcernContextCard mode="metric" /><V39DashboardAnalysisUxLab /></div>;
-  if (current.id === 'customer-judgment') return <div className="space-y-4"><V39PromptConcernBridgeCard mode="customerData" /><V39DirectConcernContextCard mode="customerData" /><V39CustomerJudgmentUxLab /></div>;
+  if (current.id === 'dashboard-analysis') return <div className="space-y-4"><V39DashboardAnalysisUxLab /><V39PromptConcernBridgeCard mode="metric" /><V39DirectConcernContextCard mode="metric" /></div>;
+  if (current.id === 'customer-judgment') return <div className="space-y-4"><V39CustomerJudgmentUxLab /><V39PromptConcernBridgeCard mode="customerData" /><V39DirectConcernContextCard mode="customerData" /></div>;
   if (current.id === 'customer-priority') return <V39CustomerPriorityUxLab />;
   if (current.id === 'member-role') return <div className="space-y-4"><V39TeamSevenCoachingUxWrapper /><V39MemberRoleUxLab /></div>;
   if (current.id === 'people-dialogue') return <V39PeopleDialogueUxLab />;
   if (current.id === 'ai-call-plan') return <V39AiCallPlanGuidedUxLab />;
   if (current.id === 'compliance-cleanup') return <V39ComplianceCleanupUxLab />;
-  if (current.id === 'final-call-plan-card') return <div className="space-y-4"><V39FinalCallPlanOnePageGuidance /><V39FinalCallPlanTeamSevenUxCard /></div>;
+  if (current.id === 'final-call-plan-card') return <div className="space-y-4"><V39FinalCallPlanTeamSevenUxCard /><V39FinalCallPlanOnePageGuidance /></div>;
   if (current.id === 'instructor-discussion') return <V39InstructorDiscussionUxLab />;
 
   return <ShellCard title={current.title}><p>이 단계는 준비 중입니다.</p></ShellCard>;
