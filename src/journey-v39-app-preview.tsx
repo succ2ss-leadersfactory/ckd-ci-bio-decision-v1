@@ -66,8 +66,8 @@ function scrollV39ToTop() {
 function ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-      <p className="font-bold">AI·제약영업 안전선</p>
-      <p className="mt-1">교육용 가상 자료만 사용합니다. 실제 고객·기관·제품·성과 수치·개인 관련 정보는 입력하지 않습니다.</p>
+      <p className="font-bold">AI에 그대로 넣으면 안 되는 말</p>
+      <p className="mt-1">실습은 가상 상황으로만 진행합니다. 실제 고객·기관·제품·숫자·개인 이야기는 넣지 않습니다.</p>
     </div>
   );
 }
@@ -86,32 +86,32 @@ function EntryStep({ participant, setParticipant }: { participant: V39Participan
     <div className="space-y-4">
       <V39FlowStrip currentStep={1} />
       <V39StepHero
-        eyebrow="1단계 · 입장과 역할 부여"
+        eyebrow="1단계 · 오늘 역할 잡기"
         icon="🚪"
-        title="오늘은 C1바이오 영업팀장 역할로 판단합니다"
+        title="오늘은 현장에서 판단해야 하는 영업팀장입니다"
         tone="indigo"
-        description="이 앱은 정답을 맞히는 퀴즈가 아닙니다. 교육용 가상 상황에서 영업팀장이 고객 활동 기록, 팀원 실행 상황, AI 초안을 활용해 2주 실행전략을 정리하는 실습 도구입니다. 먼저 팀 정보와 이름을 입력하고, 오늘의 역할을 확인합니다."
+        description="정답을 고르는 시간이 아닙니다. 고객 반응, 팀원 움직임, AI가 정리한 초안을 놓고 ‘이번 2주를 어떻게 끌고 갈지’ 직접 정리해 봅니다. 편한 팀명과 닉네임만 적고 시작하세요."
         badges={[
           { label: '오늘 역할', value: '영업팀장', tone: 'indigo', icon: '👤' },
-          { label: '실습 방식', value: '판단 기록', tone: 'emerald', icon: '📝' },
-          { label: '안전 기준', value: '가상 자료만', tone: 'amber', icon: '🛡️' },
+          { label: '오늘 할 일', value: '판단 정리', tone: 'emerald', icon: '📝' },
+          { label: '전제', value: '가상 상황', tone: 'amber', icon: '🛡️' },
         ]}
       />
       <section className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
         <V39MiniFlow
           items={[
-            { icon: '🚪', title: '역할 확인', body: '오늘은 C1바이오 영업팀장 입장에서 판단합니다.' },
-            { icon: '🛡️', title: '안전선 확인', body: '다음 화면에서 AI 입력 금지 기준을 먼저 확인합니다.' },
-            { icon: '✍️', title: '질문 연습으로 이동', body: '좋은 AI 질문을 만들기 위한 기본 구조를 익힙니다.' },
+            { icon: '🚪', title: '오늘 역할 잡기', body: 'C1바이오 영업팀장 입장에서 상황을 봅니다.' },
+            { icon: '🛡️', title: '말해도 되는 선 확인', body: 'AI에 넣으면 안 되는 실제 정보를 먼저 지웁니다.' },
+            { icon: '✍️', title: '우리 팀 고민 적기', body: '막연한 고민을 AI에게 물어볼 질문으로 바꿉니다.' },
           ]}
         />
         <div className="mt-3">
-          <V39MinimumChecklist tone="indigo" items={['팀명 선택', '이름 또는 닉네임 입력', '영업팀장 역할 확인']} />
+          <V39MinimumChecklist tone="indigo" items={['팀명 선택', '이름 또는 닉네임 입력', '오늘 역할 확인']} />
         </div>
       </section>
       <ComplianceNotice />
-      <ShellCard title="C1바이오 영업팀장 역할 부여">
-        <p>당신은 C1바이오 영업2본부 수도권중부영업팀장입니다. 외부 환경, 고객군 반응, 팀원 실행 데이터를 읽고 2주 실행전략을 설계합니다.</p>
+      <ShellCard title="오늘 맡을 역할">
+        <p>오늘은 C1바이오 영업2본부 수도권중부영업팀장이라고 가정합니다. 시장 변화와 고객 반응, 팀원들의 움직임을 읽고 다음 2주를 정리합니다.</p>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-1">
             <span className="text-xs font-semibold text-slate-500">팀명</span>
@@ -127,7 +127,7 @@ function EntryStep({ participant, setParticipant }: { participant: V39Participan
         </div>
         <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3">
           <input type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>나는 오늘 실습에서 C1바이오 영업팀장 역할로 판단하고 기록합니다.</span>
+          <span>오늘은 C1바이오 영업팀장 입장에서 판단해 보겠습니다.</span>
         </label>
       </ShellCard>
     </div>
@@ -139,19 +139,19 @@ function V39AiSafetyStep() {
     <div className="space-y-4">
       <V39FlowStrip currentStep={2} />
       <V39StepHero
-        eyebrow="2단계 · AI 안전선 확인"
+        eyebrow="2단계 · 말해도 되는 선부터 확인"
         icon="🛡️"
-        title="AI를 쓰기 전에 말해도 되는 선부터 확인합니다"
+        title="AI를 쓰기 전에, 먼저 지워야 할 말이 있습니다"
         tone="amber"
-        description="제약영업 실습에서는 AI에게 실제 고객명, 기관명, 제품명, 내부 수치, 개인정보를 넣지 않습니다. 이 단계는 이후 모든 AI 실습에서 지켜야 할 기준을 먼저 맞추는 시간입니다."
+        description="현장 이야기를 AI에 그대로 넣으면 안 됩니다. 실제 고객명, 기관명, 제품명, 내부 숫자, 개인 사정은 빼고 익명화된 상황과 고민만 남깁니다. 이 기준은 뒤 화면에서도 계속 지킵니다."
         badges={[
-          { label: '목적', value: '입력 금지 기준 확인', tone: 'amber', icon: '🛡️' },
-          { label: '다음 단계', value: '질문 연습', tone: 'violet', icon: '✍️' },
-          { label: '적용 범위', value: '전체 AI 실습', tone: 'emerald', icon: '✅' },
+          { label: '먼저 할 일', value: '민감정보 지우기', tone: 'amber', icon: '🛡️' },
+          { label: '다음', value: '질문 다듬기', tone: 'violet', icon: '✍️' },
+          { label: '계속 지킬 기준', value: '전체 실습', tone: 'emerald', icon: '✅' },
         ]}
       />
       <V39SafetyStrip>
-        실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다. AI는 판단을 대신 정하는 도구가 아니라, 팀장의 생각을 정리하고 넓히는 도구입니다.
+        실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보는 입력하지 않습니다. AI는 결정을 대신하는 사람이 아니라, 팀장의 생각을 정리해 주는 도구입니다.
       </V39SafetyStrip>
       <AiSafetyLab />
     </div>
@@ -163,23 +163,23 @@ function V39PromptPracticeStep() {
     <div className="space-y-4">
       <V39FlowStrip currentStep={3} />
       <V39StepHero
-        eyebrow="3단계 · 질문 연습"
+        eyebrow="3단계 · 질문 다듬기"
         icon="✍️"
-        title="AI에게 잘 묻기 전에, 내 고민을 먼저 정리합니다"
+        title="그냥 묻지 말고, 팀장 고민을 질문으로 바꿉니다"
         tone="violet"
-        description="좋은 답은 좋은 질문에서 시작됩니다. 이 단계에서는 AI에게 바로 답을 요구하지 않고, 역할·상황·요청·출력 형식을 담아 질문을 구조화하는 연습을 합니다."
+        description="AI에게 ‘어떻게 할까요?’라고만 물으면 뻔한 답이 나옵니다. 우리 팀 상황, 무엇을 정리하고 싶은지, 어떤 모양으로 받고 싶은지를 함께 적어야 현장에서 쓸 만한 답이 나옵니다."
         badges={[
-          { label: '앞 단계', value: '안전선 확인', tone: 'amber', icon: '🛡️' },
-          { label: '지금 할 일', value: '질문 구조 연습', tone: 'violet', icon: '✍️' },
-          { label: '다음 단계', value: '전략 리서치', tone: 'sky', icon: '🔭' },
+          { label: '앞에서 한 것', value: '안전선 확인', tone: 'amber', icon: '🛡️' },
+          { label: '지금 할 것', value: '질문 다듬기', tone: 'violet', icon: '✍️' },
+          { label: '다음', value: '자료로 넓히기', tone: 'sky', icon: '🔭' },
         ]}
       />
       <section className="rounded-3xl border border-violet-100 bg-white p-4 shadow-sm md:p-5">
         <V39MiniFlow
           items={[
-            { icon: '🧑‍💼', title: '역할을 정하기', body: 'AI에게 어떤 관점으로 봐야 하는지 알려줍니다.' },
-            { icon: '📌', title: '상황을 넣기', body: '현장 맥락과 제한 조건을 짧게 정리합니다.' },
-            { icon: '📋', title: '원하는 형식 말하기', body: '표, 체크리스트, 질문 목록처럼 필요한 결과 형태를 지정합니다.' },
+            { icon: '🧑‍💼', title: '관점 정하기', body: 'AI가 어떤 입장에서 봐야 하는지 먼저 알려줍니다.' },
+            { icon: '📌', title: '상황 붙이기', body: '우리 팀의 현장 상황과 제약을 짧게 적습니다.' },
+            { icon: '📋', title: '받고 싶은 모양 정하기', body: '회의 문장, 체크리스트, 질문 목록처럼 필요한 형태를 말합니다.' },
           ]}
         />
       </section>
@@ -193,27 +193,27 @@ function V39ResearchStrategyStep() {
     <div className="space-y-4">
       <V39FlowStrip currentStep={4} />
       <V39StepHero
-        eyebrow="4단계 · 전략 리서치"
+        eyebrow="4단계 · 시장 변화 보기"
         icon="🔭"
-        title="공개자료에서 변화 신호를 찾고, 우리 팀 질문으로 바꿉니다"
+        title="자료를 모으는 게 아니라, 우리 팀 질문을 뽑습니다"
         tone="sky"
-        description="외부 자료를 많이 모으는 것이 목적이 아닙니다. 공개자료에서 우리 팀에 영향을 줄 변화 신호를 찾고, 다음 단계에서 볼 관리 지표로 이어질 질문을 정리합니다."
+        description="공개자료를 읽고 끝내지 않습니다. 고객이 어떻게 달라지고 있는지, 우리 팀은 무엇을 다시 봐야 하는지 질문으로 바꿉니다. 다음 화면에서는 이 질문을 2주 동안 볼 지표로 좁힙니다."
         badges={[
-          { label: '앞 단계', value: '질문 구조', tone: 'violet', icon: '✍️' },
-          { label: '지금 할 일', value: '변화 신호 찾기', tone: 'sky', icon: '🔭' },
-          { label: '다음 단계', value: '관리 지표 선정', tone: 'emerald', icon: '🎯' },
+          { label: '앞에서 한 것', value: '질문 다듬기', tone: 'violet', icon: '✍️' },
+          { label: '지금 볼 것', value: '시장 변화', tone: 'sky', icon: '🔭' },
+          { label: '다음', value: '볼 지표 정하기', tone: 'emerald', icon: '🎯' },
         ]}
       />
       <section className="rounded-3xl border border-sky-100 bg-white p-4 shadow-sm md:p-5">
         <V39MiniFlow
           items={[
-            { icon: '🔭', title: '공개자료 보기', body: '시장, 고객, 제도, 경쟁 환경의 변화 신호를 찾습니다.' },
-            { icon: '🧠', title: '우리 팀 질문으로 바꾸기', body: '자료 요약이 아니라 팀장이 봐야 할 질문으로 전환합니다.' },
-            { icon: '🎯', title: '지표로 넘기기', body: '다음 화면에서 2주 동안 볼 관리 지표를 고르는 기준이 됩니다.' },
+            { icon: '🔭', title: '공개자료 훑기', body: '시장, 고객, 제도, 경쟁 환경에서 달라진 점을 봅니다.' },
+            { icon: '🧠', title: '우리 팀 이슈로 바꾸기', body: '자료 요약이 아니라 팀장이 회의에서 물어볼 질문으로 바꿉니다.' },
+            { icon: '🎯', title: '지표 후보로 넘기기', body: '다음 화면에서 이번 2주 동안 볼 기준으로 좁힙니다.' },
           ]}
         />
         <div className="mt-3">
-          <V39MinimumChecklist tone="sky" items={['공개자료 기반 변화 신호', '우리 팀에 줄 영향', '다음 단계로 넘길 실행 질문']} />
+          <V39MinimumChecklist tone="sky" items={['공개자료에서 본 변화', '우리 팀에 미칠 영향', '회의에서 던질 질문']} />
         </div>
       </section>
       <V39PromptConcernBridgeCard mode="research" />
