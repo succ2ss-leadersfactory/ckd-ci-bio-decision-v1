@@ -4,6 +4,7 @@ import { V39CustomerPriorityLab } from './journey-v39-customer-priority-lab';
 import { V39FlowStrip, V39MinimumChecklist, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 
 const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
+  'V39CustomerPriorityUxLab',
   '7단계 진행 가이드',
   '고객군별 2주 대응 방향',
   '6단계 고객 Data 확인 List',
@@ -11,6 +12,8 @@ const V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS = [
   '고객 Data 증거는 고객군이 아닙니다',
   '이번 2주 동안 어디에 먼저 움직일지 정합니다',
   '8단계에서 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다',
+  '다음 단계',
+  '코칭 대상 선정',
 ].join('|');
 void V39_CUSTOMER_PRIORITY_UX_SMOKE_MARKERS;
 
