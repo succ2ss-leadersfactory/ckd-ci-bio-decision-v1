@@ -56,6 +56,8 @@ const files = {
 };
 
 const visibleFiles = {
+  customerJudgmentUx: stripSmokeMarkers(files.customerJudgmentUx),
+  customerPriorityUx: stripSmokeMarkers(files.customerPriorityUx),
   aiCallPlanUx: stripSmokeMarkers(files.aiCallPlanUx),
   finalCard: stripSmokeMarkers(files.finalCard),
   instructor: stripSmokeMarkers(files.instructor),
@@ -89,9 +91,11 @@ for (const marker of ['V39PromptPracticeLab', '일반 질문과 구조화 질문
 for (const marker of ['V39ResearchStrategyLab', 'AI 전략 리서치', '관리 지표로 바꿀 실행 질문']) mustInclude(files.researchStrategy, marker, 'research strategy');
 for (const marker of ['V39DashboardAnalysisUxLab', '관리 지표 선정 상태', '고객 Data 확인 List로 넘길 기준']) mustInclude(files.dashboardUx, marker, 'dashboard UX wrapper');
 for (const marker of ['V39CustomerJudgmentLab', '고객 Data 확인 List', '고객의 무엇을 확인할 것인가']) mustInclude(files.customerJudgment, marker, 'customer judgment');
-for (const marker of ['V39CustomerJudgmentUxLab', '관리 지표를 고객 Data로 확인하기']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
+for (const marker of ['V39CustomerJudgmentUxLab', '관리 지표를 고객 Data로 확인하기', '8단계에서는 이 대응 방향을 실행으로 옮기기 위해 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다']) mustInclude(files.customerJudgmentUx, marker, 'customer judgment UX wrapper');
+for (const marker of ['8단계에서 팀원별 역할과 지원 포인트를 정할 재료입니다', '팀원별 영업활동 기록 품질 차이']) mustNotInclude(visibleFiles.customerJudgmentUx, marker, 'customer judgment UX old role wording');
 for (const marker of ['V39CustomerPriorityLab', '고객군별 2주 대응 방향', '위험·보완 조건']) mustInclude(files.customerPriority, marker, 'customer priority');
-for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '고객군별 2주 대응 방향']) mustInclude(files.customerPriorityUx, marker, 'customer priority UX wrapper');
+for (const marker of ['V39CustomerPriorityUxLab', '7단계 진행 가이드', '고객군별 2주 대응 방향', '8단계에서 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다', '다음 단계', '코칭 대상 선정']) mustInclude(files.customerPriorityUx, marker, 'customer priority UX wrapper');
+for (const marker of ['고객군 × 팀원 2주 실행 Map', '팀원 연결 기준', '실제 연결 후보', '8단계는 역할 보완으로 이어집니다', '팀원 연결 후보', '팀원별 역할과 지원 포인트', '팀원 연결도 확정 배정']) mustNotInclude(visibleFiles.customerPriorityUx, marker, 'customer priority UX old role wording');
 for (const marker of ['V39MemberRoleUxLab', '코칭 대상 선정으로 전환됨']) mustInclude(files.memberRoleUx, marker, 'member role UX compatibility');
 for (const marker of ['V39TeamSevenCoachingMap', '코칭 대상 선정', 'AI로 코칭 필요 신호 정리하기', 'MZ 성장 탐색형']) mustInclude(files.teamSevenCoaching, marker, 'team seven coaching');
 for (const marker of ['TEAM_MEMBER_PROFILES', 'DIRECT_PROFILE', '문교원 사원', '왜 해야 하는지', '어디까지 하면 되는지']) mustInclude(files.teamSevenProfiles, marker, 'team seven profiles');
