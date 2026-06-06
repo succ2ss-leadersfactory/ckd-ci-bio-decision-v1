@@ -29,6 +29,7 @@ const V39_CUSTOMER_JUDGMENT_UX_COMPAT_SMOKE_MARKERS = [
   '방문·면담 기록에서 먼저 확인할 단서만 고릅니다',
   '고객에게 점수를 매기거나 줄 세우는 시간이 아닙니다',
   '8단계에서는 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다',
+  '8단계에서는 이 대응 방향을 실행으로 옮기기 위해 먼저 1on1로 맞춰볼 코칭 대상을 고릅니다',
   'V39StepHero',
   'V39FlowStrip',
   'V39ActionTriplet',
