@@ -37,6 +37,7 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   'AI 초안에서 확인 List 후보 고르기',
   '선택한 항목으로 최종 List 만들기',
   '최종 List에는 선택한 문장만 반영됩니다',
+  '항목 제목과 본문 문장을 구분해서 읽습니다',
 ].join('|');
 void V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS;
 
@@ -104,7 +105,7 @@ const AI_RESULT_EXTRACTION_BUCKETS: AiExtractionBucket[] = [
   {
     title: '표현·자료 안전선',
     description: '승인자료 범위와 위험 표현 점검',
-    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현', '사용하지 말아야 할 표현', '확인해야 할 자료 범위'],
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '사용하지 말아야 할 표현', '확인해야 할 자료 범위'],
   },
 ];
 
@@ -210,16 +211,17 @@ function cleanAiResultLine(value: string) {
     .trim();
 }
 
-function lineMatchesBucket(line: string, bucket: AiExtractionBucket) {
-  return bucket.aliases.some((alias) => line.includes(alias));
+function lineMatchesBucketTitle(line: string, bucket: AiExtractionBucket) {
+  const clean = cleanAiResultLine(line);
+  return bucket.aliases.some((alias) => clean === alias || clean.startsWith(`${alias}:`) || clean.startsWith(`${alias}：`));
 }
 
-function lineMatchesAnotherBucket(line: string, currentBucket: AiExtractionBucket) {
-  return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesBucket(line, bucket));
+function lineMatchesAnotherBucketTitle(line: string, currentBucket: AiExtractionBucket) {
+  return AI_RESULT_EXTRACTION_BUCKETS.some((bucket) => bucket.title !== currentBucket.title && lineMatchesBucketTitle(line, bucket));
 }
 
 function normalizeAiCardTitle(line: string) {
-  const clean = line.replace(/^#{1,6}\s*/, '').replace(/\*\*/g, '').trim();
+  const clean = cleanAiResultLine(line);
   if (!/고객\s*Data\s*증거\s*카드/i.test(clean)) return null;
   const title = clean
     .replace(/^고객\s*Data\s*증거\s*카드\s*(?:[①-⑳]|\d+|[A-F])?\s*[.)·:-]?\s*/i, '')
@@ -256,23 +258,18 @@ function splitAiResultCards(raw: string) {
 
 function extractAiResultBucketsFromLines(lines: string[]) {
   return AI_RESULT_EXTRACTION_BUCKETS.map((bucket) => {
-    const startIndex = lines.findIndex((line) => lineMatchesBucket(line, bucket));
+    const startIndex = lines.findIndex((line) => lineMatchesBucketTitle(line, bucket));
     const items: string[] = [];
 
     if (startIndex >= 0) {
       const firstLine = lines[startIndex];
       const afterColon = firstLine.split(/[:：]/).slice(1).join(':').trim();
-      if (afterColon && !lineMatchesBucket(afterColon, bucket)) items.push(afterColon);
+      if (afterColon && !lineMatchesBucketTitle(afterColon, bucket)) items.push(afterColon);
 
       for (let index = startIndex + 1; index < lines.length; index += 1) {
         const line = lines[index];
-        if (lineMatchesAnotherBucket(line, bucket)) break;
+        if (lineMatchesAnotherBucketTitle(line, bucket)) break;
         if (normalizeAiCardTitle(line)) break;
-        if (lineMatchesBucket(line, bucket)) {
-          const inlineValue = line.split(/[:：]/).slice(1).join(':').trim();
-          if (inlineValue) items.push(inlineValue);
-          continue;
-        }
         if (/^(요청|주의:|결론|종합|예시|표\s*)/i.test(line)) break;
         items.push(line);
       }
@@ -438,7 +435,7 @@ function getDataCheckItem(id: string) {
   return DATA_CHECK_ITEMS.find((item) => item.id === id) ?? DATA_CHECK_ITEMS[0];
 }
 
-function buildInitialCustomerJudgmentState(): ReturnType<typeof loadV39CustomerJudgmentResult> {
+function buildInitialCustomerJudgmentState() {
   if (typeof window === 'undefined') return createEmptyV39CustomerJudgmentResult();
   const saved = loadV39CustomerJudgmentResult();
   const normalized = normalizeV39CustomerJudgmentResult(saved);
@@ -531,10 +528,7 @@ function V39CustomerDataJudgmentFlow() {
     selectedItems.some((item) => result.decisions[item.id]?.nextCheck?.trim()),
   ].filter(Boolean).length;
   const prompt = useMemo(
-    () => buildDataCheckPrompt(
-      selectedItemIds,
-      result.decisions,
-    ),
+    () => buildDataCheckPrompt(selectedItemIds, result.decisions),
     [result.decisions, selectedItemIds],
   );
 
@@ -677,10 +671,11 @@ function V39CustomerDataJudgmentFlow() {
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Block 2</p>
         <h3 className="text-xl font-black text-slate-950">AI 초안에서 확인 List 후보 고르기</h3>
         <p className="mt-2 text-sm font-bold leading-6 text-slate-700">AI에게 판단을 맡기지 않습니다. AI 결과는 후보 문장 창고로만 보고, 이번 2주 동안 실제로 확인할 문장만 골라 최종 List로 넘깁니다.</p>
+        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">항목 제목과 본문 문장을 구분해서 읽습니다. 본문에 “승인자료”, “자료 범위” 같은 말이 있어도 새 항목 제목으로 오해하지 않습니다.</div>
         <div className="mt-4 flex flex-wrap gap-2"><button type="button" className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white" onClick={copyPrompt}>{copied ? '프롬프트 복사 완료' : 'AI 확인 List 프롬프트 복사'}</button><button type="button" className="rounded-2xl border bg-white px-4 py-3 text-sm font-black text-slate-700" onClick={resetFlow}>입력 초기화</button></div>
         <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">{prompt}</pre>
         <label className="mt-4 block space-y-1"><span className="text-xs font-black text-slate-600">AI 결과 붙여넣기</span><textarea className="min-h-32 w-full rounded-2xl border bg-white px-3 py-2 text-sm leading-6" value={result.rawAiSignalResult} onChange={(event) => { persist({ rawAiSignalResult: event.target.value }); setSelectedAiCandidateKeys([]); }} placeholder="AI가 정리한 고객 Data 확인 List 초안을 붙여넣으세요. 아래에서 필요한 후보 문장만 선택합니다." /></label>
-        {hasAiRawResult && (
+        {hasAiRawResult ? (
           <div className="mt-4 rounded-3xl border border-violet-100 bg-white p-4">
             <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 결과에서 가져올 것</p>
             <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 선택한 문장만 반영됩니다.</h4>
@@ -730,14 +725,13 @@ function V39CustomerDataJudgmentFlow() {
               <button type="button" className="rounded-2xl bg-emerald-700 px-4 py-3 text-xs font-black text-white shadow-sm" onClick={applySelectedCandidates}>선택한 항목으로 최종 List 만들기</button>
             </div>
           </div>
-        )}
-        {!hasAiRawResult ? (
+        ) : (
           <div className="mt-4 rounded-3xl border border-emerald-100 bg-white p-4">
             <p className="text-xs font-black uppercase tracking-wide text-emerald-700">AI 결과에서 가져올 것</p>
             <h4 className="mt-1 text-base font-black text-slate-950">전부 가져오지 마세요. 최종 List에는 필요한 것만 골라 옮깁니다.</h4>
             <p className="mt-2 text-xs font-bold leading-5 text-slate-600">AI 결과는 정답이 아니라 초안입니다. 긴 설명, 고객 우선순위 판단, 대응 전략 확정 문장은 그대로 쓰지 않습니다.</p>
           </div>
-        ) : null}
+        )}
       </section>
 
       <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
