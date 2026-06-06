@@ -8,16 +8,37 @@ export const STORAGE_KEYS = {
   state: 'c1bio_flow_state',
 };
 
+function canUseLocalStorage() {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
 export function getJson<T>(key: string, fallback: T): T {
+  if (!canUseLocalStorage()) return fallback;
   try {
-    return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback;
+    return JSON.parse(window.localStorage.getItem(key) || 'null') ?? fallback;
   } catch {
     return fallback;
   }
 }
 
 export function setJson<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
+  if (!canUseLocalStorage()) return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage quota, private-mode, or JSON serialization errors should not break the learning flow.
+  }
+}
+
+export function removeStoredPrefix(prefix: string) {
+  if (!canUseLocalStorage()) return;
+  try {
+    const keysToRemove = Array.from({ length: window.localStorage.length }, (_, index) => window.localStorage.key(index))
+      .filter((key): key is string => Boolean(key && key.startsWith(prefix)));
+    keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Ignore storage access errors so reset buttons never break the UI.
+  }
 }
 
 export function useStored<T>(key: string, fallback: T) {
