@@ -1,3 +1,5 @@
+import { getJson, removeStoredPrefix, setJson } from './journey-storage';
+
 export const V39_CUSTOMER_STRATEGY_RESULT_SCHEMA_VERSION = 1;
 
 export const V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY = 'ckd.v39.customerStrategy.result.v1';
@@ -83,26 +85,16 @@ export function normalizeV39CustomerStrategyResult(value: unknown): V39CustomerS
 }
 
 export function saveV39CustomerStrategyResult(result: V39CustomerStrategyResult) {
-  window.localStorage.setItem(
-    V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY,
-    JSON.stringify({
-      ...normalizeV39CustomerStrategyResult(result),
-      updatedAt: new Date().toISOString(),
-    }),
-  );
+  setJson(V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY, {
+    ...normalizeV39CustomerStrategyResult(result),
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 export function loadV39CustomerStrategyResult(): V39CustomerStrategyResult {
-  const raw = window.localStorage.getItem(V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY);
-  if (!raw) return createEmptyV39CustomerStrategyResult();
-
-  try {
-    return normalizeV39CustomerStrategyResult(JSON.parse(raw));
-  } catch {
-    return createEmptyV39CustomerStrategyResult();
-  }
+  return normalizeV39CustomerStrategyResult(getJson<unknown>(V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY, null));
 }
 
 export function clearV39CustomerStrategyResult() {
-  window.localStorage.removeItem(V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY);
+  removeStoredPrefix(V39_CUSTOMER_STRATEGY_RESULT_STORAGE_KEY);
 }
