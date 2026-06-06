@@ -30,6 +30,8 @@ const V39_CUSTOMER_DATA_CHECK_SMOKE_MARKERS = [
   '대응 전략은 아직 확정하지 않습니다',
   'AI 결과 1차 분리 정리',
   '고객 Data 증거 카드별 분리',
+  'AI 결과에서 가져오기',
+  '기본 초안 가져오기',
   '붙여넣은 결과에서 아래 항목을 자동으로 찾아 보여줍니다',
   '긍정 단서로 참고할 수 있는 사례',
 ].join('|');
@@ -289,92 +291,53 @@ function extractAiResultCards(raw: string): AiExtractedCard[] {
   }));
 }
 
-function getDashboardBridge() {
-  if (typeof window === 'undefined') {
-    return { coreMetrics: [], fieldSignals: [], cautions: [], questions: [], rationale: '', teamSituations: [] };
+function normalizeMatchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/고객\s*data\s*증거\s*카드/gi, '')
+    .replace(/[①-⑳\d\s\[\]().,·:：?？!！-]/g, '')
+    .trim();
+}
+
+function findAiCardForItem(item: DataCheckItem, cards: AiExtractedCard[]) {
+  const itemLabel = normalizeMatchText(item.label);
+  const itemKeywords = itemLabel.split(/\s+/).filter(Boolean);
+
+  return cards.find((card) => {
+    const cardTitle = normalizeMatchText(card.cardTitle);
+    if (!cardTitle) return false;
+    if (cardTitle.includes(itemLabel) || itemLabel.includes(cardTitle)) return true;
+    return itemKeywords.some((keyword) => keyword.length >= 2 && cardTitle.includes(keyword));
+  });
+}
+
+function getAiBucketText(card: AiExtractedCard | undefined, title: string) {
+  if (!card) return '';
+  const bucket = card.buckets.find((item) => item.title === title);
+  return bucket?.items.join('\n') ?? '';
+}
+
+function buildDefaultTwoWeekDirection(item: DataCheckItem) {
+  switch (item.id) {
+    case 'A':
+      return '7단계에서 고객 반응을 바로 기회로 단정하지 말고, 질문의 구체성·이전 대화와의 연결·다음 논의 주제가 남아 있는지 먼저 확인합니다.';
+    case 'B':
+      return '7단계에서 다음 접점 고객군으로 묶기 전에, 일정이 실제로 잡혔는지와 다음 접점의 목적·준비 자료를 먼저 확인합니다.';
+    case 'C':
+      return '7단계에서 신규·미접촉 고객군을 무리하게 확대하지 말고, 왜 비어 있었는지와 접근 경로·첫 반응을 먼저 확인합니다.';
+    case 'D':
+      return '7단계에서 방문 여부보다 자료 확인, 후속 질문, 비대면 접점 유지 여부를 보고 대체 접점으로 이어갈지 판단합니다.';
+    case 'E':
+      return '7단계에서 실행 부진을 고객 제약으로만 보지 말고, 실제 제약인지 팀 준비 부족인지 나눠서 지원 조건을 정합니다.';
+    case 'F':
+      return '7단계에서 행동 방향을 정하기 전에 승인자료 범위, 말해도 되는 표현, 피해야 할 단정 표현을 먼저 확인합니다.';
+    default:
+      return '7단계에서 고객군별 대응 방향을 정하기 전에 이 증거가 기회인지, 추가 확인이 필요한지 먼저 구분합니다.';
   }
-  const result = loadV39DashboardResult();
-  return {
-    coreMetrics: compactList(result.metricSelection.selectedCoreMetricIds, 6),
-    fieldSignals: compactList(result.metricSelection.selectedSupportMetricIds, 6),
-    cautions: compactList(result.metricSelection.selectedSafetyMetricIds, 6),
-    questions: splitLines(result.metricResult.aiRecommendedQuestions, 6),
-    rationale: result.metricSelection.metricRationale.trim() || result.metricResult.additionalMetricIdea.trim(),
-    teamSituations: compactList(result.teamSituations, 4),
-  };
 }
 
-function getDataCheckItem(id: string) {
-  return DATA_CHECK_ITEMS.find((item) => item.id === id) ?? DATA_CHECK_ITEMS[0];
-}
-
-function buildInitialCustomerJudgmentState(): ReturnType<typeof loadV39CustomerJudgmentResult> {
-  if (typeof window === 'undefined') return createEmptyV39CustomerJudgmentResult();
-  const saved = loadV39CustomerJudgmentResult();
-  const normalized = normalizeV39CustomerJudgmentResult(saved);
-  const decisions = { ...normalized.decisions };
-
-  for (const item of DATA_CHECK_ITEMS) {
-    decisions[item.id] = normalizeV39CustomerDecisionResult(decisions[item.id], item.id, item.label);
-  }
-
-  return { ...normalized, decisions };
-}
-
-function buildDataCheckPrompt(
-  selectedItemIds: string[],
-  decisions: Record<string, V39CustomerDecisionResult>,
-) {
-  const dashboardBridge = getDashboardBridge();
-  const selectedItems = selectedItemIds.map(getDataCheckItem);
-
-  return [
-    '당신은 제약영업 팀장의 고객 Data 확인 List 작성을 돕는 AI 사고 파트너입니다.',
-    '',
-    '[안전선]',
-    '- 아래 내용은 교육용 가상 고객 Data 확인 실습입니다.',
-    '- 실제 고객명, 병원명, 의료진명, 제품명, 내부 매출·처방 수치, 개인정보를 추정하거나 요구하지 마세요.',
-    '- 고객을 점수화하거나 등급화하지 마세요.',
-    '- 미승인 효능 표현, 비교 우위 단정, 처방 유도 문장, 과도한 설득 문장을 만들지 마세요.',
-    '- 답변은 고객 우선순위 결정이 아니라, 팀장이 고객 Data에서 확인해야 할 증거·부족 정보·추가 질문을 분리하는 초안으로 작성하세요.',
-    '',
-    '[5단계에서 가져온 기준]',
-    dashboardBridge.coreMetrics.length > 0 ? dashboardBridge.coreMetrics.map((item) => `- 핵심 실행 지표: ${item}`).join('\n') : '- 핵심 실행 지표: 아직 선택되지 않음',
-    dashboardBridge.fieldSignals.length > 0 ? dashboardBridge.fieldSignals.map((item) => `- 함께 볼 현장 신호: ${item}`).join('\n') : '- 함께 볼 현장 신호: 아직 없음',
-    dashboardBridge.cautions.length > 0 ? dashboardBridge.cautions.map((item) => `- 조심할 해석: ${item}`).join('\n') : '- 조심할 해석: 아직 없음',
-    dashboardBridge.questions.length > 0 ? dashboardBridge.questions.map((item) => `- 팀장이 확인할 질문: ${item}`).join('\n') : '- 팀장이 확인할 질문: 아직 없음',
-    dashboardBridge.rationale ? `- 왜 이 지표를 보는가: ${dashboardBridge.rationale}` : '- 왜 이 지표를 보는가: 아직 없음',
-    '',
-    '[선택한 고객 Data 증거 카드]',
-    ...selectedItems.flatMap((item) => {
-      const decision = decisions[item.id] ?? normalizeV39CustomerDecisionResult(undefined, item.id, item.label);
-      return [
-        `- ${item.label}`,
-        `  · 무엇을 볼까: ${decision.reason || item.checkTarget}`,
-        `  · 기회로 볼 수 있는 경우: ${decision.opportunitySignal || item.opportunityCriteria}`,
-        `  · 성급하게 해석하면 안 되는 경우: ${decision.riskSignal || item.cautionCriteria}`,
-        `  · 아직 부족한 정보: ${decision.missingInfo || item.missingInfo}`,
-        `  · 팀원에게 더 확인할 질문: ${decision.nextCheck || item.checkQuestion}`,
-        `  · 7단계로 넘길 메모: ${decision.twoWeekDirection || '아직 작성되지 않았습니다.'}`,
-        `  · 표현·자료 안전선: ${decision.complianceNote || item.complianceNote}`,
-      ];
-    }),
-    '',
-    '[요청]',
-    '선택한 고객 Data 증거 카드별로 고객 Data 확인 List 초안을 작성해 주세요.',
-    '각 증거 카드는 반드시 아래 제목을 그대로 사용해 주세요. 제목 이름을 바꾸지 마세요.',
-    '',
-    '## 고객 Data 증거 카드 ① 카드명',
-    '### 1. 무엇을 볼까',
-    '### 2. 기회로 볼 수 있는 경우',
-    '### 3. 성급하게 해석하면 안 되는 경우',
-    '### 4. 아직 부족한 정보',
-    '### 5. 팀원에게 더 확인할 질문',
-    '### 6. 7단계로 넘길 대응 준비 메모',
-    '### 7. 표현·자료 안전선',
-    '',
-    '주의: 7단계에서 고객군별 대응 방향을 정할 예정이므로, 여기서는 고객 우선순위나 대응 전략을 확정하지 말고 확인 List만 작성해 주세요.',
-  ].join('\n');
+function buildDashboardMemoForItem(item: DataCheckItem) {
+  return `${item.label}: ${item.likelyData}를 확인하고, 기회 단서와 과잉해석 위험을 분리합니다.`;
 }
 
 function buildDecisionFromItem(item: DataCheckItem): Partial<V39CustomerDecisionResult> {
@@ -386,8 +349,25 @@ function buildDecisionFromItem(item: DataCheckItem): Partial<V39CustomerDecision
     opportunitySignal: item.opportunityCriteria,
     riskSignal: item.cautionCriteria,
     missingInfo: item.missingInfo,
-    twoWeekDirection: '7단계에서 고객군별 대응 방향을 정할 때 이 증거가 기회인지, 추가 확인이 필요한지 먼저 구분합니다.',
-    judgmentMemo: `${item.label}: ${item.likelyData}를 확인하고, 기회 단서와 과잉해석 위험을 분리합니다.`,
+    twoWeekDirection: buildDefaultTwoWeekDirection(item),
+    judgmentMemo: buildDashboardMemoForItem(item),
+  };
+}
+
+function buildDecisionFromAiCard(item: DataCheckItem, card: AiExtractedCard | undefined): Partial<V39CustomerDecisionResult> {
+  if (!card) return buildDecisionFromItem(item);
+  const fallback = buildDecisionFromItem(item);
+
+  return {
+    priorityDecision: '',
+    reason: getAiBucketText(card, '무엇을 볼까') || fallback.reason,
+    opportunitySignal: getAiBucketText(card, '기회로 볼 수 있는 경우') || fallback.opportunitySignal,
+    riskSignal: getAiBucketText(card, '성급하게 해석하면 안 되는 경우') || fallback.riskSignal,
+    missingInfo: getAiBucketText(card, '아직 부족한 정보') || fallback.missingInfo,
+    nextCheck: getAiBucketText(card, '팀원에게 더 확인할 질문') || fallback.nextCheck,
+    twoWeekDirection: getAiBucketText(card, '7단계로 넘길 메모') || fallback.twoWeekDirection,
+    complianceNote: getAiBucketText(card, '표현·자료 안전선') || fallback.complianceNote,
+    judgmentMemo: `${item.label}: AI 결과에서 가져온 초안입니다. 그대로 확정하지 말고 실제 고객 활동 기록과 팀원 설명을 확인한 뒤 줄여 적습니다.`,
   };
 }
 
@@ -461,7 +441,8 @@ function V39CustomerDataJudgmentFlow() {
   };
 
   const applyDraft = (item: DataCheckItem) => {
-    updateDecision(item.id, buildDecisionFromItem(item));
+    const aiCard = hasAiRawResult ? findAiCardForItem(item, extractedAiCards) : undefined;
+    updateDecision(item.id, buildDecisionFromAiCard(item, aiCard));
   };
 
   const resetFlow = () => {
@@ -603,9 +584,10 @@ function V39CustomerDataJudgmentFlow() {
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             {selectedItems.map((item) => {
               const current = normalizeV39CustomerDecisionResult(result.decisions[item.id], item.id, item.label);
+              const matchedAiCard = hasAiRawResult ? findAiCardForItem(item, extractedAiCards) : undefined;
               return (
                 <article key={item.id} className="rounded-3xl border bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between"><div><p className="text-base font-black text-slate-950">{item.label}</p><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{item.likelyData}</p></div><button type="button" className="rounded-full border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyDraft(item)}>확인 List 초안 가져오기</button></div>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between"><div><p className="text-base font-black text-slate-950">{item.label}</p><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{item.likelyData}</p>{hasAiRawResult ? <p className={`mt-2 text-xs font-black ${matchedAiCard ? 'text-emerald-700' : 'text-amber-700'}`}>{matchedAiCard ? `AI 결과 연결됨: ${matchedAiCard.cardTitle}` : '이 카드와 일치하는 AI 결과를 찾지 못해 기본 초안을 사용합니다.'}</p> : null}</div><button type="button" className="rounded-full border bg-slate-50 px-4 py-2 text-xs font-black text-slate-700" onClick={() => applyDraft(item)}>{matchedAiCard ? 'AI 결과에서 가져오기' : '기본 초안 가져오기'}</button></div>
                   <div className="mt-4 grid gap-3 md:grid-cols-2">
                     <label className="space-y-1"><span className="text-xs font-black text-slate-500">무엇을 볼까</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.reason} onChange={(event) => updateDecision(item.id, { reason: event.target.value })} /></label>
                     <label className="space-y-1"><span className="text-xs font-black text-slate-500">기회로 볼 수 있는 경우</span><textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.opportunitySignal} onChange={(event) => updateDecision(item.id, { opportunitySignal: event.target.value })} /></label>
