@@ -1,3 +1,5 @@
+import { getJson } from './journey-storage';
+
 const V39_PROMPT_PRACTICE_STORAGE_KEY = 'ckd.v39.promptPractice.v1';
 
 const V39_PROMPT_CONCERN_BRIDGE_SMOKE_MARKERS = [
@@ -7,6 +9,8 @@ const V39_PROMPT_CONCERN_BRIDGE_SMOKE_MARKERS = [
   '4단계 AI 전략 리서치 연결',
   '5단계 관리 지표 선정 연결',
   '6단계 고객 Data 확인 List 연결',
+  '7단계 고객군별 2주 대응 방향',
+  '8단계 코칭 대상 선정',
 ].join('|');
 void V39_PROMPT_CONCERN_BRIDGE_SMOKE_MARKERS;
 
@@ -34,15 +38,15 @@ const CONCERN_META: Record<string, ConcernMeta> = {
     group: '고객 Data와 실행 신호 고민',
     label: '방문은 하는데 다음 대화나 후속조치로 잘 이어지지 않는다',
     situationSummary: '방문 횟수는 유지되고 있지만 고객 질문, 자료 요청, 다음 약속, 후속 확인으로 이어지는 경우가 적습니다. 팀원들도 방문 이후 무엇을 남겨야 하는지 기준이 다릅니다.',
-    downstreamHint: '관리 지표 → 고객 Data 확인 List → 고객군 × 팀원 실행 Map',
-    nextAction: '후속조치 완료율, 다음접점 확보건수, 고객 질문·자료 요청 신호를 중심으로 리서치 질문과 관리 지표를 좁힙니다.',
+    downstreamHint: '관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정',
+    nextAction: '후속조치 완료율, 다음 접점 확보, 고객 질문·자료 요청 신호를 중심으로 리서치 질문과 관리 지표를 좁힙니다.',
     customerDataAction: '방문 이후 고객 질문, 자료 요청, 다음 약속, 후속 확인 여부를 고객 Data 확인 List로 나눕니다.',
   },
   'activity-record-blindspot': {
     group: '고객 Data와 실행 신호 고민',
     label: '영업활동 기록은 남기지만 고객 반응과 다음 행동이 잘 보이지 않는다',
     situationSummary: '방문·면담 기록은 남아 있지만 고객이 무엇에 반응했는지, 다음에 무엇을 확인해야 하는지가 흐릿합니다. 기록은 있는데 실행 기준으로 쓰기 어렵습니다.',
-    downstreamHint: '관리 지표 → 고객 Data 확인 List → 기록 품질 점검',
+    downstreamHint: '관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정',
     nextAction: '영업활동 기록의 품질, 고객 반응, 다음 행동, 부족 정보를 구분해 관리 지표 후보로 바꿉니다.',
     customerDataAction: '방문·면담 기록에서 고객 반응, 다음 행동, 부족 정보, 조심할 해석을 분리해 확인합니다.',
   },
@@ -50,7 +54,7 @@ const CONCERN_META: Record<string, ConcernMeta> = {
     group: '고객 Data와 실행 신호 고민',
     label: '기존 거래처 중심으로 활동이 몰리고 신규 접점은 계속 뒤로 밀린다',
     situationSummary: '익숙한 고객군 방문은 계속되지만 새롭게 봐야 할 고객군은 정보 부족과 접근 부담 때문에 뒤로 밀립니다. 상부는 신규 접점을 요구하지만 현장 부담은 큽니다.',
-    downstreamHint: '관리 지표 → 고객군 편중 확인 → 신규 접점 실행 Map',
+    downstreamHint: '관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정',
     nextAction: '기존 고객 편중, 신규·미접촉 고객군, 접근 경로, 후속 가능성을 확인할 질문으로 전환합니다.',
     customerDataAction: '기존 고객 편중, 미접촉 고객군, 접근 경로, 신규 접점 반응을 고객 Data에서 확인합니다.',
   },
@@ -58,7 +62,7 @@ const CONCERN_META: Record<string, ConcernMeta> = {
     group: '고객 Data와 실행 신호 고민',
     label: '고객이 관심을 보인 것 같은데 어떤 신호를 기회로 봐야 할지 애매하다',
     situationSummary: '고객 질문이나 자료 요청이 있었지만 이것을 실제 기회 신호로 봐도 되는지 판단이 어렵습니다. 팀원마다 같은 반응을 다르게 해석합니다.',
-    downstreamHint: '고객 Data 확인 List → 기회/주의 신호 → 안전한 다음 질문',
+    downstreamHint: '고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정',
     nextAction: '기회 신호, 주의 신호, 부족 정보, 다음 확인 질문을 분리하는 리서치 질문과 지표 후보로 좁힙니다.',
     customerDataAction: '고객 질문과 자료 요청을 바로 기회로 단정하지 않고, 기회 신호·주의 신호·부족 정보로 나눕니다.',
   },
@@ -66,16 +70,16 @@ const CONCERN_META: Record<string, ConcernMeta> = {
     group: '고객 Data와 실행 신호 고민',
     label: '팀원마다 같은 고객 Data를 다르게 해석해 실행 방향이 엇갈린다',
     situationSummary: '같은 고객 활동 Data를 보고도 어떤 팀원은 움직일 때라고 보고, 다른 팀원은 아직 이르다고 판단합니다. 팀 회의에서 기준이 맞지 않아 실행 방향이 흐려집니다.',
-    downstreamHint: '고객 Data 해석 기준 → 실행 Map → 팀 회의 설명 문장',
-    nextAction: '팀 회의에서 공통으로 쓸 고객 Data 해석 기준과 실행 Map 기준을 정리합니다.',
+    downstreamHint: '고객 Data 해석 기준 → 고객군별 2주 대응 방향 → 실행 대화',
+    nextAction: '팀 회의에서 공통으로 쓸 고객 Data 해석 기준과 2주 대응 방향 기준을 정리합니다.',
     customerDataAction: '같은 고객 Data를 보더라도 기회 신호, 주의 신호, 부족 정보, 추가 확인 질문으로 해석 기준을 맞춥니다.',
   },
   'junior-senior-temperature-gap': {
     group: '팀원 실행과 대화 고민',
     label: '저연차 팀원은 우선순위를 어려워하고 기존 팀원은 예전 방식이 낫다고 느낀다',
     situationSummary: '저연차 팀원은 무엇부터 해야 할지 몰라 움직임이 느리고, 기존 팀원은 새로운 기준이 번거롭다고 느낍니다. 같은 실행계획도 팀원마다 받아들이는 온도가 다릅니다.',
-    downstreamHint: '팀원 역할 보완 → 실행 대화 → 첫마디 전환',
-    nextAction: '팀원별 실행 온도차를 고려해 역할 기준, 지원 방식, 첫마디를 정리할 질문으로 연결합니다.',
+    downstreamHint: '코칭 대상 선정 → 실행 대화 → 첫마디 전환',
+    nextAction: '팀원별 실행 온도차를 고려해 먼저 1on1로 맞춰볼 대상, 코칭 초점, 첫마디를 정리할 질문으로 연결합니다.',
     customerDataAction: '고객 Data 자체보다 팀원별로 어떤 정보가 부족해 우선순위 판단이 어려운지 확인합니다.',
   },
   'pressure-vs-field-constraint': {
@@ -88,11 +92,11 @@ const CONCERN_META: Record<string, ConcernMeta> = {
   },
   'role-assignment-first-message': {
     group: '팀원 실행과 대화 고민',
-    label: '팀원에게 역할을 맡기려 해도 지시처럼 들릴까 봐 첫마디가 어렵다',
-    situationSummary: '고객군별로 역할을 나눠야 하지만 특정 팀원에게 맡기면 부담이나 지시로 들릴 수 있습니다. 왜 이 역할인지 어떻게 말해야 할지 고민됩니다.',
-    downstreamHint: '실행 Map → 역할 보완 → 실행 대화 첫마디',
-    nextAction: '역할 배정 기준, 팀장 지원 포인트, 피해야 할 표현을 실행 대화 질문으로 바꿉니다.',
-    customerDataAction: '역할을 맡길 근거가 되는 고객군 반응, 부족 정보, 다음 확인 질문을 먼저 정리합니다.',
+    label: '팀원에게 실행 방향을 설명하려 해도 지시처럼 들릴까 봐 첫마디가 어렵다',
+    situationSummary: '고객군별 2주 대응 방향을 설명해야 하지만 특정 팀원에게 말하면 부담이나 지시로 들릴 수 있습니다. 왜 이 대화가 필요한지 어떻게 말해야 할지 고민됩니다.',
+    downstreamHint: '코칭 대상 선정 → 실행 대화 첫마디 → 2주 실행계획',
+    nextAction: '먼저 1on1이 필요한 이유, 팀장 지원 포인트, 피해야 할 표현을 실행 대화 질문으로 바꿉니다.',
+    customerDataAction: '대화가 필요한 근거가 되는 고객군 반응, 부족 정보, 다음 확인 질문을 먼저 정리합니다.',
   },
   'ai-boundary-anxiety': {
     group: 'AI 활용과 실행계획 고민',
@@ -104,24 +108,17 @@ const CONCERN_META: Record<string, ConcernMeta> = {
   },
   'meeting-message-unclear': {
     group: 'AI 활용과 실행계획 고민',
-    label: '팀 회의에서 실행 기준을 설명해야 하는데 지표·고객 Data·팀원 역할이 하나로 정리되지 않는다',
-    situationSummary: '이번 2주 동안 무엇을 볼지, 고객 활동 Data에서 무엇을 확인할지, 팀원이 어떤 역할을 맡을지 정리해야 합니다. 하지만 회의에서 설명할 한 흐름으로 아직 묶이지 않습니다.',
+    label: '팀 회의에서 실행 기준을 설명해야 하는데 지표·고객 Data·실행 대화가 하나로 정리되지 않는다',
+    situationSummary: '이번 2주 동안 무엇을 볼지, 고객 활동 Data에서 무엇을 확인할지, 팀원과 어떤 대화를 먼저 해야 할지 정리해야 합니다. 하지만 회의에서 설명할 한 흐름으로 아직 묶이지 않습니다.',
     downstreamHint: '통합 실행계획 → 최종 2주 실행 카드 → 강사용 토의 질문',
-    nextAction: '관리 지표, 고객 Data 확인 List, 팀원 역할, 안전한 표현 기준을 하나의 회의 설명 구조로 묶습니다.',
-    customerDataAction: '회의에서 설명할 수 있도록 고객 Data 확인 항목, 부족 정보, 팀원에게 나눌 질문을 함께 정리합니다.',
+    nextAction: '관리 지표, 고객 Data 확인 List, 코칭 대상, 실행 대화, 안전한 표현 기준을 하나의 회의 설명 구조로 묶습니다.',
+    customerDataAction: '회의에서 설명할 수 있도록 고객 Data 확인 항목, 부족 정보, 팀원에게 물어볼 질문을 함께 정리합니다.',
   },
 };
 
 function loadPromptPractice(): StoredPromptPractice | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(V39_PROMPT_PRACTICE_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredPromptPractice;
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
+  const parsed = getJson<StoredPromptPractice | null>(V39_PROMPT_PRACTICE_STORAGE_KEY, null);
+  return parsed && typeof parsed === 'object' ? parsed : null;
 }
 
 function getConcernMeta(result: StoredPromptPractice | null): ConcernMeta | null {
@@ -164,7 +161,7 @@ export function V39PromptConcernBridgeCard({ mode }: { mode: PromptConcernBridge
 
   const selectedConcern = result?.customConcern?.trim() || meta?.label || '3단계에서 입력한 우리 팀 고민';
   const situation = meta?.situationSummary || result?.plainQuestion || '3단계에서 직접 입력한 고민을 바탕으로 다음 단계에서 질문과 지표를 좁힙니다.';
-  const downstream = meta?.downstreamHint || '리서치 질문 → 관리 지표 → 고객 Data 확인 List';
+  const downstream = meta?.downstreamHint || '리서치 질문 → 관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정';
   const nextAction = getNextAction(mode, meta, result);
 
   return (
