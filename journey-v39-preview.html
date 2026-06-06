@@ -26,373 +26,101 @@
       color: #047857;
       user-select: none;
     }
-    .v39-card-support-details > summary {
-      color: #6d28d9;
-    }
+    .v39-card-support-details > summary { color: #6d28d9; }
     .v39-action-details > summary::-webkit-details-marker,
-    .v39-card-support-details > summary::-webkit-details-marker {
-      display: none;
-    }
+    .v39-card-support-details > summary::-webkit-details-marker { display: none; }
     .v39-action-details > summary::before,
-    .v39-card-support-details > summary::before {
-      content: '＋ ';
-      font-weight: 900;
-    }
+    .v39-card-support-details > summary::before { content: '＋ '; font-weight: 900; }
     .v39-action-details[open] > summary::before,
-    .v39-card-support-details[open] > summary::before {
-      content: '－ ';
-    }
+    .v39-card-support-details[open] > summary::before { content: '－ '; }
     .v39-action-details > div,
-    .v39-card-support-details > div {
-      margin-top: 0.55rem !important;
-    }
+    .v39-card-support-details > div { margin-top: 0.55rem !important; }
   </style>
 </head>
 <body>
   <div id="journey-root"></div>
   <script>
-    window.__V39_JSON_FIRST_SUPPORT_MARKERS = 'JSON 우선 파서|parseV39TwoWeekMapResult|GPT Claude Gemini 공통 구조|Markdown fallback|팀장 검토용 요약|앱 붙여넣기용 JSON|cards actions records questions outputs timing';
+    window.__V39_STEP7_VISIBLE_DECISION_MARKERS = 'AI 결과 전체 붙여넣기|고객군별 AI 결과 전체 보기|AI 초안을 아래 실행 행동에 반영하기|AI 결과에서 읽어온 2주 행동 초안|팀원 연결 기준 숨김|노란 경고 박스 삭제|7단계는 고객군별 대응 방향 정리';
 
-    window.__normalizeV39ActionPaste = function normalizeV39ActionPaste(text) {
-      const actionNumbers = {
-        '①': '1', '②': '2', '③': '3', '④': '4', '⑤': '5',
-        '⑥': '6', '⑦': '7', '⑧': '8', '⑨': '9', '⑩': '10',
-        '⑪': '11', '⑫': '12', '⑬': '13', '⑭': '14', '⑮': '15',
-        '⑯': '16', '⑰': '17', '⑱': '18', '⑲': '19', '⑳': '20'
-      };
-      const detailLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료|팀원 질문|팀원에게 확인할 질문|확인 질문|남길 산출물|산출물|결과물|정리 결과|남길 결과|실행 시점|시점|타이밍|언제|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]\s*$/;
-      const detailLineLabels = /^(\s*[-*•]?\s*)?(확인할 기록|확인 기록|확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료|팀원 질문|팀원에게 확인할 질문|확인 질문|남길 산출물|산출물|결과물|정리 결과|남길 결과|실행 시점|시점|타이밍|언제|주의할 점|주의점|확인 기준|보완 사항|남길 메모|메모)\s*[:：]/;
-      const actionStart = /^\s*#{0,6}\s*(행동|실행|실행안|실행 행동|액션|Action|Step)\s*(\d+|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])/i;
-      const sectionStart = /^\s*#{1,6}\s*(\d+[.)]\s*)?(고객군 후보|확인된 단서|아직 부족한 정보|이번 2주 행동|팀원에게 확인할 질문|표현·자료 안전선|다음 회의에서 확인할 것)/;
-
-      function stringList(value) {
-        if (!value) return [];
-        if (Array.isArray(value)) return value.flatMap(stringList).map(function (item) { return String(item).trim(); }).filter(Boolean);
-        if (typeof value === 'object') return Object.values(value).flatMap(stringList).map(function (item) { return String(item).trim(); }).filter(Boolean);
-        return String(value).split(/\r?\n/).map(function (item) { return item.replace(/^[-*•]\s*/, '').trim(); }).filter(Boolean);
-      }
-
-      function pick(source, keys) {
-        if (!source || typeof source !== 'object') return undefined;
-        for (let index = 0; index < keys.length; index += 1) {
-          if (source[keys[index]] !== undefined) return source[keys[index]];
-        }
-        return undefined;
-      }
-
-      function extractJsonCandidate(value) {
-        const fenced = value.match(/```(?:json)?\s*([\s\S]*?)```/i);
-        const source = fenced && fenced[1] ? fenced[1] : value;
-        const start = source.indexOf('{');
-        const end = source.lastIndexOf('}');
-        if (start < 0 || end <= start) return null;
-        return source.slice(start, end + 1);
-      }
-
-      function parseJsonResult(value) {
-        const candidate = extractJsonCandidate(value);
-        if (!candidate) return null;
-        try {
-          const parsed = JSON.parse(candidate);
-          const rawCards = pick(parsed, ['cards', 'customerGroups', 'groups', 'items', 'maps', 'results']);
-          if (!Array.isArray(rawCards) || rawCards.length === 0) return null;
-          return rawCards.map(function (card) {
-            const title = stringList(pick(card, ['title', 'cardTitle', 'name', 'customerGroup', 'group', 'label', '고객군']))[0] || '고객군/점검 조건';
-            const rawActions = pick(card, ['actions', 'twoWeekActions', 'actionItems', '이번 2주 행동', '2주 행동']);
-            const actions = Array.isArray(rawActions) ? rawActions : stringList(rawActions).map(function (title) { return { title: title }; });
-            return {
-              title: title,
-              confirmedClues: stringList(pick(card, ['confirmedClues', 'clues', 'confirmedSignals', '확인된 단서', '단서'])),
-              missingInfo: stringList(pick(card, ['missingInfo', 'missing', 'unknowns', '아직 부족한 정보', '부족 정보'])),
-              actions: actions.map(function (action) {
-                if (!action || typeof action !== 'object') return { title: String(action), records: [], questions: [], outputs: [], timing: '' };
-                return {
-                  title: stringList(pick(action, ['title', 'action', 'name', 'label', 'task', '행동', '실행']))[0] || '',
-                  records: stringList(pick(action, ['records', 'record', 'checkRecords', 'evidence', 'data', '확인할 기록', '확인 기록', '확인자료', '근거자료'])),
-                  questions: stringList(pick(action, ['questions', 'teamQuestions', 'question', '팀원 질문', '확인 질문', 'teamQuestion'])),
-                  outputs: stringList(pick(action, ['outputs', 'deliverables', 'artifacts', 'result', '남길 산출물', '산출물', '결과물'])),
-                  timing: stringList(pick(action, ['timing', 'when', 'deadline', '실행 시점', '시점']))[0] || ''
-                };
-              }).filter(function (action) { return action.title; }),
-              teamQuestions: stringList(pick(card, ['teamQuestions', 'questions', '팀원에게 확인할 질문', '팀원 질문'])),
-              safety: stringList(pick(card, ['safety', 'compliance', 'guardrails', '표현·자료 안전선', '안전선'])),
-              nextMeeting: stringList(pick(card, ['nextMeeting', 'nextMeetingChecks', 'nextCheck', '다음 회의에서 확인할 것', '다음 회의 확인']))
-            };
-          });
-        } catch (_error) {
-          return null;
-        }
-      }
-
-      function jsonCardsToMarkdown(cards) {
-        return cards.map(function (card, cardIndex) {
-          const lines = [
-            '## 고객군/점검 조건 ' + (cardIndex + 1) + ' ' + card.title,
-            '',
-            '### 1. 고객군 후보 또는 점검 조건',
-            '* ' + card.title,
-            '',
-            '### 2. 확인된 단서'
-          ];
-          lines.push.apply(lines, (card.confirmedClues.length ? card.confirmedClues : ['AI 초안에서 아직 찾지 못했습니다.']).map(function (item) { return '* ' + item; }));
-          lines.push('', '### 3. 아직 부족한 정보');
-          lines.push.apply(lines, (card.missingInfo.length ? card.missingInfo : ['AI 초안에서 아직 찾지 못했습니다.']).map(function (item) { return '* ' + item; }));
-          lines.push('', '### 4. 이번 2주 행동', '');
-          card.actions.forEach(function (action, actionIndex) {
-            lines.push('#### 행동 ' + (actionIndex + 1) + '. ' + action.title);
-            if (action.records.length) lines.push('* 확인할 기록: ' + action.records.join(', '));
-            if (action.questions.length) lines.push('* 보완 사항: 팀원 질문 - ' + action.questions.join(', '));
-            if (action.outputs.length) lines.push('* 남길 산출물: ' + action.outputs.join(', '));
-            if (action.timing) lines.push('* 실행 시점: ' + action.timing);
-            lines.push('');
-          });
-          lines.push('### 5. 팀원에게 확인할 질문');
-          lines.push.apply(lines, (card.teamQuestions.length ? card.teamQuestions : ['AI 초안에서 아직 찾지 못했습니다.']).map(function (item) { return '* ' + item; }));
-          lines.push('', '### 6. 표현·자료 안전선');
-          lines.push.apply(lines, (card.safety.length ? card.safety : ['AI 초안에서 아직 찾지 못했습니다.']).map(function (item) { return '* ' + item; }));
-          lines.push('', '### 7. 다음 회의에서 확인할 것');
-          lines.push.apply(lines, (card.nextMeeting.length ? card.nextMeeting : ['AI 초안에서 아직 찾지 못했습니다.']).map(function (item) { return '* ' + item; }));
-          return lines.join('\n');
-        }).join('\n\n---\n\n');
-      }
-
-      const jsonCards = parseJsonResult(text);
-      if (jsonCards) return jsonCardsToMarkdown(jsonCards);
-
-      function normalizeGeminiCustomerHeadings(value) {
-        return value
-          .replace(/^(\s*#{1,2}\s*)고객군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)대상\s*고객군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)고객\s*세그먼트\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)세그먼트\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)대응군\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)점검\s*조건\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)고객군\s*\/\s*조건\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s+/gm, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)(?:Group|Segment|Customer Group|Case)\s+([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+|[A-F])\s*[:：.-]?\s+/gim, '$1고객군/점검 조건 $2 ')
-          .replace(/^(\s*#{1,2}\s*)([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+)[.)]\s+((?!(?:고객군\s*후보|고객군\s*후보\s*또는\s*점검\s*조건)).*고객군[^\n]*)$/gm, '$1고객군/점검 조건 $2 $3')
-          .replace(/^(\s*#{1,2}\s*)([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|\d+)[.)]\s+((?!(?:점검\s*조건\s*$|고객군\s*후보\s*또는\s*점검\s*조건)).*점검\s*조건[^\n]*)$/gm, '$1고객군/점검 조건 $2 $3');
-      }
-
-      function normalizeActionLabels(value) {
-        return value
-          .replace(/(행동|실행|실행안|실행 행동|액션)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g, function (_match, label, marker) {
-            return '행동 ' + actionNumbers[marker] + '. ';
-          })
-          .replace(/(?:Action|Step)\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/gi, function (_match, marker) {
-            return '행동 ' + actionNumbers[marker] + '. ';
-          })
-          .replace(/(행동|실행|실행안|실행 행동|액션)\s*(\d+)\s*[:：)]\s*/g, '행동 $2. ')
-          .replace(/(?:Action|Step)\s*(\d+)\s*[:：).]\s*/gi, '행동 $1. ');
-      }
-
-      function normalizeDetailLabel(label) {
-        if (/^(확인 자료|근거 자료|참고 기록|참고 자료|사용 자료|검토 자료)$/.test(label)) return '확인할 기록';
-        if (/^(결과물|정리 결과|남길 결과)$/.test(label)) return '남길 산출물';
-        if (/^(시점|타이밍|언제)$/.test(label)) return '실행 시점';
-        if (/^(확인 질문)$/.test(label)) return '팀원 질문';
-        return label;
-      }
-
-      function safeDetailLabel(label) {
-        const normalized = normalizeDetailLabel(label);
-        if (normalized === '팀원 질문' || normalized === '팀원에게 확인할 질문') return '보완 사항';
-        return normalized;
-      }
-
-      function safeDetailValue(label, values) {
-        const normalized = normalizeDetailLabel(label);
-        if (normalized === '팀원 질문' || normalized === '팀원에게 확인할 질문') return '팀원 질문 - ' + values.join(', ');
-        return values.join(', ');
-      }
-
-      function collapseNestedDetailBullets(value) {
-        const lines = value.split(/\r?\n/);
-        const output = [];
-
-        for (let index = 0; index < lines.length; index += 1) {
-          const line = lines[index];
-          const detailMatch = line.match(detailLabels);
-
-          if (!detailMatch) {
-            output.push(line);
-            continue;
-          }
-
-          const label = detailMatch[2];
-          const values = [];
-          let cursor = index + 1;
-
-          while (cursor < lines.length) {
-            const nextLine = lines[cursor];
-
-            if (/^\s*$/.test(nextLine)) {
-              cursor += 1;
-              continue;
-            }
-            if (detailLineLabels.test(nextLine) || actionStart.test(nextLine) || sectionStart.test(nextLine) || /^\s*---+\s*$/.test(nextLine)) {
-              break;
-            }
-
-            const bulletMatch = nextLine.match(/^\s*[-*•]\s+(.+?)\s*$/);
-            if (bulletMatch) {
-              values.push(bulletMatch[1].trim());
-              cursor += 1;
-              continue;
-            }
-
-            if (/^\s{2,}\S/.test(nextLine)) {
-              values.push(nextLine.trim());
-              cursor += 1;
-              continue;
-            }
-
-            break;
-          }
-
-          if (values.length > 0) {
-            output.push(safeDetailLabel(label) + ': ' + safeDetailValue(label, values));
-            index = cursor - 1;
-          } else {
-            output.push(line);
-          }
-        }
-
-        return output.join('\n');
-      }
-
-      return collapseNestedDetailBullets(normalizeActionLabels(normalizeGeminiCustomerHeadings(text)));
-    };
-
-    function enhanceV39PromptForJsonOutput(prompt) {
-      if (!prompt) return prompt;
-      const base = prompt.includes('\n[요청]') ? prompt.split('\n[요청]')[0] : prompt;
-      return base + '\n\n[요청]' +
-        '\n위 단서를 바탕으로 고객군별 2주 실행 Map 초안을 작성해 주세요.' +
-        '\n출력은 반드시 아래 두 영역으로만 구성하세요.' +
-        '\n' +
-        '\n## 1. 팀장 검토용 요약' +
-        '\n- 고객군별로 이번 2주 행동 3~4개를 번호 목록으로 정리하세요.' +
-        '\n- 각 고객군마다 주의할 표현·자료 안전선 2~3개를 함께 적으세요.' +
-        '\n- 표는 사용하지 말고, 짧은 문장으로 작성하세요.' +
-        '\n- 고객을 공략하거나 우선순위화하거나 등급화하는 표현은 사용하지 마세요.' +
-        '\n' +
-        '\n## 2. 앱 붙여넣기용 JSON' +
-        '\n- 아래 JSON 코드블록 하나를 반드시 포함하세요.' +
-        '\n- 앱은 이 JSON만 자동으로 읽어 고객군별 실행 Map으로 정리합니다.' +
-        '\n- JSON 스키마는 아래 예시를 그대로 따르세요.' +
-        '\n```json' +
-        '\n{' +
-        '\n  "cards": [' +
-        '\n    {' +
-        '\n      "title": "다음 접점 고객군",' +
-        '\n      "type": "customerGroup",' +
-        '\n      "confirmedClues": ["확인된 단서 1"],' +
-        '\n      "missingInfo": ["아직 부족한 정보 1"],' +
-        '\n      "actions": [' +
-        '\n        {' +
-        '\n          "title": "다음 회의 전, 확인할 행동을 쓴다",' +
-        '\n          "records": ["확인할 기록"],' +
-        '\n          "questions": ["팀원에게 확인할 질문"],' +
-        '\n          "outputs": ["남길 산출물"],' +
-        '\n          "timing": "다음 회의 전"' +
-        '\n        }' +
-        '\n      ],' +
-        '\n      "teamQuestions": ["팀원에게 확인할 질문"],' +
-        '\n      "safety": ["표현·자료 안전선"],' +
-        '\n      "nextMeeting": ["다음 회의에서 확인할 것"]' +
-        '\n    }' +
-        '\n  ]' +
-        '\n}' +
-        '\n```' +
-        '\n' +
-        '\n주의: 팀장 검토용 요약은 사람이 읽기 위한 영역이고, 앱 붙여넣기용 JSON은 앱이 읽기 위한 영역입니다. 교육생은 결과 전체를 앱에 붙여넣으면 됩니다.';
+    function textOf(element) {
+      return (element && element.textContent ? element.textContent : '').trim();
     }
 
-    document.addEventListener('click', function (event) {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      const button = target.closest('button');
-      if (!button || !(button.textContent || '').includes('AI 2주 실행 Map 프롬프트 복사')) return;
-      window.setTimeout(function () {
-        if (!navigator.clipboard || !navigator.clipboard.readText || !navigator.clipboard.writeText) return;
-        navigator.clipboard.readText().then(function (prompt) {
-          const nextPrompt = enhanceV39PromptForJsonOutput(prompt);
-          if (nextPrompt !== prompt) return navigator.clipboard.writeText(nextPrompt);
-          return undefined;
-        }).catch(function () {});
-      }, 60);
-    }, true);
+    function closestVisibleBlock(element) {
+      return element.closest('label, article, section, div');
+    }
 
-    document.addEventListener('paste', function (event) {
-      const target = event.target;
-      if (!(target instanceof HTMLTextAreaElement)) return;
-      const pastedText = event.clipboardData && event.clipboardData.getData('text/plain');
-      if (!pastedText) return;
-      const normalizedText = window.__normalizeV39ActionPaste(pastedText);
-      if (normalizedText === pastedText) return;
-
-      event.preventDefault();
-      const start = target.selectionStart || 0;
-      const end = target.selectionEnd || 0;
-      target.setRangeText(normalizedText, start, end, 'end');
-      target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: normalizedText }));
-    }, true);
-
-    function simplifyV39AiActionCards() {
-      const actionBlocks = Array.from(document.querySelectorAll('div')).filter(function (element) {
-        if (element.dataset.v39ActionDetailsWrapped === 'true') return false;
-        const firstStrongText = Array.from(element.children).slice(0, 2).map(function (child) {
-          return (child.textContent || '').trim();
-        }).join(' ');
-        return /^행동\s+\d+\b/.test(firstStrongText) && element.textContent && element.textContent.includes('확인');
-      });
-
-      actionBlocks.forEach(function (block) {
-        const detailChildren = Array.from(block.children).filter(function (child) {
-          const text = (child.textContent || '').trim();
-          return /^(확인할 기록|확인 기록|남길 산출물|실행 시점|보완 사항|주의할 점|확인 기준|남길 메모)/.test(text);
-        });
-        if (detailChildren.length === 0) {
-          block.dataset.v39ActionDetailsWrapped = 'true';
-          return;
+    function hideStep7WarningBoxes() {
+      Array.from(document.querySelectorAll('div, p, section')).forEach(function (element) {
+        var text = textOf(element);
+        if (text.includes('AI 초안은 그대로 확정하지 않습니다') && text.includes('집중 공략')) {
+          element.style.display = 'none';
+          element.setAttribute('data-v39-hidden-warning', 'true');
         }
+      });
+    }
 
-        const details = document.createElement('details');
-        details.className = 'v39-action-details';
-        const summary = document.createElement('summary');
-        summary.textContent = '세부 보조 정보 보기';
-        details.appendChild(summary);
-        detailChildren.forEach(function (child) {
-          details.appendChild(child);
-        });
-        block.appendChild(details);
-        block.dataset.v39ActionDetailsWrapped = 'true';
+    function hideStep7MemberConnectionFields() {
+      Array.from(document.querySelectorAll('label')).forEach(function (label) {
+        var text = textOf(label);
+        if (text.includes('팀원 연결 기준 / 실제 연결 후보')) {
+          label.style.display = 'none';
+          label.setAttribute('data-v39-hidden-member-connection', 'true');
+        }
       });
 
-      const supportGrids = Array.from(document.querySelectorAll('section > div.grid')).filter(function (grid) {
-        if (grid.dataset.v39SupportWrapped === 'true') return false;
-        const text = grid.textContent || '';
-        return text.includes('확인된 단서') && text.includes('아직 부족한 정보') && text.includes('표현·자료 안전선');
+      Array.from(document.querySelectorAll('span, p')).forEach(function (node) {
+        var text = textOf(node);
+        if (text === '팀원 연결 기준 / 실제 연결 후보') {
+          var block = closestVisibleBlock(node);
+          if (block) {
+            block.style.display = 'none';
+            block.setAttribute('data-v39-hidden-member-connection', 'true');
+          }
+        }
+      });
+    }
+
+    function rewriteStep7AiCopy() {
+      Array.from(document.querySelectorAll('button')).forEach(function (button) {
+        var text = textOf(button);
+        if (text === 'AI 결과 핵심 내용 가져오기') {
+          button.textContent = 'AI 초안을 아래 실행 행동에 반영하기';
+        }
+        if (text === '이 내용을 2주 대응 방향에 반영하기') {
+          button.textContent = 'AI 초안을 아래 실행 행동에 반영하기';
+        }
       });
 
-      supportGrids.forEach(function (grid) {
-        const details = document.createElement('details');
-        details.className = 'v39-card-support-details';
-        const summary = document.createElement('summary');
-        summary.textContent = '단서·부족정보·안전선 보기';
-        details.appendChild(summary);
-        grid.parentNode.insertBefore(details, grid);
-        details.appendChild(grid);
-        grid.dataset.v39SupportWrapped = 'true';
+      Array.from(document.querySelectorAll('p')).forEach(function (paragraph) {
+        var text = textOf(paragraph);
+        if (text === 'AI 결과에서 가져온 핵심 행동') {
+          paragraph.textContent = 'AI 결과에서 읽어온 2주 행동 초안';
+        }
+        if (text.includes('최종 2주 대응 방향은 아래 입력칸에서 팀장 판단으로 다시 줄이고 고쳐 씁니다.')) {
+          paragraph.textContent = '이 영역은 AI 초안을 읽는 곳입니다. 아래 입력칸에서는 팀장이 현장 상황에 맞게 2주 대응 방식과 실행 행동, 위험·보완 조건만 줄이고 고쳐 씁니다.';
+        }
       });
+
+      Array.from(document.querySelectorAll('span')).forEach(function (span) {
+        if (textOf(span) === '이번 2주 실행 행동') {
+          span.textContent = '팀장이 수정할 이번 2주 실행 행동';
+        }
+      });
+    }
+
+    function simplifyV39Step7VisibleFields() {
+      hideStep7WarningBoxes();
+      hideStep7MemberConnectionFields();
+      rewriteStep7AiCopy();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      simplifyV39AiActionCards();
-      const observer = new MutationObserver(function () {
-        window.requestAnimationFrame(simplifyV39AiActionCards);
+      simplifyV39Step7VisibleFields();
+      var observer = new MutationObserver(function () {
+        window.requestAnimationFrame(simplifyV39Step7VisibleFields);
       });
-      const root = document.getElementById('journey-root');
+      var root = document.getElementById('journey-root');
       if (root) observer.observe(root, { childList: true, subtree: true });
     });
   </script>
