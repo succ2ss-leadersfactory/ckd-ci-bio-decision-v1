@@ -30,10 +30,12 @@ const V39_CUSTOMER_TWO_WEEK_DIRECTION_SMOKE_MARKERS = [
   'AI 결과 1차 분리 정리',
   '붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다',
   '고객군/점검 조건별 분리',
+  '여러 고객군/점검 조건의 항목을 묶어 보여줍니다',
   'AI 결과 연결됨',
   'AI 결과에서 가져오기',
   '정보 보완 고객군',
   '안전선 점검 조건',
+  '표현·자료 안전선 점검',
   '대응군 C · 신규·미접촉 고객군',
   '대응군 F · 표현·자료 안전선 고객군',
 ].join('|');
@@ -120,7 +122,7 @@ const AI_MAP_EXTRACTION_BUCKETS: AiMapExtractionBucket[] = [
   {
     title: '고객군 후보 또는 점검 조건',
     description: '이번 2주 동안 묶어 볼 고객군 후보나 안전선 점검 조건',
-    aliases: ['고객군 후보 또는 점검 조건', '고객군 후보', '점검 조건', '고객군/점검 조건', '구분', '대응군', '조건'],
+    aliases: ['고객군 후보 또는 점검 조건', '고객군 후보', '점검 조건', '고객군/점검 조건', '고객군 또는 점검 조건', '구분', '대응군', '조건'],
   },
   {
     title: '확인된 단서',
@@ -145,7 +147,7 @@ const AI_MAP_EXTRACTION_BUCKETS: AiMapExtractionBucket[] = [
   {
     title: '표현·자료 안전선',
     description: '승인자료 범위와 위험 표현 점검',
-    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현'],
+    aliases: ['표현·자료 안전선', '표현 자료 안전선', '안전선', '컴플라이언스', '승인자료', '위험 표현', '표현 기준', '자료 기준'],
   },
   {
     title: '다음 회의에서 확인할 것',
@@ -194,6 +196,7 @@ function normalizeAiMapCardTitle(line: string) {
     /^고객군\/점검\s*조건\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
     /^고객군별\s*2주\s*실행\s*Map\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
     /^대응군\s*(?:[①-⑳]|\d+|[A-F])?/i.test(clean) ||
+    /^(반응 확인|다음 접점|정보 보완|대체 접점|제약 해소|안전선 점검|표현·자료 안전선|표현 자료 안전선)/i.test(clean) ||
     line.trim().startsWith('##');
 
   if (!looksLikeCardHeading) return null;
@@ -241,6 +244,23 @@ function extractAiMapResultBucketsFromLines(lines: string[], limit = 20): AiMapE
 }
 
 function extractAiMapResultBuckets(raw: string) {
+  const cards = extractAiMapResultCards(raw);
+  const hasCardContent = cards.some((card) => card.buckets.some((bucket) => bucket.items.length > 0));
+
+  if (hasCardContent) {
+    return AI_MAP_EXTRACTION_BUCKETS.map((bucket) => {
+      const items = cards.flatMap((card) => {
+        const matchedBucket = card.buckets.find((item) => item.title === bucket.title);
+        return (matchedBucket?.items ?? []).map((item) => `${card.cardTitle}: ${item}`);
+      });
+      return {
+        title: bucket.title,
+        description: bucket.description,
+        items: compactList(items, 4),
+      };
+    });
+  }
+
   const lines = raw
     .split(/\r?\n/)
     .map(cleanAiMapResultLine)
@@ -292,7 +312,9 @@ function normalizeMatchText(value: string) {
     .replace(/고객군\/점검\s*조건/gi, '')
     .replace(/고객군별\s*2주\s*실행\s*map/gi, '')
     .replace(/대응군/gi, '')
-    .replace(/[①-⑳\d\s\[\]().,·:：?？!！-]/g, '')
+    .replace(/고객군/gi, '')
+    .replace(/점검\s*조건/gi, '점검')
+    .replace(/[①-⑳\d\s\[\]().,·:：?？!！\/-]/g, '')
     .trim();
 }
 
@@ -306,24 +328,43 @@ function aiMapCardHasContent(card: AiMapExtractedCard | undefined) {
   return Boolean(card?.buckets.some((bucket) => bucket.items.length > 0));
 }
 
-function findAiMapCardForItem(item: CustomerDirectionItem, cards: AiMapExtractedCard[], displayItems: CustomerDirectionItem[]) {
-  const itemLabel = normalizeMatchText(item.label);
-  const itemKeywords = itemLabel.split(/\s+/).filter(Boolean);
+function getDirectionMatchAliases(item: CustomerDirectionItem) {
+  switch (item.id) {
+    case 'A':
+      return [item.label, '반응 확인', '고객 반응', '반응을 다시 확인'];
+    case 'B':
+      return [item.label, '다음 접점', '후속 접점', '후속 논의', '다음 만남'];
+    case 'C':
+      return [item.label, '정보 보완', '미접촉', '접점 공백', '신규 접점'];
+    case 'D':
+      return [item.label, '대체 접점', '방문 외 접점', '비대면 접점', '자료 전달'];
+    case 'E':
+      return [item.label, '제약 해소', '실행 제약', '방문 제한', '막힌 조건'];
+    case 'F':
+      return [item.label, '안전선', '안전선 점검', '표현 자료 안전선', '표현·자료 안전선', '표현·자료 안전선 점검', '기록 표현 점검', '자료 기준', '표현 기준'];
+    default:
+      return [item.label];
+  }
+}
 
-  const titleMatch = cards.find((card) => {
-    const cardTitle = normalizeMatchText(card.cardTitle);
-    if (!cardTitle) return false;
-    if (cardTitle.includes(itemLabel) || itemLabel.includes(cardTitle)) return true;
-    return itemKeywords.some((keyword) => keyword.length >= 2 && cardTitle.includes(keyword));
-  });
+function textMatchesDirectionItem(text: string, item: CustomerDirectionItem) {
+  const normalized = normalizeMatchText(text);
+  const aliases = getDirectionMatchAliases(item).map(normalizeMatchText).filter(Boolean);
+  if (!normalized) return false;
+  return aliases.some((alias) => normalized.includes(alias) || alias.includes(normalized));
+}
+
+function findAiMapCardForItem(item: CustomerDirectionItem, cards: AiMapExtractedCard[], displayItems: CustomerDirectionItem[]) {
+  const titleMatch = cards.find((card) => textMatchesDirectionItem(card.cardTitle, item));
   if (titleMatch) return titleMatch;
 
   const bucketMatch = cards.find((card) => {
-    const targetText = getAiMapBucketText(card, '고객군 후보 또는 점검 조건');
-    const normalized = normalizeMatchText(targetText);
-    if (!normalized) return false;
-    if (normalized.includes(itemLabel) || itemLabel.includes(normalized)) return true;
-    return itemKeywords.some((keyword) => keyword.length >= 2 && normalized.includes(keyword));
+    const targetText = [
+      card.cardTitle,
+      getAiMapBucketText(card, '고객군 후보 또는 점검 조건'),
+      ...card.buckets.flatMap((bucket) => bucket.items),
+    ].join('\n');
+    return textMatchesDirectionItem(targetText, item);
   });
   if (bucketMatch) return bucketMatch;
 
@@ -568,7 +609,7 @@ function V39CustomerJudgmentBridgePanel() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-sky-700">AI 결과 1차 분리 정리</p>
               <h4 className="mt-1 text-base font-black text-slate-950">붙여넣은 2주 실행 Map 초안에서 아래 항목을 자동으로 찾아 보여줍니다</h4>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">자동 분리는 복사·검토용입니다. 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
+              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">여러 고객군/점검 조건의 항목을 묶어 보여줍니다. 자동 분리는 복사·검토용이며, 최종 2주 대응 방향은 아래 카드에서 팀장 언어로 다시 줄이고 고쳐 씁니다.</p>
               <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {extractedAiMapBuckets.map((bucket) => (
                   <div key={bucket.title} className="rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-slate-700 shadow-sm">
