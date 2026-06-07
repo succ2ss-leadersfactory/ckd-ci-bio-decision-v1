@@ -201,9 +201,13 @@ for (const marker of [
 for (const marker of [
   'V40VNextFinalExecutionMemoLab',
   '13단계 운영 잠금: 성과관리·업무관리·사람관리 최신 결과 → 2주 실행 메모 → 복기 질문',
+  'ckd.v40-vnext.performanceCascade.v1',
   'ckd.v40-vnext.taskManagement.v10',
   'ckd.v40-vnext.peopleManagement.v2',
   'ckd.v40-vnext.finalExecutionMemo.v1',
+  '전사전략과제',
+  '팀 과제·CSF·KPI',
+  '팀 회의 설명 3문장',
   '역할극 후 수정한 첫 문장',
   '역할극 후 수정한 2주 행동 합의',
   '우리 조가 최종 적용할 코칭 문장 1개',
@@ -212,8 +216,8 @@ for (const marker of [
 ]) mustInclude(files.finalMemoLab, marker, 'v40-vNext final memo lab');
 
 for (const marker of [
+  'journeyV40VNextPreview',
   'journey-v40-vnext-preview.html',
-  'journey-v40-vnext-app-preview.tsx',
 ]) mustInclude(files.vite, marker, 'vite v40-vNext route');
 
 for (const marker of [
