@@ -14,8 +14,8 @@ import { V39PeopleDialogueUxLab } from './journey-v39-people-dialogue-ux-lab';
 import { V39PromptPracticeOptimizedLab } from './journey-v39-prompt-practice-optimized-lab';
 import { V39TeamSevenCoachingUxWrapper } from './journey-v39-team-seven-coaching-ux-wrapper';
 import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero, V39StepNavigationProvider } from './journey-v39-ux-components';
+import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
 import {
-  V40VNextTaskBoundaryCoordinationLab,
   V40VNextTaskExecutionDesignLab,
   V40VNextTaskPriorityFlowLab,
 } from './journey-v40-vnext-task-management-lab';
