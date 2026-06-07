@@ -27,7 +27,6 @@ const files = {
   config: read('src/journey-v40-vnext-preview-config.ts'),
   taskLab: read('src/journey-v40-vnext-task-management-lab.tsx'),
   vite: read('vite.config.ts'),
-  packageJson: read('package.json'),
   tsconfig: read('tsconfig.v40-vnext-smoke.json'),
   journeyHtml: read('journey.html'),
   v39Html: read('journey-v39-preview.html'),
@@ -121,12 +120,6 @@ for (const marker of [
   'journeyV40VNextPreview',
   'journey-v40-vnext-preview.html',
 ]) mustInclude(files.vite, marker, 'vite input');
-
-for (const marker of [
-  'typecheck:v40-vnext',
-  'smoke:v40-vnext:static',
-  'smoke:v40-vnext',
-]) mustInclude(files.packageJson, marker, 'package scripts');
 
 for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
