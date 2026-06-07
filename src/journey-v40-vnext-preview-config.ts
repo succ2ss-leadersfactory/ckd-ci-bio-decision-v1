@@ -6,9 +6,9 @@ const V40_VNEXT_CONFIG_SMOKE_MARKERS = [
   '말해도 되는 선 확인',
   'AI 질문 다듬기',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
-  '성과관리 2: 전사전략과제를 팀 과제·CSF·KPI로 분해하기',
+  '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '성과관리 3: CSF/KPI를 고객 활동 기록 확인 항목으로 바꾸기',
-  '성과관리 4: 팀 과제·CSF·KPI별 2주 실행 흐름 정하기',
+  '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
   '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
@@ -55,8 +55,8 @@ export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'dashboard-analysis',
-    title: '성과관리 2: 전사전략과제를 팀 과제·CSF·KPI로 분해하기',
-    description: '종근당 연계 전사전략과제를 우리 팀 과제, 성공조건, 관리 지표로 번역합니다.',
+    title: '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
+    description: '전사전략과제를 우리 조의 팀 전략과제, 성공조건, 관리 지표로 번역합니다.',
   },
   {
     id: 'customer-judgment',
@@ -65,8 +65,8 @@ export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'customer-priority',
-    title: '성과관리 4: 팀 과제·CSF·KPI별 2주 실행 흐름 정하기',
-    description: '팀 과제와 CSF/KPI를 2주 실행 흐름, 팀장 점검 질문, 회의 설명 문장으로 바꿉니다.',
+    title: '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
+    description: '팀 전략과제와 CSF/KPI를 2주 실행 흐름, 팀장 점검 질문, 회의 설명 문장으로 바꿉니다.',
   },
   {
     id: 'task-execution-design',
