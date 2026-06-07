@@ -27,6 +27,8 @@ const files = {
   config: read('src/journey-v40-vnext-preview-config.ts'),
   taskLab: read('src/journey-v40-vnext-task-management-lab.tsx'),
   boundaryLab: read('src/journey-v40-vnext-task-boundary-coordination-lab.tsx'),
+  peopleSelectionLab: read('src/journey-v40-vnext-people-selection-lab.tsx'),
+  oneOnOneLab: read('src/journey-v40-vnext-one-on-one-practice-lab.tsx'),
   vite: read('vite.config.ts'),
   tsconfig: read('tsconfig.v40-vnext-smoke.json'),
   journeyHtml: read('journey.html'),
@@ -60,7 +62,7 @@ for (const marker of [
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
   '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
   '사람관리 1: 먼저 이야기할 팀원 고르기',
-  '사람관리 2: 1on1 첫 문장 준비하기',
+  '사람관리 2: 1on1 대화 설계와 실천하기',
   'V39NotebookLmGuidedResearchLab',
   'V39DashboardAnalysisUxLab',
   'V39CustomerJudgmentUxLab',
@@ -68,8 +70,8 @@ for (const marker of [
   'V40VNextTaskExecutionDesignLab',
   'V40VNextTaskPriorityFlowLab',
   'V40VNextTaskBoundaryCoordinationLab',
-  'V39TeamSevenCoachingUxWrapper',
-  'V39PeopleDialogueUxLab',
+  'V40VNextPeopleSelectionLab',
+  'V40VNextOneOnOnePracticeLab',
   'V39FinalCallPlanTeamSevenUxCard',
   'V39InstructorDiscussionUxLab',
   'perplexityAnswer',
@@ -175,6 +177,41 @@ for (const marker of [
 ]) mustInclude(files.boundaryLab, marker, 'v40-vNext boundary coordination lab');
 
 for (const marker of [
+  'V40VNextPeopleSelectionLab',
+  '사람관리 1: 먼저 이야기할 팀원 고르기',
+  '11단계 운영 잠금: 9·10단계 실행 결과 다시 보기 → 팀원별 실행 신호 카드 보기 → 먼저 이야기할 팀원 1명 선택 → 관찰한 행동 고르기 → 위험한 해석 고르기 → 1on1 대화 초점 1개 선택 → 선택 이유 1문장 작성',
+  '관찰한 행동은 말할 수 있지만, 위험한 해석은 확인 없이 말하지 않습니다',
+  '9·10단계 실행 결과 다시 보기',
+  '팀원별 실행 신호 카드 보기',
+  '먼저 이야기할 팀원 1명 선택',
+  '관찰한 행동 고르기',
+  '위험한 해석 고르기',
+  '1on1 대화 초점 1개 선택',
+  '선택 이유 1문장 작성',
+]) mustInclude(files.peopleSelectionLab, marker, 'v40-vNext people selection lab');
+
+for (const marker of [
+  'V40VNextOneOnOnePracticeLab',
+  '사람관리 2: 1on1 대화 설계와 실천하기',
+  '12단계 운영 잠금: 선택 팀원 다시 보기 → 첫 문장 → 확인 질문 2개 → 팀원 예상 반응 → 리더 재질문 → 2주 행동 합의 → 피해야 할 표현 → AI 스크립트 → 리허설 → 후속 확인',
+  '지적이 아니라 확인으로 시작합니다',
+  '선택한 팀원 다시 보기',
+  '1on1 초점 확인',
+  '첫 문장 만들기',
+  '확인 질문 2개 만들기',
+  '팀원 예상 반응 선택',
+  '리더의 재질문 만들기',
+  '2주 행동 합의 문장 만들기',
+  '피해야 할 표현 고르기',
+  'AI에게 1on1 대화 스크립트 초안 요청',
+  'AI 초안 붙여넣기',
+  '우리 조 언어로 수정',
+  '3분 역할극 리허설',
+  '관찰자 체크',
+  '후속 확인 질문 만들기',
+]) mustInclude(files.oneOnOneLab, marker, 'v40-vNext one-on-one practice lab');
+
+for (const marker of [
   'journeyV40VNextPreview',
   'journey-v40-vnext-preview.html',
 ]) mustInclude(files.vite, marker, 'vite input');
@@ -184,6 +221,8 @@ for (const marker of [
   'src/journey-v40-vnext-preview-config.ts',
   'src/journey-v40-vnext-task-management-lab.tsx',
   'src/journey-v40-vnext-task-boundary-coordination-lab.tsx',
+  'src/journey-v40-vnext-people-selection-lab.tsx',
+  'src/journey-v40-vnext-one-on-one-practice-lab.tsx',
   'src/journey-v39-notebooklm-guided-research-lab.tsx',
   'src/journey-v39-team-seven-coaching-profiles.ts',
 ]) mustInclude(files.tsconfig, marker, 'v40-vNext tsconfig');
