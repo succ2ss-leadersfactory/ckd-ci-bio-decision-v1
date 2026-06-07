@@ -22,6 +22,15 @@ const V39_MEMBER_ROLE_UX_SMOKE_MARKERS = [
   'V39MinimumChecklist',
   'V39MiniFlow',
   'V39SafetyStrip',
+  'v40-vNext 인물 계승 잠금',
+  '신재영 대리',
+  '이대은 대리',
+  '박재욱 사원',
+  '유희관 과장',
+  '김문호 차장',
+  '김재호 차장',
+  '문교원 사원',
+  '기존 웹앱 등장인물과 호칭을 그대로 끌어옵니다',
 ].join('|');
 void V39_MEMBER_ROLE_UX_SMOKE_MARKERS;
 
