@@ -5,6 +5,8 @@ const PORT = 41739;
 const ROUTE = '/journey-v39-preview.html';
 const BASE_URL = `http://${HOST}:${PORT}`;
 const TARGET_URL = `${BASE_URL}${ROUTE}`;
+const EXPECTED_TITLE = 'C1바이오 영업팀장 AI 리더십 Lab Journey';
+const EXPECTED_ROOT = 'id="journey-root"';
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,10 +20,14 @@ async function waitForRoute(timeoutMs = 20000) {
     try {
       const response = await fetch(TARGET_URL, { redirect: 'manual' });
       const text = await response.text();
-      if (response.status === 200 && text.includes('C1바이오 영업팀장 AI 리더십 Lab Journey') && text.includes('/src/journey-v39-app-preview.tsx')) {
+      const hasExpectedTitle = text.includes(EXPECTED_TITLE);
+      const hasJourneyRoot = text.includes(EXPECTED_ROOT);
+      const hasAppAsset = text.includes('/assets/') || text.includes('/src/journey-v39-app-preview.tsx');
+
+      if (response.status === 200 && hasExpectedTitle && hasJourneyRoot && hasAppAsset) {
         return { status: response.status, text };
       }
-      lastError = `status=${response.status}, title=${text.includes('C1바이오 영업팀장 AI 리더십 Lab Journey')}, entry=${text.includes('/src/journey-v39-app-preview.tsx')}`;
+      lastError = `status=${response.status}, title=${hasExpectedTitle}, root=${hasJourneyRoot}, asset=${hasAppAsset}`;
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
     }
