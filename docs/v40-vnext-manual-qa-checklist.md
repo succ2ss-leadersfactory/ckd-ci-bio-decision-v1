@@ -23,7 +23,28 @@ Confirm v40-vNext changes do not leak into protected routes.
 - [ ] `/journey-v39-preview.html` still opens the v39 preview route and does not show v40-vNext labels.
 - [ ] `/journey-v40-lite-preview.html` still opens the v40-lite route and is not overwritten by v40-vNext.
 
-## 2. Step 1 to Step 4 basic flow
+## 2. Progress coach panel QA
+
+Confirm the new v40-vNext progress coach panel helps participants understand where they are and what they should produce.
+
+- [ ] `지금 단계 코치` appears above the step body on every v40-vNext step.
+- [ ] The current step number is displayed as `현재 위치` with the format `n / 13`.
+- [ ] The progress bar advances when moving forward and backward across steps.
+- [ ] `이번 단계 행동` accurately describes the action for the current step.
+- [ ] `완성 산출물` accurately describes the output for the current step.
+- [ ] `다음 단계 미리보기` shows the next step title, or `최종 정리 완료` on Step 13.
+- [ ] `조별 진행 상태` shows group name, team/table, representative situation, and role agreement status.
+- [ ] The representative situation is shortened without breaking the card layout when the text is long.
+- [ ] The four phase cards are visible:
+  - [ ] 준비·리서치
+  - [ ] 성과관리
+  - [ ] 업무관리
+  - [ ] 사람관리·통합
+- [ ] Clicking each phase card moves to that phase's first step.
+- [ ] Phase status labels show `완료`, `진행 중`, or `예정` correctly.
+- [ ] The panel remains readable on mobile/tablet and does not push the main task too far below the fold.
+
+## 3. Step 1 to Step 4 basic flow
 
 ### Step 1 · 조별 역할 잡기
 
@@ -60,7 +81,7 @@ Confirm all locked research output fields are still present.
 - [ ] 예상 질문 / `expectedQuestions`
 - [ ] 주의 표현 / `complianceCaution`
 
-## 3. Step 8 to Step 10 task management QA
+## 4. Step 8 to Step 10 task management QA
 
 ### Step 8 · 업무관리 1
 
@@ -110,7 +131,7 @@ Confirm all locked research output fields are still present.
 - [ ] Revise into group language.
 - [ ] Complete the work boundary declaration.
 
-## 4. Step 11 to Step 12 people management storage connection
+## 5. Step 11 to Step 12 people management storage connection
 
 Storage key to verify:
 
@@ -145,7 +166,7 @@ Confirm the selected Step 11 data appears in Step 12.
 - [ ] Observed behaviors are used in prompt defaults.
 - [ ] Risky interpretations are used in roleplay prompt defaults.
 
-## 5. Step 12 collapsible roleplay UI QA
+## 6. Step 12 collapsible roleplay UI QA
 
 Confirm the Step 12 roleplay practice section is easier to navigate.
 
@@ -167,7 +188,7 @@ Confirm the Step 12 roleplay practice section is easier to navigate.
 - [ ] Confirm copy buttons still write prompt text to the clipboard.
 - [ ] Confirm no roleplay prompt asks for actual customer names, hospital names, product names, real sales data, prescription data, evaluation grades, unapproved efficacy, off-label implications, prescription-inducing language, definitive superiority claims, or competitor disparagement.
 
-## 6. Step 13 final memo connection QA
+## 7. Step 13 final memo connection QA
 
 Storage keys to verify:
 
@@ -201,20 +222,21 @@ ckd.v40-vnext.finalExecutionMemo.v1
   - [ ] 후속 확인 메모
   - [ ] 복기 질문
 
-## 7. Reset and persistence QA
+## 8. Reset and persistence QA
 
 - [ ] Refresh the browser and confirm entered v40-vNext data persists.
 - [ ] Click `v40-vNext 입력 초기화`.
 - [ ] Confirm v40-vNext inputs reset.
 - [ ] Confirm protected routes are not reset or modified unexpectedly.
 
-## 8. Pass criteria
+## 9. Pass criteria
 
 The preview can be considered ready for a facilitated pilot run when all of the following are true.
 
 - [ ] CI is green: v40-vNext smoke, scoped TypeScript check, and Vite build pass.
 - [ ] v39 route remains protected.
 - [ ] v40-lite route remains protected.
+- [ ] Progress coach panel correctly shows current position, action, output, next step, group status, and phase navigation.
 - [ ] Step 11 data correctly carries into Step 12.
 - [ ] Step 12 roleplay cards are visually clear and usable.
 - [ ] Step 13 pulls latest task and people results into the final memo.
