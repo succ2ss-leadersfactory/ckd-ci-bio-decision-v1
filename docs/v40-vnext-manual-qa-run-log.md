@@ -5,14 +5,15 @@ This file records the current verification status after adding the v40-vNext man
 ## 1. Target
 
 - PR: #2 `chore(v37): start isolated preview lane`
+- Manual QA tracking issue: #3 `Run v40-vNext manual browser QA`
 - Branch: `feature/v37-preview-shell`
 - Route under test: `/journey-v40-vnext-preview.html`
 - QA checklist: `docs/v40-vnext-manual-qa-checklist.md`
-- Latest verified head before this log: `da2faba4aae639dd17e972b9c9090730e5f5e79e`
+- Latest verified head before this log update: `75990f969e415d165a9929309cfe2e7ebebfb8bb`
 
 ## 2. Automated verification status
 
-The following checks were confirmed successful for head `da2faba4aae639dd17e972b9c9090730e5f5e79e`.
+The following checks were confirmed successful for head `75990f969e415d165a9929309cfe2e7ebebfb8bb`.
 
 - [x] Vercel deployment status: success
 - [x] C1Bio MVP CI: success
@@ -28,7 +29,7 @@ The following checks were confirmed successful for head `da2faba4aae639dd17e972b
 
 ## 3. Manual browser QA status
 
-Manual browser QA still needs to be executed in the latest Vercel preview.
+Manual browser QA is tracked in issue #3 and still needs to be executed in the latest Vercel preview.
 
 - [ ] Open the latest Vercel deployment.
 - [ ] Navigate to `/journey-v40-vnext-preview.html`.
