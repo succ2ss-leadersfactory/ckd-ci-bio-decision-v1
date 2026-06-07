@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 import { TEAM_MEMBER_PROFILES, type TeamMemberProfile } from './journey-v39-team-seven-coaching-profiles';
 
-const PEOPLE_STORAGE_KEY = 'ckd.v40-vnext.peopleManagement.v1';
+const PEOPLE_STORAGE_KEY = 'ckd.v40-vnext.peopleManagement.v2';
 const TASK_STORAGE_KEY = 'ckd.v40-vnext.taskManagement.v10';
 
 const V40_VNEXT_PEOPLE_SELECTION_MARKERS = [
@@ -17,6 +17,7 @@ const V40_VNEXT_PEOPLE_SELECTION_MARKERS = [
   '위험한 해석 고르기',
   '1on1 대화 초점 1개 선택',
   '선택 이유 1문장 작성',
+  'ckd.v40-vnext.peopleManagement.v2',
 ].join('|');
 void V40_VNEXT_PEOPLE_SELECTION_MARKERS;
 
