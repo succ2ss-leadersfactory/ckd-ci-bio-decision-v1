@@ -26,6 +26,7 @@ const files = {
   app: read('src/journey-v40-vnext-app-preview.tsx'),
   config: read('src/journey-v40-vnext-preview-config.ts'),
   taskLab: read('src/journey-v40-vnext-task-management-lab.tsx'),
+  boundaryLab: read('src/journey-v40-vnext-task-boundary-coordination-lab.tsx'),
   vite: read('vite.config.ts'),
   tsconfig: read('tsconfig.v40-vnext-smoke.json'),
   journeyHtml: read('journey.html'),
@@ -117,10 +118,8 @@ for (const marker of [
 for (const marker of [
   'V40VNextTaskExecutionDesignLab',
   'V40VNextTaskPriorityFlowLab',
-  'V40VNextTaskBoundaryCoordinationLab',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
-  '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
   '우리 조가 보기엔 무엇이 빠졌습니까?',
   '전문가 기준 확인',
   '우리 조 선택과 전문가 추천 비교',
@@ -152,14 +151,28 @@ for (const marker of [
   '최종 점검용 AI 질문 보기',
   'AI 점검 의견 붙여넣기',
   '우리 조가 최종 수정할 부분 1가지',
+  'ckd.v40-vnext.taskManagement.v10',
+]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
+
+for (const marker of [
+  'V40VNextTaskBoundaryCoordinationLab',
+  '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
+  '10단계 운영 잠금: 9단계 실행 흐름 다시 보기 → 실행 항목 카드 확인 → 네 가지 바구니로 분류 → 위험 이유 선택 → 팀장 개입 타이밍 선택 → AI 조율 문장 → 업무 경계 선언문',
+  '9단계 실행 흐름 다시 보기',
+  '실행 항목 카드 확인',
+  '네 가지 바구니로 분류',
   '팀원이 혼자 처리할 일',
   '팀장 확인이 필요한 일',
   '다른 부서 협조가 필요한 일',
   '상위 리더에게 공유할 일',
-  '주의 표현 또는 확인 필요 사항',
+  '혼자 처리하면 위험한 이유',
+  '팀장 개입 타이밍',
   'AI에게 조율 문장 초안 부탁하기',
-  'ckd.v40-vnext.taskManagement.v10',
-]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
+  'AI 조율 문장 붙여넣기',
+  '우리 조 언어로 수정',
+  '업무 경계 선언문',
+  '이 일은 혼자 해도 되는가, 아니면 연결해야 하는가?',
+]) mustInclude(files.boundaryLab, marker, 'v40-vNext boundary coordination lab');
 
 for (const marker of [
   'journeyV40VNextPreview',
@@ -170,6 +183,7 @@ for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
   'src/journey-v40-vnext-preview-config.ts',
   'src/journey-v40-vnext-task-management-lab.tsx',
+  'src/journey-v40-vnext-task-boundary-coordination-lab.tsx',
   'src/journey-v39-notebooklm-guided-research-lab.tsx',
   'src/journey-v39-team-seven-coaching-profiles.ts',
 ]) mustInclude(files.tsconfig, marker, 'v40-vNext tsconfig');
