@@ -15,6 +15,7 @@ import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39Step
 import { V40VNextFinalExecutionMemoLab } from './journey-v40-vnext-final-execution-memo-lab';
 import { V40VNextOneOnOnePracticeLab } from './journey-v40-vnext-one-on-one-practice-lab';
 import { V40VNextPeopleSelectionLab } from './journey-v40-vnext-people-selection-lab';
+import { V40VNextProgressCoachPanel } from './journey-v40-vnext-progress-coach-panel';
 import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
 import { V40VNextTaskExecutionDesignLab, V40VNextTaskPriorityFlowLab } from './journey-v40-vnext-task-management-lab';
 import { clampV40VNextStep, V40_VNEXT_VISIBLE_APP_STEPS } from './journey-v40-vnext-preview-config';
@@ -46,6 +47,10 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   'V40VNextPeopleSelectionLab',
   'V40VNextOneOnOnePracticeLab',
   'V40VNextFinalExecutionMemoLab',
+  'V40VNextProgressCoachPanel',
+  '지금 단계 코치',
+  '이번 단계 행동',
+  '완성 산출물',
   'ckd.v40-vnext.finalExecutionMemo.v1',
   'Perplexity 리서치 질문',
   'perplexityAnswer',
@@ -183,6 +188,7 @@ function V40VNextPreviewApp() {
     <V39StepNavigationProvider onStepSelect={(stepNumber) => goToStep(stepNumber - 1)}>
       <JourneyShell title="C1바이오 영업팀장 AI 리더십 Lab Journey v40-vNext" subtitle="v39의 산출물, UI/UX, 현장언어, 등장인물을 계승하고 성과관리 → 업무관리 → 사람관리 순서로 재구성한 조별 실습형 후속 버전입니다." steps={V40_VNEXT_VISIBLE_APP_STEPS} currentStep={safeStep} onPrev={() => goToStep(safeStep - 1)} onNext={() => goToStep(safeStep + 1)} onStepSelect={goToStep} hideStepOverview={false}>
         <div className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-xs font-black uppercase tracking-wide text-cyan-700">v40-vNext 보호 기준</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">기존 v39는 기준 원본으로 보호합니다. 이 화면은 별도 route에서만 작동하며, 성과관리 → 업무관리 → 사람관리 순서로 조별 실습을 진행합니다.</p></div><button type="button" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-black text-slate-700" onClick={handleReset}>v40-vNext 입력 초기화</button></div></div>
+        <V40VNextProgressCoachPanel currentStep={safeStep} participant={participant} onStepSelect={goToStep} />
         {renderStep(safeStep, participant, setParticipant)}
       </JourneyShell>
     </V39StepNavigationProvider>
