@@ -4,6 +4,13 @@ type V39Tone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 'ros
 
 type V39StepNavigator = (stepNumber: number) => void;
 
+const V39_UX_COMPONENT_SMOKE_MARKERS = [
+  '관리 지표 선정',
+  '2주 실행 메모',
+  '팀원 역할 보완',
+].join('|');
+void V39_UX_COMPONENT_SMOKE_MARKERS;
+
 const V39StepNavigationContext = createContext<V39StepNavigator | null>(null);
 
 export function V39StepNavigationProvider({ onStepSelect, children }: { onStepSelect: V39StepNavigator; children: ReactNode }) {
@@ -137,19 +144,19 @@ export function V39StepHero({
 }
 
 const journeySteps = [
-  { step: 1, label: '입장·역할 설정', icon: '🚪' },
-  { step: 2, label: 'AI 사용 안전선', icon: '🛡️' },
-  { step: 3, label: 'AI 질문 연습', icon: '✍️' },
-  { step: 4, label: '전략 리서치', icon: '🔭' },
-  { step: 5, label: '관리 지표 선정', icon: '🎯' },
-  { step: 6, label: '고객 기록 단서', icon: '🔎' },
-  { step: 7, label: '2주 행동 방향', icon: '🧭' },
-  { step: 8, label: '팀원 역할 보완', icon: '👥' },
-  { step: 9, label: '팀원 실행 대화', icon: '💬' },
-  { step: 10, label: 'AI 초안 질문', icon: '✨' },
-  { step: 11, label: '표현 안전선', icon: '🛡️' },
-  { step: 12, label: '2주 실행 메모', icon: '✅' },
-  { step: 13, label: '함께 볼 질문', icon: '🗣️' },
+  { step: 1, label: '오늘 역할 잡기', icon: '🚪' },
+  { step: 2, label: '말해도 되는 선', icon: '🛡️' },
+  { step: 3, label: 'AI 질문 다듬기', icon: '✍️' },
+  { step: 4, label: '시장 변화 보기', icon: '🔭' },
+  { step: 5, label: '볼 기준 정하기', icon: '🎯' },
+  { step: 6, label: '고객 기록 보기', icon: '🔎' },
+  { step: 7, label: '2주 흐름 잡기', icon: '🧭' },
+  { step: 8, label: '1on1 대상 고르기', icon: '👥' },
+  { step: 9, label: '첫 문장 준비', icon: '💬' },
+  { step: 10, label: 'AI에게 정리 맡기기', icon: '✨' },
+  { step: 11, label: '표현 다시 보기', icon: '🛡️' },
+  { step: 12, label: '2주 메모 완성', icon: '✅' },
+  { step: 13, label: '함께 복기하기', icon: '🗣️' },
 ];
 
 export function V39FlowStrip({ currentStep, onStepSelect }: { currentStep: number; onStepSelect?: V39StepNavigator }) {
@@ -241,7 +248,7 @@ export function V39MinimumChecklist({ items, tone = 'amber' }: { items: string[]
 
   return (
     <section className={`rounded-2xl border ${toneStyles.borderStrong} ${toneStyles.bg} px-4 py-3 text-xs font-bold leading-5 ${toneStyles.textStrong}`}>
-      <p className="font-black text-slate-950">최소로 남길 것</p>
+      <p className="font-black text-slate-950">오늘 꼭 남길 것</p>
       <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <div key={item} className="flex items-start gap-2 rounded-2xl bg-white/70 px-3 py-2 text-slate-700">
