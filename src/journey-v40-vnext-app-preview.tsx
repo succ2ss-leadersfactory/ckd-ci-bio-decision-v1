@@ -15,9 +15,9 @@ import { V39PromptPracticeOptimizedLab } from './journey-v39-prompt-practice-opt
 import { V39TeamSevenCoachingUxWrapper } from './journey-v39-team-seven-coaching-ux-wrapper';
 import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero, V39StepNavigationProvider } from './journey-v39-ux-components';
 import {
-  V40VNextTaskAiDraftLab,
-  V40VNextTaskCriteriaDiagnosisLab,
-  V40VNextTaskInstructionSelectLab,
+  V40VNextTaskBoundaryCoordinationLab,
+  V40VNextTaskExecutionDesignLab,
+  V40VNextTaskPriorityFlowLab,
 } from './journey-v40-vnext-task-management-lab';
 import { clampV40VNextStep, V40_VNEXT_VISIBLE_APP_STEPS } from './journey-v40-vnext-preview-config';
 
@@ -37,11 +37,14 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   '성과관리 2: 이번 2주 성과 기준 정하기',
   '성과관리 3: 고객 기록에서 성과 단서 찾기',
   '성과관리 4: 고객군별 2주 성과 흐름 정하기',
-  '업무관리 1: 모호한 업무지시 고르기',
-  '업무관리 2: 빠진 업무 기준 진단하기',
-  '업무관리 3: AI로 업무지시문 초안 만들기',
+  '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
+  '업무관리 2: 우선순위와 업무 흐름 정리하기',
+  '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
   '사람관리 1: 먼저 이야기할 팀원 고르기',
   '사람관리 2: 1on1 첫 문장 준비하기',
+  'V40VNextTaskExecutionDesignLab',
+  'V40VNextTaskPriorityFlowLab',
+  'V40VNextTaskBoundaryCoordinationLab',
   'Perplexity 리서치 질문',
   'perplexityAnswer',
   'notebookSourceBundle',
@@ -57,9 +60,6 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   'strategyMeetingMemo',
   'expectedQuestions',
   'complianceCaution',
-  'V40VNextTaskInstructionSelectLab',
-  'V40VNextTaskCriteriaDiagnosisLab',
-  'V40VNextTaskAiDraftLab',
   '신재영 대리',
   '이대은 대리',
   '박재욱 사원',
@@ -77,9 +77,7 @@ type V40VNextParticipant = {
   roleAccepted: boolean;
 };
 
-type V40VNextProgress = {
-  step: number;
-};
+type V40VNextProgress = { step: number };
 
 const V40_VNEXT_STORAGE_KEYS = {
   participant: 'ckd.v40-vnext.participant.v1',
@@ -92,18 +90,12 @@ const DEFAULT_PARTICIPANT: V40VNextParticipant = {
   representativeSituation: '',
   roleAccepted: false,
 };
-
-const DEFAULT_PROGRESS: V40VNextProgress = {
-  step: 0,
-};
-
+const DEFAULT_PROGRESS: V40VNextProgress = { step: 0 };
 const GROUP_OPTIONS = ['1조', '2조', '3조', '4조', '5조', '6조', '7조', '8조', '9조', '10조', '11조', '12조'];
 const TABLE_OPTIONS = ['1팀 A조', '1팀 B조', '2팀 A조', '2팀 B조', '3팀 A조', '3팀 B조', '4팀 A조', '4팀 B조', '5팀 A조', '5팀 B조', '6팀 A조', '6팀 B조'];
 
 function scrollV40VNextToTop() {
-  window.requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
 function V40ComplianceNotice() {
@@ -148,9 +140,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40VNextParti
             { icon: '📝', title: '대표 상황 정하기', body: '우리 조가 다룰 대표 상황을 1개로 좁힙니다.' },
           ]}
         />
-        <div className="mt-3">
-          <V39MinimumChecklist tone="indigo" items={['조/팀 선택', '대표 상황 1개 작성', '조별 실습 역할 확인']} />
-        </div>
+        <div className="mt-3"><V39MinimumChecklist tone="indigo" items={['조/팀 선택', '대표 상황 1개 작성', '조별 실습 역할 확인']} /></div>
       </section>
       <V40ComplianceNotice />
       <ShellCard title="우리 조가 다룰 대표 상황">
@@ -172,12 +162,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40VNextParti
         </div>
         <label className="block space-y-1">
           <span className="text-xs font-bold text-slate-500">우리 조가 다룰 대표 상황</span>
-          <textarea
-            className="min-h-24 w-full rounded-xl border px-3 py-2"
-            value={participant.representativeSituation}
-            onChange={(event) => setParticipant({ ...participant, representativeSituation: event.target.value })}
-            placeholder="예: 활동 기록은 늘었지만 고객 반응 이후 후속 실행이 약하고, 팀원별 기록 품질 차이가 커지고 있다."
-          />
+          <textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={participant.representativeSituation} onChange={(event) => setParticipant({ ...participant, representativeSituation: event.target.value })} placeholder="예: 활동 기록은 늘었지만 고객 반응 이후 후속 실행이 약하고, 팀원별 기록 품질 차이가 커지고 있다." />
         </label>
         <label className="flex items-start gap-2 rounded-xl bg-slate-50 p-3">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
@@ -192,21 +177,8 @@ function V40AiSafetyStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={2} />
-      <V39StepHero
-        eyebrow="2단계 · 말해도 되는 선 확인"
-        icon="🛡️"
-        title="조별 토의 내용도 AI에 넣기 전에는 한 번 지워야 합니다"
-        tone="amber"
-        description="우리 조가 이야기한 현장 사례를 그대로 넣지 않습니다. 실제 고객, 기관, 제품, 수치, 사람을 가릴수록 AI는 더 안전한 초안 도구가 됩니다."
-        badges={[
-          { label: '먼저 할 일', value: '민감정보 제거', tone: 'amber', icon: '🛡️' },
-          { label: '방식', value: '가상·익명화', tone: 'slate', icon: '✂️' },
-          { label: '다음', value: '질문 다듬기', tone: 'violet', icon: '✍️' },
-        ]}
-      />
-      <V39SafetyStrip>
-        고객을 평가하거나 등급화하지 않습니다. 기록에서 다음 행동의 단서를 찾고, AI 초안은 팀장 언어로 다시 고칩니다.
-      </V39SafetyStrip>
+      <V39StepHero eyebrow="2단계 · 말해도 되는 선 확인" icon="🛡️" title="조별 토의 내용도 AI에 넣기 전에는 한 번 지워야 합니다" tone="amber" description="우리 조가 이야기한 현장 사례를 그대로 넣지 않습니다. 실제 고객, 기관, 제품, 수치, 사람을 가릴수록 AI는 더 안전한 초안 도구가 됩니다." badges={[{ label: '먼저 할 일', value: '민감정보 제거', tone: 'amber', icon: '🛡️' }, { label: '방식', value: '가상·익명화', tone: 'slate', icon: '✂️' }, { label: '다음', value: '질문 다듬기', tone: 'violet', icon: '✍️' }]} />
+      <V39SafetyStrip>고객을 평가하거나 등급화하지 않습니다. 기록에서 다음 행동의 단서를 찾고, AI 초안은 팀장 언어로 다시 고칩니다.</V39SafetyStrip>
       <AiSafetyLab />
     </div>
   );
@@ -216,18 +188,7 @@ function V40PromptPracticeStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={3} />
-      <V39StepHero
-        eyebrow="3단계 · AI 질문 다듬기"
-        icon="✍️"
-        title="우리 조의 고민을 AI가 일할 수 있는 질문으로 바꿉니다"
-        tone="violet"
-        description="그냥 ‘어떻게 할까요?’라고 묻지 않습니다. 우리 조가 다룰 대표 상황, 필요한 산출물, 말해도 되는 선을 함께 넣어야 현장에서 쓸 수 있는 초안이 나옵니다."
-        badges={[
-          { label: '앞 단계', value: '안전선 확인', tone: 'amber', icon: '🛡️' },
-          { label: '지금', value: '질문 구조화', tone: 'violet', icon: '✍️' },
-          { label: '다음', value: '성과관리 Lab', tone: 'sky', icon: '🔭' },
-        ]}
-      />
+      <V39StepHero eyebrow="3단계 · AI 질문 다듬기" icon="✍️" title="우리 조의 고민을 AI가 일할 수 있는 질문으로 바꿉니다" tone="violet" description="그냥 ‘어떻게 할까요?’라고 묻지 않습니다. 우리 조가 다룰 대표 상황, 필요한 산출물, 말해도 되는 선을 함께 넣어야 현장에서 쓸 수 있는 초안이 나옵니다." badges={[{ label: '앞 단계', value: '안전선 확인', tone: 'amber', icon: '🛡️' }, { label: '지금', value: '질문 구조화', tone: 'violet', icon: '✍️' }, { label: '다음', value: '성과관리 Lab', tone: 'sky', icon: '🔭' }]} />
       <V39PromptPracticeOptimizedLab />
     </div>
   );
@@ -237,18 +198,7 @@ function V40ResearchStrategyStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={4} />
-      <V39StepHero
-        eyebrow="성과관리 1 · 시장 변화에서 성과 질문 찾기"
-        icon="🔭"
-        title="자료를 모으는 게 아니라 성과관리 질문을 뽑습니다"
-        tone="sky"
-        description="Perplexity로 공개자료를 찾고, NotebookLM으로 소스 기반 종합을 만들고, Studio 산출물 초안까지 정리합니다. 핵심은 우리 조가 이번 2주 동안 무엇을 성과 기준으로 볼지 질문을 뽑는 것입니다."
-        badges={[
-          { label: '성과관리', value: '시장 변화 → 성과 질문', tone: 'sky', icon: '📈' },
-          { label: 'NotebookLM', value: '소스 기반 종합', tone: 'emerald', icon: '📚' },
-          { label: 'Studio', value: '보고서·슬라이드 초안', tone: 'violet', icon: '🎞️' },
-        ]}
-      />
+      <V39StepHero eyebrow="성과관리 1 · 시장 변화에서 성과 질문 찾기" icon="🔭" title="자료를 모으는 게 아니라 성과관리 질문을 뽑습니다" tone="sky" description="Perplexity로 공개자료를 찾고, NotebookLM으로 소스 기반 종합을 만들고, Studio 산출물 초안까지 정리합니다. 핵심은 우리 조가 이번 2주 동안 무엇을 성과 기준으로 볼지 질문을 뽑는 것입니다." badges={[{ label: '성과관리', value: '시장 변화 → 성과 질문', tone: 'sky', icon: '📈' }, { label: 'NotebookLM', value: '소스 기반 종합', tone: 'emerald', icon: '📚' }, { label: 'Studio', value: '보고서·슬라이드 초안', tone: 'violet', icon: '🎞️' }]} />
       <V39NotebookLmGuidedResearchLab />
     </div>
   );
@@ -258,18 +208,7 @@ function V40DashboardStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={5} />
-      <V39StepHero
-        eyebrow="성과관리 2 · 이번 2주 성과 기준 정하기"
-        icon="🎯"
-        title="우리 조가 선택한 성과 기준을 2주 실행의 기준으로 좁힙니다"
-        tone="emerald"
-        description="활동량만 보지 않고 후속조치, 고객 반응, 기록의 질, 실행 제약을 함께 봅니다. 이 기준은 뒤의 고객 기록 단서와 업무지시문으로 이어집니다."
-        badges={[
-          { label: '산출물', value: '우리 조가 선택한 기준', tone: 'emerald', icon: '🎯' },
-          { label: '다음 연결', value: '고객 기록 단서', tone: 'sky', icon: '🔎' },
-          { label: '주의', value: '고객을 등급화하지 않음', tone: 'amber', icon: '🛡️' },
-        ]}
-      />
+      <V39StepHero eyebrow="성과관리 2 · 이번 2주 성과 기준 정하기" icon="🎯" title="우리 조가 선택한 성과 기준을 2주 실행의 기준으로 좁힙니다" tone="emerald" description="활동량만 보지 않고 후속조치, 고객 반응, 기록의 질, 실행 제약을 함께 봅니다. 이 기준은 뒤의 고객 기록 단서와 업무 실행 구조로 이어집니다." badges={[{ label: '산출물', value: '우리 조가 선택한 기준', tone: 'emerald', icon: '🎯' }, { label: '다음 연결', value: '고객 기록 단서', tone: 'sky', icon: '🔎' }, { label: '주의', value: '고객을 등급화하지 않음', tone: 'amber', icon: '🛡️' }]} />
       <V39DashboardAnalysisUxLab />
     </div>
   );
@@ -279,18 +218,7 @@ function V40CustomerJudgmentStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={6} />
-      <V39StepHero
-        eyebrow="성과관리 3 · 고객 기록에서 성과 단서 찾기"
-        icon="🔎"
-        title="기록에서 다음 행동으로 이어질 성과 단서를 찾습니다"
-        tone="sky"
-        description="고객을 평가하거나 등급화하지 않습니다. 우리 조가 볼 것은 고객에 대한 판단이 아니라 다음 행동을 준비하기 위해 더 확인해야 할 성과 단서입니다."
-        badges={[
-          { label: '관점', value: '성과 단서 찾기', tone: 'sky', icon: '🔎' },
-          { label: '금지', value: '고객 등급화 금지', tone: 'amber', icon: '🛡️' },
-          { label: '다음', value: '2주 성과 흐름', tone: 'violet', icon: '🧭' },
-        ]}
-      />
+      <V39StepHero eyebrow="성과관리 3 · 고객 기록에서 성과 단서 찾기" icon="🔎" title="기록에서 다음 행동으로 이어질 성과 단서를 찾습니다" tone="sky" description="고객을 평가하거나 등급화하지 않습니다. 우리 조가 볼 것은 고객에 대한 판단이 아니라 다음 행동을 준비하기 위해 더 확인해야 할 성과 단서입니다." badges={[{ label: '관점', value: '성과 단서 찾기', tone: 'sky', icon: '🔎' }, { label: '금지', value: '고객 등급화 금지', tone: 'amber', icon: '🛡️' }, { label: '다음', value: '2주 성과 흐름', tone: 'violet', icon: '🧭' }]} />
       <V39CustomerJudgmentUxLab />
     </div>
   );
@@ -300,82 +228,38 @@ function V40CustomerPriorityStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={7} />
-      <V39StepHero
-        eyebrow="성과관리 4 · 고객군별 2주 성과 흐름 정하기"
-        icon="🧭"
-        title="고객군별로 다시 볼 흐름과 보완 조건을 정합니다"
-        tone="violet"
-        description="AI 초안은 그대로 확정하지 않습니다. 우리 조가 고객 반응, 실행 가능성, 주의 표현을 함께 보며 2주 성과 흐름을 줄이고 고쳐 씁니다."
-        badges={[
-          { label: '핵심', value: '2주 성과 흐름', tone: 'violet', icon: '🧭' },
-          { label: '주의', value: '처방 유도 표현 금지', tone: 'amber', icon: '🛡️' },
-          { label: '다음', value: '업무관리 Lab', tone: 'cyan', icon: '🧩' },
-        ]}
-      />
+      <V39StepHero eyebrow="성과관리 4 · 고객군별 2주 성과 흐름 정하기" icon="🧭" title="고객군별로 다시 볼 흐름과 보완 조건을 정합니다" tone="violet" description="AI 초안은 그대로 확정하지 않습니다. 우리 조가 고객 반응, 실행 가능성, 주의 표현을 함께 보며 2주 성과 흐름을 줄이고 고쳐 씁니다." badges={[{ label: '핵심', value: '2주 성과 흐름', tone: 'violet', icon: '🧭' }, { label: '주의', value: '처방 유도 표현 금지', tone: 'amber', icon: '🛡️' }, { label: '다음', value: '업무관리 Lab', tone: 'cyan', icon: '🧩' }]} />
       <V39CustomerPriorityUxLab />
     </div>
   );
 }
 
-function V40TaskInstructionSelectStep() {
+function V40TaskExecutionDesignStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={8} />
-      <V39StepHero
-        eyebrow="업무관리 1 · 모호한 업무지시 고르기"
-        icon="🧩"
-        title="성과관리 결과가 팀원에게 애매한 지시로 전달되지 않게 봅니다"
-        tone="cyan"
-        description="성과관리에서 정한 기준을 팀원에게 전달할 때 자주 나오는 모호한 업무지시 예시를 고르고, 팀원들이 어떻게 다르게 해석할 수 있는지 확인합니다."
-        badges={[
-          { label: '앞에서 가져온 것', value: '성과 기준·고객 흐름', tone: 'emerald', icon: '📈' },
-          { label: '지금 할 일', value: '모호한 지시 선택', tone: 'cyan', icon: '🧩' },
-          { label: '다음', value: '빠진 기준 진단', tone: 'amber', icon: '🔎' },
-        ]}
-      />
-      <V40VNextTaskInstructionSelectLab />
+      <V39StepHero eyebrow="업무관리 1 · 성과 기준을 실행 과제로 바꾸기" icon="🧩" title="성과 기준을 팀원이 실제로 할 수 있는 일로 바꿉니다" tone="cyan" description="업무지시 명확화는 이 단계 안에 통합합니다. 성과관리 결과를 팀원이 무엇을, 어디까지, 언제까지 하면 되는지 알 수 있는 실행 과제로 바꿉니다." badges={[{ label: '앞에서 가져온 것', value: '성과 기준·고객 흐름', tone: 'emerald', icon: '📈' }, { label: '지금 할 일', value: '실행 과제화', tone: 'cyan', icon: '🧩' }, { label: '다음', value: '업무 흐름 정리', tone: 'amber', icon: '🧭' }]} />
+      <V40VNextTaskExecutionDesignLab />
     </div>
   );
 }
 
-function V40TaskCriteriaDiagnosisStep() {
+function V40TaskPriorityFlowStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={9} />
-      <V39StepHero
-        eyebrow="업무관리 2 · 빠진 업무 기준 진단하기"
-        icon="🔎"
-        title="팀원이 헷갈릴 수 있는 빠진 기준을 확인합니다"
-        tone="amber"
-        description="배경, 목적, 범위, 우선순위, 일정, 완료 기준, 중간 확인 중 무엇이 빠졌는지 진단합니다. AI는 이 진단 뒤에 사용합니다."
-        badges={[
-          { label: '진단 기준', value: '7요소', tone: 'amber', icon: '🔎' },
-          { label: '주의', value: 'AI보다 먼저 진단', tone: 'cyan', icon: '🧠' },
-          { label: '다음', value: 'AI 초안 생성', tone: 'violet', icon: '✨' },
-        ]}
-      />
-      <V40VNextTaskCriteriaDiagnosisLab />
+      <V39StepHero eyebrow="업무관리 2 · 우선순위와 업무 흐름 정리하기" icon="🧭" title="무엇을 먼저 하고 무엇을 잠시 줄일지 정합니다" tone="amber" description="업무관리는 일을 더 얹는 것이 아니라 실행 흐름을 다시 짜는 일입니다. 먼저 할 일, 잠시 줄일 일, 흐름 3단계, 막힘 신호, 중간 확인 질문을 정리합니다." badges={[{ label: '핵심', value: '우선순위·흐름', tone: 'amber', icon: '🧭' }, { label: '신호', value: '막힘 신호', tone: 'cyan', icon: '🔎' }, { label: '다음', value: '일의 경계 구분', tone: 'violet', icon: '🧱' }]} />
+      <V40VNextTaskPriorityFlowLab />
     </div>
   );
 }
 
-function V40TaskAiDraftStep() {
+function V40TaskBoundaryCoordinationStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={10} />
-      <V39StepHero
-        eyebrow="업무관리 3 · AI로 업무지시문 초안 만들기"
-        icon="✨"
-        title="AI 초안을 우리 조의 업무 기준 문장으로 다시 고칩니다"
-        tone="violet"
-        description="AI에게 업무지시문 초안을 부탁하되 그대로 쓰지 않습니다. 쓸 만한 문장, 조심할 표현, 빠진 기준을 감별한 뒤 최종 업무지시문을 완성합니다."
-        badges={[
-          { label: 'AI 역할', value: '업무지시문 초안', tone: 'violet', icon: '✨' },
-          { label: '우리 조 역할', value: '감별·수정', tone: 'emerald', icon: '✍️' },
-          { label: '다음', value: '사람관리 Lab', tone: 'indigo', icon: '👥' },
-        ]}
-      />
-      <V40VNextTaskAiDraftLab />
+      <V39StepHero eyebrow="업무관리 3 · 혼자 해결하면 안 되는 일 구분하기" icon="🧱" title="팀원이 혼자 처리할 일과 팀장이 연결해야 할 일을 나눕니다" tone="violet" description="업무관리의 마지막은 사람을 평가하는 것이 아니라 일의 경계를 정리하는 것입니다. 팀원 자율 처리, 팀장 확인, 부서 협조, 상위 공유, 주의 표현을 구분합니다." badges={[{ label: '경계', value: '혼자 처리 vs 확인 필요', tone: 'violet', icon: '🧱' }, { label: '협조', value: '부서 확인', tone: 'cyan', icon: '🔗' }, { label: '다음', value: '사람관리 Lab', tone: 'indigo', icon: '👥' }]} />
+      <V40VNextTaskBoundaryCoordinationLab />
     </div>
   );
 }
@@ -384,18 +268,7 @@ function V40TeamMemberStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={11} />
-      <V39StepHero
-        eyebrow="사람관리 1 · 먼저 이야기할 팀원 고르기"
-        icon="👥"
-        title="성과 기준과 업무 기준을 실행하려면 누구와 먼저 이야기해야 할지 고릅니다"
-        tone="indigo"
-        description="신재영 대리, 이대은 대리, 박재욱 사원, 유희관 과장, 김문호 차장, 김재호 차장, 문교원 사원의 장면을 바탕으로 우리 조가 먼저 확인할 1on1 대상을 고릅니다."
-        badges={[
-          { label: '인물 계승', value: '기존 7명 유지', tone: 'indigo', icon: '👥' },
-          { label: '목표', value: '먼저 이야기할 이유', tone: 'emerald', icon: '💬' },
-          { label: '주의', value: '업무배정 화면 아님', tone: 'amber', icon: '🛡️' },
-        ]}
-      />
+      <V39StepHero eyebrow="사람관리 1 · 먼저 이야기할 팀원 고르기" icon="👥" title="성과 기준과 업무 기준을 실행하려면 누구와 먼저 이야기해야 할지 고릅니다" tone="indigo" description="신재영 대리, 이대은 대리, 박재욱 사원, 유희관 과장, 김문호 차장, 김재호 차장, 문교원 사원의 장면을 바탕으로 우리 조가 먼저 확인할 1on1 대상을 고릅니다." badges={[{ label: '인물 계승', value: '기존 7명 유지', tone: 'indigo', icon: '👥' }, { label: '목표', value: '먼저 이야기할 이유', tone: 'emerald', icon: '💬' }, { label: '주의', value: '업무배정 화면 아님', tone: 'amber', icon: '🛡️' }]} />
       <V39TeamSevenCoachingUxWrapper />
     </div>
   );
@@ -405,18 +278,7 @@ function V40PeopleDialogueStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={12} />
-      <V39StepHero
-        eyebrow="사람관리 2 · 1on1 첫 문장 준비하기"
-        icon="💬"
-        title="지적이 아니라 확인으로 시작하는 첫 문장을 준비합니다"
-        tone="emerald"
-        description="팀원 신호, 관찰한 행동, 위험한 해석, 1on1 초점, 확인 질문, 2주 행동 합의 문장, 피해야 할 표현을 함께 정리합니다."
-        badges={[
-          { label: '산출물', value: '우리 조가 준비한 첫 문장', tone: 'emerald', icon: '💬' },
-          { label: '대화 방식', value: '확인으로 시작', tone: 'sky', icon: '🔎' },
-          { label: '다음', value: '통합 실행 메모', tone: 'indigo', icon: '✅' },
-        ]}
-      />
+      <V39StepHero eyebrow="사람관리 2 · 1on1 첫 문장 준비하기" icon="💬" title="지적이 아니라 확인으로 시작하는 첫 문장을 준비합니다" tone="emerald" description="팀원 신호, 관찰한 행동, 위험한 해석, 1on1 초점, 확인 질문, 2주 행동 합의 문장, 피해야 할 표현을 함께 정리합니다." badges={[{ label: '산출물', value: '우리 조가 준비한 첫 문장', tone: 'emerald', icon: '💬' }, { label: '대화 방식', value: '확인으로 시작', tone: 'sky', icon: '🔎' }, { label: '다음', value: '통합 실행 메모', tone: 'indigo', icon: '✅' }]} />
       <V39PeopleDialogueUxLab />
     </div>
   );
@@ -426,18 +288,7 @@ function V40FinalStep() {
   return (
     <div className="space-y-4">
       <V39FlowStrip currentStep={13} />
-      <V39StepHero
-        eyebrow="13단계 · 2주 실행 메모와 복기 질문 완성하기"
-        icon="✅"
-        title="성과관리, 업무관리, 사람관리 결과를 하나의 2주 실행 메모로 묶습니다"
-        tone="indigo"
-        description="성과 기준, 고객군 흐름, 업무지시문, 완료 기준, 중간 확인 질문, 팀장 지원, 1on1 첫 문장과 복기 질문을 하나의 메모로 정리합니다."
-        badges={[
-          { label: '성과관리', value: '무엇을 볼 것인가', tone: 'emerald', icon: '📈' },
-          { label: '업무관리', value: '어떻게 일로 만들 것인가', tone: 'cyan', icon: '🧩' },
-          { label: '사람관리', value: '누구와 어떻게 맞출 것인가', tone: 'indigo', icon: '👥' },
-        ]}
-      />
+      <V39StepHero eyebrow="13단계 · 2주 실행 메모와 복기 질문 완성하기" icon="✅" title="성과관리, 업무관리, 사람관리 결과를 하나의 2주 실행 메모로 묶습니다" tone="indigo" description="성과 기준, 고객군 흐름, 실행 과제, 업무 흐름, 일의 경계, 1on1 첫 문장과 복기 질문을 하나의 메모로 정리합니다." badges={[{ label: '성과관리', value: '무엇을 볼 것인가', tone: 'emerald', icon: '📈' }, { label: '업무관리', value: '일의 구조를 어떻게 짤 것인가', tone: 'cyan', icon: '🧩' }, { label: '사람관리', value: '누구와 어떻게 맞출 것인가', tone: 'indigo', icon: '👥' }]} />
       <V39FinalCallPlanTeamSevenUxCard />
       <V39InstructorDiscussionUxLab />
     </div>
@@ -446,34 +297,20 @@ function V40FinalStep() {
 
 function renderStep(step: number, participant: V40VNextParticipant, setParticipant: (next: V40VNextParticipant) => void) {
   switch (V40_VNEXT_VISIBLE_APP_STEPS[step]?.id) {
-    case 'entry':
-      return <EntryStep participant={participant} setParticipant={setParticipant} />;
-    case 'ai-safety':
-      return <V40AiSafetyStep />;
-    case 'prompt-practice':
-      return <V40PromptPracticeStep />;
-    case 'research-strategy':
-      return <V40ResearchStrategyStep />;
-    case 'dashboard-analysis':
-      return <V40DashboardStep />;
-    case 'customer-judgment':
-      return <V40CustomerJudgmentStep />;
-    case 'customer-priority':
-      return <V40CustomerPriorityStep />;
-    case 'task-instruction-select':
-      return <V40TaskInstructionSelectStep />;
-    case 'task-criteria-diagnosis':
-      return <V40TaskCriteriaDiagnosisStep />;
-    case 'task-ai-draft':
-      return <V40TaskAiDraftStep />;
-    case 'member-role':
-      return <V40TeamMemberStep />;
-    case 'people-dialogue':
-      return <V40PeopleDialogueStep />;
-    case 'final-call-plan-card':
-      return <V40FinalStep />;
-    default:
-      return <EntryStep participant={participant} setParticipant={setParticipant} />;
+    case 'entry': return <EntryStep participant={participant} setParticipant={setParticipant} />;
+    case 'ai-safety': return <V40AiSafetyStep />;
+    case 'prompt-practice': return <V40PromptPracticeStep />;
+    case 'research-strategy': return <V40ResearchStrategyStep />;
+    case 'dashboard-analysis': return <V40DashboardStep />;
+    case 'customer-judgment': return <V40CustomerJudgmentStep />;
+    case 'customer-priority': return <V40CustomerPriorityStep />;
+    case 'task-execution-design': return <V40TaskExecutionDesignStep />;
+    case 'task-priority-flow': return <V40TaskPriorityFlowStep />;
+    case 'task-boundary-coordination': return <V40TaskBoundaryCoordinationStep />;
+    case 'member-role': return <V40TeamMemberStep />;
+    case 'people-dialogue': return <V40PeopleDialogueStep />;
+    case 'final-call-plan-card': return <V40FinalStep />;
+    default: return <EntryStep participant={participant} setParticipant={setParticipant} />;
   }
 }
 
@@ -481,12 +318,10 @@ function V40VNextPreviewApp() {
   const [participant, setParticipant] = useStored<V40VNextParticipant>(V40_VNEXT_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V40VNextProgress>(V40_VNEXT_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const safeStep = clampV40VNextStep(progress.step);
-
   const goToStep = (nextStep: number) => {
     setProgress({ step: clampV40VNextStep(nextStep) });
     scrollV40VNextToTop();
   };
-
   const handleReset = () => {
     removeStoredPrefix('ckd.v40-vnext.');
     setParticipant(DEFAULT_PARTICIPANT);
@@ -512,9 +347,7 @@ function V40VNextPreviewApp() {
               <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v40-vNext 보호 기준</p>
               <p className="mt-1 text-sm font-bold leading-6 text-slate-600">기존 v39는 기준 원본으로 보호합니다. 이 화면은 별도 route에서만 작동하며, 성과관리 → 업무관리 → 사람관리 순서로 조별 실습을 진행합니다.</p>
             </div>
-            <button type="button" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-black text-slate-700" onClick={handleReset}>
-              v40-vNext 입력 초기화
-            </button>
+            <button type="button" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-black text-slate-700" onClick={handleReset}>v40-vNext 입력 초기화</button>
           </div>
         </div>
         {renderStep(safeStep, participant, setParticipant)}
