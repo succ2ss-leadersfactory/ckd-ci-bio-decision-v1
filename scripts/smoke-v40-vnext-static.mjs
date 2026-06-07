@@ -29,6 +29,7 @@ const files = {
   boundaryLab: read('src/journey-v40-vnext-task-boundary-coordination-lab.tsx'),
   peopleSelectionLab: read('src/journey-v40-vnext-people-selection-lab.tsx'),
   oneOnOneLab: read('src/journey-v40-vnext-one-on-one-practice-lab.tsx'),
+  finalMemoLab: read('src/journey-v40-vnext-final-execution-memo-lab.tsx'),
   vite: read('vite.config.ts'),
   tsconfig: read('tsconfig.v40-vnext-smoke.json'),
   journeyHtml: read('journey.html'),
@@ -72,6 +73,8 @@ for (const marker of [
   'V40VNextTaskBoundaryCoordinationLab',
   'V40VNextPeopleSelectionLab',
   'V40VNextOneOnOnePracticeLab',
+  'V40VNextFinalExecutionMemoLab',
+  'ckd.v40-vnext.finalExecutionMemo.v1',
   'V39FinalCallPlanTeamSevenUxCard',
   'V39InstructorDiscussionUxLab',
   'perplexityAnswer',
@@ -188,6 +191,7 @@ for (const marker of [
   '위험한 해석 고르기',
   '1on1 대화 초점 1개 선택',
   '선택 이유 1문장 작성',
+  'ckd.v40-vnext.peopleManagement.v2',
 ]) mustInclude(files.peopleSelectionLab, marker, 'v40-vNext people selection lab');
 
 for (const marker of [
@@ -226,6 +230,19 @@ for (const marker of [
 ]) mustInclude(files.oneOnOneLab, marker, 'v40-vNext one-on-one practice lab');
 
 for (const marker of [
+  'V40VNextFinalExecutionMemoLab',
+  '13단계 운영 잠금: 성과관리·업무관리·사람관리 최신 결과 → 2주 실행 메모 → 복기 질문',
+  'ckd.v40-vnext.taskManagement.v10',
+  'ckd.v40-vnext.peopleManagement.v2',
+  'ckd.v40-vnext.finalExecutionMemo.v1',
+  '역할극 후 수정한 첫 문장',
+  '역할극 후 수정한 2주 행동 합의',
+  '우리 조가 최종 적용할 코칭 문장 1개',
+  '후속 확인 질문',
+  'v40-vNext 최신 결과로 채우기',
+]) mustInclude(files.finalMemoLab, marker, 'v40-vNext final execution memo lab');
+
+for (const marker of [
   'journeyV40VNextPreview',
   'journey-v40-vnext-preview.html',
 ]) mustInclude(files.vite, marker, 'vite input');
@@ -237,6 +254,7 @@ for (const marker of [
   'src/journey-v40-vnext-task-boundary-coordination-lab.tsx',
   'src/journey-v40-vnext-people-selection-lab.tsx',
   'src/journey-v40-vnext-one-on-one-practice-lab.tsx',
+  'src/journey-v40-vnext-final-execution-memo-lab.tsx',
   'src/journey-v39-notebooklm-guided-research-lab.tsx',
   'src/journey-v39-team-seven-coaching-profiles.ts',
 ]) mustInclude(files.tsconfig, marker, 'v40-vNext tsconfig');
