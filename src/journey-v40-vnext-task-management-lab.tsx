@@ -12,6 +12,7 @@ const V40_VNEXT_TASK_MANAGEMENT_SMOKE_MARKERS = [
   '업무관리 3: AI로 업무지시문 초안 만들기',
   '모호한 업무지시 예시 선택',
   '팀원 예상 반응',
+  '팀원 예상 반응 먼저 보기',
   '빠진 업무 기준 진단',
   'AI에게 업무지시문 초안 부탁하기',
   'AI 답변 붙여넣기',
@@ -356,9 +357,12 @@ export function V40VNextTaskInstructionSelectLab() {
         </div>
       </section>
 
+      <TeamReactionCards example={selectedExample} />
+
       <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-        <p className="text-sm font-black text-slate-950">선택한 업무지시</p>
-        <p className="mt-2 rounded-2xl bg-slate-900 p-4 text-sm font-bold leading-7 text-white">{state.customInstruction.trim() || selectedExample.instruction}</p>
+        <p className="text-sm font-black text-slate-950">반응을 본 뒤 선택한 업무지시 다듬기</p>
+        <p className="mt-1 text-sm font-bold leading-6 text-slate-600">팀원 예상 반응을 확인한 뒤, 우리 조 상황에 맞게 문장만 살짝 바꿉니다. 본격적인 기준 보완은 다음 단계에서 합니다.</p>
+        <p className="mt-3 rounded-2xl bg-slate-900 p-4 text-sm font-bold leading-7 text-white">{state.customInstruction.trim() || selectedExample.instruction}</p>
         <details className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <summary className="cursor-pointer text-sm font-black text-slate-950">우리 조 상황에 맞게 문장만 살짝 바꾸기</summary>
           <textarea
@@ -369,8 +373,6 @@ export function V40VNextTaskInstructionSelectLab() {
           />
         </details>
       </section>
-
-      <TeamReactionCards example={selectedExample} />
     </div>
   );
 }
