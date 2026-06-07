@@ -11,8 +11,12 @@ const V40_VNEXT_PERFORMANCE_CASCADE_MARKERS = [
   '성과관리 4: 팀 과제·CSF·KPI별 2주 실행 흐름 정하기',
   '종근당 연계 전사전략과제',
   '전사전략과제 → 팀 과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
+  '팀 과제 선택 보기 4개 제시',
+  '팀 과제 선택 후 CSF 선택창 활성화',
   'CSF 보기 4개 제시',
+  'CSF 선택 후 KPI 선택창 활성화',
   '선택한 CSF별 KPI 4개 제시',
+  'KPI 선택 후 AI 확장 요청 활성화',
   'AI에게 CSF/KPI 후보 확장 요청',
   'ckd.v40-vnext.performanceCascade.v1',
   '팀 회의 설명 3문장',
@@ -28,18 +32,21 @@ void V40_VNEXT_PERFORMANCE_CASCADE_MARKERS;
 
 type KpiType = '활동' | '전환' | '품질' | '리스크';
 type Kpi = { id: string; label: string; type: KpiType; evidence: string; question: string; caution: string };
-type Csf = { id: string; label: string; meaning: string; kpis: Kpi[] };
+type Csf = { id: string; label: string; meaning: string; guide: string; kpis: Kpi[] };
+type TeamTaskOption = { id: string; label: string; guide: string };
 type StrategyCard = {
   id: string;
   enterpriseTask: string;
   hqTask: string;
   teamTaskExample: string;
   sourceHint: string;
+  teamTaskOptions: TeamTaskOption[];
   csfs: Csf[];
 };
 
 type State = {
   selectedStrategyId: string;
+  selectedTeamTaskId: string;
   customTeamTask: string;
   selectedCsfIds: string[];
   selectedKpiIds: string[];
@@ -75,6 +82,7 @@ const COMMON_CSF_CANDIDATES: Csf[] = [
     id: 'team-standard-shared',
     label: '팀원이 같은 기준으로 실행해야 한다',
     meaning: '전략과제가 개인별 해석으로 흩어지지 않고, 팀 공통 기준과 기록 방식으로 공유되어야 합니다.',
+    guide: '팀 과제가 실행되려면 먼저 “무엇을 같은 기준으로 볼 것인가”가 정리되어야 합니다. 회의에서 설명 가능한 기준인지 확인하세요.',
     kpis: [
       { id: 'shared-standard-briefing', label: '팀 기준 공유 완료율', type: '활동', evidence: '팀 회의 공유 내용, 기준 설명 문장, 확인 질문', question: '팀원들이 같은 기준으로 이해했는지 어떻게 확인할까요?', caution: '기준 공유를 일방 지시나 압박으로 운영하지 않습니다.' },
       { id: 'common-record-format', label: '공통 기록 양식 사용률', type: '품질', evidence: '고객 질문, 다음 행동, 막힌 이유가 같은 틀로 남은 기록', question: '기록 양식이 다음 행동을 확인할 만큼 충분한가요?', caution: '양식 준수만으로 실행 품질을 단정하지 않습니다.' },
@@ -86,6 +94,7 @@ const COMMON_CSF_CANDIDATES: Csf[] = [
     id: 'risk-boundary-clear',
     label: '성과 실행과 안전선이 함께 관리되어야 한다',
     meaning: '성과관리 지표가 고객 압박, 허가 외 사용 암시, 비교 우위 단정으로 흐르지 않도록 안전선을 함께 봐야 합니다.',
+    guide: '제약영업 성과관리는 숫자만 보는 것이 아니라 안전한 표현과 승인자료 범위까지 함께 확인해야 합니다.',
     kpis: [
       { id: 'safe-expression-check', label: '위험 표현 점검률', type: '리스크', evidence: '수정한 표현, 보류한 답변, 확인 필요 질문', question: '고객에게 오해를 줄 수 있는 표현은 무엇인가요?', caution: '처방 유도, 경쟁사 비방, 비교 우위 단정 표현을 쓰지 않습니다.' },
       { id: 'approval-boundary-check', label: '승인자료 범위 확인률', type: '리스크', evidence: '사용 자료, 답변 가능 범위, 추가 확인 필요 여부', question: '사용한 자료와 답변이 승인자료 범위 안에 있나요?', caution: '승인 범위 밖 내용을 확장하지 않습니다.' },
@@ -109,11 +118,18 @@ const STRATEGY_CARDS: StrategyCard[] = [
     hqTask: '고객 접점 이후 실행 전환율 강화',
     teamTaskExample: '고객 질문과 후속 행동이 CRM에 남고, 다음 접점으로 이어지게 한다.',
     sourceHint: '고객 접점 이후의 반응, 질문, 다음 행동이 실제 실행으로 이어지도록 만드는 과제입니다.',
+    teamTaskOptions: [
+      { id: 'customer-follow-up', label: '고객 질문과 후속 행동이 CRM에 남고, 다음 접점으로 이어지게 한다.', guide: '방문 후 남은 질문과 후속 행동이 실제 다음 접점으로 이어지는지 보려는 팀에 적합합니다.' },
+      { id: 'customer-response-quality', label: '고객 반응을 단정하지 않고, 확인 질문과 다음 행동으로 전환한다.', guide: '고객 반응을 성급하게 해석하는 경향이 있거나, 질문을 실행으로 연결하는 훈련이 필요한 팀에 적합합니다.' },
+      { id: 'customer-next-contact', label: '방문 이후 다음 논의 주제와 접점 목적을 기록으로 남긴다.', guide: '방문 수는 충분하지만 다음 논의가 약한 팀에 적합합니다.' },
+      { id: 'customer-blocker', label: '후속조치가 지연되는 고객 활동 기록에서 막힌 이유를 확인한다.', guide: '후속 실행이 늦어지는 이유를 팀원 책임으로만 보지 않고 실행 제약을 함께 보려는 팀에 적합합니다.' },
+    ],
     csfs: [
       {
         id: 'customer-response-recorded',
         label: '고객 반응이 구체적으로 기록되어야 한다',
         meaning: '단순 방문 메모가 아니라 고객 질문·반응·요청이 다음 행동의 근거로 남아야 합니다.',
+        guide: '고객 반응을 성과로 단정하지 말고, 다음 행동을 정할 수 있는 기록인지 확인합니다.',
         kpis: [
           { id: 'customer-question-record-rate', label: '고객 질문 기록률', type: '품질', evidence: '고객 질문 내용, 질문 배경, 후속 확인 필요 항목', question: '고객 질문이 단순 확인이었나요, 다음 논의로 이어질 질문이었나요?', caution: '고객 질문을 처방 가능성이나 제품 선호로 단정하지 않습니다.' },
           { id: 'crm-response-quality', label: '고객 반응 기록 충실도', type: '품질', evidence: '고객 반응, 피드백, 제약요인, 다음 행동 포함 여부', question: '기록을 보고 다음 행동을 정할 수 있을 만큼 충분한가요?', caution: '고객 감정이나 의도를 확인 없이 해석하지 않습니다.' },
@@ -123,6 +139,7 @@ const STRATEGY_CARDS: StrategyCard[] = [
         id: 'follow-up-executed',
         label: '후속 행동이 일정 안에 실행되어야 한다',
         meaning: '고객 질문·자료 요청·다음 약속이 방치되지 않아야 합니다.',
+        guide: '성과관리 기준을 후속 실행과 지연 이유 확인으로 연결하고 싶을 때 선택합니다.',
         kpis: [
           { id: 'follow-up-completion-rate', label: '후속조치 완료율', type: '전환', evidence: '자료 전달 후 확인, 다음 일정, 미해결 요청 처리 기록', question: '후속조치가 늦어진 이유는 고객 제약인가요, 우리 실행 제약인가요?', caution: '후속조치를 고객 압박이나 처방 유도처럼 표현하지 않습니다.' },
           { id: 'next-contact-secured', label: '다음 접점 확보 건수', type: '전환', evidence: '다음 접점 목적, 일정, 준비 자료, 고객 확인 질문', question: '다음 접점은 실제 일정인가요, 가능성 언급인가요?', caution: '다음 접점 확보를 과도한 설득으로 운영하지 않습니다.' },
@@ -136,11 +153,18 @@ const STRATEGY_CARDS: StrategyCard[] = [
     hqTask: 'CRM 기반 영업 실행관리 체계 강화',
     teamTaskExample: 'CRM 기록을 단순 입력이 아니라 다음 행동과 팀장 점검으로 연결한다.',
     sourceHint: 'CRM 기록을 보고, 다음 행동과 팀장 지원이 실제로 이어지게 만드는 과제입니다.',
+    teamTaskOptions: [
+      { id: 'crm-next-action', label: 'CRM 기록을 단순 입력이 아니라 다음 행동과 팀장 점검으로 연결한다.', guide: 'CRM 입력은 많은데 실제 후속 실행으로 이어지지 않는 팀에 적합합니다.' },
+      { id: 'crm-quality', label: 'CRM 기록에서 고객 질문, 다음 행동, 막힌 이유가 보이게 한다.', guide: '기록 품질을 높여 팀장이 지원할 지점을 확인하려는 팀에 적합합니다.' },
+      { id: 'crm-rhythm', label: '방문 후 기록과 주간 점검이 끊기지 않도록 실행 리듬을 맞춘다.', guide: '기록 시점과 점검 리듬이 불안정한 팀에 적합합니다.' },
+      { id: 'crm-coaching', label: '팀장이 CRM 기록을 보고 추궁이 아니라 코칭 질문으로 연결한다.', guide: '기록 점검이 감시로 느껴지지 않게 바꾸려는 팀에 적합합니다.' },
+    ],
     csfs: [
       {
         id: 'crm-next-action',
         label: 'CRM 기록에 다음 행동이 포함되어야 한다',
         meaning: '방문 사실보다 다음 행동, 확인 질문, 팀장 지원 필요가 남아야 합니다.',
+        guide: 'CRM 기록을 실행의 출발점으로 쓰려면 다음 행동이 반드시 보여야 합니다.',
         kpis: [
           { id: 'crm-next-action-rate', label: '후속 행동 포함 CRM 기록률', type: '품질', evidence: '다음 행동, 담당자, 시점, 고객 질문, 준비 자료', question: '기록에 다음 행동이 없으면 무엇을 더 확인해야 하나요?', caution: 'CRM 입력률 자체를 성과로 단정하지 않습니다.' },
           { id: 'record-timeliness', label: 'CRM 기록 적시성', type: '활동', evidence: '방문 후 기록 시점, 누락 기록, 지연 사유', question: '기록 지연이 일정 문제인지 기록 기준 문제인지 확인했나요?', caution: '기록 지연을 즉시 태도 문제로 해석하지 않습니다.' },
@@ -150,6 +174,7 @@ const STRATEGY_CARDS: StrategyCard[] = [
         id: 'manager-can-coach',
         label: '팀장이 기록을 보고 막힌 지점을 확인할 수 있어야 한다',
         meaning: '기록이 팀장 코칭과 지원으로 이어져야 합니다.',
+        guide: '팀장의 성과관리를 점검이 아니라 지원과 조정으로 바꾸려는 팀에 적합합니다.',
         kpis: [
           { id: 'execution-bottleneck-count', label: '실행 제약 확인 건수', type: '리스크', evidence: '일정 변경, 고객 접근 제약, 내부 지원 요청, 자료 확인 필요', question: '막힌 지점은 팀원이 혼자 해결할 일인가요, 팀장이 연결할 일인가요?', caution: '실행 부진을 고객 탓이나 팀원 탓으로 단정하지 않습니다.' },
           { id: 'manager-check-question-count', label: '팀장 확인 질문 작성 건수', type: '품질', evidence: '중간 점검 질문, 후속 확인 질문, 기록 샘플 점검 메모', question: '팀장이 이번 주에 실제로 물어볼 질문은 무엇인가요?', caution: '질문이 추궁처럼 들리지 않게 관찰 중심으로 표현합니다.' },
@@ -163,11 +188,18 @@ const STRATEGY_CARDS: StrategyCard[] = [
     hqTask: '승인자료 기반 고객 커뮤니케이션 일관성 강화',
     teamTaskExample: '팀원별 메시지 편차를 줄이고, 고객 질문에 승인자료 범위 안에서 일관되게 대응한다.',
     sourceHint: '고객 커뮤니케이션의 일관성과 안전선을 함께 관리하는 과제입니다.',
+    teamTaskOptions: [
+      { id: 'approved-message', label: '팀원별 메시지 편차를 줄이고, 고객 질문에 승인자료 범위 안에서 일관되게 대응한다.', guide: '고객 커뮤니케이션의 안전성과 일관성을 높이려는 팀에 적합합니다.' },
+      { id: 'question-boundary', label: '고객 질문 중 즉답할 것과 확인 후 대응할 것을 구분한다.', guide: '현장에서 애매한 질문에 즉흥적으로 답하는 위험을 줄이고 싶은 팀에 적합합니다.' },
+      { id: 'safe-phrasing', label: '위험 표현을 찾아 안전한 대체 문장으로 바꾼다.', guide: '비교 우위 단정, 처방 유도, 허가 외 사용 암시를 예방하려는 팀에 적합합니다.' },
+      { id: 'message-calibration', label: '팀 회의에서 자주 쓰는 고객 대응 문장을 함께 점검한다.', guide: '팀원별 표현 편차를 줄이고 공통 언어를 만들려는 팀에 적합합니다.' },
+    ],
     csfs: [
       {
         id: 'approved-material',
         label: '승인자료 범위 안에서 메시지를 전달해야 한다',
         meaning: '허가 외 사용 암시와 과장 표현을 막아야 합니다.',
+        guide: '성과 실행과 컴플라이언스 안전선을 동시에 관리하려면 반드시 포함해야 하는 조건입니다.',
         kpis: [
           { id: 'approved-material-check-rate', label: '승인자료 사용 확인률', type: '리스크', evidence: '사용 자료, 전달 메시지, 고객 질문 범위, 자료 확인 메모', question: '사용한 자료와 답변 범위가 승인자료 안에 있나요?', caution: '승인 범위 밖 내용을 확장하지 않습니다.' },
           { id: 'risk-expression-correction-count', label: '위험 표현 수정 건수', type: '리스크', evidence: '비교 우위 단정, 처방 유도, 허가 외 사용 암시 수정 기록', question: '고객에게 부담이나 오해를 줄 수 있는 표현은 무엇인가요?', caution: '경쟁사 비방, 비교 우위 단정, 처방 유도 표현을 쓰지 않습니다.' },
@@ -177,6 +209,7 @@ const STRATEGY_CARDS: StrategyCard[] = [
         id: 'question-boundary',
         label: '고객 질문의 답변 가능 범위가 정리되어야 한다',
         meaning: '현장에서 즉흥적으로 답하지 않고 확인 후 대응해야 합니다.',
+        guide: '고객 질문을 무조건 기회로 보지 않고, 답변 가능 범위를 분리해야 합니다.',
         kpis: [
           { id: 'customer-question-boundary-check', label: '고객 질문 대응 범위 확인 건수', type: '품질', evidence: '고객 질문, 답변 가능 범위, 추가 확인 필요 여부', question: '이 질문은 바로 답할 수 있나요, 확인 후 답해야 하나요?', caution: '확인되지 않은 답변을 현장에서 확정적으로 말하지 않습니다.' },
           { id: 'cp-escalation-needed', label: 'CP 확인 필요 건수', type: '리스크', evidence: '확인 필요 질문, 관련 부서 확인 요청, 보류 답변 기록', question: '이 사안은 팀장 또는 관련 부서 확인이 필요한가요?', caution: '확인 필요를 실행 지연이 아니라 안전관리로 설명합니다.' },
@@ -190,11 +223,18 @@ const STRATEGY_CARDS: StrategyCard[] = [
     hqTask: '고객 접점 방식 다변화와 후속 확인 체계 강화',
     teamTaskExample: '대면 방문 외 접점에서도 고객 반응과 후속 확인이 기록으로 남게 한다.',
     sourceHint: '고객 접점 방식이 달라질 때도 반응과 후속 확인이 끊기지 않게 만드는 과제입니다.',
+    teamTaskOptions: [
+      { id: 'alt-contact-follow-up', label: '대면 방문 외 접점에서도 고객 반응과 후속 확인이 기록으로 남게 한다.', guide: '방문 외 접점의 효과를 단순 발송이 아니라 후속 확인으로 보려는 팀에 적합합니다.' },
+      { id: 'material-request', label: '자료 요청 이후 실제 확인과 다음 질문이 남도록 관리한다.', guide: '자료 전달 이후 반응 확인이 약한 팀에 적합합니다.' },
+      { id: 'contact-gap', label: '접점 공백이 생긴 고객 활동 기록에서 원인과 접근 경로를 확인한다.', guide: '무리한 접촉 확대보다 접점 공백의 이유를 먼저 보려는 팀에 적합합니다.' },
+      { id: 'hybrid-contact', label: '대면·비대면 접점을 하나의 후속 실행 흐름으로 연결한다.', guide: '접점 방식이 다양해졌지만 실행 흐름이 끊기는 팀에 적합합니다.' },
+    ],
     csfs: [
       {
         id: 'alternative-contact-works',
         label: '방문 외 접점 이후 실제 반응이 확인되어야 한다',
         meaning: '자료 전달 자체가 아니라 확인·질문·다음 논의가 남아야 합니다.',
+        guide: '비대면 접점이나 자료 전달을 성과로 단정하지 않고 후속 확인까지 보려는 팀에 적합합니다.',
         kpis: [
           { id: 'non-face-follow-up-rate', label: '비대면 접점 후속 확인률', type: '전환', evidence: '전화·메시지 후속 확인, 자료 확인 여부, 고객 질문', question: '자료 전달 후 실제 확인이나 질문이 있었나요?', caution: '자료 전달 자체를 고객 이해나 성과로 단정하지 않습니다.' },
           { id: 'material-request-response-rate', label: '자료 요청 대응률', type: '전환', evidence: '자료 요청 내용, 승인자료 여부, 대응 시점, 후속 확인', question: '고객 요청에 승인자료 범위 안에서 대응했나요?', caution: '자료 요청을 제품 선호나 처방 의향으로 해석하지 않습니다.' },
@@ -204,6 +244,7 @@ const STRATEGY_CARDS: StrategyCard[] = [
         id: 'contact-gap-recovered',
         label: '접점 공백을 안전하게 회복해야 한다',
         meaning: '미접촉 고객을 무리하게 확대하지 않고 접근 경로와 목적을 분명히 해야 합니다.',
+        guide: '미접촉 고객을 압박하지 않고 접점 공백의 이유와 접근 경로를 먼저 보려는 팀에 적합합니다.',
         kpis: [
           { id: 'untouched-customer-check-rate', label: '미접촉 고객 확인률', type: '활동', evidence: '미접촉 기간, 접근 경로, 접점 공백 사유', question: '미접촉은 고객 제약 때문인가요, 우리 실행 루틴 때문인가요?', caution: '미접촉 고객을 무리하게 압박하지 않습니다.' },
           { id: 'new-contact-record-rate', label: '신규 접점 기록률', type: '품질', evidence: '접근 경로, 접점 목적, 고객 반응, 다음 행동', question: '신규 접점의 목적과 다음 확인 사항이 기록되어 있나요?', caution: '신규 접촉 수 증가만으로 성과를 단정하지 않습니다.' },
@@ -215,6 +256,7 @@ const STRATEGY_CARDS: StrategyCard[] = [
 
 const DEFAULT_STATE: State = {
   selectedStrategyId: STRATEGY_CARDS[0].id,
+  selectedTeamTaskId: '',
   customTeamTask: '',
   selectedCsfIds: [],
   selectedKpiIds: [],
@@ -290,16 +332,24 @@ function selectedLabels(items: { id: string; label: string }[], ids: string[]) {
   return labels.length ? labels.join(' · ') : '미선택';
 }
 
-function Button({ children, onClick }: { children: string; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-slate-800">{children}</button>;
+function selectedTeamTask(strategy: StrategyCard, state: State) {
+  return strategy.teamTaskOptions.find((option) => option.id === state.selectedTeamTaskId);
 }
 
-function Field({ label, value, onChange, placeholder, min = 'min-h-24' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; min?: string }) {
-  return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea className={`${min} w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm leading-6`} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
+function Button({ children, onClick, disabled = false }: { children: string; onClick: () => void; disabled?: boolean }) {
+  return <button type="button" disabled={disabled} onClick={onClick} className={`rounded-2xl px-4 py-3 text-sm font-black shadow-sm ${disabled ? 'cursor-not-allowed bg-slate-200 text-slate-400' : 'bg-slate-950 text-white hover:bg-slate-800'}`}>{children}</button>;
+}
+
+function Field({ label, value, onChange, placeholder, min = 'min-h-24', disabled = false }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; min?: string; disabled?: boolean }) {
+  return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span><textarea disabled={disabled} className={`${min} w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm leading-6 ${disabled ? 'bg-slate-100 text-slate-400' : 'bg-white text-slate-700'}`} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
 }
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5"><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">{children}</div></section>;
+}
+
+function LockedPanel({ title, body }: { title: string; body: string }) {
+  return <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm leading-6 text-slate-500"><p className="font-black text-slate-700">{title}</p><p className="mt-1 text-xs font-bold">{body}</p></div>;
 }
 
 function buildCascadePrompt(strategy: StrategyCard, state: State) {
@@ -310,7 +360,7 @@ function buildCascadePrompt(strategy: StrategyCard, state: State) {
     '',
     `전사전략과제: ${strategy.enterpriseTask}`,
     `영업본부 전략과제: ${strategy.hqTask}`,
-    `우리 조가 작성한 팀 과제: ${state.customTeamTask || '아직 작성 전'}`,
+    `우리 조가 선정한 팀 과제: ${state.customTeamTask || '아직 작성 전'}`,
     `선택 CSF: ${selectedLabels(flatCsfs(strategy), state.selectedCsfIds)}`,
     `선택 KPI: ${selectedLabels(flatKpis(strategy), state.selectedKpiIds)}`,
     '',
@@ -372,6 +422,10 @@ export function V40VNextPerformanceStrategyCascadeLab() {
   const csfs = flatCsfs(strategy);
   const allKpis = flatKpis(strategy);
   const selectedCsfs = csfs.filter((csf) => state.selectedCsfIds.includes(csf.id));
+  const selectedTask = selectedTeamTask(strategy, state);
+  const hasTeamTask = Boolean(state.customTeamTask?.trim());
+  const hasCsfSelection = state.selectedCsfIds.length >= 2;
+  const hasKpiSelection = state.selectedKpiIds.length >= 2;
   const cascadePrompt = useMemo(() => buildCascadePrompt(strategy, state), [strategy, state]);
 
   return (
@@ -380,7 +434,7 @@ export function V40VNextPerformanceStrategyCascadeLab() {
         <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">2026년 하반기 전사 전략과제와 본부 전략과제가 발표되었습니다. 여러분의 팀에서 중점적으로 실행할 전략과제를 선택해주세요.</p>
         <div className="grid gap-3 md:grid-cols-2">
           {STRATEGY_CARDS.map((item) => (
-            <button key={item.id} type="button" onClick={() => setState({ ...state, selectedStrategyId: item.id, selectedCsfIds: [], selectedKpiIds: [] })} className={`rounded-2xl border p-4 text-left transition ${state.selectedStrategyId === item.id ? 'border-slate-900 bg-slate-950 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400'}`}>
+            <button key={item.id} type="button" onClick={() => setState({ ...state, selectedStrategyId: item.id, selectedTeamTaskId: '', customTeamTask: '', selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left transition ${state.selectedStrategyId === item.id ? 'border-slate-900 bg-slate-950 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400'}`}>
               <p className="text-xs font-black opacity-70">전사전략과제</p>
               <p className="mt-1 text-base font-black">{item.enterpriseTask}</p>
               <p className="mt-3 text-xs font-black leading-5 opacity-80">영업본부 전략과제</p>
@@ -391,61 +445,81 @@ export function V40VNextPerformanceStrategyCascadeLab() {
         </div>
       </Card>
 
-      <Card title="전사전략과제를 우리 팀 과제로 바꾸기">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700"><p><b>선택한 전사전략과제:</b> {strategy.enterpriseTask}</p><p className="mt-1"><b>영업본부 전략과제:</b> {strategy.hqTask}</p></div>
-        <Field label="우리 조가 선정한 팀 과제" value={state.customTeamTask} onChange={(value) => setState({ ...state, customTeamTask: value })} placeholder="예시를 보기 전에 우리 조가 먼저 팀 과제를 작성해보세요." />
-        <Field label="전략과제 핵심 의도 해석" value={state.cascadeInterpretation} onChange={(value) => setState({ ...state, cascadeInterpretation: value })} placeholder="예: 이 과제는 방문 수보다 고객 반응 이후 후속 실행과 기록 품질을 높이라는 의미입니다." />
-        {state.customTeamTask.trim() ? (
-          <details className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-            <summary className="cursor-pointer text-sm font-black text-slate-900">팀 과제 예시 보기</summary>
-            <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold leading-6 text-slate-700">{strategy.teamTaskExample}</p>
-            <p className="mt-2 text-xs font-bold text-slate-500">예시는 정답이 아니라 비교용 힌트입니다. 우리 조 문장을 그대로 유지할지, 일부만 보완할지 토의하세요.</p>
-          </details>
-        ) : (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-500">팀 과제 예시는 우리 조가 먼저 팀 과제를 작성한 뒤 확인할 수 있습니다.</p>
-        )}
-      </Card>
-
-      <Card title="CSF 선택">
-        <p className="text-xs font-bold text-slate-500">CSF 보기 4개 제시 · 그중 2개 선택. CSF는 이 팀 과제가 성공하려면 반드시 작동해야 하는 조건입니다.</p>
+      <Card title="우리 조가 선정한 팀 과제">
+        <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">팀 과제 선택 보기 4개 제시 · 전사전략과제와 영업본부 전략과제를 우리 조가 실제로 2주 동안 실행할 수 있는 과제로 바꿉니다. 선택지는 정답이 아니라 출발점입니다.</p>
         <div className="grid gap-3 md:grid-cols-2">
-          {csfs.map((csf) => (
-            <button key={csf.id} type="button" onClick={() => setState({ ...state, selectedCsfIds: toggle(state.selectedCsfIds, csf.id, 2), selectedKpiIds: state.selectedKpiIds.filter((id) => !normalizeKpis(csf).some((kpi) => kpi.id === id)) })} className={`rounded-2xl border p-4 text-left ${state.selectedCsfIds.includes(csf.id) ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
-              <p className="font-black text-slate-950">{csf.label}</p>
-              <p className="mt-1 text-xs font-bold leading-5 text-slate-600">{csf.meaning}</p>
+          {strategy.teamTaskOptions.map((option) => (
+            <button key={option.id} type="button" onClick={() => setState({ ...state, selectedTeamTaskId: option.id, customTeamTask: option.label, selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedTeamTaskId === option.id ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200 bg-white hover:border-slate-400'}`}>
+              <p className="font-black text-slate-950">{option.label}</p>
+              <p className="mt-2 text-xs font-bold leading-5 text-slate-600">가이드: {option.guide}</p>
             </button>
           ))}
         </div>
+        {selectedTask ? <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">선택한 팀 과제 가이드: {selectedTask.guide}</p> : null}
+        <Field label="우리 조가 선정한 팀 과제 보완 문장" value={state.customTeamTask} onChange={(value) => setState({ ...state, customTeamTask: value, selectedCsfIds: value.trim() ? state.selectedCsfIds : [], selectedKpiIds: value.trim() ? state.selectedKpiIds : [] })} placeholder="팀 과제 선택 보기에서 1개를 고른 뒤, 우리 조 언어로 조금 더 다듬어도 됩니다." />
+        <Field label="전략과제 핵심 의도 해석" value={state.cascadeInterpretation} onChange={(value) => setState({ ...state, cascadeInterpretation: value })} placeholder="예: 이 과제는 방문 수보다 고객 반응 이후 후속 실행과 기록 품질을 높이라는 의미입니다." />
+        <details className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <summary className="cursor-pointer text-sm font-black text-slate-900">팀 과제 예시 보기</summary>
+          <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold leading-6 text-slate-700">{strategy.teamTaskExample}</p>
+          <p className="mt-2 text-xs font-bold text-slate-500">예시는 정답이 아니라 비교용 힌트입니다. 우리 조 문장을 그대로 유지할지, 일부만 보완할지 토의하세요.</p>
+        </details>
+      </Card>
+
+      <Card title="CSF 선택">
+        {!hasTeamTask ? <LockedPanel title="팀 과제 선택 후 CSF 선택창 활성화" body="먼저 우리 조가 중점 실행할 팀 과제를 선택하거나 작성해야 CSF 후보를 볼 수 있습니다." /> : (
+          <>
+            <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">CSF는 핵심성공요인입니다. 팀 과제가 성공하려면 반드시 작동해야 하는 조건을 뜻합니다. CSF 보기 4개 제시 중 2개를 선택하세요. “측정하기 쉬운 것”이 아니라 “성공에 꼭 필요한 조건”을 고르는 단계입니다.</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {csfs.map((csf) => (
+                <button key={csf.id} type="button" onClick={() => setState({ ...state, selectedCsfIds: toggle(state.selectedCsfIds, csf.id, 2), selectedKpiIds: state.selectedKpiIds.filter((id) => !normalizeKpis(csf).some((kpi) => kpi.id === id)), aiCascadePrompt: '', aiCascadeDraft: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedCsfIds.includes(csf.id) ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+                  <p className="font-black text-slate-950">{csf.label}</p>
+                  <p className="mt-1 text-xs font-bold leading-5 text-slate-600">설명: {csf.meaning}</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-emerald-700">가이드: {csf.guide}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </Card>
 
       <Card title="KPI 선택">
-        <p className="text-xs font-bold text-slate-500">선택한 CSF 2개에 대해 각각 KPI 4개를 제시합니다. 각 CSF별로 최대 2개까지 선택합니다.</p>
-        {selectedCsfs.length ? selectedCsfs.map((csf) => {
-          const kpisForCsf = allKpis.filter((kpi) => kpi.csfId === csf.id);
-          return (
-            <section key={csf.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-sm font-black text-slate-950">{csf.label}</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                {kpisForCsf.map((kpi) => (
-                  <button key={kpi.id} type="button" onClick={() => setState({ ...state, selectedKpiIds: toggleKpiForCsf(state.selectedKpiIds, kpi, allKpis) })} className={`rounded-2xl border p-4 text-left ${state.selectedKpiIds.includes(kpi.id) ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-white'}`}>
-                    <p className="text-xs font-black text-violet-700">{kpi.type} KPI</p>
-                    <p className="mt-1 font-black text-slate-950">{kpi.label}</p>
-                    <p className="mt-2 text-xs font-bold leading-5 text-slate-600">증거: {kpi.evidence}</p>
-                    <p className="mt-1 text-xs font-bold leading-5 text-amber-700">주의: {kpi.caution}</p>
-                  </button>
-                ))}
-              </div>
-            </section>
-          );
-        }) : <p className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs font-bold text-slate-500">먼저 CSF 2개를 선택하면 CSF별 KPI 후보가 나타납니다.</p>}
-        <Field label="KPI 선택 이유와 컴플라이언스 주의점" value={state.cascadeComplianceCaution} onChange={(value) => setState({ ...state, cascadeComplianceCaution: value })} placeholder="예: 후속 실행을 보기 위한 KPI이지만 고객 반응을 처방 가능성으로 단정하지 않습니다." />
+        {!hasCsfSelection ? <LockedPanel title="CSF 선택 후 KPI 선택창 활성화" body="CSF를 2개 선택하면, 선택한 CSF별 KPI 후보 4개가 나타납니다." /> : (
+          <>
+            <p className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">KPI는 CSF가 작동하고 있는지 확인하는 관찰 지표입니다. 선택한 CSF별 KPI 4개 제시 중 각 CSF별 최대 2개까지 선택할 수 있습니다. 결과 숫자만 보지 말고 활동·전환·품질·리스크가 함께 보이는지 확인하세요.</p>
+            {selectedCsfs.map((csf) => {
+              const kpisForCsf = allKpis.filter((kpi) => kpi.csfId === csf.id);
+              return (
+                <section key={csf.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-black text-slate-950">{csf.label}</p>
+                  <p className="mt-1 text-xs font-bold leading-5 text-slate-500">KPI 선택 가이드: 이 CSF가 실제로 작동하는지 고객 활동 기록과 팀장 점검 질문으로 확인할 수 있는 지표를 고르세요.</p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    {kpisForCsf.map((kpi) => (
+                      <button key={kpi.id} type="button" onClick={() => setState({ ...state, selectedKpiIds: toggleKpiForCsf(state.selectedKpiIds, kpi, allKpis), aiCascadePrompt: '', aiCascadeDraft: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedKpiIds.includes(kpi.id) ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-white'}`}>
+                        <p className="text-xs font-black text-violet-700">{kpi.type} KPI</p>
+                        <p className="mt-1 font-black text-slate-950">{kpi.label}</p>
+                        <p className="mt-2 text-xs font-bold leading-5 text-slate-600">설명: 이 지표는 “{kpi.evidence}”로 확인합니다.</p>
+                        <p className="mt-1 text-xs font-bold leading-5 text-slate-600">가이드 질문: {kpi.question}</p>
+                        <p className="mt-1 text-xs font-bold leading-5 text-amber-700">주의: {kpi.caution}</p>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+            <Field label="KPI 선택 이유와 컴플라이언스 주의점" value={state.cascadeComplianceCaution} onChange={(value) => setState({ ...state, cascadeComplianceCaution: value })} placeholder="예: 후속 실행을 보기 위한 KPI이지만 고객 반응을 처방 가능성으로 단정하지 않습니다." />
+          </>
+        )}
       </Card>
 
       <Card title="AI에게 CSF/KPI 후보 확장 요청">
-        <p className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">우리 조가 먼저 고른 팀 과제, CSF, KPI를 바탕으로 AI에게 놓친 후보와 위험 표현을 점검받습니다. AI는 선택을 대신하지 않고, 비교와 보완에만 사용합니다.</p>
-        <div className="flex flex-wrap gap-2"><Button onClick={() => setState({ ...state, aiCascadePrompt: cascadePrompt })}>AI 확장 프롬프트 만들기</Button><Button onClick={() => copyText(state.aiCascadePrompt || cascadePrompt)}>프롬프트 복사</Button></div>
-        <Field label="AI CSF/KPI 초안 붙여넣기" value={state.aiCascadeDraft} onChange={(value) => setState({ ...state, aiCascadeDraft: value })} min="min-h-32" />
-        <Field label="우리 조 최종 CSF/KPI 메모" value={state.finalCsfKpiMemo} onChange={(value) => setState({ ...state, finalCsfKpiMemo: value })} placeholder="전사전략과제 → 영업본부 전략과제 → 팀 과제 → CSF → KPI를 한 문단으로 정리합니다." />
+        {!hasKpiSelection ? <LockedPanel title="KPI 선택 후 AI 확장 요청 활성화" body="우리 조가 먼저 KPI를 2개 이상 선택한 뒤, AI에게 놓친 후보와 위험 표현을 점검받습니다." /> : (
+          <>
+            <p className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">우리 조가 먼저 고른 팀 과제, CSF, KPI를 바탕으로 AI에게 놓친 후보와 위험 표현을 점검받습니다. AI는 선택을 대신하지 않고, 비교와 보완에만 사용합니다.</p>
+            <div className="flex flex-wrap gap-2"><Button onClick={() => setState({ ...state, aiCascadePrompt: cascadePrompt })}>AI 확장 프롬프트 만들기</Button><Button onClick={() => copyText(state.aiCascadePrompt || cascadePrompt)}>프롬프트 복사</Button></div>
+            <Field label="AI CSF/KPI 초안 붙여넣기" value={state.aiCascadeDraft} onChange={(value) => setState({ ...state, aiCascadeDraft: value })} min="min-h-32" />
+            <Field label="우리 조 최종 CSF/KPI 메모" value={state.finalCsfKpiMemo} onChange={(value) => setState({ ...state, finalCsfKpiMemo: value })} placeholder="전사전략과제 → 영업본부 전략과제 → 팀 과제 → CSF → KPI를 한 문단으로 정리합니다." />
+          </>
+        )}
       </Card>
     </section>
   );
