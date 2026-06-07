@@ -128,6 +128,10 @@ for (const marker of [
   '우리 조 선택과 전문가 추천 비교',
   '최종 반영 기준',
   '모범 선택과 이유',
+  '실행해야 하는 업무 후보',
+  '먼저 할 일 선택',
+  '잠시 줄일 일 선택',
+  '선택한 업무지시에 맞춰 실행해야 하는 업무를 먼저 봅니다',
   '완료 기준',
   '팀장이 지원할 부분',
   '먼저 할 일',
@@ -143,7 +147,7 @@ for (const marker of [
   'AI에게 실행 과제 초안 부탁하기',
   'AI에게 업무 흐름 점검 질문 부탁하기',
   'AI에게 조율 문장 초안 부탁하기',
-  'ckd.v40-vnext.taskManagement.v3',
+  'ckd.v40-vnext.taskManagement.v5',
 ]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
 
 for (const marker of [
