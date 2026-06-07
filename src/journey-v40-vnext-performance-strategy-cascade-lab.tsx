@@ -6,15 +6,15 @@ export const V40_VNEXT_PERFORMANCE_CASCADE_STORAGE_KEY = 'ckd.v40-vnext.performa
 
 const V40_VNEXT_PERFORMANCE_CASCADE_MARKERS = [
   'V40VNextPerformanceStrategyCascadeLab',
-  '성과관리 2: 전사전략과제를 팀 과제·CSF·KPI로 분해하기',
+  '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '성과관리 3: CSF/KPI를 고객 활동 기록 확인 항목으로 바꾸기',
-  '성과관리 4: 팀 과제·CSF·KPI별 2주 실행 흐름 정하기',
-  '종근당 연계 전사전략과제',
-  '전사전략과제 → 팀 과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
-  '팀 과제 선택 보기 4개 제시',
-  '팀 과제 선택 후 CSF 선택창 활성화',
-  '선택한 팀 과제별 CSF 4개 제시',
-  'CSF 보기 4개 제시',
+  '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
+  '전사전략과제 → 팀 전략과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
+  '전사전략과제 초기 선택 없음',
+  '전사전략과제 선택 후 팀 전략과제 선택창 활성화',
+  '팀 전략과제 선택 보기 4개 제시',
+  '팀 전략과제 선택 후 CSF 선택창 활성화',
+  '선택한 팀 전략과제별 CSF 4개 제시',
   'CSF 선택 후 KPI 선택창 활성화',
   '선택한 CSF별 KPI 4개 제시',
   'KPI 선택 후 AI 확장 요청 활성화',
@@ -23,9 +23,10 @@ const V40_VNEXT_PERFORMANCE_CASCADE_MARKERS = [
   '팀 회의 설명 3문장',
   'AI에게 고객 활동 기록 해석 초안 요청',
   'AI에게 2주 실행 흐름 초안 요청',
-  '고객 중심 실행력 강화',
-  '디지털 기반 영업 고도화',
-  '글로벌 네트워크 기반 성장',
+  '고객가치 기반 성장 강화',
+  '디지털 기반 실행관리 고도화',
+  '지속가능한 성장 기반 강화',
+  '시장 변화 대응력 강화',
   '후속 행동 포함 기록률',
   '후속 행동 포함 CRM 기록률',
   '승인자료 사용 확인률',
@@ -35,14 +36,12 @@ void V40_VNEXT_PERFORMANCE_CASCADE_MARKERS;
 type KpiType = '활동' | '전환' | '품질' | '리스크';
 type Kpi = { id: string; label: string; type: KpiType; evidence: string; question: string; caution: string };
 type Csf = { id: string; label: string; meaning: string; guide: string; kpis: Kpi[] };
-type TeamTaskOption = { id: string; label: string; guide: string; csfs: Csf[] };
+type TeamStrategyOption = { id: string; label: string; guide: string; csfs: Csf[] };
 type StrategyCard = {
   id: string;
   enterpriseTask: string;
-  hqTask: string;
-  teamTaskExample: string;
   sourceHint: string;
-  teamTaskOptions: TeamTaskOption[];
+  teamStrategyOptions: TeamStrategyOption[];
 };
 
 type State = {
@@ -86,7 +85,7 @@ function csf(id: string, label: string, meaning: string, guide: string, kpis: Kp
   return { id, label, meaning, guide, kpis };
 }
 
-function task(id: string, label: string, guide: string, csfs: Csf[]): TeamTaskOption {
+function teamStrategy(id: string, label: string, guide: string, csfs: Csf[]): TeamStrategyOption {
   return { id, label, guide, csfs };
 }
 
@@ -165,149 +164,140 @@ function csfFor(prefix: string, topic: 'record' | 'followup' | 'question' | 'pur
 }
 
 function sharedCsf(prefix: string, variant: 'standard' | 'risk'): Csf {
-  const base = variant === 'standard'
-    ? csf('team-standard-shared', '팀원이 같은 기준으로 실행해야 한다', '전략과제가 개인별 해석으로 흩어지지 않고, 팀 공통 기준과 기록 방식으로 공유되어야 합니다.', '팀 과제가 실행되려면 먼저 무엇을 같은 기준으로 볼 것인지 정리해야 합니다.', kpiSet(`${prefix}-standard`, 'record'))
-    : csf('risk-boundary-clear', '성과 실행과 안전선이 함께 관리되어야 한다', '성과관리 지표가 고객 압박, 허가 외 사용 암시, 비교 우위 단정으로 흐르지 않도록 안전선을 함께 봐야 합니다.', '제약영업 성과관리는 숫자만 보는 것이 아니라 안전한 표현과 승인자료 범위까지 함께 확인해야 합니다.', kpiSet(`${prefix}-risk`, 'boundary'));
-  return { ...base, id: `${prefix}-${base.id}` };
+  return variant === 'standard'
+    ? csf(`${prefix}-team-standard-shared`, '팀원이 같은 기준으로 실행해야 한다', '전략과제가 개인별 해석으로 흩어지지 않고, 팀 공통 기준과 기록 방식으로 공유되어야 합니다.', '팀 전략과제가 실행되려면 먼저 무엇을 같은 기준으로 볼 것인지 정리해야 합니다.', kpiSet(`${prefix}-standard`, 'record'))
+    : csf(`${prefix}-risk-boundary-clear`, '성과 실행과 안전선이 함께 관리되어야 한다', '성과관리 지표가 고객 압박, 허가 외 사용 암시, 비교 우위 단정으로 흐르지 않도록 안전선을 함께 봐야 합니다.', '제약영업 성과관리는 숫자만 보는 것이 아니라 안전한 표현과 승인자료 범위까지 함께 확인해야 합니다.', kpiSet(`${prefix}-risk`, 'boundary'));
 }
 
 const STRATEGY_CARDS: StrategyCard[] = [
   {
     id: 'customer-value-growth',
     enterpriseTask: '고객가치 기반 성장 강화',
-    hqTask: '고객 접점 이후 실행 전환율 강화',
-    teamTaskExample: '고객 질문과 후속 행동이 CRM에 남고, 다음 접점으로 이어지게 한다.',
-    sourceHint: '고객 접점 이후의 반응, 질문, 다음 행동이 실제 실행으로 이어지도록 만드는 과제입니다.',
-    teamTaskOptions: [
-      task('customer-follow-up', '고객 질문과 후속 행동이 CRM에 남고, 다음 접점으로 이어지게 한다.', '방문 후 남은 질문과 후속 행동이 실제 다음 접점으로 이어지는지 보려는 팀에 적합합니다.', [
-        csfFor('customer-follow-up', 'record', '고객 질문과 반응이 구체적으로 기록되어야 한다', '질문과 반응이 다음 행동의 근거로 남아야 합니다.', '후속 실행을 만들 수 있을 만큼 기록이 구체적인지 봅니다.'),
-        csfFor('customer-follow-up', 'followup', '후속 행동이 일정 안에 실행되어야 한다', '고객 질문·자료 요청·다음 약속이 방치되지 않아야 합니다.', '고객 반응 이후 실제 실행으로 이어지는지를 봅니다.'),
-        csfFor('customer-follow-up', 'blocker', '후속 실행을 막는 제약이 확인되어야 한다', '후속조치 지연 원인을 팀원 탓으로 단정하지 않고 확인해야 합니다.', '막힌 이유와 팀장 지원 필요를 함께 확인합니다.'),
-        sharedCsf('customer-follow-up', 'risk'),
+    sourceHint: '고객 접점 이후의 반응, 질문, 다음 행동이 실제 실행으로 이어지도록 만드는 전사 방향입니다.',
+    teamStrategyOptions: [
+      teamStrategy('customer-contact-conversion', '고객 접점 이후 실행 전환율 강화', '방문과 접촉 이후 실제 후속 행동으로 이어지는 흐름을 강화하려는 팀에 적합합니다.', [
+        csfFor('customer-contact-conversion', 'record', '고객 질문과 반응이 구체적으로 기록되어야 한다', '질문과 반응이 다음 행동의 근거로 남아야 합니다.', '후속 실행을 만들 수 있을 만큼 기록이 구체적인지 봅니다.'),
+        csfFor('customer-contact-conversion', 'followup', '후속 행동이 일정 안에 실행되어야 한다', '고객 질문·자료 요청·다음 약속이 방치되지 않아야 합니다.', '고객 반응 이후 실제 실행으로 이어지는지를 봅니다.'),
+        csfFor('customer-contact-conversion', 'blocker', '후속 실행을 막는 제약이 확인되어야 한다', '후속조치 지연 원인을 팀원 탓으로 단정하지 않고 확인해야 합니다.', '막힌 이유와 팀장 지원 필요를 함께 확인합니다.'),
+        sharedCsf('customer-contact-conversion', 'risk'),
       ]),
-      task('customer-response-quality', '고객 반응을 단정하지 않고, 확인 질문과 다음 행동으로 전환한다.', '고객 반응을 성급하게 해석하는 경향이 있거나, 질문을 실행으로 연결하는 훈련이 필요한 팀에 적합합니다.', [
-        csfFor('customer-response-quality', 'question', '고객 반응과 팀원의 해석이 분리되어야 한다', '고객 반응을 제품 선호나 처방 가능성으로 단정하지 않아야 합니다.', '사실과 해석을 분리하고 확인 질문으로 바꿉니다.'),
-        csfFor('customer-response-quality', 'record', '확인 질문이 고객 기록에 남아야 한다', '다음 대화에서 확인할 질문이 기록되어야 합니다.', '고객 반응 이후 무엇을 확인할지 남깁니다.'),
-        csfFor('customer-response-quality', 'followup', '확인 질문이 다음 행동으로 이어져야 한다', '질문 기록이 실제 후속 실행으로 연결되어야 합니다.', '질문을 기록에서 실행으로 바꾸는 조건입니다.'),
-        sharedCsf('customer-response-quality', 'risk'),
+      teamStrategy('customer-question-followup', '고객 질문 기반 후속 실행 체계화', '고객 질문을 단순 기록이 아니라 다음 행동으로 연결하려는 팀에 적합합니다.', [
+        csfFor('customer-question-followup', 'question', '고객 반응과 팀원의 해석이 분리되어야 한다', '고객 반응을 제품 선호나 처방 가능성으로 단정하지 않아야 합니다.', '사실과 해석을 분리하고 확인 질문으로 바꿉니다.'),
+        csfFor('customer-question-followup', 'record', '확인 질문이 고객 기록에 남아야 한다', '다음 대화에서 확인할 질문이 기록되어야 합니다.', '고객 반응 이후 무엇을 확인할지 남깁니다.'),
+        csfFor('customer-question-followup', 'followup', '확인 질문이 다음 행동으로 이어져야 한다', '질문 기록이 실제 후속 실행으로 연결되어야 합니다.', '질문을 기록에서 실행으로 바꾸는 조건입니다.'),
+        sharedCsf('customer-question-followup', 'risk'),
       ]),
-      task('customer-next-contact', '방문 이후 다음 논의 주제와 접점 목적을 기록으로 남긴다.', '방문 수는 충분하지만 다음 논의가 약한 팀에 적합합니다.', [
-        csfFor('customer-next-contact', 'purpose', '방문 전 접점 목적이 명확해야 한다', '방문이 활동량이 아니라 목적 있는 접점이어야 합니다.', '무엇을 확인하려는 방문인지 먼저 정리합니다.'),
-        csfFor('customer-next-contact', 'record', '방문 후 다음 논의 주제가 기록되어야 한다', '다음 대화 주제가 고객 질문과 연결되어야 합니다.', '방문 후 남은 논의 주제를 확인합니다.'),
-        csfFor('customer-next-contact', 'followup', '다음 접점의 이유가 고객 질문과 연결되어야 한다', '다음 접점은 무리한 재방문이 아니라 질문에 대한 후속이어야 합니다.', '다음 접점의 목적과 안전선을 함께 봅니다.'),
-        sharedCsf('customer-next-contact', 'standard'),
+      teamStrategy('customer-record-quality', '고객 반응 기록 품질 고도화', '방문 수보다 고객 반응 기록의 질을 높이려는 팀에 적합합니다.', [
+        csfFor('customer-record-quality', 'record', '고객 반응 기록이 다음 행동을 정할 만큼 충분해야 한다', '단순 반응 메모가 아니라 다음 행동의 근거가 필요합니다.', '기록을 실행 가능한 정보로 바꿉니다.'),
+        csfFor('customer-record-quality', 'question', '관찰 사실과 해석이 분리되어야 한다', '기록 품질은 단정이 아니라 확인 가능성에서 나옵니다.', '고객 반응에 대한 과잉해석을 줄입니다.'),
+        csfFor('customer-record-quality', 'blocker', '기록에서 실행 제약이 보여야 한다', '기록을 보면 팀장이 지원할 지점을 찾을 수 있어야 합니다.', '기록을 점검이 아니라 지원 근거로 씁니다.'),
+        sharedCsf('customer-record-quality', 'standard'),
       ]),
-      task('customer-blocker', '후속조치가 지연되는 고객 활동 기록에서 막힌 이유를 확인한다.', '후속 실행이 늦어지는 이유를 팀원 책임으로만 보지 않고 실행 제약을 함께 보려는 팀에 적합합니다.', [
-        csfFor('customer-blocker', 'blocker', '후속 지연 원인이 기록에 남아야 한다', '늦어진 이유가 고객 제약인지 내부 실행 제약인지 확인되어야 합니다.', '후속 지연을 비난보다 진단으로 다룹니다.'),
-        csfFor('customer-blocker', 'followup', '막힌 후속조치가 다음 확인으로 이어져야 한다', '방치된 후속조치를 작게 재개해야 합니다.', '지연된 일을 다시 움직이게 할 기준입니다.'),
-        csfFor('customer-blocker', 'crm', '팀장이 기록을 보고 지원 지점을 찾아야 한다', '기록이 팀장 지원과 조정으로 연결되어야 합니다.', '기록을 감시가 아니라 지원의 근거로 씁니다.'),
-        sharedCsf('customer-blocker', 'risk'),
+      teamStrategy('key-customer-flow', '핵심 고객 접점 목적과 후속 흐름 정렬', '핵심 고객 접점의 목적과 다음 논의 흐름을 선명하게 만들려는 팀에 적합합니다.', [
+        csfFor('key-customer-flow', 'purpose', '방문 전 접점 목적이 명확해야 한다', '방문이 활동량이 아니라 목적 있는 접점이어야 합니다.', '무엇을 확인하려는 방문인지 먼저 정리합니다.'),
+        csfFor('key-customer-flow', 'record', '방문 후 다음 논의 주제가 기록되어야 한다', '다음 대화 주제가 고객 질문과 연결되어야 합니다.', '방문 후 남은 논의 주제를 확인합니다.'),
+        csfFor('key-customer-flow', 'followup', '다음 접점의 이유가 고객 질문과 연결되어야 한다', '다음 접점은 무리한 재방문이 아니라 질문에 대한 후속이어야 합니다.', '다음 접점의 목적과 안전선을 함께 봅니다.'),
+        sharedCsf('key-customer-flow', 'standard'),
       ]),
     ],
   },
   {
     id: 'digital-execution-management',
     enterpriseTask: '디지털 기반 실행관리 고도화',
-    hqTask: 'CRM 기반 영업 실행관리 체계 강화',
-    teamTaskExample: 'CRM 기록을 단순 입력이 아니라 다음 행동과 팀장 점검으로 연결한다.',
-    sourceHint: 'CRM 기록을 보고, 다음 행동과 팀장 지원이 실제로 이어지게 만드는 과제입니다.',
-    teamTaskOptions: [
-      task('crm-next-action', 'CRM 기록을 단순 입력이 아니라 다음 행동과 팀장 점검으로 연결한다.', 'CRM 입력은 많은데 실제 후속 실행으로 이어지지 않는 팀에 적합합니다.', [
-        csfFor('crm-next-action', 'crm', 'CRM 기록에 다음 행동이 포함되어야 한다', '방문 사실보다 다음 행동과 지원 필요가 남아야 합니다.', '기록이 실행의 출발점이 되는지 봅니다.'),
-        csfFor('crm-next-action', 'followup', '기록된 후속 행동이 실행되어야 한다', '기록이 실행으로 이어지지 않으면 성과관리 기준이 약해집니다.', '후속 실행의 완료와 지연 이유를 봅니다.'),
-        csfFor('crm-next-action', 'blocker', '팀장이 막힌 지점을 확인할 수 있어야 한다', '기록이 팀장 코칭과 지원으로 이어져야 합니다.', '기록을 보고 연결할 일을 찾습니다.'),
-        sharedCsf('crm-next-action', 'risk'),
+    sourceHint: 'CRM과 기록을 실행관리, 팀장 점검, 지원 행동으로 연결하는 전사 방향입니다.',
+    teamStrategyOptions: [
+      teamStrategy('crm-execution-system', 'CRM 기반 영업 실행관리 체계 강화', 'CRM 입력은 많은데 실제 후속 실행으로 이어지지 않는 팀에 적합합니다.', [
+        csfFor('crm-execution-system', 'crm', 'CRM 기록에 다음 행동이 포함되어야 한다', '방문 사실보다 다음 행동과 지원 필요가 남아야 합니다.', '기록이 실행의 출발점이 되는지 봅니다.'),
+        csfFor('crm-execution-system', 'followup', '기록된 후속 행동이 실행되어야 한다', '기록이 실행으로 이어지지 않으면 성과관리 기준이 약해집니다.', '후속 실행의 완료와 지연 이유를 봅니다.'),
+        csfFor('crm-execution-system', 'blocker', '팀장이 막힌 지점을 확인할 수 있어야 한다', '기록이 팀장 코칭과 지원으로 이어져야 합니다.', '기록을 보고 연결할 일을 찾습니다.'),
+        sharedCsf('crm-execution-system', 'risk'),
       ]),
-      task('crm-quality', 'CRM 기록에서 고객 질문, 다음 행동, 막힌 이유가 보이게 한다.', '기록 품질을 높여 팀장이 지원할 지점을 확인하려는 팀에 적합합니다.', [
-        csfFor('crm-quality', 'record', '고객 질문과 다음 행동이 기록에 함께 남아야 한다', '질문만 있고 실행이 없거나 실행만 있고 맥락이 없는 기록을 줄여야 합니다.', '고객 기록을 실행 가능한 정보로 바꿉니다.'),
-        csfFor('crm-quality', 'blocker', '막힌 이유가 기록에 남아야 한다', '실행 제약이 보이지 않으면 팀장이 지원하기 어렵습니다.', '고객 제약과 내부 제약을 분리합니다.'),
-        csfFor('crm-quality', 'question', '기록 속 해석과 사실이 분리되어야 한다', '기록이 추측 중심이면 후속 판단이 흔들립니다.', '사실 중심 기록을 강화합니다.'),
-        sharedCsf('crm-quality', 'standard'),
+      teamStrategy('crm-quality-advance', 'CRM 기록 품질 고도화', '기록 품질을 높여 팀장이 지원할 지점을 확인하려는 팀에 적합합니다.', [
+        csfFor('crm-quality-advance', 'record', '고객 질문과 다음 행동이 기록에 함께 남아야 한다', '질문만 있고 실행이 없거나 실행만 있고 맥락이 없는 기록을 줄여야 합니다.', '고객 기록을 실행 가능한 정보로 바꿉니다.'),
+        csfFor('crm-quality-advance', 'blocker', '막힌 이유가 기록에 남아야 한다', '실행 제약이 보이지 않으면 팀장이 지원하기 어렵습니다.', '고객 제약과 내부 제약을 분리합니다.'),
+        csfFor('crm-quality-advance', 'question', '기록 속 해석과 사실이 분리되어야 한다', '기록이 추측 중심이면 후속 판단이 흔들립니다.', '사실 중심 기록을 강화합니다.'),
+        sharedCsf('crm-quality-advance', 'standard'),
       ]),
-      task('crm-rhythm', '방문 후 기록과 주간 점검이 끊기지 않도록 실행 리듬을 맞춘다.', '기록 시점과 점검 리듬이 불안정한 팀에 적합합니다.', [
-        csfFor('crm-rhythm', 'crm', '방문 후 기록이 제때 남아야 한다', '기록 지연은 후속 실행 지연으로 이어질 수 있습니다.', '기록 시점과 실행 리듬을 함께 봅니다.'),
-        csfFor('crm-rhythm', 'purpose', '주간 점검 기준이 명확해야 한다', '무엇을 볼지 정해져야 점검이 감시가 되지 않습니다.', '중간 점검 질문과 기준을 만듭니다.'),
-        csfFor('crm-rhythm', 'followup', '점검 후 보완 행동이 실행되어야 한다', '점검에서 끝나지 않고 다음 행동으로 이어져야 합니다.', '주간 점검을 실행 조정으로 연결합니다.'),
-        sharedCsf('crm-rhythm', 'standard'),
+      teamStrategy('weekly-execution-rhythm', '주간 실행 점검 리듬 정착', '기록 시점과 점검 리듬이 불안정한 팀에 적합합니다.', [
+        csfFor('weekly-execution-rhythm', 'crm', '방문 후 기록이 제때 남아야 한다', '기록 지연은 후속 실행 지연으로 이어질 수 있습니다.', '기록 시점과 실행 리듬을 함께 봅니다.'),
+        csfFor('weekly-execution-rhythm', 'purpose', '주간 점검 기준이 명확해야 한다', '무엇을 볼지 정해져야 점검이 감시가 되지 않습니다.', '중간 점검 질문과 기준을 만듭니다.'),
+        csfFor('weekly-execution-rhythm', 'followup', '점검 후 보완 행동이 실행되어야 한다', '점검에서 끝나지 않고 다음 행동으로 이어져야 합니다.', '주간 점검을 실행 조정으로 연결합니다.'),
+        sharedCsf('weekly-execution-rhythm', 'standard'),
       ]),
-      task('crm-coaching', '팀장이 CRM 기록을 보고 추궁이 아니라 코칭 질문으로 연결한다.', '기록 점검이 감시로 느껴지지 않게 바꾸려는 팀에 적합합니다.', [
-        csfFor('crm-coaching', 'question', '기록 점검 질문이 관찰 중심이어야 한다', '팀장 질문이 추궁이 아니라 확인으로 들려야 합니다.', '기록에서 코칭 질문을 뽑습니다.'),
-        csfFor('crm-coaching', 'blocker', '팀원이 말한 막힌 지점을 팀장이 연결해야 한다', '팀원이 혼자 해결할 일과 연결해야 할 일을 구분합니다.', '기록 기반 지원을 강화합니다.'),
-        csfFor('crm-coaching', 'record', '코칭 후 다음 행동이 기록에 남아야 한다', '대화가 실행 합의로 남아야 합니다.', '코칭 결과를 실행 기록으로 연결합니다.'),
-        sharedCsf('crm-coaching', 'risk'),
+      teamStrategy('crm-coaching-question', 'CRM 기반 코칭 질문 운영', '기록 점검이 감시로 느껴지지 않게 바꾸려는 팀에 적합합니다.', [
+        csfFor('crm-coaching-question', 'question', '기록 점검 질문이 관찰 중심이어야 한다', '팀장 질문이 추궁이 아니라 확인으로 들려야 합니다.', '기록에서 코칭 질문을 뽑습니다.'),
+        csfFor('crm-coaching-question', 'blocker', '팀원이 말한 막힌 지점을 팀장이 연결해야 한다', '팀원이 혼자 해결할 일과 연결해야 할 일을 구분합니다.', '기록 기반 지원을 강화합니다.'),
+        csfFor('crm-coaching-question', 'record', '코칭 후 다음 행동이 기록에 남아야 한다', '대화가 실행 합의로 남아야 합니다.', '코칭 결과를 실행 기록으로 연결합니다.'),
+        sharedCsf('crm-coaching-question', 'risk'),
       ]),
     ],
   },
   {
     id: 'sustainable-growth',
     enterpriseTask: '지속가능한 성장 기반 강화',
-    hqTask: '승인자료 기반 고객 커뮤니케이션 일관성 강화',
-    teamTaskExample: '팀원별 메시지 편차를 줄이고, 고객 질문에 승인자료 범위 안에서 일관되게 대응한다.',
-    sourceHint: '고객 커뮤니케이션의 일관성과 안전선을 함께 관리하는 과제입니다.',
-    teamTaskOptions: [
-      task('approved-message', '팀원별 메시지 편차를 줄이고, 고객 질문에 승인자료 범위 안에서 일관되게 대응한다.', '고객 커뮤니케이션의 안전성과 일관성을 높이려는 팀에 적합합니다.', [
-        csfFor('approved-message', 'message', '승인자료 범위 안에서 메시지를 전달해야 한다', '허가 외 사용 암시와 과장 표현을 막아야 합니다.', '성과 실행과 안전선을 함께 관리합니다.'),
-        csfFor('approved-message', 'boundary', '고객 질문의 답변 가능 범위가 정리되어야 한다', '현장에서 즉흥적으로 답하지 않고 확인 후 대응해야 합니다.', '답변 가능 범위를 분리합니다.'),
-        csfFor('approved-message', 'record', '고객 질문과 대응 범위가 기록되어야 한다', '고객 질문과 답변 범위가 기록에 남아야 안전하게 후속 대응할 수 있습니다.', '질문과 대응 범위를 함께 남깁니다.'),
-        sharedCsf('approved-message', 'standard'),
+    sourceHint: '고객 커뮤니케이션의 일관성, 승인자료 범위, 표현 안전선을 함께 관리하는 전사 방향입니다.',
+    teamStrategyOptions: [
+      teamStrategy('approved-communication', '승인자료 기반 고객 커뮤니케이션 일관성 강화', '고객 커뮤니케이션의 안전성과 일관성을 높이려는 팀에 적합합니다.', [
+        csfFor('approved-communication', 'message', '승인자료 범위 안에서 메시지를 전달해야 한다', '허가 외 사용 암시와 과장 표현을 막아야 합니다.', '성과 실행과 안전선을 함께 관리합니다.'),
+        csfFor('approved-communication', 'boundary', '고객 질문의 답변 가능 범위가 정리되어야 한다', '현장에서 즉흥적으로 답하지 않고 확인 후 대응해야 합니다.', '답변 가능 범위를 분리합니다.'),
+        csfFor('approved-communication', 'record', '고객 질문과 대응 범위가 기록되어야 한다', '고객 질문과 답변 범위가 기록에 남아야 안전하게 후속 대응할 수 있습니다.', '질문과 대응 범위를 함께 남깁니다.'),
+        sharedCsf('approved-communication', 'standard'),
       ]),
-      task('question-boundary', '고객 질문 중 즉답할 것과 확인 후 대응할 것을 구분한다.', '현장에서 애매한 질문에 즉흥적으로 답하는 위험을 줄이고 싶은 팀에 적합합니다.', [
-        csfFor('question-boundary', 'boundary', '즉답 가능한 질문과 확인 필요 질문이 구분되어야 한다', '질문을 모두 기회로 보지 말고 답변 가능 범위를 봐야 합니다.', '질문 대응의 안전선을 만듭니다.'),
-        csfFor('question-boundary', 'question', '고객 질문의 맥락과 한계가 기록되어야 한다', '질문 배경과 답변 가능 범위를 기록해야 합니다.', '질문 기록을 안전한 후속으로 연결합니다.'),
-        csfFor('question-boundary', 'message', '확인 후 대응 문장이 준비되어야 한다', '보류하거나 확인 후 답하는 표현이 필요합니다.', '현장 대응 문장을 안전하게 만듭니다.'),
-        sharedCsf('question-boundary', 'risk'),
+      teamStrategy('question-response-boundary', '고객 질문 답변 가능 범위 관리', '현장에서 애매한 질문에 즉흥적으로 답하는 위험을 줄이고 싶은 팀에 적합합니다.', [
+        csfFor('question-response-boundary', 'boundary', '즉답 가능한 질문과 확인 필요 질문이 구분되어야 한다', '질문을 모두 기회로 보지 말고 답변 가능 범위를 봐야 합니다.', '질문 대응의 안전선을 만듭니다.'),
+        csfFor('question-response-boundary', 'question', '고객 질문의 맥락과 한계가 기록되어야 한다', '질문 배경과 답변 가능 범위를 기록해야 합니다.', '질문 기록을 안전한 후속으로 연결합니다.'),
+        csfFor('question-response-boundary', 'message', '확인 후 대응 문장이 준비되어야 한다', '보류하거나 확인 후 답하는 표현이 필요합니다.', '현장 대응 문장을 안전하게 만듭니다.'),
+        sharedCsf('question-response-boundary', 'risk'),
       ]),
-      task('safe-phrasing', '위험 표현을 찾아 안전한 대체 문장으로 바꾼다.', '비교 우위 단정, 처방 유도, 허가 외 사용 암시를 예방하려는 팀에 적합합니다.', [
-        csfFor('safe-phrasing', 'message', '자주 쓰는 표현의 위험성이 점검되어야 한다', '현장 문장이 오해를 낳지 않게 사전에 점검해야 합니다.', '위험 표현을 대체 문장으로 바꿉니다.'),
-        csfFor('safe-phrasing', 'boundary', '확인 필요한 질문을 임의로 확장하지 않아야 한다', '답변 범위를 넘는 질문은 확인 후 대응해야 합니다.', '확인 후 대응을 안전관리로 설명합니다.'),
-        csfFor('safe-phrasing', 'record', '수정한 표현과 이유가 팀 기록에 남아야 한다', '한 번 수정한 표현이 팀 공통 언어로 남아야 합니다.', '개별 수정이 아니라 팀 학습으로 연결합니다.'),
-        sharedCsf('safe-phrasing', 'standard'),
+      teamStrategy('safe-expression-replace', '위험 표현 점검 및 대체 문장 정착', '비교 우위 단정, 처방 유도, 허가 외 사용 암시를 예방하려는 팀에 적합합니다.', [
+        csfFor('safe-expression-replace', 'message', '자주 쓰는 표현의 위험성이 점검되어야 한다', '현장 문장이 오해를 낳지 않게 사전에 점검해야 합니다.', '위험 표현을 대체 문장으로 바꿉니다.'),
+        csfFor('safe-expression-replace', 'boundary', '확인 필요한 질문을 임의로 확장하지 않아야 한다', '답변 범위를 넘는 질문은 확인 후 대응해야 합니다.', '확인 후 대응을 안전관리로 설명합니다.'),
+        csfFor('safe-expression-replace', 'record', '수정한 표현과 이유가 팀 기록에 남아야 한다', '한 번 수정한 표현이 팀 공통 언어로 남아야 합니다.', '개별 수정이 아니라 팀 학습으로 연결합니다.'),
+        sharedCsf('safe-expression-replace', 'standard'),
       ]),
-      task('message-calibration', '팀 회의에서 자주 쓰는 고객 대응 문장을 함께 점검한다.', '팀원별 표현 편차를 줄이고 공통 언어를 만들려는 팀에 적합합니다.', [
-        csfFor('message-calibration', 'message', '팀 공통 고객 대응 문장이 정리되어야 한다', '팀원별 표현 편차를 줄이기 위해 공통 문장이 필요합니다.', '자주 쓰는 문장을 함께 점검합니다.'),
-        csfFor('message-calibration', 'boundary', '표현 안전선과 확인 필요 기준이 공유되어야 한다', '어디까지 말할 수 있는지 팀원들이 알아야 합니다.', '말해도 되는 선을 함께 정리합니다.'),
-        csfFor('message-calibration', 'purpose', '회의 후 적용할 문장이 실제 현장으로 이어져야 한다', '회의에서 끝나지 않고 다음 고객 접점에서 적용되어야 합니다.', '회의 내용을 실행 문장으로 바꿉니다.'),
-        sharedCsf('message-calibration', 'risk'),
+      teamStrategy('common-response-message', '팀 공통 고객 대응 문장 정렬', '팀원별 표현 편차를 줄이고 공통 언어를 만들려는 팀에 적합합니다.', [
+        csfFor('common-response-message', 'message', '팀 공통 고객 대응 문장이 정리되어야 한다', '팀원별 표현 편차를 줄이기 위해 공통 문장이 필요합니다.', '자주 쓰는 문장을 함께 점검합니다.'),
+        csfFor('common-response-message', 'boundary', '표현 안전선과 확인 필요 기준이 공유되어야 한다', '어디까지 말할 수 있는지 팀원들이 알아야 합니다.', '말해도 되는 선을 함께 정리합니다.'),
+        csfFor('common-response-message', 'purpose', '회의 후 적용할 문장이 실제 현장으로 이어져야 한다', '회의에서 끝나지 않고 다음 고객 접점에서 적용되어야 합니다.', '회의 내용을 실행 문장으로 바꿉니다.'),
+        sharedCsf('common-response-message', 'risk'),
       ]),
     ],
   },
   {
     id: 'market-response',
     enterpriseTask: '시장 변화 대응력 강화',
-    hqTask: '고객 접점 방식 다변화와 후속 확인 체계 강화',
-    teamTaskExample: '대면 방문 외 접점에서도 고객 반응과 후속 확인이 기록으로 남게 한다.',
-    sourceHint: '고객 접점 방식이 달라질 때도 반응과 후속 확인이 끊기지 않게 만드는 과제입니다.',
-    teamTaskOptions: [
-      task('alt-contact-follow-up', '대면 방문 외 접점에서도 고객 반응과 후속 확인이 기록으로 남게 한다.', '방문 외 접점의 효과를 단순 발송이 아니라 후속 확인으로 보려는 팀에 적합합니다.', [
-        csfFor('alt-contact-follow-up', 'contact', '방문 외 접점 이후 실제 반응이 확인되어야 한다', '자료 전달 자체가 아니라 확인·질문·다음 논의가 남아야 합니다.', '대체 접점 이후 반응을 기록으로 확인합니다.'),
-        csfFor('alt-contact-follow-up', 'followup', '대체 접점 이후 후속 행동이 실행되어야 한다', '비대면 접점도 후속 실행으로 연결되어야 합니다.', '대체 접점을 실행 흐름으로 연결합니다.'),
-        csfFor('alt-contact-follow-up', 'record', '대체 접점의 목적과 반응이 기록되어야 한다', '무엇을 위해 연락했고 어떤 반응이 있었는지 남아야 합니다.', '대체 접점을 활동량이 아니라 기록 품질로 봅니다.'),
-        sharedCsf('alt-contact-follow-up', 'risk'),
+    sourceHint: '고객 접점 방식이 달라질 때도 반응과 후속 확인이 끊기지 않게 만드는 전사 방향입니다.',
+    teamStrategyOptions: [
+      teamStrategy('contact-diversification', '고객 접점 방식 다변화와 후속 확인 체계 강화', '방문 외 접점의 효과를 단순 발송이 아니라 후속 확인으로 보려는 팀에 적합합니다.', [
+        csfFor('contact-diversification', 'contact', '방문 외 접점 이후 실제 반응이 확인되어야 한다', '자료 전달 자체가 아니라 확인·질문·다음 논의가 남아야 합니다.', '대체 접점 이후 반응을 기록으로 확인합니다.'),
+        csfFor('contact-diversification', 'followup', '대체 접점 이후 후속 행동이 실행되어야 한다', '비대면 접점도 후속 실행으로 연결되어야 합니다.', '대체 접점을 실행 흐름으로 연결합니다.'),
+        csfFor('contact-diversification', 'record', '대체 접점의 목적과 반응이 기록되어야 한다', '무엇을 위해 연락했고 어떤 반응이 있었는지 남아야 합니다.', '대체 접점을 활동량이 아니라 기록 품질로 봅니다.'),
+        sharedCsf('contact-diversification', 'risk'),
       ]),
-      task('material-request', '자료 요청 이후 실제 확인과 다음 질문이 남도록 관리한다.', '자료 전달 이후 반응 확인이 약한 팀에 적합합니다.', [
-        csfFor('material-request', 'contact', '자료 요청 이후 확인이 이루어져야 한다', '자료 전달 자체가 아니라 확인과 질문이 남아야 합니다.', '자료 요청을 후속 확인으로 연결합니다.'),
-        csfFor('material-request', 'boundary', '자료 사용 범위가 승인자료 안에 있어야 한다', '자료 대응은 승인자료와 표현 안전선 안에서 이루어져야 합니다.', '자료 대응의 안전성을 봅니다.'),
-        csfFor('material-request', 'followup', '자료 확인 후 다음 행동이 정리되어야 한다', '자료 전달 이후 후속 질문과 다음 행동이 남아야 합니다.', '자료 전달을 후속 실행으로 바꿉니다.'),
-        sharedCsf('material-request', 'standard'),
+      teamStrategy('material-request-followup', '자료 요청 이후 확인 흐름 강화', '자료 전달 이후 반응 확인이 약한 팀에 적합합니다.', [
+        csfFor('material-request-followup', 'contact', '자료 요청 이후 확인이 이루어져야 한다', '자료 전달 자체가 아니라 확인과 질문이 남아야 합니다.', '자료 요청을 후속 확인으로 연결합니다.'),
+        csfFor('material-request-followup', 'boundary', '자료 사용 범위가 승인자료 안에 있어야 한다', '자료 대응은 승인자료와 표현 안전선 안에서 이루어져야 합니다.', '자료 대응의 안전성을 봅니다.'),
+        csfFor('material-request-followup', 'followup', '자료 확인 후 다음 행동이 정리되어야 한다', '자료 전달 이후 후속 질문과 다음 행동이 남아야 합니다.', '자료 전달을 후속 실행으로 바꿉니다.'),
+        sharedCsf('material-request-followup', 'standard'),
       ]),
-      task('contact-gap', '접점 공백이 생긴 고객 활동 기록에서 원인과 접근 경로를 확인한다.', '무리한 접촉 확대보다 접점 공백의 이유를 먼저 보려는 팀에 적합합니다.', [
-        csfFor('contact-gap', 'gap', '접점 공백의 이유가 확인되어야 한다', '미접촉의 원인이 고객 제약인지 실행 루틴인지 분리해야 합니다.', '공백을 비난보다 진단으로 봅니다.'),
-        csfFor('contact-gap', 'purpose', '접점 회복의 목적이 명확해야 한다', '다시 접촉하는 이유와 확인할 질문이 분명해야 합니다.', '무리한 확대가 아니라 목적 있는 회복을 만듭니다.'),
-        csfFor('contact-gap', 'record', '접점 공백과 접근 경로가 기록되어야 한다', '공백 기간, 경로, 다음 행동이 기록으로 남아야 합니다.', '접점 공백을 관리 가능한 정보로 바꿉니다.'),
-        sharedCsf('contact-gap', 'risk'),
+      teamStrategy('contact-gap-check', '접점 공백 고객 접근 경로 점검', '무리한 접촉 확대보다 접점 공백의 이유를 먼저 보려는 팀에 적합합니다.', [
+        csfFor('contact-gap-check', 'gap', '접점 공백의 이유가 확인되어야 한다', '미접촉의 원인이 고객 제약인지 실행 루틴인지 분리해야 합니다.', '공백을 비난보다 진단으로 봅니다.'),
+        csfFor('contact-gap-check', 'purpose', '접점 회복의 목적이 명확해야 한다', '다시 접촉하는 이유와 확인할 질문이 분명해야 합니다.', '무리한 확대가 아니라 목적 있는 회복을 만듭니다.'),
+        csfFor('contact-gap-check', 'record', '접점 공백과 접근 경로가 기록되어야 한다', '공백 기간, 경로, 다음 행동이 기록으로 남아야 합니다.', '접점 공백을 관리 가능한 정보로 바꿉니다.'),
+        sharedCsf('contact-gap-check', 'risk'),
       ]),
-      task('hybrid-contact', '대면·비대면 접점을 하나의 후속 실행 흐름으로 연결한다.', '접점 방식이 다양해졌지만 실행 흐름이 끊기는 팀에 적합합니다.', [
-        csfFor('hybrid-contact', 'contact', '접점 방식별 반응이 같은 기준으로 기록되어야 한다', '대면과 비대면의 반응을 함께 비교할 수 있어야 합니다.', '접점 방식을 하나의 기록 기준으로 맞춥니다.'),
-        csfFor('hybrid-contact', 'followup', '접점 방식과 무관하게 다음 행동이 남아야 한다', '어떤 접점이든 후속 행동으로 이어져야 합니다.', '대면·비대면을 같은 실행 흐름으로 연결합니다.'),
-        csfFor('hybrid-contact', 'crm', 'CRM에서 접점 흐름을 확인할 수 있어야 한다', '흩어진 접점을 CRM 실행 흐름으로 묶어야 합니다.', 'CRM으로 접점 흐름을 점검합니다.'),
-        sharedCsf('hybrid-contact', 'standard'),
+      teamStrategy('hybrid-contact-flow', '대면·비대면 접점 실행 흐름 통합', '접점 방식이 다양해졌지만 실행 흐름이 끊기는 팀에 적합합니다.', [
+        csfFor('hybrid-contact-flow', 'contact', '접점 방식별 반응이 같은 기준으로 기록되어야 한다', '대면과 비대면의 반응을 함께 비교할 수 있어야 합니다.', '접점 방식을 하나의 기록 기준으로 맞춥니다.'),
+        csfFor('hybrid-contact-flow', 'followup', '접점 방식과 무관하게 다음 행동이 남아야 한다', '어떤 접점이든 후속 행동으로 이어져야 합니다.', '대면·비대면을 같은 실행 흐름으로 연결합니다.'),
+        csfFor('hybrid-contact-flow', 'crm', 'CRM에서 접점 흐름을 확인할 수 있어야 한다', '흩어진 접점을 CRM 실행 흐름으로 묶어야 합니다.', 'CRM으로 접점 흐름을 점검합니다.'),
+        sharedCsf('hybrid-contact-flow', 'standard'),
       ]),
     ],
   },
 ];
 
 const DEFAULT_STATE: State = {
-  selectedStrategyId: STRATEGY_CARDS[0].id,
+  selectedStrategyId: '',
   selectedTeamTaskId: '',
   customTeamTask: '',
   selectedCsfIds: [],
@@ -346,19 +336,19 @@ const FLOW_OPTIONS = [
 ];
 
 function selectedStrategy(state: State) {
-  return STRATEGY_CARDS.find((strategy) => strategy.id === state.selectedStrategyId) ?? STRATEGY_CARDS[0];
+  return STRATEGY_CARDS.find((strategy) => strategy.id === state.selectedStrategyId);
 }
 
-function selectedTeamTask(strategy: StrategyCard, state: State) {
-  return strategy.teamTaskOptions.find((option) => option.id === state.selectedTeamTaskId);
+function selectedTeamStrategy(strategy: StrategyCard | undefined, state: State) {
+  return strategy?.teamStrategyOptions.find((option) => option.id === state.selectedTeamTaskId);
 }
 
-function flatCsfs(strategy: StrategyCard, state?: State): Csf[] {
-  const selectedTask = state ? selectedTeamTask(strategy, state) : undefined;
+function flatCsfs(strategy: StrategyCard | undefined, state?: State): Csf[] {
+  const selectedTask = state ? selectedTeamStrategy(strategy, state) : undefined;
   return selectedTask?.csfs ?? [];
 }
 
-function flatKpis(strategy: StrategyCard, state?: State): FlatKpi[] {
+function flatKpis(strategy: StrategyCard | undefined, state?: State): FlatKpi[] {
   return flatCsfs(strategy, state).flatMap((csfItem) => csfItem.kpis.map((kpiItem) => ({ ...kpiItem, csfId: csfItem.id, csfLabel: csfItem.label })));
 }
 
@@ -397,21 +387,20 @@ function LockedPanel({ title, body }: { title: string; body: string }) {
   return <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm leading-6 text-slate-500"><p className="font-black text-slate-700">{title}</p><p className="mt-1 text-xs font-bold">{body}</p></div>;
 }
 
-function buildCascadePrompt(strategy: StrategyCard, state: State) {
+function buildCascadePrompt(strategy: StrategyCard | undefined, state: State) {
   return [
     '당신은 제약영업 팀장의 성과관리 코치입니다.',
     '',
-    '아래 전사전략과제를 영업본부 전략과제, 우리 팀 과제, CSF, KPI로 분해해 주세요.',
+    '아래 전사전략과제를 우리 조의 팀 전략과제, CSF, KPI로 분해해 주세요.',
     '',
-    `전사전략과제: ${strategy.enterpriseTask}`,
-    `영업본부 전략과제: ${strategy.hqTask}`,
-    `우리 조가 선정한 팀 과제: ${state.customTeamTask || '아직 작성 전'}`,
+    `전사전략과제: ${strategy?.enterpriseTask || '아직 선택 전'}`,
+    `우리 조가 선정한 팀 전략과제: ${state.customTeamTask || '아직 작성 전'}`,
     `선택 CSF: ${selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}`,
     `선택 KPI: ${selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}`,
     '',
     '요청:',
-    '1. 우리 조의 팀 과제가 전사전략과제와 영업본부 전략과제에 잘 연결되어 있는지 검토해 주세요.',
-    '2. 선택한 팀 과제 기준으로 놓친 CSF 후보가 있으면 2개만 추가 제안해 주세요.',
+    '1. 우리 조의 팀 전략과제가 전사전략과제에 잘 연결되어 있는지 검토해 주세요.',
+    '2. 선택한 팀 전략과제 기준으로 놓친 CSF 후보가 있으면 2개만 추가 제안해 주세요.',
     '3. 선택한 CSF별 KPI 후보를 활동, 전환, 품질, 리스크 지표로 구분해 보완해 주세요.',
     '4. 고객 활동 기록에서 확인할 증거를 적어 주세요.',
     '5. 과도한 성과 압박이나 컴플라이언스상 조심해야 할 표현을 표시해 주세요.',
@@ -420,11 +409,12 @@ function buildCascadePrompt(strategy: StrategyCard, state: State) {
   ].join('\n');
 }
 
-function buildRecordPrompt(strategy: StrategyCard, state: State) {
+function buildRecordPrompt(strategy: StrategyCard | undefined, state: State) {
   return [
-    '아래 팀 과제, CSF, KPI를 고객 활동 기록에서 확인 가능한 단서로 바꿔 주세요.',
+    '아래 팀 전략과제, CSF, KPI를 고객 활동 기록에서 확인 가능한 단서로 바꿔 주세요.',
     '',
-    `팀 과제: ${state.customTeamTask || '아직 작성 전'}`,
+    `전사전략과제: ${strategy?.enterpriseTask || '아직 선택 전'}`,
+    `팀 전략과제: ${state.customTeamTask || '아직 작성 전'}`,
     `선택 CSF: ${selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}`,
     `선택 KPI: ${selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}`,
     '',
@@ -435,13 +425,12 @@ function buildRecordPrompt(strategy: StrategyCard, state: State) {
   ].join('\n');
 }
 
-function buildFlowPrompt(strategy: StrategyCard, state: State) {
+function buildFlowPrompt(strategy: StrategyCard | undefined, state: State) {
   return [
-    '선택한 팀 과제, CSF, KPI, 고객 기록 단서를 바탕으로 이번 2주 실행 흐름을 만들어 주세요.',
+    '선택한 팀 전략과제, CSF, KPI, 고객 기록 단서를 바탕으로 이번 2주 실행 흐름을 만들어 주세요.',
     '',
-    `전사전략과제: ${strategy.enterpriseTask}`,
-    `영업본부 전략과제: ${strategy.hqTask}`,
-    `팀 과제: ${state.customTeamTask || '아직 작성 전'}`,
+    `전사전략과제: ${strategy?.enterpriseTask || '아직 선택 전'}`,
+    `팀 전략과제: ${state.customTeamTask || '아직 작성 전'}`,
     `선택 CSF: ${selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}`,
     `선택 KPI: ${selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}`,
     `확인된 단서: ${state.selectedEvidenceIds.join(' · ') || '아직 선택 전'}`,
@@ -460,11 +449,12 @@ function copyText(text: string) {
 export function V40VNextPerformanceStrategyCascadeLab() {
   const [state, setState] = useStored<State>(V40_VNEXT_PERFORMANCE_CASCADE_STORAGE_KEY, DEFAULT_STATE);
   const strategy = selectedStrategy(state);
-  const selectedTask = selectedTeamTask(strategy, state);
+  const selectedTeamStrategy = selectedTeamStrategy(strategy, state);
   const csfs = flatCsfs(strategy, state);
   const allKpis = flatKpis(strategy, state);
   const selectedCsfs = csfs.filter((csfItem) => state.selectedCsfIds.includes(csfItem.id));
-  const hasTeamTask = Boolean(state.selectedTeamTaskId && state.customTeamTask?.trim());
+  const hasEnterpriseStrategy = Boolean(strategy);
+  const hasTeamStrategy = Boolean(state.selectedTeamTaskId && state.customTeamTask?.trim());
   const hasCsfSelection = state.selectedCsfIds.length >= 2;
   const hasKpiSelection = state.selectedKpiIds.length >= 2;
   const cascadePrompt = useMemo(() => buildCascadePrompt(strategy, state), [strategy, state]);
@@ -472,44 +462,41 @@ export function V40VNextPerformanceStrategyCascadeLab() {
   return (
     <section className="space-y-4">
       <Card title="전사전략과제 선택">
-        <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">2026년 하반기 전사 전략과제와 본부 전략과제가 발표되었습니다. 여러분의 팀에서 중점적으로 실행할 전략과제를 선택해주세요.</p>
+        <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">2026년 하반기 전사 전략과제가 발표되었습니다. 여러분의 팀에서 중점적으로 실행할 전사 전략과제를 먼저 선택해주세요.</p>
         <div className="grid gap-3 md:grid-cols-2">
           {STRATEGY_CARDS.map((item) => (
             <button key={item.id} type="button" onClick={() => setState({ ...state, selectedStrategyId: item.id, selectedTeamTaskId: '', customTeamTask: '', selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left transition ${state.selectedStrategyId === item.id ? 'border-slate-900 bg-slate-950 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400'}`}>
               <p className="text-xs font-black opacity-70">전사전략과제</p>
               <p className="mt-1 text-base font-black">{item.enterpriseTask}</p>
-              <p className="mt-3 text-xs font-black leading-5 opacity-80">영업본부 전략과제</p>
-              <p className="mt-1 text-xs font-bold leading-5 opacity-80">{item.hqTask}</p>
               <p className="mt-2 text-xs leading-5 opacity-70">{item.sourceHint}</p>
             </button>
           ))}
         </div>
       </Card>
 
-      <Card title="우리 조가 선정한 팀 과제">
-        <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">팀 과제 선택 보기 4개 제시 · 처음에는 선택된 보기가 없습니다. 전사전략과제와 영업본부 전략과제를 우리 조가 실제로 2주 동안 실행할 수 있는 과제로 바꿉니다.</p>
-        <div className="grid gap-3 md:grid-cols-2">
-          {strategy.teamTaskOptions.map((option) => (
-            <button key={option.id} type="button" onClick={() => setState({ ...state, selectedTeamTaskId: option.id, customTeamTask: option.label, selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedTeamTaskId === option.id ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200 bg-white hover:border-slate-400'}`}>
-              <p className="font-black text-slate-950">{option.label}</p>
-              <p className="mt-2 text-xs font-bold leading-5 text-slate-600">가이드: {option.guide}</p>
-            </button>
-          ))}
-        </div>
-        {selectedTask ? <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">선택한 팀 과제 가이드: {selectedTask.guide}</p> : <LockedPanel title="아직 선택된 팀 과제가 없습니다" body="위 4개 팀 과제 중 우리 조가 중점 실행할 과제 1개를 먼저 선택하세요." />}
-        <Field label="우리 조가 선정한 팀 과제 보완 문장" value={state.customTeamTask} onChange={(value) => setState({ ...state, customTeamTask: value, selectedCsfIds: value.trim() ? state.selectedCsfIds : [], selectedKpiIds: value.trim() ? state.selectedKpiIds : [] })} placeholder="팀 과제 선택 보기에서 1개를 고른 뒤, 우리 조 언어로 조금 더 다듬어도 됩니다." />
-        <Field label="전략과제 핵심 의도 해석" value={state.cascadeInterpretation} onChange={(value) => setState({ ...state, cascadeInterpretation: value })} placeholder="예: 이 과제는 방문 수보다 고객 반응 이후 후속 실행과 기록 품질을 높이라는 의미입니다." />
-        <details className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-          <summary className="cursor-pointer text-sm font-black text-slate-900">팀 과제 예시 보기</summary>
-          <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm font-bold leading-6 text-slate-700">{strategy.teamTaskExample}</p>
-          <p className="mt-2 text-xs font-bold text-slate-500">예시는 정답이 아니라 비교용 힌트입니다. 우리 조 문장을 그대로 유지할지, 일부만 보완할지 토의하세요.</p>
-        </details>
+      <Card title="우리 조가 실행할 팀 전략과제 선택">
+        {!hasEnterpriseStrategy ? <LockedPanel title="전사전략과제 선택 후 팀 전략과제 선택창 활성화" body="먼저 전사전략과제를 선택해야 팀 전략과제 후보 4개가 나타납니다." /> : (
+          <>
+            <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">팀 전략과제 선택 보기 4개 제시 · 처음에는 선택된 보기가 없습니다. 선택한 전사전략과제를 우리 조가 실제로 실행할 성과관리 과제로 바꿉니다.</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {strategy.teamStrategyOptions.map((option) => (
+                <button key={option.id} type="button" onClick={() => setState({ ...state, selectedTeamTaskId: option.id, customTeamTask: option.label, selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedTeamTaskId === option.id ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200 bg-white hover:border-slate-400'}`}>
+                  <p className="font-black text-slate-950">{option.label}</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-slate-600">가이드: {option.guide}</p>
+                </button>
+              ))}
+            </div>
+            {selectedTeamStrategy ? <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs font-bold leading-5 text-cyan-950">선택한 팀 전략과제 가이드: {selectedTeamStrategy.guide}</p> : <LockedPanel title="아직 선택된 팀 전략과제가 없습니다" body="위 4개 팀 전략과제 중 우리 조가 중점 실행할 과제 1개를 먼저 선택하세요." />}
+            <Field label="우리 조가 선정한 팀 전략과제 보완 문장" value={state.customTeamTask} onChange={(value) => setState({ ...state, customTeamTask: value, selectedCsfIds: value.trim() ? state.selectedCsfIds : [], selectedKpiIds: value.trim() ? state.selectedKpiIds : [] })} placeholder="팀 전략과제 후보에서 1개를 고른 뒤, 우리 조 언어로 조금 더 다듬어도 됩니다." />
+            <Field label="전략과제 핵심 의도 해석" value={state.cascadeInterpretation} onChange={(value) => setState({ ...state, cascadeInterpretation: value })} placeholder="예: 이 과제는 단순 활동량보다 고객 반응 이후 후속 실행과 기록 품질을 높이라는 의미입니다." />
+          </>
+        )}
       </Card>
 
       <Card title="CSF 선택">
-        {!hasTeamTask ? <LockedPanel title="팀 과제 선택 후 CSF 선택창 활성화" body="먼저 우리 조가 중점 실행할 팀 과제를 선택하거나 작성해야, 선택한 팀 과제별 CSF 4개가 나타납니다." /> : (
+        {!hasTeamStrategy ? <LockedPanel title="팀 전략과제 선택 후 CSF 선택창 활성화" body="먼저 우리 조가 실행할 팀 전략과제를 선택하거나 작성해야, 선택한 팀 전략과제별 CSF 4개가 나타납니다." /> : (
           <>
-            <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">CSF는 핵심성공요인입니다. 지금 보이는 CSF는 선택한 팀 과제에 맞춰 달라집니다. CSF 보기 4개 제시 중 2개를 선택하세요. “측정하기 쉬운 것”이 아니라 “성공에 꼭 필요한 조건”을 고르는 단계입니다.</p>
+            <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs font-bold leading-5 text-emerald-950">CSF는 핵심성공요인입니다. 지금 보이는 CSF는 선택한 팀 전략과제에 맞춰 달라집니다. CSF 보기 4개 제시 중 2개를 선택하세요. “측정하기 쉬운 것”이 아니라 “성공에 꼭 필요한 조건”을 고르는 단계입니다.</p>
             <div className="grid gap-3 md:grid-cols-2">
               {csfs.map((csfItem) => (
                 <button key={csfItem.id} type="button" onClick={() => setState({ ...state, selectedCsfIds: toggle(state.selectedCsfIds, csfItem.id, 2), selectedKpiIds: state.selectedKpiIds.filter((id) => !csfItem.kpis.some((kpiItem) => kpiItem.id === id)), aiCascadePrompt: '', aiCascadeDraft: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedCsfIds.includes(csfItem.id) ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
@@ -555,10 +542,10 @@ export function V40VNextPerformanceStrategyCascadeLab() {
       <Card title="AI에게 CSF/KPI 후보 확장 요청">
         {!hasKpiSelection ? <LockedPanel title="KPI 선택 후 AI 확장 요청 활성화" body="우리 조가 먼저 KPI를 2개 이상 선택한 뒤, AI에게 놓친 후보와 위험 표현을 점검받습니다." /> : (
           <>
-            <p className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">우리 조가 먼저 고른 팀 과제, CSF, KPI를 바탕으로 AI에게 놓친 후보와 위험 표현을 점검받습니다. AI는 선택을 대신하지 않고, 비교와 보완에만 사용합니다.</p>
+            <p className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs font-bold leading-5 text-violet-950">우리 조가 먼저 고른 팀 전략과제, CSF, KPI를 바탕으로 AI에게 놓친 후보와 위험 표현을 점검받습니다. AI는 선택을 대신하지 않고, 비교와 보완에만 사용합니다.</p>
             <div className="flex flex-wrap gap-2"><Button onClick={() => setState({ ...state, aiCascadePrompt: cascadePrompt })}>AI 확장 프롬프트 만들기</Button><Button onClick={() => copyText(state.aiCascadePrompt || cascadePrompt)}>프롬프트 복사</Button></div>
             <Field label="AI CSF/KPI 초안 붙여넣기" value={state.aiCascadeDraft} onChange={(value) => setState({ ...state, aiCascadeDraft: value })} min="min-h-32" />
-            <Field label="우리 조 최종 CSF/KPI 메모" value={state.finalCsfKpiMemo} onChange={(value) => setState({ ...state, finalCsfKpiMemo: value })} placeholder="전사전략과제 → 영업본부 전략과제 → 팀 과제 → CSF → KPI를 한 문단으로 정리합니다." />
+            <Field label="우리 조 최종 CSF/KPI 메모" value={state.finalCsfKpiMemo} onChange={(value) => setState({ ...state, finalCsfKpiMemo: value })} placeholder="전사전략과제 → 팀 전략과제 → CSF → KPI를 한 문단으로 정리합니다." />
           </>
         )}
       </Card>
@@ -574,8 +561,8 @@ export function V40VNextPerformanceRecordEvidenceLab() {
 
   return (
     <section className="space-y-4">
-      <Card title="5단계에서 만든 팀 과제·CSF·KPI 다시 보기">
-        <p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">전사전략과제: <b>{strategy.enterpriseTask}</b><br />영업본부 전략과제: <b>{strategy.hqTask}</b><br />팀 과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p>
+      <Card title="5단계에서 만든 팀 전략과제·CSF·KPI 다시 보기">
+        <p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">전사전략과제: <b>{strategy?.enterpriseTask || '미선택'}</b><br />팀 전략과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p>
       </Card>
       <Card title="KPI를 고객 활동 기록 확인 항목으로 바꾸기">
         <div className="grid gap-3 md:grid-cols-2">
@@ -587,7 +574,7 @@ export function V40VNextPerformanceRecordEvidenceLab() {
             </button>
           ))}
         </div>
-        {kpis.length === 0 ? <LockedPanel title="선택한 KPI가 없습니다" body="5단계에서 팀 과제, CSF, KPI를 먼저 선택해야 고객 활동 기록 확인 항목을 볼 수 있습니다." /> : null}
+        {kpis.length === 0 ? <LockedPanel title="선택한 KPI가 없습니다" body="5단계에서 전사전략과제, 팀 전략과제, CSF, KPI를 먼저 선택해야 고객 활동 기록 확인 항목을 볼 수 있습니다." /> : null}
         <Field label="아직 부족한 정보" value={state.missingInfo} onChange={(value) => setState({ ...state, missingInfo: value })} placeholder="예: 다음 접점의 목적, 고객 질문의 배경, 후속조치 지연 이유가 부족합니다." />
         <Field label="과잉해석하면 안 되는 부분" value={state.overInterpretationRisk} onChange={(value) => setState({ ...state, overInterpretationRisk: value })} placeholder="예: 자료 요청을 처방 가능성이나 제품 선호로 단정하지 않습니다." />
         <Field label="팀원에게 확인할 질문" value={state.teamQuestion} onChange={(value) => setState({ ...state, teamQuestion: value })} placeholder="예: 이 후속조치가 늦어진 이유는 고객 일정 때문인가요, 우리 준비가 부족했기 때문인가요?" />
@@ -606,8 +593,8 @@ export function V40VNextPerformanceTwoWeekFlowLab() {
 
   return (
     <section className="space-y-4">
-      <Card title="팀 과제·CSF·KPI별 2주 실행 흐름 정하기">
-        <p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">팀 과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p>
+      <Card title="팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기">
+        <p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">전사전략과제: <b>{strategy?.enterpriseTask || '미선택'}</b><br />팀 전략과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p>
         <div className="grid gap-3 md:grid-cols-2">
           {FLOW_OPTIONS.map((flow) => (
             <button key={flow.id} type="button" onClick={() => setState({ ...state, selectedFlowIds: toggle(state.selectedFlowIds, flow.id) })} className={`rounded-2xl border p-4 text-left ${state.selectedFlowIds.includes(flow.id) ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
