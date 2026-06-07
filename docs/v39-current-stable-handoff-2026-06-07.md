@@ -32,16 +32,16 @@ Production route remains untouched:
 
 ## 2. Latest verified stable commit
 
-Latest verified commit before this refresh:
+Latest verified commit:
 
 ```text
-d926b075c4831ed356fb4e27b75adc51455a01a9
+b0e43829205e97f65d3476647f53b72c1fdb872a
 ```
 
 Commit message:
 
 ```text
-Polish v39 flow strip participant labels
+Fix v39 local preview smoke asset check
 ```
 
 Actions result:
@@ -53,6 +53,21 @@ v35 Smoke: success
 v36 Smoke: success
 v38 Smoke: success
 v40-lite Smoke: success
+```
+
+v39 Smoke now verifies:
+
+```text
+Run v39 static smoke check: success
+Run v39 scoped TypeScript check: success
+Build Vite app: success
+Run integrated v39 smoke check: success
+```
+
+The integrated v39 smoke now includes a local Vite preview route check for:
+
+```text
+/journey-v39-preview.html
 ```
 
 ## 3. Protected files and route
@@ -309,6 +324,41 @@ Current participant language examples:
 왜 그렇게 봤는지, 어디서 막힐지 함께 이야기합니다
 ```
 
+### Local preview route smoke
+
+Added:
+
+```text
+scripts/smoke-v39-local-preview.mjs
+```
+
+Updated:
+
+```text
+package.json
+```
+
+New script:
+
+```text
+smoke:v39:local-preview
+```
+
+The v39 smoke chain now checks that the built app can be served through local Vite preview and that this route responds:
+
+```text
+/journey-v39-preview.html
+```
+
+The smoke checks:
+
+```text
+HTTP 200
+C1바이오 영업팀장 AI 리더십 Lab Journey title
+journey-root presence
+built asset or v39 app entry presence
+```
+
 ## 8. Current smoke and audit guards
 
 Some hidden smoke markers remain in files to preserve static smoke and readiness audit compatibility.
@@ -408,6 +458,8 @@ Target path:
 /journey-v39-preview.html
 ```
 
+Before browser QA, confirm latest Actions are green and v39 Smoke includes local preview route smoke.
+
 Focus path:
 
 ```text
@@ -434,9 +486,9 @@ docs/v39-browser-qa-result-template.md
 
 ## 13. Important note about live URL verification
 
-Automated GitHub Actions are green for the latest verified commit.
+Automated GitHub Actions are green for the latest verified commit, and CI now verifies the route through local Vite preview.
 
-The next required verification is manual or browser-based Vercel deployment QA using:
+The remaining verification is live Vercel deployment QA using:
 
 ```text
 /journey-v39-preview.html
