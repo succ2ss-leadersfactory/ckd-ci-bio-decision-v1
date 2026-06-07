@@ -148,14 +148,17 @@ for (const marker of [
   '막힘 신호',
   '중간 확인 질문',
   '30초 실행 선언문',
-  'AI에게 업무 흐름 점검 질문 부탁하기',
+  'AI에게 최종 실행 흐름 점검받기',
+  '최종 점검용 AI 질문 보기',
+  'AI 점검 의견 붙여넣기',
+  '우리 조가 최종 수정할 부분 1가지',
   '팀원이 혼자 처리할 일',
   '팀장 확인이 필요한 일',
   '다른 부서 협조가 필요한 일',
   '상위 리더에게 공유할 일',
   '주의 표현 또는 확인 필요 사항',
   'AI에게 조율 문장 초안 부탁하기',
-  'ckd.v40-vnext.taskManagement.v9',
+  'ckd.v40-vnext.taskManagement.v10',
 ]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
 
 for (const marker of [
