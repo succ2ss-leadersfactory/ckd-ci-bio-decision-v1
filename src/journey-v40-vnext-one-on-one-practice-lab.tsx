@@ -36,6 +36,7 @@ const V40_VNEXT_ONE_ON_ONE_MARKERS = [
   '3분 역할극 리허설',
   '관찰자 체크',
   '후속 확인 질문 만들기',
+  '12단계 역할극 구간 접이식 카드',
 ].join('|');
 void V40_VNEXT_ONE_ON_ONE_MARKERS;
 
@@ -237,6 +238,24 @@ function CopyButton({ label, copiedLabel, text, onCopied }: { label: string; cop
   return <button type="button" className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-black text-white shadow-sm" onClick={copy}>{copied ? copiedLabel : label}</button>;
 }
 
+function PracticePanel({ title, subtitle, tone = 'emerald', children }: { title: string; subtitle: string; tone?: 'emerald' | 'indigo' | 'slate'; children: ReactNode }) {
+  const toneClass = tone === 'indigo' ? 'border-indigo-200 bg-indigo-50 text-indigo-900' : tone === 'slate' ? 'border-slate-200 bg-white text-slate-700' : 'border-emerald-200 bg-emerald-50 text-emerald-900';
+  return (
+    <details className={`rounded-3xl border p-5 shadow-sm md:p-6 ${toneClass}`}>
+      <summary className="cursor-pointer list-none">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-black text-slate-950">{title}</p>
+            <p className="mt-1 text-sm font-bold leading-6">{subtitle}</p>
+          </div>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-700 shadow-sm">펼쳐서 실습하기</span>
+        </div>
+      </summary>
+      <div className="mt-4 space-y-4">{children}</div>
+    </details>
+  );
+}
+
 export function V40VNextOneOnOnePracticeLab() {
   const [state, setState] = useStored<PeopleState>(PEOPLE_STORAGE_KEY, DEFAULT_PEOPLE_STATE);
   const member = selectedMember(state);
@@ -302,36 +321,37 @@ export function V40VNextOneOnOnePracticeLab() {
       <Field label="AI 초안 붙여넣기" help="AI가 만든 1on1 스크립트 초안을 붙여넣습니다." placeholder="AI 1on1 대화 스크립트 초안을 붙여넣습니다." value={state.aiScriptDraft} onChange={(aiScriptDraft) => update({ aiScriptDraft })} minHeight="min-h-32" />
       <Field label="우리 조 언어로 수정" help="AI 문장을 그대로 쓰지 말고 실제 리더가 말할 수 있는 대화문으로 고칩니다." placeholder="리더: ...\n팀원: ...\n리더: ..." value={state.revisedOneOnOneScript} onChange={(revisedOneOnOneScript) => update({ revisedOneOnOneScript })} minHeight="min-h-40" />
 
-      <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI 역할극 리허설 1 · 내가 팀장 역할</p><p className="mt-1 text-sm font-bold leading-6 text-emerald-900">AI는 선택한 팀원 페르소나로 반응합니다. 프롬프트를 복사해 외부 AI에 붙여넣으면 “선택한 팀원에게 첫 대화를 시작하세요”라는 흐름으로 1on1이 시작됩니다.</p></div><CopyButton label="역할극 1 프롬프트 복사" copiedLabel="복사됨" text={roleplayOnePrompt} onCopied={() => update({ roleplayOnePrompt })} /></div>
-        <details className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 1 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayOnePrompt}</pre></details>
-      </section>
-      <Field label="AI 역할극 1 대화 기록 붙여넣기" help="내가 팀장으로 말하고 AI가 팀원으로 반응한 대화 기록과 피드백을 붙여넣습니다." placeholder="AI 팀원과 진행한 1on1 역할극 기록을 붙여넣습니다." value={state.roleplayOneLog} onChange={(roleplayOneLog) => update({ roleplayOneLog })} minHeight="min-h-36" />
+      <PracticePanel title="AI 역할극 리허설 1 · 내가 팀장 역할" subtitle="AI는 선택한 팀원 페르소나로 반응합니다. 먼저 내가 팀장으로 말해보고 피드백을 받습니다." tone="emerald">
+        <section className="rounded-2xl border border-emerald-200 bg-white p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">선택한 팀원에게 첫 대화를 시작하세요</p><p className="mt-1 text-sm font-bold leading-6 text-emerald-900">프롬프트를 복사해 외부 AI에 붙여넣으면 “선택한 팀원에게 첫 대화를 시작하세요”라는 흐름으로 1on1이 시작됩니다.</p></div><CopyButton label="역할극 1 프롬프트 복사" copiedLabel="복사됨" text={roleplayOnePrompt} onCopied={() => update({ roleplayOnePrompt })} /></div>
+          <details className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 1 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayOnePrompt}</pre></details>
+        </section>
+        <Field label="AI 역할극 1 대화 기록 붙여넣기" help="내가 팀장으로 말하고 AI가 팀원으로 반응한 대화 기록과 피드백을 붙여넣습니다." placeholder="AI 팀원과 진행한 1on1 역할극 기록을 붙여넣습니다." value={state.roleplayOneLog} onChange={(roleplayOneLog) => update({ roleplayOneLog })} minHeight="min-h-36" />
+      </PracticePanel>
 
-      <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-        <p className="text-sm font-black text-slate-950">딴지 유형 선택</p>
-        <p className="mt-1 text-sm font-bold leading-6 text-slate-600">이번에는 참여자가 딴지 거는 팀원 역할을 맡고, AI가 코칭을 잘하는 팀장 역할을 맡습니다.</p>
-        <div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {PUSHBACK_TYPES.map((pushback) => <ChoiceButton key={pushback} selected={state.roleplayTwoPushback === pushback} onClick={() => update({ roleplayTwoPushback: pushback })}>{pushback}</ChoiceButton>)}
-        </div>
-      </section>
+      <PracticePanel title="AI 역할극 리허설 2 · AI가 코칭 팀장 역할" subtitle="이번에는 참여자가 딴지 거는 팀원이 되고, AI의 코칭 팀장 대응을 관찰합니다." tone="indigo">
+        <section className="rounded-2xl border bg-white p-4">
+          <p className="text-sm font-black text-slate-950">딴지 유형 선택</p>
+          <p className="mt-1 text-sm font-bold leading-6 text-slate-600">참여자는 딴지 거는 팀원 역할을 맡습니다. AI가 코칭을 잘하는 팀장 역할을 맡습니다.</p>
+          <div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+            {PUSHBACK_TYPES.map((pushback) => <ChoiceButton key={pushback} selected={state.roleplayTwoPushback === pushback} onClick={() => update({ roleplayTwoPushback: pushback })}>{pushback}</ChoiceButton>)}
+          </div>
+        </section>
+        <section className="rounded-2xl border border-indigo-200 bg-white p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI가 좋은 팀장으로 대응하는 장면 보기</p><p className="mt-1 text-sm font-bold leading-6 text-indigo-900">AI가 좋은 팀장으로 어떻게 대응하는지 체험하고, 쓸 만한 코칭 문장을 가져옵니다.</p></div><CopyButton label="역할극 2 프롬프트 복사" copiedLabel="복사됨" text={roleplayTwoPrompt} onCopied={() => update({ roleplayTwoPrompt })} /></div>
+          <details className="mt-4 rounded-2xl border border-indigo-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 2 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayTwoPrompt}</pre></details>
+        </section>
+        <Field label="AI 역할극 2 대화 기록 붙여넣기" help="내가 딴지 거는 팀원으로 말하고 AI가 코칭 팀장으로 대응한 대화 기록을 붙여넣습니다." placeholder="AI 코칭 팀장의 대응 기록을 붙여넣습니다." value={state.roleplayTwoLog} onChange={(roleplayTwoLog) => update({ roleplayTwoLog })} minHeight="min-h-36" />
+      </PracticePanel>
 
-      <section className="rounded-3xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI 역할극 리허설 2 · AI가 코칭 팀장 역할</p><p className="mt-1 text-sm font-bold leading-6 text-indigo-900">참여자는 딴지 거는 팀원 역할을 맡습니다. AI가 좋은 팀장으로 어떻게 대응하는지 체험하고, 쓸 만한 코칭 문장을 가져옵니다.</p></div><CopyButton label="역할극 2 프롬프트 복사" copiedLabel="복사됨" text={roleplayTwoPrompt} onCopied={() => update({ roleplayTwoPrompt })} /></div>
-        <details className="mt-4 rounded-2xl border border-indigo-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 2 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayTwoPrompt}</pre></details>
-      </section>
-      <Field label="AI 역할극 2 대화 기록 붙여넣기" help="내가 딴지 거는 팀원으로 말하고 AI가 코칭 팀장으로 대응한 대화 기록을 붙여넣습니다." placeholder="AI 코칭 팀장의 대응 기록을 붙여넣습니다." value={state.roleplayTwoLog} onChange={(roleplayTwoLog) => update({ roleplayTwoLog })} minHeight="min-h-36" />
-
-      <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-        <p className="text-sm font-black text-slate-950">역할극 후 비교 성찰</p>
-        <p className="mt-1 text-sm font-bold leading-6 text-slate-600">내가 팀장으로 말했을 때와 AI 팀장이 대응했을 때의 차이를 비교합니다.</p>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <PracticePanel title="역할극 후 비교 성찰" subtitle="내가 팀장으로 말했을 때와 AI 팀장이 대응했을 때의 차이를 비교합니다." tone="slate">
+        <div className="grid gap-4 lg:grid-cols-2">
           <Field label="AI 팀장의 대응에서 배울 점 1가지" help="공감, 질문, 기준 확인, 행동 합의 중 가져갈 점을 적습니다." placeholder="예: 딴지를 바로 반박하지 않고 먼저 우선순위 혼란을 인정했다." value={state.aiCoachLearning} onChange={(aiCoachLearning) => update({ aiCoachLearning })} />
           <Field label="우리 조가 최종 적용할 코칭 문장 1개" help="실제 1on1에서 그대로 쓸 수 있는 문장을 하나 남깁니다." placeholder="예: 그렇게 느낄 수 있습니다. 오늘은 기존 일을 줄이자는 뜻이 아니라 이번 2주 동안 어디에 힘을 더 줄지 함께 정리하려는 것입니다." value={state.finalCoachingSentence} onChange={(finalCoachingSentence) => update({ finalCoachingSentence })} />
           <Field label="역할극 후 수정한 첫 문장" help="역할극을 거친 뒤 첫 문장을 더 자연스럽게 고칩니다." placeholder={defaultFirstSentence(member, state)} value={state.revisedFirstSentenceAfterRoleplay} onChange={(revisedFirstSentenceAfterRoleplay) => update({ revisedFirstSentenceAfterRoleplay })} />
           <Field label="역할극 후 수정한 2주 행동 합의" help="역할극을 거친 뒤 더 작고 실행 가능한 합의로 고칩니다." placeholder={defaultAgreement()} value={state.revisedAgreementAfterRoleplay} onChange={(revisedAgreementAfterRoleplay) => update({ revisedAgreementAfterRoleplay })} />
         </div>
-      </section>
+      </PracticePanel>
 
       <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
         <p className="text-sm font-black text-slate-950">3분 역할극 리허설</p>
