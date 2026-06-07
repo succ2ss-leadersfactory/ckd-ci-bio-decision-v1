@@ -135,6 +135,8 @@ for (const marker of [
   'AI 초안 전체 붙여넣기',
   '내용 자동 분리',
   'AI 초안에서 항목 나누기',
+  '생성 결과 기준으로 업무 흐름 자동 반영',
+  'AI 분리 결과를 최종 업무 흐름 칸에도 반영합니다',
   'AI가 제안한 먼저 할 일',
   'AI가 제안한 잠시 줄일 일',
   'AI가 제안한 업무 흐름 3단계',
@@ -153,7 +155,7 @@ for (const marker of [
   '상위 리더에게 공유할 일',
   '주의 표현 또는 확인 필요 사항',
   'AI에게 조율 문장 초안 부탁하기',
-  'ckd.v40-vnext.taskManagement.v8',
+  'ckd.v40-vnext.taskManagement.v9',
 ]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
 
 for (const marker of [
