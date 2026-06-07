@@ -124,6 +124,7 @@ for (const marker of [
   '전사전략과제 → 팀 과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
   '팀 과제 선택 보기 4개 제시',
   '팀 과제 선택 후 CSF 선택창 활성화',
+  '선택한 팀 과제별 CSF 4개 제시',
   'CSF 보기 4개 제시',
   'CSF 선택 후 KPI 선택창 활성화',
   '선택한 CSF별 KPI 4개 제시',
@@ -144,6 +145,7 @@ for (const marker of [
   '지속가능한 성장 기반 강화',
   '시장 변화 대응력 강화',
   '후속 행동 포함 기록률',
+  '후속 행동 포함 CRM 기록률',
   '승인자료 사용 확인률',
 ]) mustInclude(files.performanceLab, marker, 'performance cascade lab');
 
