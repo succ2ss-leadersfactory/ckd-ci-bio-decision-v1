@@ -35,13 +35,13 @@ Production route remains untouched:
 Latest verified commit before this refresh:
 
 ```text
-d02ede4829d7c11489b9fdfdb7e60aab40a53954
+d926b075c4831ed356fb4e27b75adc51455a01a9
 ```
 
 Commit message:
 
 ```text
-Add v39 browser QA result template
+Polish v39 flow strip participant labels
 ```
 
 Actions result:
@@ -87,22 +87,30 @@ AI 없이도 할 수 있다.
 AI는 답을 대신 정하는 도구가 아니라, 팀장의 판단을 정리하고 넓히는 도구다.
 ```
 
-## 5. Current v39 full flow
+## 5. Current participant-facing v39 full flow
+
+Use participant-friendly field language:
 
 ```text
-1단계: 입장·역할 부여
-2단계: AI 안전선
-3단계: 프롬프트 기본 실습
-4단계: AI 전략 리서치
-5단계: 우리 팀 관리 지표 선정
-6단계: 고객 Data 확인 List
-7단계: 고객군별 2주 대응 방향
-8단계: 코칭 대상 선정
-9단계: 팀원 온도차와 실행 대화
-10단계: AI 실행계획 Prompt
-11단계: 컴플라이언스 위험 표현 제거
-12단계: 최종 2주 실행 카드
-13단계: 강사용 토의 질문
+1단계: 오늘 역할 잡기
+2단계: 말해도 되는 선 확인
+3단계: AI 질문 다듬기
+4단계: 시장 변화에서 질문 찾기
+5단계: 이번 2주에 볼 기준 정하기
+6단계: 고객 기록에서 단서 찾기
+7단계: 2주 동안 다시 볼 흐름 정하기
+8단계: 먼저 이야기할 팀원 고르기
+9단계: 첫 문장 준비하기
+10단계: AI에게 한 번 정리시켜 보기
+11단계: 말해도 되는 선 다시 보기
+12단계: 2주 메모 완성하기
+13단계: 함께 복기할 질문 만들기
+```
+
+Common flow strip labels are also participant-friendly:
+
+```text
+오늘 역할 잡기 → 말해도 되는 선 → AI 질문 다듬기 → 시장 변화 보기 → 볼 기준 정하기 → 고객 기록 보기 → 2주 흐름 잡기 → 1on1 대상 고르기 → 첫 문장 준비 → AI에게 정리 맡기기 → 표현 다시 보기 → 2주 메모 완성 → 함께 복기하기
 ```
 
 ## 6. Current core continuity
@@ -111,33 +119,56 @@ The intended learning flow is:
 
 ```text
 우리 팀 고민
-→ AI가 이해할 수 있는 구조화 질문
-→ 공개자료 기반 변화 신호
-→ 우리 팀 관리 지표
-→ 고객 Data에서 확인할 단서
-→ 고객군별 2주 대응 방향
-→ 먼저 1on1로 맞춰볼 코칭 대상
-→ 실행 대화 첫마디와 합의 기준
-→ AI 실행계획 Prompt
-→ 컴플라이언스 점검
-→ 최종 2주 실행 카드
-→ 강사용 토의 질문
+→ AI에게 물어볼 질문으로 다듬기
+→ 공개자료에서 시장 변화와 우리 팀 질문 찾기
+→ 이번 2주에 볼 기준 정하기
+→ 고객 기록에서 다시 볼 단서 찾기
+→ 2주 동안 다시 볼 흐름 정하기
+→ 먼저 이야기할 팀원 1~2명 고르기
+→ 팀원에게 꺼낼 첫 문장 준비하기
+→ 앞에서 쓴 메모를 AI에게 한 번 정리시켜 보기
+→ 말해도 되는 선 안에서 표현 다시 보기
+→ 교육장을 나가서 볼 2주 메모 완성하기
+→ 동료 팀장들과 함께 복기할 질문 만들기
 ```
 
 ## 7. Major completed work in this stabilization pass
 
+### Full field-language rewrite for Steps 1-13
+
+The v39 participant-facing copy has been rewritten from app/system language to Korean corporate field language.
+
+Key replacements:
+
+```text
+프롬프트 기본 실습 → AI 질문 다듬기
+AI 전략 리서치 → 시장 변화에서 질문 찾기
+우리 팀 관리 지표 선정 → 이번 2주에 볼 기준 정하기
+고객 Data 확인 List → 고객 기록에서 단서 찾기
+고객군별 2주 대응 방향 → 2주 동안 다시 볼 흐름 정하기
+코칭 대상 선정 → 먼저 이야기할 팀원 고르기
+팀원 온도차와 실행 대화 → 첫 문장 준비하기
+AI 실행계획 Prompt → AI에게 한 번 정리시켜 보기
+컴플라이언스 위험 표현 제거 → 말해도 되는 선 다시 보기
+최종 2주 실행 카드 → 2주 메모 완성하기
+강사용 토의 질문 → 함께 복기할 질문 만들기
+```
+
 ### Step 3 optimized prompt practice
 
-Added:
+Active component:
 
 ```text
 src/journey-v39-prompt-practice-optimized-lab.tsx
 ```
 
-v39 route now uses:
+Current participant language:
 
 ```text
-V39PromptPracticeOptimizedLab
+우리 팀에서 제일 걸리는 장면을 하나 고릅니다
+막연한 질문과 쓸 만한 질문은 다릅니다
+AI에게 넘길 말을 필요한 만큼만 채웁니다
+다음 화면에서 쓸 질문을 준비합니다
 ```
 
 Old component remains preserved but is no longer wired into v39 route:
@@ -146,36 +177,9 @@ Old component remains preserved but is no longer wired into v39 route:
 src/journey-v39-prompt-practice-lab.tsx
 ```
 
-Step 3 now avoids:
-
-```text
-사내 시스템/CRM
-고객군 × 팀원 실행 Map
-신규 접점 실행 Map
-팀원 역할 보완
-8단계 기록 보완 담당
-8단계 팀원별 역할 미션과 지원 포인트
-실행 Map → 역할 보완
-```
-
-### Step 3 bridge alignment
-
-Updated:
-
-```text
-src/journey-v39-prompt-concern-bridge-card.tsx
-```
-
-The bridge now supports:
-
-```text
-관리 지표 → 고객 Data 확인 List → 고객군별 2주 대응 방향 → 코칭 대상 선정
-코칭 대상 선정 → 실행 대화 첫마디 → 2주 실행계획
-```
-
 ### Step 5-7 safe storage
 
-Updated:
+Updated stores:
 
 ```text
 src/journey-v39-dashboard-result-store.ts
@@ -183,7 +187,7 @@ src/journey-v39-customer-judgment-result-store.ts
 src/journey-v39-customer-strategy-result-store.ts
 ```
 
-They now use:
+They use:
 
 ```text
 getJson
@@ -201,36 +205,62 @@ Updated:
 src/journey-v39-app-preview.tsx
 ```
 
-Reset now clears all v39-scoped saved values:
+Reset clears all v39-scoped saved values:
 
 ```text
 removeStoredPrefix('ckd.v39.')
 ```
 
-### Step 6-7 coaching-flow alignment
+### Step 6 humanized wrapper
+
+Added:
+
+```text
+src/journey-v39-customer-judgment-humanized-ux-lab.tsx
+```
+
+The original `V39CustomerJudgmentUxLab` now re-exports the humanized wrapper for route compatibility.
+
+Current participant language:
+
+```text
+기록을 보며 다음에 뭘 확인할지 남깁니다
+고객에게 이름표를 붙이는 시간이 아닙니다
+다시 볼 단서
+아직 모르는 것
+팀원에게 물어볼 질문
+```
+
+### Step 7 field-language rewrite
 
 Updated:
 
 ```text
-src/journey-v39-customer-judgment-ux-lab.tsx
 src/journey-v39-customer-priority-ux-lab.tsx
 ```
 
-Current intended flow:
+Current participant language:
 
 ```text
-5단계: 관리 지표 선정
-6단계: 고객 Data에서 확인할 단서 선택
-7단계: 고객군별 2주 대응 방향
-8단계: 코칭 대상 선정
+고객을 나누기보다, 어디부터 다시 볼지 정합니다
+기록에서 본 단서가 곧 고객 구분은 아닙니다
+이번 2주 동안 어디부터 다시 확인할지 정합니다
 ```
 
-### Step 8 coaching target selection
+### Step 8 coaching target selection and team profiles
 
-Step 8 identity is now:
+Updated:
 
 ```text
-코칭 대상 선정
+src/journey-v39-team-seven-coaching-ux-wrapper.tsx
+src/journey-v39-team-seven-text-polish.tsx
+src/journey-v39-team-seven-coaching-profiles.ts
+```
+
+Step 8 identity:
+
+```text
+먼저 이야기할 팀원 고르기
 ```
 
 It is not:
@@ -243,58 +273,54 @@ It is not:
 팀원별 역할 분장
 ```
 
-### Step 9 connection
-
-Step 9 now reads Step 8 through:
+The seven team member profiles were rewritten as field-realistic narrative characters for a conservative Korean pharmaceutical sales organization:
 
 ```text
-loadV39TeamSevenCoachingMapResult()
+김재호 차장: 현장 감각이 깊은 베테랑
+김문호 차장: 말없이 떠안는 해결사
+유희관 과장: 신호를 오래 보는 신중파
+이대은 대리: 관계를 지키는 꾸준한 실무자
+신재영 대리: 속도가 빠른 실행파
+박재욱 사원: 기준이 필요한 성장 초입
+문교원 사원: 의미와 기준을 묻는 MZ 신입
 ```
 
-and uses:
+문교원 사원 is written as an MZ-style junior employee who asks for meaning, criteria, scope, and feedback timing without being stereotyped or labeled negatively.
+
+### Step 9-13 field-language rewrite
+
+Updated:
 
 ```text
-8단계 우선 1on1 대상
-8단계 코칭 초점을 대화 카드로 가져오기
+src/journey-v39-people-dialogue-ux-lab.tsx
+src/journey-v39-ai-call-plan-guided-ux-lab.tsx
+src/journey-v39-compliance-cleanup-ux-lab.tsx
+src/journey-v39-final-call-plan-team-seven-ux-card.tsx
+src/journey-v39-instructor-discussion-ux-lab.tsx
 ```
 
-### Step 10 continuity
-
-Step 10 reads:
+Current participant language examples:
 
 ```text
-loadV39TeamSevenCoachingMapResult()
-loadV39PeopleDialogueResult()
-```
-
-and includes:
-
-```text
-8단계 코칭 대상 선정 요약
-9단계 실행 대화 요약
+첫마디가 달라지면, 팀원의 표정도 달라집니다
+앞에서 적은 메모를 AI에게 한 번 정리시켜 봅니다
+고객 앞에서 말해도 되는 문장인지 다시 봅니다
+교육장을 나가서 바로 볼 수 있는 2주 메모를 완성합니다
+왜 그렇게 봤는지, 어디서 막힐지 함께 이야기합니다
 ```
 
 ## 8. Current smoke and audit guards
 
-Updated guards:
+Some hidden smoke markers remain in files to preserve static smoke and readiness audit compatibility.
+
+Important:
 
 ```text
-scripts/smoke-v39-static.mjs
-scripts/audit-v39-readiness.mjs
+Hidden marker strings are not necessarily participant-facing copy.
+Do not treat every marker string as visible UI language.
 ```
 
-They now check:
-
-```text
-v39 route uses V39PromptPracticeOptimizedLab
-old V39PromptPracticeLab is not wired into v39 route
-Step 3 does not expose old work-allocation flow wording
-Step 5-7 stores use safe storage helpers
-Step 6-7 point toward coaching target selection
-Step 8 remains coaching target selection
-Step 9 uses coaching target context for execution dialogue
-Step 10 reads Step 8 and Step 9 context
-```
+The actual participant-facing UI copy is the field-language version described above.
 
 ## 9. Preferred terminology
 
@@ -305,8 +331,14 @@ Use:
 방문·면담 기록
 고객 활동 Data
 사내 영업활동 시스템
-고객 Data
+고객 기록
+고객 활동 기록
 후속조치 기록
+2주 메모
+말해도 되는 선
+먼저 이야기할 팀원
+첫 문장
+함께 복기할 질문
 ```
 
 Avoid learner-facing primary wording:
@@ -318,11 +350,16 @@ CRM 분석
 CRM상 고객 등급
 CRM 기록 품질
 사내 시스템/CRM
+고객군 × 팀원 실행 Map
+팀원 역할 보완
+AI 실행계획 Prompt
+컴플라이언스 위험 표현 제거
+강사용 토의 질문
 ```
 
 ## 10. Critical forbidden regression wording
 
-Avoid restoring:
+Avoid restoring participant-facing wording such as:
 
 ```text
 고객군 × 팀원 실행 Map
@@ -339,6 +376,9 @@ Avoid restoring:
 팀원별 역할과 지원 포인트
 업무배분
 담당 팀원 확정
+AI 실행계획 Prompt
+컴플라이언스 위험 표현 제거
+강사용 토의 질문
 ```
 
 ## 11. Key documentation added
@@ -355,6 +395,7 @@ docs/v39-steps1-7-pre-browser-qa-final-check.md
 docs/v39-deployment-browser-qa-runbook.md
 docs/v39-current-stable-handoff-2026-06-07.md
 docs/v39-browser-qa-result-template.md
+docs/v39-deployment-url-resolution-note.md
 ```
 
 ## 12. Next recommended work
@@ -370,20 +411,19 @@ Target path:
 Focus path:
 
 ```text
-Step 1 → Step 2 → Step 3 → Step 4 → Step 5 → Step 6 → Step 7 → Step 8
+Step 1 → Step 2 → Step 3 → Step 4 → Step 5 → Step 6 → Step 7 → Step 8 → Step 9 → Step 10 → Step 11 → Step 12 → Step 13
 ```
 
 QA should verify:
 
 ```text
-Step 3 optimized prompt practice appears
-Step 4 bridge reads Step 3 concern
-Step 5 selections persist after refresh
-Step 6 reads Step 5 context and persists after refresh
-Step 7 reads Step 6 evidence and persists after refresh
-Step 8 opens as coaching target selection
-진행 초기화 clears all v39 scoped values
-No CRM-first or old work-allocation wording appears
+The common flow strip uses participant-friendly labels.
+Step titles match the field-language sequence.
+Step 8 team member profiles read like realistic Korean pharmaceutical sales team members.
+No participant-facing old work-allocation wording appears.
+No CRM-first or customer grading wording appears.
+No real customer/hospital/medical staff/product/internal number input is requested.
+진행 초기화 clears all v39 scoped values.
 ```
 
 Use this result template:
