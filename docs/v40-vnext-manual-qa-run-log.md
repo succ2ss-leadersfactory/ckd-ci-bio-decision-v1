@@ -1,6 +1,6 @@
 # v40-vNext Manual QA Run Log
 
-This file records the current verification status after adding the v40-vNext manual QA checklist and progress coach panel QA scope.
+This file records the current verification status after adding the v40-vNext manual QA checklist, progress coach panel QA scope, and browser-console QA snippets.
 
 ## 1. Target
 
@@ -9,11 +9,12 @@ This file records the current verification status after adding the v40-vNext man
 - Branch: `feature/v37-preview-shell`
 - Route under test: `/journey-v40-vnext-preview.html`
 - QA checklist: `docs/v40-vnext-manual-qa-checklist.md`
-- Latest verified head: `5ce13eb7e9b4d6e0b7b10c865601cd1fc8f3032b`
+- Browser QA console snippets: `docs/v40-vnext-browser-qa-console-snippets.md`
+- Latest verified head: `495bf59937184732a80ec2fcb857da75ece3a2fc`
 
 ## 2. Automated verification status
 
-The following checks were confirmed successful for head `5ce13eb7e9b4d6e0b7b10c865601cd1fc8f3032b`.
+The following checks were confirmed successful for head `495bf59937184732a80ec2fcb857da75ece3a2fc`.
 
 - [x] Vercel deployment status: success
 - [x] C1Bio MVP CI: success
@@ -43,6 +44,7 @@ Manual browser QA is tracked in issue #3 and still needs to be executed in the l
 - [ ] Run checklist section 7: Step 13 final memo connection QA.
 - [ ] Run checklist section 8: Reset and persistence QA.
 - [ ] Confirm checklist section 9 pass criteria.
+- [ ] Use `docs/v40-vnext-browser-qa-console-snippets.md` when storage or DOM confirmation is needed.
 
 ## 4. Critical manual QA focus
 
@@ -107,6 +109,18 @@ ckd.v40-vnext.peopleManagement.v2
 ckd.v40-vnext.finalExecutionMemo.v1
 ```
 
+### E. Optional browser-console confirmation
+
+Use the console snippets when a quick browser-side confirmation is needed.
+
+- [ ] Confirm v40-vNext route and title.
+- [ ] Inspect all `ckd.v40-vnext.*` localStorage keys.
+- [ ] Confirm `ckd.v40-vnext.peopleManagement.v2` carries Step 11 values into Step 12.
+- [ ] Confirm Step 12 roleplay fields are stored.
+- [ ] Confirm `ckd.v40-vnext.finalExecutionMemo.v1` is populated after Step 13 fill.
+- [ ] Confirm progress coach panel text is present in the DOM.
+- [ ] Capture the one-shot QA summary snapshot if helpful.
+
 ## 5. Manual QA result summary
 
 Fill this section after the browser pass.
@@ -118,6 +132,7 @@ Fill this section after the browser pass.
 - Result: Pending
 - Blocking issues:
 - Non-blocking UX notes:
+- Console snippet findings:
 - Ready for facilitated pilot: Pending
 
 ## 6. Known limitation of this log
