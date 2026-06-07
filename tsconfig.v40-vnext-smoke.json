@@ -8,6 +8,7 @@
     "src/journey-v40-vnext-app-preview.tsx",
     "src/journey-v40-vnext-preview-config.ts",
     "src/journey-v40-vnext-task-management-lab.tsx",
+    "src/journey-v40-vnext-task-boundary-coordination-lab.tsx",
     "src/journey-v39-app-preview.tsx",
     "src/journey-v39-preview-config.ts",
     "src/journey-v39-prompt-practice-optimized-lab.tsx",
