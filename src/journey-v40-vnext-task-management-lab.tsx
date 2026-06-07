@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStored } from './journey-storage';
 
-const V40_VNEXT_TASK_MANAGEMENT_STORAGE_KEY = 'ckd.v40-vnext.taskManagement.v5';
+const V40_VNEXT_TASK_MANAGEMENT_STORAGE_KEY = 'ckd.v40-vnext.taskManagement.v6';
 
 const V40_VNEXT_TASK_MANAGEMENT_SMOKE_MARKERS = [
   'V40VNextTaskExecutionDesignLab',
@@ -10,8 +10,6 @@ const V40_VNEXT_TASK_MANAGEMENT_SMOKE_MARKERS = [
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
   '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
-  '실행 과제화',
-  '업무지시 명확화',
   '우리 조가 보기엔 무엇이 빠졌습니까?',
   '전문가 기준 확인',
   '우리 조 선택과 전문가 추천 비교',
@@ -19,27 +17,25 @@ const V40_VNEXT_TASK_MANAGEMENT_SMOKE_MARKERS = [
   '모범 선택과 이유',
   '실행해야 하는 업무 후보',
   '먼저 할 일 선택',
+  '최대 2개까지 선택',
   '잠시 줄일 일 선택',
-  '선택한 업무지시에 맞춰 실행해야 하는 업무를 먼저 봅니다',
-  '완료 기준',
-  '팀장이 지원할 부분',
-  '먼저 할 일',
-  '잠시 줄일 일',
+  '선택 이유 1문장',
   '업무 흐름 3단계',
   '막힘 신호',
   '중간 확인 질문',
+  '30초 실행 선언문',
+  'AI에게 업무 흐름 점검 질문 부탁하기',
   '팀원이 혼자 처리할 일',
   '팀장 확인이 필요한 일',
   '다른 부서 협조가 필요한 일',
   '상위 리더에게 공유할 일',
   '주의 표현 또는 확인 필요 사항',
-  'AI에게 실행 과제 초안 부탁하기',
-  'AI에게 업무 흐름 점검 질문 부탁하기',
   'AI에게 조율 문장 초안 부탁하기',
 ].join('|');
 void V40_VNEXT_TASK_MANAGEMENT_SMOKE_MARKERS;
 
 type Criterion = '배경' | '목적' | '범위' | '우선순위' | '일정' | '완료 기준' | '중간 확인';
+
 type Example = {
   id: string;
   category: string;
@@ -53,6 +49,7 @@ type Example = {
   recommendedReduce: string[];
   flowTemplate: string[];
 };
+
 type State = {
   selectedExampleId: string;
   customInstruction: string;
@@ -66,6 +63,8 @@ type State = {
   leaderSupport: string;
   selectedPriorityTasks: string[];
   selectedReduceTasks: string[];
+  priorityReason: string;
+  reduceReason: string;
   priorityTask: string;
   reduceOrPause: string;
   flowStepOne: string;
@@ -73,6 +72,7 @@ type State = {
   flowStepThree: string;
   bottleneckSignal: string;
   midCheckQuestion: string;
+  executionDeclaration: string;
   aiFlowPrompt: string;
   soloWork: string;
   leaderCheckWork: string;
@@ -85,67 +85,113 @@ type State = {
 };
 
 const CRITERIA: Criterion[] = ['배경', '목적', '범위', '우선순위', '일정', '완료 기준', '중간 확인'];
+
 const EXAMPLES: Example[] = [
   {
-    id: 'follow-up', category: '후속조치형', title: '후속조치가 약한 고객군을 더 챙기기', instruction: '이번 2주 동안 후속조치가 약한 고객군을 더 챙겨봅시다.', recommended: ['범위', '우선순위', '완료 기준', '중간 확인'],
+    id: 'follow-up',
+    category: '후속조치형',
+    title: '후속조치가 약한 고객군을 더 챙기기',
+    instruction: '이번 2주 동안 후속조치가 약한 고객군을 더 챙겨봅시다.',
+    recommended: ['범위', '우선순위', '완료 기준', '중간 확인'],
     reactions: [
       { member: '박재욱 사원', text: '어떤 고객군을 말하는지 잘 모르겠지만, 일단 방문 건수를 늘려야 하나?', need: '대상 고객군과 행동 기준이 필요합니다.' },
       { member: '신재영 대리', text: '후속조치가 약하다는 기준이 뭘까? 기록을 더 쓰라는 건지, 다시 연락하라는 건지 애매하다.', need: '완료 기준과 기록 기준이 필요합니다.' },
       { member: '김문호 차장', text: '기존 우선순위와 충돌하면 무엇을 먼저 해야 하지?', need: '우선순위와 중간 확인 시점이 필요합니다.' },
     ],
-    reasons: { 범위: '어떤 고객군을 말하는지 불명확하면 팀원마다 다른 대상을 떠올립니다.', 우선순위: '기존 업무와 충돌할 때 무엇을 먼저 해야 하는지 알 수 없습니다.', '완료 기준': '무엇을 하면 “챙긴 것”인지 판단하기 어렵습니다.', '중간 확인': '막힌 지점을 끝까지 혼자 끌고 갈 수 있습니다.' },
+    reasons: {
+      범위: '어떤 고객군을 말하는지 불명확하면 팀원마다 다른 대상을 떠올립니다.',
+      우선순위: '기존 업무와 충돌할 때 무엇을 먼저 해야 하는지 알 수 없습니다.',
+      '완료 기준': '무엇을 하면 “챙긴 것”인지 판단하기 어렵습니다.',
+      '중간 확인': '막힌 지점을 끝까지 혼자 끌고 갈 수 있습니다.',
+    },
     workCandidates: ['최근 고객 반응 기록 다시 보기', '후속 접점이 끊긴 고객군 분류하기', '고객 질문과 미해결 요청 정리하기', '다음 접점 가능성 메모하기', '필요한 자료 사용 가능 범위 확인하기', '금요일 회의에서 막힌 고객군 공유하기'],
     recommendedPriority: ['후속 접점이 끊긴 고객군 분류하기', '고객 질문과 미해결 요청 정리하기'],
     recommendedReduce: ['단순 방문 건수 확대', '형식적 활동 기록 입력', '우선순위 낮은 고객군 반복 접촉'],
     flowTemplate: ['최근 고객 반응 기록에서 후속 접점이 끊긴 고객군을 찾는다.', '고객 질문과 미해결 요청을 정리한다.', '금요일 회의에서 막힌 고객군과 지원 요청을 공유한다.'],
   },
   {
-    id: 'record-quality', category: '기록품질형', title: '고객 반응을 더 꼼꼼히 기록하기', instruction: '고객 반응을 좀 더 꼼꼼히 기록해 주세요.', recommended: ['목적', '범위', '완료 기준', '중간 확인'],
+    id: 'record-quality',
+    category: '기록품질형',
+    title: '고객 반응을 더 꼼꼼히 기록하기',
+    instruction: '고객 반응을 좀 더 꼼꼼히 기록해 주세요.',
+    recommended: ['목적', '범위', '완료 기준', '중간 확인'],
     reactions: [
       { member: '문교원 사원', text: '어디까지 자세히 써야 하는지 모르겠어서 길게만 써야 할 것 같다.', need: '기록 항목과 예시가 필요합니다.' },
       { member: '유희관 과장', text: '기록을 꼼꼼히 쓰라는 말은 알겠는데, 어떤 판단에 쓰려는지 모르겠다.', need: '목적과 활용 방식이 필요합니다.' },
       { member: '이대은 대리', text: '바쁜 일정에서 어느 정도면 충분한 기록인지 기준이 필요하다.', need: '완료 기준과 최소 기준이 필요합니다.' },
     ],
-    reasons: { 목적: '왜 기록을 남기는지 모르면 길게 쓰는 것과 쓸모 있게 쓰는 것을 구분하기 어렵습니다.', 범위: '어떤 반응을 반드시 기록해야 하는지 기준이 없으면 기록 품질 편차가 커집니다.', '완료 기준': '어느 정도면 충분한 기록인지 모르면 과잉 기록 또는 부실 기록이 생깁니다.', '중간 확인': '기록 품질은 초기에 함께 맞춰야 수정 비용이 낮습니다.' },
+    reasons: {
+      목적: '왜 기록을 남기는지 모르면 길게 쓰는 것과 쓸모 있게 쓰는 것을 구분하기 어렵습니다.',
+      범위: '어떤 반응을 반드시 기록해야 하는지 기준이 없으면 기록 품질 편차가 커집니다.',
+      '완료 기준': '어느 정도면 충분한 기록인지 모르면 과잉 기록 또는 부실 기록이 생깁니다.',
+      '중간 확인': '기록 품질은 초기에 함께 맞춰야 수정 비용이 낮습니다.',
+    },
     workCandidates: ['기록에 반드시 남길 항목 정하기', '좋은 기록 예시와 부족한 기록 예시 비교하기', '최근 기록 중 다음 행동으로 이어지지 않는 메모 찾기', '팀원별 기록 방식 차이 확인하기', '기록 후 다음 행동 연결 문장 추가하기', '중간 점검 시 기록 샘플 2개씩 가져오기'],
     recommendedPriority: ['기록에 반드시 남길 항목 정하기', '좋은 기록 예시와 부족한 기록 예시 비교하기'],
     recommendedReduce: ['길게 쓰기만 하는 기록', '방문 사실만 남기는 기록', '다음 행동 없는 단순 메모'],
     flowTemplate: ['기록에 반드시 남길 항목을 정한다.', '좋은 기록 예시와 부족한 기록 예시를 비교한다.', '중간 점검에서 기록 샘플을 함께 확인한다.'],
   },
   {
-    id: 'priority', category: '우선순위형', title: '중요 고객부터 먼저 신경 쓰기', instruction: '중요 고객부터 먼저 신경 써 주세요.', recommended: ['배경', '범위', '우선순위', '일정'],
+    id: 'priority',
+    category: '우선순위형',
+    title: '중요 고객부터 먼저 신경 쓰기',
+    instruction: '중요 고객부터 먼저 신경 써 주세요.',
+    recommended: ['배경', '범위', '우선순위', '일정'],
     reactions: [
       { member: '김재호 차장', text: '중요 고객의 기준이 매출인지 관계인지 최근 반응인지 분명하지 않다.', need: '중요 고객의 판단 기준이 필요합니다.' },
       { member: '박재욱 사원', text: '기존에 맡은 고객도 있는데 무엇을 뒤로 미뤄도 되는지 모르겠다.', need: '우선순위 조정 기준이 필요합니다.' },
       { member: '김문호 차장', text: '어느 시점까지 먼저 움직여야 하는지 일정 기준이 있어야 한다.', need: '일정과 확인 시점이 필요합니다.' },
     ],
-    reasons: { 배경: '왜 지금 우선순위가 바뀌는지 알아야 팀원이 납득하고 조정할 수 있습니다.', 범위: '중요 고객의 조건이 없으면 팀원마다 다른 기준을 적용합니다.', 우선순위: '무엇을 먼저 하고 무엇을 미뤄도 되는지 알려주지 않으면 모든 일이 중요해집니다.', 일정: '언제까지 우선 실행해야 하는지 없으면 실행 속도가 맞춰지지 않습니다.' },
+    reasons: {
+      배경: '왜 지금 우선순위가 바뀌는지 알아야 팀원이 납득하고 조정할 수 있습니다.',
+      범위: '중요 고객의 조건이 없으면 팀원마다 다른 기준을 적용합니다.',
+      우선순위: '무엇을 먼저 하고 무엇을 미뤄도 되는지 알려주지 않으면 모든 일이 중요해집니다.',
+      일정: '언제까지 우선 실행해야 하는지 없으면 실행 속도가 맞춰지지 않습니다.',
+    },
     workCandidates: ['중요 고객군 판단 기준 정하기', '기존 고객군을 기준에 따라 다시 나누기', '이번 2주 우선 고객군 1~2개로 좁히기', '우선 고객군의 다음 행동 정하기', '후순위 고객군의 최소 관리 기준 정하기', '우선순위 충돌 시 판단 기준 정하기'],
     recommendedPriority: ['중요 고객군 판단 기준 정하기', '이번 2주 우선 고객군 1~2개로 좁히기'],
     recommendedReduce: ['모든 고객군을 동일하게 챙기기', '관성적으로 하던 방문 루틴', '우선순위 낮은 보고자료 정리'],
     flowTemplate: ['중요 고객군 판단 기준을 먼저 정한다.', '이번 2주 우선 고객군을 1~2개로 좁힌다.', '후순위 고객군의 최소 관리 기준을 공유한다.'],
   },
   {
-    id: 'speed', category: '실행속도형', title: '이번 주 실행 속도 높이기', instruction: '이번 주에는 실행 속도를 좀 높입시다.', recommended: ['목적', '범위', '일정', '완료 기준'],
+    id: 'speed',
+    category: '실행속도형',
+    title: '이번 주 실행 속도 높이기',
+    instruction: '이번 주에는 실행 속도를 좀 높입시다.',
+    recommended: ['목적', '범위', '일정', '완료 기준'],
     reactions: [
       { member: '신재영 대리', text: '속도를 높이라는 말은 알겠는데 품질보다 속도가 우선인지 모르겠다.', need: '목적과 품질 기준이 필요합니다.' },
       { member: '유희관 과장', text: '어떤 업무의 속도를 높이라는 건지 범위가 애매하다.', need: '업무 범위가 필요합니다.' },
       { member: '문교원 사원', text: '빨리 하라는 말처럼 들려서 질문하기가 조심스럽다.', need: '지원 조건과 중간 확인이 필요합니다.' },
     ],
-    reasons: { 목적: '속도를 높이는 이유가 없으면 단순 압박으로 들릴 수 있습니다.', 범위: '어떤 업무의 속도를 높일지 불명확하면 중요하지 않은 일까지 빨라질 수 있습니다.', 일정: '어느 시점까지 무엇이 끝나야 하는지 없으면 중간 속도를 맞추기 어렵습니다.', '완료 기준': '속도만 강조하면 품질 기준이 흐려질 수 있습니다.' },
+    reasons: {
+      목적: '속도를 높이는 이유가 없으면 단순 압박으로 들릴 수 있습니다.',
+      범위: '어떤 업무의 속도를 높일지 불명확하면 중요하지 않은 일까지 빨라질 수 있습니다.',
+      일정: '어느 시점까지 무엇이 끝나야 하는지 없으면 중간 속도를 맞추기 어렵습니다.',
+      '완료 기준': '속도만 강조하면 품질 기준이 흐려질 수 있습니다.',
+    },
     workCandidates: ['속도를 높일 업무 범위 정하기', '이번 주 안에 끝낼 최소 산출물 정하기', '지연되고 있는 업무 원인 확인하기', '의사결정이 필요한 지점 표시하기', '팀장이 바로 풀어줄 수 있는 장애물 정리하기', '금요일 전 중간 확인 시점 잡기'],
     recommendedPriority: ['속도를 높일 업무 범위 정하기', '이번 주 안에 끝낼 최소 산출물 정하기'],
     recommendedReduce: ['완성도 높은 장문 보고', '불필요한 재검토', '우선순위 낮은 자료 정리'],
     flowTemplate: ['속도를 높일 업무 범위를 정한다.', '이번 주 안에 끝낼 최소 산출물을 정한다.', '금요일 전 막힌 지점과 지원 요청을 확인한다.'],
   },
   {
-    id: 'ownership', category: '책임범위형', title: '각자 맡은 고객군 책임지고 관리하기', instruction: '각자 맡은 고객군은 책임지고 관리해 주세요.', recommended: ['범위', '우선순위', '완료 기준', '중간 확인'],
+    id: 'ownership',
+    category: '책임범위형',
+    title: '각자 맡은 고객군 책임지고 관리하기',
+    instruction: '각자 맡은 고객군은 책임지고 관리해 주세요.',
+    recommended: ['범위', '우선순위', '완료 기준', '중간 확인'],
     reactions: [
       { member: '김문호 차장', text: '책임지라는 말은 알지만 어디까지 혼자 판단해도 되는지 모르겠다.', need: '권한과 지원 범위가 필요합니다.' },
       { member: '유희관 과장', text: '관리한다는 기준이 방문인지 기록인지 후속 실행인지 모호하다.', need: '완료 기준이 필요합니다.' },
       { member: '문교원 사원', text: '막히는 부분을 말하면 책임감 없어 보일까 봐 조심스럽다.', need: '중간 확인과 지원 조건이 필요합니다.' },
     ],
-    reasons: { 범위: '책임 범위가 없으면 팀원이 어디까지 혼자 판단해야 하는지 알기 어렵습니다.', 우선순위: '충돌 상황에서 무엇을 먼저 할지 기준이 없으면 책임감이 부담으로 바뀝니다.', '완료 기준': '관리했다는 기준이 없으면 활동량만 늘거나 결과 확인이 어려워집니다.', '중간 확인': '도움을 요청해도 되는 시점이 없으면 문제를 늦게 드러낼 수 있습니다.' },
+    reasons: {
+      범위: '책임 범위가 없으면 팀원이 어디까지 혼자 판단해야 하는지 알기 어렵습니다.',
+      우선순위: '충돌 상황에서 무엇을 먼저 할지 기준이 없으면 책임감이 부담으로 바뀝니다.',
+      '완료 기준': '관리했다는 기준이 없으면 활동량만 늘거나 결과 확인이 어려워집니다.',
+      '중간 확인': '도움을 요청해도 되는 시점이 없으면 문제를 늦게 드러낼 수 있습니다.',
+    },
     workCandidates: ['팀원별 책임 고객군 범위 확인하기', '혼자 판단해도 되는 일과 확인받아야 할 일 구분하기', '고객군별 최소 관리 기준 정하기', '막히면 공유할 기준 정하기', '중간 확인 시점 정하기', '팀장 지원이 필요한 조건 정리하기'],
     recommendedPriority: ['팀원별 책임 고객군 범위 확인하기', '혼자 판단해도 되는 일과 확인받아야 할 일 구분하기'],
     recommendedReduce: ['모든 판단을 팀장에게 가져오기', '반대로 모든 판단을 개인에게 맡기기', '기준 없는 책임 강조'],
@@ -166,6 +212,8 @@ const DEFAULT_STATE: State = {
   leaderSupport: '',
   selectedPriorityTasks: [],
   selectedReduceTasks: [],
+  priorityReason: '',
+  reduceReason: '',
   priorityTask: '',
   reduceOrPause: '',
   flowStepOne: '',
@@ -173,6 +221,7 @@ const DEFAULT_STATE: State = {
   flowStepThree: '',
   bottleneckSignal: '',
   midCheckQuestion: '',
+  executionDeclaration: '',
   aiFlowPrompt: '',
   soloWork: '',
   leaderCheckWork: '',
@@ -185,83 +234,46 @@ const DEFAULT_STATE: State = {
 };
 
 function selectedExample(id: string) { return EXAMPLES.find((example) => example.id === id) ?? EXAMPLES[0]; }
-function toggle(list: Criterion[], criterion: Criterion) { return list.includes(criterion) ? list.filter((item) => item !== criterion) : [...list, criterion]; }
-function toggleText(list: string[], value: string) { return list.includes(value) ? list.filter((item) => item !== value) : [...list, value]; }
-function format(list: Criterion[]) { return list.length ? list.join(' · ') : '아직 선택하지 않음'; }
+function toggleCriterion(list: Criterion[], criterion: Criterion) { return list.includes(criterion) ? list.filter((item) => item !== criterion) : [...list, criterion]; }
+function toggleTextLimited(list: string[], value: string, limit = 2) { if (list.includes(value)) return list.filter((item) => item !== value); if (list.length >= limit) return list; return [...list, value]; }
+function formatCriteria(list: Criterion[]) { return list.length ? list.join(' · ') : '아직 선택하지 않음'; }
 function formatText(list: string[]) { return list.length ? list.join(' · ') : '아직 선택하지 않음'; }
-function diff(base: Criterion[], compare: Criterion[]) { return compare.filter((item) => !base.includes(item)); }
-function criterionClass(selected: boolean) { return selected ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50'; }
+function diffCriteria(base: Criterion[], compare: Criterion[]) { return compare.filter((item) => !base.includes(item)); }
 function choiceClass(selected: boolean) { return selected ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:bg-cyan-50'; }
 function criteriaForPrompt(state: State, example: Example) { return state.finalCriteria.length ? state.finalCriteria : state.missingCriteria.length ? state.missingCriteria : example.recommended; }
+function declarationDraft(state: State) { return `우리 조는 이번 2주 동안 ${formatText(state.selectedPriorityTasks)}을 먼저 하겠습니다. 대신 ${formatText(state.selectedReduceTasks)}은 잠시 줄이겠습니다. 업무 흐름은 ${[state.flowStepOne || '1단계 미작성', state.flowStepTwo || '2단계 미작성', state.flowStepThree || '3단계 미작성'].join(' → ')} 순서로 보겠습니다. 중간에는 ${state.bottleneckSignal || '막힘 신호 미작성'} 신호가 보이면 ${state.midCheckQuestion || '확인 질문 미작성'}으로 확인하겠습니다.`; }
 
 function buildExecutionPrompt(state: State) {
   const example = selectedExample(state.selectedExampleId);
   const instruction = state.customInstruction.trim() || example.instruction;
-  return `당신은 제약영업 팀장의 업무관리 문장을 구체화하는 코치입니다.\n\n[성과관리 이후 실행 과제화 상황]\n우리 조는 다음 업무지시를 실행 가능한 과제로 바꾸려고 합니다.\n\n"${instruction}"\n\n[우리 조가 먼저 선택한 빠진 기준]\n${format(state.missingCriteria)}\n\n[전문가 추천 기준]\n${format(example.recommended)}\n\n[우리 조가 최종 반영하기로 한 기준]\n${format(criteriaForPrompt(state, example))}\n\n[요청]\n이 지시를 팀원이 바로 실행할 수 있는 실행 과제로 바꿔 주세요.\n\n[작성 기준]\n- 실제 고객명, 병원명, 의료진명, 제품명, 실제 수치, 처방 정보, 내부 전략은 쓰지 마세요.\n- 미승인 효능, 허가 외 사용 암시, 처방 유도 표현, 경쟁사 비방, 비교 우위 단정 표현은 피해주세요.\n- 팀원이 무엇을, 어디까지, 언제까지, 어떤 기준으로 하면 되는지 알 수 있게 써 주세요.\n- 팀장이 지원할 부분도 포함해 주세요.\n\n[출력 형식]\n1. 수정한 업무지시문\n2. 완료 기준\n3. 팀장이 지원할 부분\n4. 조심해야 할 표현`;
+  return `당신은 제약영업 팀장의 업무관리 문장을 구체화하는 코치입니다.\n\n[성과관리 이후 실행 과제화 상황]\n우리 조는 다음 업무지시를 실행 가능한 과제로 바꾸려고 합니다.\n\n"${instruction}"\n\n[우리 조가 먼저 선택한 빠진 기준]\n${formatCriteria(state.missingCriteria)}\n\n[전문가 추천 기준]\n${formatCriteria(example.recommended)}\n\n[우리 조가 최종 반영하기로 한 기준]\n${formatCriteria(criteriaForPrompt(state, example))}\n\n[요청]\n이 지시를 팀원이 바로 실행할 수 있는 실행 과제로 바꿔 주세요.\n\n[작성 기준]\n- 실제 고객명, 병원명, 의료진명, 제품명, 실제 수치, 처방 정보, 내부 전략은 쓰지 마세요.\n- 미승인 효능, 허가 외 사용 암시, 처방 유도 표현, 경쟁사 비방, 비교 우위 단정 표현은 피해주세요.\n- 팀원이 무엇을, 어디까지, 언제까지, 어떤 기준으로 하면 되는지 알 수 있게 써 주세요.\n- 팀장이 지원할 부분도 포함해 주세요.\n\n[출력 형식]\n1. 수정한 업무지시문\n2. 완료 기준\n3. 팀장이 지원할 부분\n4. 조심해야 할 표현`;
 }
-function buildFlowPrompt(state: State) { return `당신은 영업팀장의 실행 흐름 점검을 돕는 업무관리 코치입니다.\n\n[선택한 업무지시]\n${selectedExample(state.selectedExampleId).instruction}\n\n[먼저 할 일]\n${formatText(state.selectedPriorityTasks) || state.priorityTask || '미작성'}\n\n[잠시 줄이거나 미룰 일]\n${formatText(state.selectedReduceTasks) || state.reduceOrPause || '미작성'}\n\n[업무 흐름]\n1) ${state.flowStepOne || '미작성'}\n2) ${state.flowStepTwo || '미작성'}\n3) ${state.flowStepThree || '미작성'}\n\n[요청]\n위 실행 흐름에서 막힐 가능성이 높은 지점을 찾고, 질책이 아니라 확인으로 시작하는 중간 점검 질문 3개를 제안해 주세요.\n\n[주의]\n실제 고객명, 제품명, 처방 유도 표현, 비교 우위 단정은 쓰지 마세요.`; }
+function buildFlowPrompt(state: State) { return `당신은 영업팀장의 실행 흐름 점검을 돕는 업무관리 코치입니다.\n\n[선택한 업무지시]\n${selectedExample(state.selectedExampleId).instruction}\n\n[먼저 할 일]\n${formatText(state.selectedPriorityTasks)}\n\n[먼저 할 일 선택 이유]\n${state.priorityReason || '미작성'}\n\n[잠시 줄이거나 미룰 일]\n${formatText(state.selectedReduceTasks)}\n\n[잠시 줄일 일 선택 이유]\n${state.reduceReason || '미작성'}\n\n[업무 흐름]\n1) ${state.flowStepOne || '미작성'}\n2) ${state.flowStepTwo || '미작성'}\n3) ${state.flowStepThree || '미작성'}\n\n[막힘 신호]\n${state.bottleneckSignal || '미작성'}\n\n[중간 확인 질문]\n${state.midCheckQuestion || '미작성'}\n\n[30초 실행 선언문]\n${state.executionDeclaration || declarationDraft(state)}\n\n[요청]\n위 실행 흐름에서 막힐 가능성이 높은 지점을 보완하고, 질책이 아니라 확인으로 시작하는 중간 점검 질문을 더 자연스럽게 다듬어 주세요.\n\n[주의]\n실제 고객명, 제품명, 처방 유도 표현, 비교 우위 단정은 쓰지 마세요.`; }
 function buildCoordinationPrompt(state: State) { return `당신은 제약영업 팀장의 실행 조율 문장을 다듬는 코치입니다.\n\n[팀원이 혼자 처리할 일]\n${state.soloWork || '미작성'}\n\n[팀장 확인이 필요한 일]\n${state.leaderCheckWork || '미작성'}\n\n[다른 부서 협조가 필요한 일]\n${state.crossFunctionalHelp || '미작성'}\n\n[상위 리더에게 공유할 일]\n${state.seniorLeaderShare || '미작성'}\n\n[주의 표현 또는 확인 필요 사항]\n${state.cautionOrApproval || '미작성'}\n\n[요청]\n팀 회의에서 공유할 짧은 조율 문장과 다른 부서에 확인 요청할 문장을 작성해 주세요. 정중하되 무엇을 확인받고 싶은지 분명해야 합니다.\n\n[주의]\n실제 고객명, 병원명, 제품명, 내부 수치, 처방 유도 표현은 쓰지 마세요.`; }
-function buildFinalMemo(state: State) {
-  const example = selectedExample(state.selectedExampleId);
-  return [
-    '[업무관리 Lab 결과]',
-    `- 실행 과제화 기준: ${state.customInstruction.trim() || example.instruction}`,
-    `- 우리 조가 선택한 빠진 기준: ${format(state.missingCriteria)}`,
-    `- 전문가 추천 기준: ${format(example.recommended)}`,
-    `- 최종 반영 기준: ${format(criteriaForPrompt(state, example))}`,
-    `- 수정한 업무지시문: ${state.revisedInstruction || '미작성'}`,
-    `- 완료 기준: ${state.completionCriteria || '미작성'}`,
-    `- 팀장이 지원할 부분: ${state.leaderSupport || '미작성'}`,
-    `- 먼저 할 일: ${formatText(state.selectedPriorityTasks)}`,
-    `- 잠시 줄일 일: ${formatText(state.selectedReduceTasks)}`,
-    `- 추가 우선 실행 과제: ${state.priorityTask || '미작성'}`,
-    `- 추가로 줄일 일: ${state.reduceOrPause || '미작성'}`,
-    `- 업무 흐름: ${[state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean).join(' → ') || '미작성'}`,
-    `- 막힘 신호: ${state.bottleneckSignal || '미작성'}`,
-    `- 중간 확인 질문: ${state.midCheckQuestion || '미작성'}`,
-    `- 팀원이 혼자 처리할 일: ${state.soloWork || '미작성'}`,
-    `- 팀장 확인 필요: ${state.leaderCheckWork || '미작성'}`,
-    `- 부서 협조 필요: ${state.crossFunctionalHelp || '미작성'}`,
-    `- 상위 리더 공유: ${state.seniorLeaderShare || '미작성'}`,
-    `- 주의 표현/확인 필요: ${state.cautionOrApproval || '미작성'}`,
-    `- 조율 문장: ${state.coordinationMessage || '미작성'}`,
-  ].join('\n');
-}
+function buildFinalMemo(state: State) { const example = selectedExample(state.selectedExampleId); return ['[업무관리 Lab 결과]', `- 실행 과제화 기준: ${state.customInstruction.trim() || example.instruction}`, `- 최종 반영 기준: ${formatCriteria(criteriaForPrompt(state, example))}`, `- 수정한 업무지시문: ${state.revisedInstruction || '미작성'}`, `- 완료 기준: ${state.completionCriteria || '미작성'}`, `- 팀장이 지원할 부분: ${state.leaderSupport || '미작성'}`, `- 먼저 할 일: ${formatText(state.selectedPriorityTasks)}`, `- 먼저 할 일 선택 이유: ${state.priorityReason || '미작성'}`, `- 잠시 줄일 일: ${formatText(state.selectedReduceTasks)}`, `- 잠시 줄일 일 선택 이유: ${state.reduceReason || '미작성'}`, `- 업무 흐름: ${[state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean).join(' → ') || '미작성'}`, `- 막힘 신호: ${state.bottleneckSignal || '미작성'}`, `- 중간 확인 질문: ${state.midCheckQuestion || '미작성'}`, `- 30초 실행 선언문: ${state.executionDeclaration || declarationDraft(state)}`, `- 팀원이 혼자 처리할 일: ${state.soloWork || '미작성'}`, `- 팀장 확인 필요: ${state.leaderCheckWork || '미작성'}`, `- 부서 협조 필요: ${state.crossFunctionalHelp || '미작성'}`, `- 상위 리더 공유: ${state.seniorLeaderShare || '미작성'}`, `- 주의 표현/확인 필요: ${state.cautionOrApproval || '미작성'}`, `- 조율 문장: ${state.coordinationMessage || '미작성'}`].join('\n'); }
 
-function Field({ label, help, placeholder, value, onChange, minHeight = 'min-h-24' }: { label: string; help: string; placeholder: string; value: string; onChange: (next: string) => void; minHeight?: string }) {
-  return <label className="block rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-black text-slate-950">{label}</span><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{help}</p><textarea className={`mt-3 ${minHeight} w-full rounded-2xl border bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-cyan-700 focus:ring-2 focus:ring-cyan-100`} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
-}
+function Field({ label, help, placeholder, value, onChange, minHeight = 'min-h-24' }: { label: string; help: string; placeholder: string; value: string; onChange: (next: string) => void; minHeight?: string }) { return <label className="block rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-black text-slate-950">{label}</span><p className="mt-1 text-xs font-bold leading-5 text-slate-600">{help}</p><textarea className={`mt-3 ${minHeight} w-full rounded-2xl border bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-cyan-700 focus:ring-2 focus:ring-cyan-100`} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>; }
 function SectionHeader({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) { return <section className="rounded-3xl border border-cyan-100 bg-white p-5 shadow-sm md:p-6"><p className="text-xs font-black uppercase tracking-wide text-cyan-700">{eyebrow}</p><h2 className="mt-2 text-2xl font-black leading-tight text-slate-950">{title}</h2><p className="mt-3 max-w-4xl text-sm font-bold leading-7 text-slate-600">{body}</p></section>; }
-function CopyButton({ label, copiedLabel, text, onCopied }: { label: string; copiedLabel: string; text: string; onCopied: () => void }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); onCopied(); window.setTimeout(() => setCopied(false), 1500); } catch { onCopied(); } };
-  return <button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white shadow-sm" onClick={copy}>{copied ? copiedLabel : label}</button>;
-}
+function CopyButton({ label, copiedLabel, text, onCopied }: { label: string; copiedLabel: string; text: string; onCopied: () => void }) { const [copied, setCopied] = useState(false); const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); onCopied(); window.setTimeout(() => setCopied(false), 1500); } catch { onCopied(); } }; return <button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white shadow-sm" onClick={copy}>{copied ? copiedLabel : label}</button>; }
 
-export function loadV40VNextTaskManagementResult() {
-  try { const raw = typeof window === 'undefined' ? null : window.localStorage.getItem(V40_VNEXT_TASK_MANAGEMENT_STORAGE_KEY); return raw ? { ...DEFAULT_STATE, ...(JSON.parse(raw) as Partial<State>) } : DEFAULT_STATE; } catch { return DEFAULT_STATE; }
-}
+export function loadV40VNextTaskManagementResult() { try { const raw = typeof window === 'undefined' ? null : window.localStorage.getItem(V40_VNEXT_TASK_MANAGEMENT_STORAGE_KEY); return raw ? { ...DEFAULT_STATE, ...(JSON.parse(raw) as Partial<State>) } : DEFAULT_STATE; } catch { return DEFAULT_STATE; } }
 
 export function V40VNextTaskExecutionDesignLab() {
   const [state, setState] = useStored<State>(V40_VNEXT_TASK_MANAGEMENT_STORAGE_KEY, DEFAULT_STATE);
   const example = selectedExample(state.selectedExampleId);
   const prompt = useMemo(() => buildExecutionPrompt(state), [state]);
   const update = (patch: Partial<State>) => setState({ ...state, ...patch });
-  const missed = diff(state.missingCriteria, example.recommended);
-  const extra = diff(example.recommended, state.missingCriteria);
-
+  const missed = diffCriteria(state.missingCriteria, example.recommended);
+  const extra = diffCriteria(example.recommended, state.missingCriteria);
   return <div className="space-y-4">
-    <SectionHeader eyebrow="업무관리 1 · 실행 과제화" title="성과 기준을 팀원이 실행할 수 있는 과제로 바꿉니다" body="업무지시 명확화는 이 단계 안에 통합합니다. 먼저 우리 조가 빠진 기준을 판단한 뒤 전문가 기준과 비교하고 AI 초안을 요청합니다." />
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">1. 실행 과제로 바꿀 모호한 업무지시 고르기</p><div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{EXAMPLES.map((item) => {
-      const selected = state.selectedExampleId === item.id;
-      return <button key={item.id} type="button" className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-cyan-700 bg-cyan-700 text-white shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50'}`} onClick={() => update({ selectedExampleId: item.id, missingCriteria: [], finalCriteria: [], showExpertCriteria: false, customInstruction: '', selectedPriorityTasks: [], selectedReduceTasks: [], flowStepOne: '', flowStepTwo: '', flowStepThree: '', finalMemo: '' })}><span className={`rounded-full px-2 py-1 text-[11px] font-black ${selected ? 'bg-white/20 text-white' : 'bg-white text-cyan-800'}`}>{item.category}</span><p className="mt-3 text-sm font-black">{item.title}</p><p className={`mt-2 text-sm font-bold leading-6 ${selected ? 'text-cyan-50' : 'text-slate-600'}`}>“{item.instruction}”</p></button>;
-    })}</div></section>
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">이 지시를 들은 팀원들의 예상 반응</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">이 팀원이 나쁘다는 뜻이 아닙니다. 모호한 지시는 팀원마다 다르게 해석될 수 있습니다.</p><div className="mt-4 grid gap-3 lg:grid-cols-3">{example.reactions.map((reaction) => <article key={reaction.member} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-black text-slate-950">{reaction.member}</p><p className="mt-2 text-sm font-bold leading-6 text-slate-700">“{reaction.text}”</p><p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-cyan-900">필요한 기준: {reaction.need}</p></article>)}</div></section>
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">2. 우리 조가 보기엔 무엇이 빠졌습니까?</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">팀원 예상 반응을 보고, 빠졌다고 생각되는 기준을 먼저 선택해 보세요. 자동으로 정답을 보여주지 않습니다.</p><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{CRITERIA.map((criterion) => <button key={criterion} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${criterionClass(state.missingCriteria.includes(criterion))}`} onClick={() => update({ missingCriteria: toggle(state.missingCriteria, criterion), finalCriteria: [], finalMemo: '' })}>{criterion}</button>)}</div></section>
-    {!state.showExpertCriteria ? <section className="rounded-3xl border border-dashed border-cyan-300 bg-cyan-50 p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-cyan-950">전문가 기준 확인 전, 먼저 우리 조가 판단합니다</p><p className="mt-1 text-sm font-bold leading-6 text-cyan-900">정답을 맞히는 활동이 아니라, 팀장이 어떤 기준으로 일을 명확히 만드는지 연습하는 단계입니다.</p></div><button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white shadow-sm" onClick={() => update({ showExpertCriteria: true, finalCriteria: state.missingCriteria })}>전문가 기준 확인</button></div></section> : <section className="rounded-3xl border border-cyan-200 bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">우리 조 선택과 전문가 추천 비교</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">틀렸다는 뜻이 아닙니다. 우리 조 판단을 전문가 기준과 비교해 최종 반영 기준을 정합니다.</p></div><div className="flex flex-wrap gap-2"><button type="button" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-black text-slate-700" onClick={() => update({ finalCriteria: state.missingCriteria })}>우리 조 선택 유지</button><button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white" onClick={() => update({ finalCriteria: example.recommended })}>전문가 추천 반영</button></div></div><div className="mt-4 grid gap-3 lg:grid-cols-3"><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-slate-500">우리 조 선택</p><p className="mt-2 text-sm font-black leading-6 text-slate-900">{format(state.missingCriteria)}</p></div><div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-cyan-700">전문가 추천 기준</p><p className="mt-2 text-sm font-black leading-6 text-cyan-950">{format(example.recommended)}</p></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-amber-700">우리 조가 놓쳤을 수 있는 기준</p><p className="mt-2 text-sm font-black leading-6 text-amber-950">{missed.length ? missed.join(' · ') : '전문가 추천과 주요 기준이 같습니다'}</p>{extra.length > 0 && <p className="mt-2 text-xs font-bold leading-5 text-amber-900">추가로 선택한 기준: {extra.join(' · ')}</p>}</div></div><div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-black text-slate-950">모범 선택과 이유</p><div className="mt-3 grid gap-2 md:grid-cols-2">{example.recommended.map((criterion) => <div key={criterion} className="rounded-2xl bg-white p-3 text-sm leading-6 text-slate-700"><span className="font-black text-cyan-800">{criterion}</span><p className="mt-1 font-bold">{example.reasons[criterion]}</p></div>)}</div></div><div className="mt-4 rounded-2xl border border-slate-200 bg-slate-900 p-4 text-white"><p className="text-xs font-black uppercase tracking-wide text-cyan-100">최종 반영 기준</p><p className="mt-2 text-sm font-black leading-6">{format(criteriaForPrompt(state, example))}</p></div></section>}
+    <SectionHeader eyebrow="업무관리 1 · 실행 과제화" title="성과 기준을 팀원이 실행할 수 있는 과제로 바꿉니다" body="먼저 우리 조가 빠진 기준을 판단한 뒤 전문가 기준과 비교하고 AI 초안을 요청합니다." />
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">1. 실행 과제로 바꿀 모호한 업무지시 고르기</p><div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{EXAMPLES.map((item) => { const selected = state.selectedExampleId === item.id; return <button key={item.id} type="button" className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-cyan-700 bg-cyan-700 text-white shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50'}`} onClick={() => update({ selectedExampleId: item.id, missingCriteria: [], finalCriteria: [], showExpertCriteria: false, customInstruction: '', selectedPriorityTasks: [], selectedReduceTasks: [], priorityReason: '', reduceReason: '', flowStepOne: '', flowStepTwo: '', flowStepThree: '', executionDeclaration: '', finalMemo: '' })}><span className={`rounded-full px-2 py-1 text-[11px] font-black ${selected ? 'bg-white/20 text-white' : 'bg-white text-cyan-800'}`}>{item.category}</span><p className="mt-3 text-sm font-black">{item.title}</p><p className={`mt-2 text-sm font-bold leading-6 ${selected ? 'text-cyan-50' : 'text-slate-600'}`}>“{item.instruction}”</p></button>; })}</div></section>
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">이 지시를 들은 팀원들의 예상 반응</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">모호한 지시는 팀원마다 다르게 해석될 수 있습니다.</p><div className="mt-4 grid gap-3 lg:grid-cols-3">{example.reactions.map((reaction) => <article key={reaction.member} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-black text-slate-950">{reaction.member}</p><p className="mt-2 text-sm font-bold leading-6 text-slate-700">“{reaction.text}”</p><p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-cyan-900">필요한 기준: {reaction.need}</p></article>)}</div></section>
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">2. 우리 조가 보기엔 무엇이 빠졌습니까?</p><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{CRITERIA.map((criterion) => <button key={criterion} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${choiceClass(state.missingCriteria.includes(criterion))}`} onClick={() => update({ missingCriteria: toggleCriterion(state.missingCriteria, criterion), finalCriteria: [], finalMemo: '' })}>{criterion}</button>)}</div></section>
+    {!state.showExpertCriteria ? <section className="rounded-3xl border border-dashed border-cyan-300 bg-cyan-50 p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-cyan-950">전문가 기준 확인 전, 먼저 우리 조가 판단합니다</p><p className="mt-1 text-sm font-bold leading-6 text-cyan-900">정답을 맞히는 활동이 아니라 기준을 보는 연습입니다.</p></div><button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white shadow-sm" onClick={() => update({ showExpertCriteria: true, finalCriteria: state.missingCriteria })}>전문가 기준 확인</button></div></section> : <section className="rounded-3xl border border-cyan-200 bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">우리 조 선택과 전문가 추천 비교</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">우리 조 판단을 전문가 기준과 비교해 최종 반영 기준을 정합니다.</p></div><div className="flex flex-wrap gap-2"><button type="button" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-black text-slate-700" onClick={() => update({ finalCriteria: state.missingCriteria })}>우리 조 선택 유지</button><button type="button" className="rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white" onClick={() => update({ finalCriteria: example.recommended })}>전문가 추천 반영</button></div></div><div className="mt-4 grid gap-3 lg:grid-cols-3"><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-slate-500">우리 조 선택</p><p className="mt-2 text-sm font-black leading-6 text-slate-900">{formatCriteria(state.missingCriteria)}</p></div><div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-cyan-700">전문가 추천 기준</p><p className="mt-2 text-sm font-black leading-6 text-cyan-950">{formatCriteria(example.recommended)}</p></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-amber-700">우리 조가 놓쳤을 수 있는 기준</p><p className="mt-2 text-sm font-black leading-6 text-amber-950">{missed.length ? missed.join(' · ') : '전문가 추천과 주요 기준이 같습니다'}</p>{extra.length > 0 && <p className="mt-2 text-xs font-bold leading-5 text-amber-900">추가로 선택한 기준: {extra.join(' · ')}</p>}</div></div><div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-black text-slate-950">모범 선택과 이유</p><div className="mt-3 grid gap-2 md:grid-cols-2">{example.recommended.map((criterion) => <div key={criterion} className="rounded-2xl bg-white p-3 text-sm leading-6 text-slate-700"><span className="font-black text-cyan-800">{criterion}</span><p className="mt-1 font-bold">{example.reasons[criterion]}</p></div>)}</div></div><div className="mt-4 rounded-2xl border border-slate-200 bg-slate-900 p-4 text-white"><p className="text-xs font-black uppercase tracking-wide text-cyan-100">최종 반영 기준</p><p className="mt-2 text-sm font-black leading-6">{formatCriteria(criteriaForPrompt(state, example))}</p></div></section>}
     <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 실행 과제 초안 부탁하기</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">최종 반영 기준이 AI 질문에 들어갑니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiExecutionPrompt: prompt })} /></div><details className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">AI에게 붙여넣을 질문 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-white p-4 text-xs leading-6 text-slate-700">{prompt}</pre></details></section>
     <Field label="AI 실행 과제 초안 붙여넣기" help="AI가 준 초안을 붙여넣고, 아래에서 우리 조 언어로 다시 고칩니다." placeholder="AI가 준 수정 업무지시문, 완료 기준, 지원 조건을 붙여넣습니다." value={state.aiExecutionDraft} onChange={(aiExecutionDraft) => update({ aiExecutionDraft })} minHeight="min-h-32" />
-    <div className="grid gap-4 lg:grid-cols-3"><Field label="수정한 업무지시문" help="팀원이 무엇을 해야 하는지 한 문단으로 씁니다." placeholder="예: 이번 2주 동안 A유형 고객군은 방문 후 48시간 안에 고객 질문과 다음 접점 가능성을 기록해 주세요." value={state.revisedInstruction} onChange={(revisedInstruction) => update({ revisedInstruction })} /><Field label="완료 기준" help="끝났다고 볼 수 있는 기준을 행동이나 산출물로 적습니다." placeholder="예: 고객 반응, 다음 접점 가능성, 추가 확인 질문이 각각 1줄 이상 남아 있으면 완료로 봅니다." value={state.completionCriteria} onChange={(completionCriteria) => update({ completionCriteria })} /><Field label="팀장이 지원할 부분" help="지시만 남기지 않고 팀장이 도울 조건을 적습니다." placeholder="예: 표현이나 자료 사용이 애매하면 승인된 범위 안에서 함께 점검하겠습니다." value={state.leaderSupport} onChange={(leaderSupport) => update({ leaderSupport })} /></div>
+    <div className="grid gap-4 lg:grid-cols-3"><Field label="수정한 업무지시문" help="팀원이 무엇을 해야 하는지 씁니다." placeholder="예: 이번 2주 동안 고객 질문과 다음 접점 가능성을 기록해 주세요." value={state.revisedInstruction} onChange={(revisedInstruction) => update({ revisedInstruction })} /><Field label="완료 기준" help="끝났다고 볼 수 있는 기준을 적습니다." placeholder="예: 고객 반응, 다음 접점 가능성, 추가 확인 질문이 각각 1줄 이상 남아 있으면 완료로 봅니다." value={state.completionCriteria} onChange={(completionCriteria) => update({ completionCriteria })} /><Field label="팀장이 지원할 부분" help="팀장이 도울 조건을 적습니다." placeholder="예: 표현이나 자료 사용이 애매하면 승인된 범위 안에서 함께 점검하겠습니다." value={state.leaderSupport} onChange={(leaderSupport) => update({ leaderSupport })} /></div>
   </div>;
 }
 
@@ -271,14 +283,17 @@ export function V40VNextTaskPriorityFlowLab() {
   const prompt = useMemo(() => buildFlowPrompt(state), [state]);
   const update = (patch: Partial<State>) => setState({ ...state, ...patch });
   const applyTemplate = () => update({ flowStepOne: example.flowTemplate[0] ?? '', flowStepTwo: example.flowTemplate[1] ?? '', flowStepThree: example.flowTemplate[2] ?? '' });
-  return <div className="space-y-4"><SectionHeader eyebrow="업무관리 2 · 우선순위와 업무 흐름" title="선택한 업무지시에 맞춰 실행해야 하는 업무를 먼저 봅니다" body="빈칸부터 쓰지 않습니다. 8단계에서 고른 업무지시에 맞춰 실행 후보를 보고, 우리 조가 먼저 할 일과 잠시 줄일 일을 선택한 뒤 업무 흐름을 정리합니다." />
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">실행해야 하는 업무 후보</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">이 후보들은 자동 정답이 아니라 토의 재료입니다. 우리 조 상황에 맞게 먼저 할 일과 줄일 일을 고릅니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">{example.workCandidates.map((item) => <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-bold leading-6 text-slate-700">{item}</div>)}</div></section>
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">먼저 할 일 선택</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">추천 후보를 참고하되 우리 조가 직접 1~2개를 고릅니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2">{example.workCandidates.map((item) => <button key={item} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${choiceClass(state.selectedPriorityTasks.includes(item))}`} onClick={() => update({ selectedPriorityTasks: toggleText(state.selectedPriorityTasks, item), finalMemo: '' })}>{item}{example.recommendedPriority.includes(item) && <span className="ml-2 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black">추천</span>}</button>)}</div><p className="mt-3 text-xs font-bold text-slate-500">선택됨: {formatText(state.selectedPriorityTasks)}</p></section>
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">잠시 줄일 일 선택</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">먼저 할 일을 정했다면, 업무가 늘어나지 않도록 줄이거나 미룰 일도 함께 고릅니다.</p><div className="mt-4 grid gap-2 md:grid-cols-3">{example.recommendedReduce.map((item) => <button key={item} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${choiceClass(state.selectedReduceTasks.includes(item))}`} onClick={() => update({ selectedReduceTasks: toggleText(state.selectedReduceTasks, item), finalMemo: '' })}>{item}</button>)}</div><p className="mt-3 text-xs font-bold text-slate-500">선택됨: {formatText(state.selectedReduceTasks)}</p></section>
-    <div className="grid gap-4 lg:grid-cols-2"><Field label="추가로 먼저 할 일" help="후보에 없는 우리 조만의 우선 실행 과제가 있다면 적습니다." placeholder="예: 특정 유형의 미해결 요청을 먼저 확인한다." value={state.priorityTask} onChange={(priorityTask) => update({ priorityTask })} /><Field label="추가로 잠시 줄일 일" help="후보 외에 줄이거나 미룰 일이 있다면 적습니다." placeholder="예: 단순 형식 보고를 한 주 뒤로 미룬다." value={state.reduceOrPause} onChange={(reduceOrPause) => update({ reduceOrPause })} /></div>
+  const makeDeclaration = () => update({ executionDeclaration: declarationDraft(state) });
+  return <div className="space-y-4">
+    <SectionHeader eyebrow="업무관리 2 · 우선순위와 업무 흐름" title="선택한 업무지시에 맞춰 실행해야 하는 업무를 먼저 봅니다" body="후보를 보고 고르고, 왜 골랐는지 말하고, 무엇을 줄일지 정한 뒤 흐름과 막힘 신호를 만듭니다." />
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">실행해야 하는 업무 후보</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">이 후보들은 토의 재료입니다. 모두 선택하지 말고 우선순위를 정합니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">{example.workCandidates.map((item) => <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-bold leading-6 text-slate-700">{item}</div>)}</div></section>
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">먼저 할 일 선택</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">최대 2개까지 선택합니다. 선택 제한이 있어야 조 안에서 토의가 생깁니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2">{example.workCandidates.map((item) => <button key={item} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${choiceClass(state.selectedPriorityTasks.includes(item))}`} onClick={() => update({ selectedPriorityTasks: toggleTextLimited(state.selectedPriorityTasks, item, 2), finalMemo: '' })}>{item}{example.recommendedPriority.includes(item) && <span className="ml-2 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black">추천</span>}</button>)}</div><p className="mt-3 text-xs font-bold text-slate-500">선택됨: {formatText(state.selectedPriorityTasks)}</p><Field label="선택 이유 1문장" help="왜 이 일을 먼저 해야 하는지 조별로 한 문장만 적습니다." placeholder="예: 이 일을 먼저 해야 후속 실행이 끊긴 고객군을 실제로 확인할 수 있기 때문입니다." value={state.priorityReason} onChange={(priorityReason) => update({ priorityReason })} minHeight="min-h-20" /></section>
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">잠시 줄일 일 선택</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">우선순위는 더 할 일을 고르는 것이 아니라 덜 할 일을 함께 정하는 것입니다. 최대 2개까지 선택합니다.</p><div className="mt-4 grid gap-2 md:grid-cols-3">{example.recommendedReduce.map((item) => <button key={item} type="button" className={`rounded-2xl border px-4 py-3 text-left text-sm font-black transition ${choiceClass(state.selectedReduceTasks.includes(item))}`} onClick={() => update({ selectedReduceTasks: toggleTextLimited(state.selectedReduceTasks, item, 2), finalMemo: '' })}>{item}</button>)}</div><p className="mt-3 text-xs font-bold text-slate-500">선택됨: {formatText(state.selectedReduceTasks)}</p><Field label="선택 이유 1문장" help="무엇을 줄이지 않으면 팀원에게 어떤 부담이 생기는지 한 문장으로 적습니다." placeholder="예: 단순 방문 건수 확대를 줄이지 않으면 후속 기록 품질을 볼 시간이 부족해지기 때문입니다." value={state.reduceReason} onChange={(reduceReason) => update({ reduceReason })} minHeight="min-h-20" /></section>
     <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-slate-950">업무 흐름 3단계</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">선택 결과를 바탕으로 업무가 어떤 순서로 흘러가야 하는지 3단계로 줄입니다.</p></div><button type="button" className="rounded-2xl border border-cyan-700 px-4 py-3 text-sm font-black text-cyan-800" onClick={applyTemplate}>예시 흐름 불러오기</button></div><div className="mt-4 grid gap-4 lg:grid-cols-3"><Field label="1단계" help="먼저 확인할 것" placeholder="예: 고객 반응 기록에서 추가 확인이 필요한 질문을 찾는다." value={state.flowStepOne} onChange={(flowStepOne) => update({ flowStepOne })} /><Field label="2단계" help="다음 행동으로 바꿀 것" placeholder="예: 후속 접점 가능성과 필요한 자료 범위를 정리한다." value={state.flowStepTwo} onChange={(flowStepTwo) => update({ flowStepTwo })} /><Field label="3단계" help="공유하거나 조정할 것" placeholder="예: 금요일 회의에서 막힌 지점과 지원 요청을 공유한다." value={state.flowStepThree} onChange={(flowStepThree) => update({ flowStepThree })} /></div></section>
-    <div className="grid gap-4 lg:grid-cols-2"><Field label="막힘 신호" help="실행이 흔들리고 있다는 조기 신호를 적습니다." placeholder="예: 기록은 늘었지만 다음 접점 가능성이 비어 있다." value={state.bottleneckSignal} onChange={(bottleneckSignal) => update({ bottleneckSignal })} /><Field label="중간 확인 질문" help="질책이 아니라 확인으로 시작하는 점검 질문을 적습니다." placeholder="예: 이번 주 중반 기준으로 어디서 막혔고, 제가 지원해야 할 부분은 무엇입니까?" value={state.midCheckQuestion} onChange={(midCheckQuestion) => update({ midCheckQuestion })} /></div>
-    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 업무 흐름 점검 질문 부탁하기</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">우리 조가 선택한 먼저 할 일과 줄일 일을 기준으로 막힘 신호와 점검 질문을 다듬습니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiFlowPrompt: prompt })} /></div></section></div>;
+    <div className="grid gap-4 lg:grid-cols-2"><Field label="막힘 신호" help="이 흐름이 제대로 가지 않고 있다는 신호를 1개 적습니다." placeholder="예: 기록은 늘었지만 다음 접점 가능성이 비어 있다." value={state.bottleneckSignal} onChange={(bottleneckSignal) => update({ bottleneckSignal })} /><Field label="중간 확인 질문" help="질책이 아니라 확인으로 시작하는 질문을 1개 적습니다." placeholder="예: 이번 주 중반 기준으로 어디서 막혔고, 제가 지원해야 할 부분은 무엇입니까?" value={state.midCheckQuestion} onChange={(midCheckQuestion) => update({ midCheckQuestion })} /></div>
+    <section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-xs font-black uppercase tracking-wide text-cyan-100">30초 실행 선언문</p><p className="mt-2 text-sm font-bold leading-6 text-slate-200">조별 발표용으로 바로 읽을 수 있는 선언문을 만듭니다.</p></div><button type="button" className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-900" onClick={makeDeclaration}>선언문 만들기</button></div><textarea className="mt-4 min-h-28 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm leading-7 text-white outline-none" value={state.executionDeclaration} onChange={(event) => update({ executionDeclaration: event.target.value })} placeholder={declarationDraft(state)} /></section>
+    <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 업무 흐름 점검 질문 부탁하기</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">선택 이유와 30초 실행 선언문까지 반영해 점검 질문을 다듬습니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiFlowPrompt: prompt })} /></div></section>
+  </div>;
 }
 
 export function V40VNextTaskBoundaryCoordinationLab() {
@@ -286,7 +301,7 @@ export function V40VNextTaskBoundaryCoordinationLab() {
   const prompt = useMemo(() => buildCoordinationPrompt(state), [state]);
   const finalMemo = useMemo(() => state.finalMemo || buildFinalMemo(state), [state]);
   const update = (patch: Partial<State>) => setState({ ...state, ...patch });
-  return <div className="space-y-4"><SectionHeader eyebrow="업무관리 3 · 혼자 해결하면 안 되는 일" title="팀원이 혼자 처리할 일과 팀장이 연결해야 할 일을 구분합니다" body="업무관리의 마지막은 사람을 평가하는 것이 아니라 일의 경계를 정리하는 것입니다. 팀원이 자율적으로 처리할 일, 팀장 확인이 필요한 일, 부서 협조와 상위 공유가 필요한 일을 나눕니다." /><div className="grid gap-4 lg:grid-cols-2"><Field label="팀원이 혼자 처리할 일" help="팀원이 자율적으로 판단하고 실행해도 되는 범위를 적습니다." placeholder="예: 승인된 범위 안에서 고객 반응 기록과 다음 확인 질문을 정리한다." value={state.soloWork} onChange={(soloWork) => update({ soloWork })} /><Field label="팀장 확인이 필요한 일" help="팀원이 혼자 판단하면 위험하거나 기준 정렬이 필요한 일을 적습니다." placeholder="예: 고객에게 전달할 표현이 애매하거나 우선순위 충돌이 생긴 경우 팀장에게 먼저 확인한다." value={state.leaderCheckWork} onChange={(leaderCheckWork) => update({ leaderCheckWork })} /><Field label="다른 부서 협조가 필요한 일" help="마케팅, 학술, 영업기획, 컴플라이언스 등 확인이 필요한 일을 적습니다." placeholder="예: 자료 활용 범위나 표현 가능 여부는 관련 부서에 확인한다." value={state.crossFunctionalHelp} onChange={(crossFunctionalHelp) => update({ crossFunctionalHelp })} /><Field label="상위 리더에게 공유할 일" help="방향 정렬이나 우선순위 조정이 필요한 내용을 적습니다." placeholder="예: 기존 업무를 일부 줄이고 후속 실행 품질을 우선하겠다는 방향을 공유한다." value={state.seniorLeaderShare} onChange={(seniorLeaderShare) => update({ seniorLeaderShare })} /></div><Field label="주의 표현 또는 확인 필요 사항" help="컴플라이언스·표현·자료 사용에서 반드시 확인해야 할 사항을 적습니다." placeholder="예: 특정 제품 비교 우위, 처방 유도처럼 들릴 수 있는 표현은 사용하지 않는다." value={state.cautionOrApproval} onChange={(cautionOrApproval) => update({ cautionOrApproval })} /><section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 조율 문장 초안 부탁하기</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">팀 회의 공유 문장과 부서 확인 요청 문장을 초안으로 받습니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiCoordinationPrompt: prompt })} /></div></section><Field label="팀 회의 또는 부서 확인용 조율 문장" help="우리 조가 실제로 말할 수 있는 짧은 공유·요청 문장을 적습니다." placeholder="예: 이번 2주는 단순 활동량보다 후속 실행 품질을 우선하겠습니다. 표현이나 자료 활용이 애매한 부분은 먼저 확인하고 진행하겠습니다." value={state.coordinationMessage} onChange={(coordinationMessage) => update({ coordinationMessage })} /><section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-xs font-black uppercase tracking-wide text-cyan-100">최종 메모 연결</p><h3 className="mt-2 text-xl font-black">업무관리 실행 구조 메모</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-200">이 내용은 마지막 2주 실행 메모에 붙여 넣을 수 있는 업무관리 결과입니다.</p></div><button type="button" className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-900" onClick={() => update({ finalMemo: buildFinalMemo(state) })}>업무관리 결과 정리</button></div><pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-white/10 p-4 text-sm leading-7 text-slate-100">{finalMemo}</pre></section></div>;
+  return <div className="space-y-4"><SectionHeader eyebrow="업무관리 3 · 혼자 해결하면 안 되는 일" title="팀원이 혼자 처리할 일과 팀장이 연결해야 할 일을 구분합니다" body="업무관리의 마지막은 사람을 평가하는 것이 아니라 일의 경계를 정리하는 것입니다." /><div className="grid gap-4 lg:grid-cols-2"><Field label="팀원이 혼자 처리할 일" help="팀원이 자율적으로 판단하고 실행해도 되는 범위를 적습니다." placeholder="예: 승인된 범위 안에서 고객 반응 기록과 다음 확인 질문을 정리한다." value={state.soloWork} onChange={(soloWork) => update({ soloWork })} /><Field label="팀장 확인이 필요한 일" help="팀원이 혼자 판단하면 위험하거나 기준 정렬이 필요한 일을 적습니다." placeholder="예: 고객에게 전달할 표현이 애매하거나 우선순위 충돌이 생긴 경우 팀장에게 먼저 확인한다." value={state.leaderCheckWork} onChange={(leaderCheckWork) => update({ leaderCheckWork })} /><Field label="다른 부서 협조가 필요한 일" help="마케팅, 학술, 영업기획, 컴플라이언스 등 확인이 필요한 일을 적습니다." placeholder="예: 자료 활용 범위나 표현 가능 여부는 관련 부서에 확인한다." value={state.crossFunctionalHelp} onChange={(crossFunctionalHelp) => update({ crossFunctionalHelp })} /><Field label="상위 리더에게 공유할 일" help="방향 정렬이나 우선순위 조정이 필요한 내용을 적습니다." placeholder="예: 기존 업무를 일부 줄이고 후속 실행 품질을 우선하겠다는 방향을 공유한다." value={state.seniorLeaderShare} onChange={(seniorLeaderShare) => update({ seniorLeaderShare })} /></div><Field label="주의 표현 또는 확인 필요 사항" help="컴플라이언스·표현·자료 사용에서 반드시 확인해야 할 사항을 적습니다." placeholder="예: 특정 제품 비교 우위, 처방 유도처럼 들릴 수 있는 표현은 사용하지 않는다." value={state.cautionOrApproval} onChange={(cautionOrApproval) => update({ cautionOrApproval })} /><section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 조율 문장 초안 부탁하기</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">팀 회의 공유 문장과 부서 확인 요청 문장을 초안으로 받습니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiCoordinationPrompt: prompt })} /></div></section><Field label="팀 회의 또는 부서 확인용 조율 문장" help="우리 조가 실제로 말할 수 있는 짧은 공유·요청 문장을 적습니다." placeholder="예: 이번 2주는 단순 활동량보다 후속 실행 품질을 우선하겠습니다. 표현이나 자료 활용이 애매한 부분은 먼저 확인하고 진행하겠습니다." value={state.coordinationMessage} onChange={(coordinationMessage) => update({ coordinationMessage })} /><section className="rounded-3xl border border-slate-200 bg-slate-900 p-5 text-white shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-xs font-black uppercase tracking-wide text-cyan-100">최종 메모 연결</p><h3 className="mt-2 text-xl font-black">업무관리 실행 구조 메모</h3><p className="mt-2 text-sm font-bold leading-6 text-slate-200">이 내용은 마지막 2주 실행 메모에 붙여 넣을 수 있는 업무관리 결과입니다.</p></div><button type="button" className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-900" onClick={() => update({ finalMemo: buildFinalMemo(state) })}>업무관리 결과 정리</button></div><pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-white/10 p-4 text-sm leading-7 text-slate-100">{finalMemo}</pre></section></div>;
 }
 
 export function V40VNextTaskInstructionSelectLab() { return <V40VNextTaskExecutionDesignLab />; }
