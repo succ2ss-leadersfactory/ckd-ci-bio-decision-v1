@@ -2,9 +2,12 @@ import { useMemo, useState } from 'react';
 import { useStored } from './journey-storage';
 import { TEAM_MEMBER_PROFILES, type TeamMemberProfile } from './journey-v39-team-seven-coaching-profiles';
 
-const TASK_STORAGE_KEY = 'ckd.v40-vnext.taskManagement.v10';
-const PEOPLE_STORAGE_KEY = 'ckd.v40-vnext.peopleManagement.v2';
-const FINAL_STORAGE_KEY = 'ckd.v40-vnext.finalExecutionMemo.v1';
+const STORAGE_KEYS = {
+  task: 'ckd.v40-vnext.taskManagement.v10',
+  people: 'ckd.v40-vnext.peopleManagement.v2',
+  final: 'ckd.v40-vnext.finalExecutionMemo.v1',
+} as const;
+const EMPTY = '미작성';
 
 const V40_VNEXT_FINAL_MEMO_MARKERS = [
   'V40VNextFinalExecutionMemoLab',
@@ -31,7 +34,6 @@ type TaskState = Record<string, any> & {
   flowStepThree?: string;
   bottleneckSignal?: string;
   midCheckQuestion?: string;
-  executionDeclaration?: string;
   finalRevisionOneThing?: string;
   soloWork?: string;
   leaderCheckWork?: string;
@@ -50,19 +52,12 @@ type PeopleState = Record<string, any> & {
   oneOnOneFocus?: string;
   selectionReason?: string;
   firstSentence?: string;
-  checkQuestionOne?: string;
-  checkQuestionTwo?: string;
-  leaderFollowUpQuestion?: string;
   twoWeekAgreement?: string;
-  roleplayOneLog?: string;
-  roleplayTwoLog?: string;
-  aiCoachLearning?: string;
   finalCoachingSentence?: string;
   revisedFirstSentenceAfterRoleplay?: string;
   revisedAgreementAfterRoleplay?: string;
   observerFeedback?: string;
   followUpQuestion?: string;
-  finalPeopleMemo?: string;
 };
 
 type FinalMemoState = {
@@ -72,6 +67,16 @@ type FinalMemoState = {
   peopleMemo: string;
   followUpMemo: string;
   reviewQuestions: string;
+};
+
+type FinalMemoFieldKey = keyof FinalMemoState;
+
+type FinalFieldConfig = {
+  key: FinalMemoFieldKey;
+  label: string;
+  help: string;
+  copyLabel: string;
+  minHeight?: string;
 };
 
 const DEFAULT_TASK_STATE: TaskState = {
@@ -94,11 +99,53 @@ const DEFAULT_FINAL_STATE: FinalMemoState = {
   reviewQuestions: '',
 };
 
+const FINAL_FIELD_CONFIG: FinalFieldConfig[] = [
+  {
+    key: 'performanceMemo',
+    label: '성과관리 기준',
+    help: '4~7단계에서 정한 성과 기준과 고객군별 2주 흐름을 짧게 남깁니다.',
+    copyLabel: '성과관리 기준',
+  },
+  {
+    key: 'taskMemo',
+    label: '업무관리 실행 메모',
+    help: '8~9단계의 실행 과제, 우선순위, 업무 흐름, 막힘 신호를 정리합니다.',
+    copyLabel: '업무관리 실행 메모',
+    minHeight: 'min-h-40',
+  },
+  {
+    key: 'boundaryMemo',
+    label: '업무 경계와 조율 메모',
+    help: '10단계에서 정한 혼자 처리할 일, 팀장 확인, 부서 협조, 상위 공유를 정리합니다.',
+    copyLabel: '업무 경계와 조율 메모',
+    minHeight: 'min-h-40',
+  },
+  {
+    key: 'peopleMemo',
+    label: '사람관리 1on1 메모',
+    help: '11~12단계의 선택 팀원, 역할극 후 수정한 첫 문장, 최종 코칭 문장, 2주 행동 합의를 정리합니다.',
+    copyLabel: '사람관리 1on1 메모',
+    minHeight: 'min-h-40',
+  },
+  {
+    key: 'followUpMemo',
+    label: '후속 확인 메모',
+    help: '2주 뒤 다시 볼 질문과 관찰자 체크를 남깁니다.',
+    copyLabel: '후속 확인 메모',
+  },
+  {
+    key: 'reviewQuestions',
+    label: '복기 질문',
+    help: '교육 후 현업에서 다시 펼쳐볼 질문입니다.',
+    copyLabel: '복기 질문',
+  },
+];
+
 function safeArray(value: unknown) {
   return Array.isArray(value) ? value.filter(Boolean).map(String) : [];
 }
 
-function asList(value: unknown, fallback = '미작성') {
+function asList(value: unknown, fallback = EMPTY) {
   const items = safeArray(value);
   if (items.length > 0) return items.join(' · ');
   return typeof value === 'string' && value.trim() ? value : fallback;
@@ -108,36 +155,40 @@ function firstText(...items: Array<string | undefined>) {
   return items.find((item) => item?.trim())?.trim() || '';
 }
 
+function line(label: string, value: unknown) {
+  return `[${label}] ${asList(value)}`;
+}
+
 function selectedMember(state: PeopleState): TeamMemberProfile {
   return TEAM_MEMBER_PROFILES.find((member) => member.id === state.selectedMemberId) ?? TEAM_MEMBER_PROFILES[0];
 }
 
 function taskFlow(state: TaskState) {
-  return [state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean).join(' → ') || '미작성';
+  return [state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean).join(' → ') || EMPTY;
 }
 
 function buildTaskMemo(state: TaskState) {
   return [
-    `[수정한 업무지시문] ${state.revisedInstruction || '미작성'}`,
-    `[완료 기준] ${state.completionCriteria || '미작성'}`,
-    `[팀장이 지원할 부분] ${state.leaderSupport || '미작성'}`,
-    `[먼저 할 일] ${asList(state.selectedPriorityTasks)}`,
-    `[잠시 줄일 일] ${asList(state.selectedReduceTasks)}`,
-    `[업무 흐름 3단계] ${taskFlow(state)}`,
-    `[막힘 신호] ${state.bottleneckSignal || '미작성'}`,
-    `[중간 확인 질문] ${state.midCheckQuestion || '미작성'}`,
-    `[우리 조가 최종 수정할 부분] ${state.finalRevisionOneThing || '미작성'}`,
+    line('수정한 업무지시문', state.revisedInstruction),
+    line('완료 기준', state.completionCriteria),
+    line('팀장이 지원할 부분', state.leaderSupport),
+    line('먼저 할 일', state.selectedPriorityTasks),
+    line('잠시 줄일 일', state.selectedReduceTasks),
+    line('업무 흐름 3단계', taskFlow(state)),
+    line('막힘 신호', state.bottleneckSignal),
+    line('중간 확인 질문', state.midCheckQuestion),
+    line('우리 조가 최종 수정할 부분', state.finalRevisionOneThing),
   ].join('\n');
 }
 
 function buildBoundaryMemo(state: TaskState) {
   return [
-    `[팀원이 혼자 처리할 일] ${state.soloWork || '미작성'}`,
-    `[팀장 확인이 필요한 일] ${state.leaderCheckWork || '미작성'}`,
-    `[다른 부서 협조가 필요한 일] ${state.crossFunctionalHelp || '미작성'}`,
-    `[상위 리더에게 공유할 일] ${state.seniorLeaderShare || '미작성'}`,
-    `[주의 표현 또는 확인 필요 사항] ${state.cautionOrApproval || '미작성'}`,
-    `[업무 경계 선언문] ${state.boundaryDeclaration || state.finalMemo || state.coordinationMessage || '미작성'}`,
+    line('팀원이 혼자 처리할 일', state.soloWork),
+    line('팀장 확인이 필요한 일', state.leaderCheckWork),
+    line('다른 부서 협조가 필요한 일', state.crossFunctionalHelp),
+    line('상위 리더에게 공유할 일', state.seniorLeaderShare),
+    line('주의 표현 또는 확인 필요 사항', state.cautionOrApproval),
+    line('업무 경계 선언문', firstText(state.boundaryDeclaration, state.finalMemo, state.coordinationMessage)),
   ].join('\n');
 }
 
@@ -147,15 +198,15 @@ function buildPeopleMemo(state: PeopleState) {
   const agreement = firstText(state.revisedAgreementAfterRoleplay, state.twoWeekAgreement) || '이번 2주 동안 막힌 지점을 작게 확인하고, 다음 점검 때 함께 조정하겠습니다.';
 
   return [
-    `[먼저 이야기할 팀원] ${member.label}`,
-    `[관찰한 행동] ${asList(state.observedBehaviors)}`,
-    `[확인 없이 말하지 않을 위험한 해석] ${asList(state.riskyInterpretations)}`,
-    `[1on1 초점] ${state.oneOnOneFocus || member.defaultCoachingPurpose}`,
-    `[선택 이유] ${state.selectionReason || member.defaultSelectionReason}`,
-    `[역할극 후 수정한 첫 문장] ${firstSentence}`,
-    `[우리 조가 최종 적용할 코칭 문장 1개] ${state.finalCoachingSentence || '미작성'}`,
-    `[역할극 후 수정한 2주 행동 합의] ${agreement}`,
-    `[후속 확인 질문] ${state.followUpQuestion || '미작성'}`,
+    line('먼저 이야기할 팀원', member.label),
+    line('관찰한 행동', state.observedBehaviors),
+    line('확인 없이 말하지 않을 위험한 해석', state.riskyInterpretations),
+    line('1on1 초점', state.oneOnOneFocus || member.defaultCoachingPurpose),
+    line('선택 이유', state.selectionReason || member.defaultSelectionReason),
+    line('역할극 후 수정한 첫 문장', firstSentence),
+    line('우리 조가 최종 적용할 코칭 문장 1개', state.finalCoachingSentence),
+    line('역할극 후 수정한 2주 행동 합의', agreement),
+    line('후속 확인 질문', state.followUpQuestion),
   ].join('\n');
 }
 
@@ -166,9 +217,9 @@ function buildDefaultFinal(taskState: TaskState, peopleState: PeopleState): Fina
     boundaryMemo: buildBoundaryMemo(taskState),
     peopleMemo: buildPeopleMemo(peopleState),
     followUpMemo: [
-      `[중간 확인 질문] ${taskState.midCheckQuestion || '미작성'}`,
-      `[후속 확인 질문] ${peopleState.followUpQuestion || '미작성'}`,
-      `[관찰자 체크] ${peopleState.observerFeedback || '미작성'}`,
+      line('중간 확인 질문', taskState.midCheckQuestion),
+      line('후속 확인 질문', peopleState.followUpQuestion),
+      line('관찰자 체크', peopleState.observerFeedback),
     ].join('\n'),
     reviewQuestions: [
       '1. 이번 2주 실행에서 실제로 움직인 성과 신호는 무엇입니까?',
@@ -183,24 +234,7 @@ function buildDefaultFinal(taskState: TaskState, peopleState: PeopleState): Fina
 function buildCopyText(result: FinalMemoState) {
   return [
     '[v40-vNext 2주 실행 메모]',
-    '',
-    '[성과관리 기준]',
-    result.performanceMemo || '미작성',
-    '',
-    '[업무관리 실행 메모]',
-    result.taskMemo || '미작성',
-    '',
-    '[업무 경계와 조율 메모]',
-    result.boundaryMemo || '미작성',
-    '',
-    '[사람관리 1on1 메모]',
-    result.peopleMemo || '미작성',
-    '',
-    '[후속 확인 메모]',
-    result.followUpMemo || '미작성',
-    '',
-    '[복기 질문]',
-    result.reviewQuestions || '미작성',
+    ...FINAL_FIELD_CONFIG.flatMap((field) => ['', `[${field.copyLabel}]`, result[field.key] || EMPTY]),
   ].join('\n');
 }
 
@@ -215,18 +249,19 @@ function Field({ label, help, value, placeholder, onChange, minHeight = 'min-h-2
 }
 
 export function V40VNextFinalExecutionMemoLab() {
-  const [taskState] = useStored<TaskState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
-  const [peopleState] = useStored<PeopleState>(PEOPLE_STORAGE_KEY, DEFAULT_PEOPLE_STATE);
-  const [finalState, setFinalState] = useStored<FinalMemoState>(FINAL_STORAGE_KEY, DEFAULT_FINAL_STATE);
+  const [taskState] = useStored<TaskState>(STORAGE_KEYS.task, DEFAULT_TASK_STATE);
+  const [peopleState] = useStored<PeopleState>(STORAGE_KEYS.people, DEFAULT_PEOPLE_STATE);
+  const [finalState, setFinalState] = useStored<FinalMemoState>(STORAGE_KEYS.final, DEFAULT_FINAL_STATE);
   const [copied, setCopied] = useState(false);
   const suggested = useMemo(() => buildDefaultFinal(taskState, peopleState), [taskState, peopleState]);
-  const filledCount = Object.values(finalState).filter((value) => value.trim()).length;
+  const copyText = useMemo(() => buildCopyText(finalState), [finalState]);
+  const filledCount = useMemo(() => Object.values(finalState).filter((value) => value.trim()).length, [finalState]);
 
-  const update = (patch: Partial<FinalMemoState>) => setFinalState({ ...finalState, ...patch });
+  const updateField = (key: FinalMemoFieldKey, value: string) => setFinalState({ ...finalState, [key]: value });
   const fillFromV40 = () => setFinalState(suggested);
   const copyMemo = async () => {
     try {
-      await navigator.clipboard.writeText(buildCopyText(finalState));
+      await navigator.clipboard.writeText(copyText);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -249,17 +284,22 @@ export function V40VNextFinalExecutionMemoLab() {
       </div>
 
       <div className="mt-4 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-xs font-bold leading-5 text-indigo-950">
-        <p className="font-black">현재 작성된 항목: {filledCount} / 6</p>
+        <p className="font-black">현재 작성된 항목: {filledCount} / {FINAL_FIELD_CONFIG.length}</p>
         <p className="mt-1">버튼을 누르면 v40-vNext storage key의 최신 업무관리·사람관리 결과가 자동 반영됩니다. 이후 우리 조 언어로 줄이고 고치면 됩니다.</p>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <Field label="성과관리 기준" help="4~7단계에서 정한 성과 기준과 고객군별 2주 흐름을 짧게 남깁니다." value={finalState.performanceMemo} onChange={(performanceMemo) => update({ performanceMemo })} placeholder={suggested.performanceMemo} />
-        <Field label="업무관리 실행 메모" help="8~9단계의 실행 과제, 우선순위, 업무 흐름, 막힘 신호를 정리합니다." value={finalState.taskMemo} onChange={(taskMemo) => update({ taskMemo })} placeholder={suggested.taskMemo} minHeight="min-h-40" />
-        <Field label="업무 경계와 조율 메모" help="10단계에서 정한 혼자 처리할 일, 팀장 확인, 부서 협조, 상위 공유를 정리합니다." value={finalState.boundaryMemo} onChange={(boundaryMemo) => update({ boundaryMemo })} placeholder={suggested.boundaryMemo} minHeight="min-h-40" />
-        <Field label="사람관리 1on1 메모" help="11~12단계의 선택 팀원, 역할극 후 수정한 첫 문장, 최종 코칭 문장, 2주 행동 합의를 정리합니다." value={finalState.peopleMemo} onChange={(peopleMemo) => update({ peopleMemo })} placeholder={suggested.peopleMemo} minHeight="min-h-40" />
-        <Field label="후속 확인 메모" help="2주 뒤 다시 볼 질문과 관찰자 체크를 남깁니다." value={finalState.followUpMemo} onChange={(followUpMemo) => update({ followUpMemo })} placeholder={suggested.followUpMemo} />
-        <Field label="복기 질문" help="교육 후 현업에서 다시 펼쳐볼 질문입니다." value={finalState.reviewQuestions} onChange={(reviewQuestions) => update({ reviewQuestions })} placeholder={suggested.reviewQuestions} />
+        {FINAL_FIELD_CONFIG.map((field) => (
+          <Field
+            key={field.key}
+            label={field.label}
+            help={field.help}
+            value={finalState[field.key]}
+            onChange={(value) => updateField(field.key, value)}
+            placeholder={suggested[field.key]}
+            minHeight={field.minHeight}
+          />
+        ))}
       </div>
 
       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-950">
