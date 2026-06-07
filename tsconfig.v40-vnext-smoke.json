@@ -7,6 +7,7 @@
     "src/vite-env.d.ts",
     "src/journey-v40-vnext-app-preview.tsx",
     "src/journey-v40-vnext-preview-config.ts",
+    "src/journey-v40-vnext-performance-strategy-cascade-lab.tsx",
     "src/journey-v40-vnext-task-management-lab.tsx",
     "src/journey-v40-vnext-task-boundary-coordination-lab.tsx",
     "src/journey-v40-vnext-people-selection-lab.tsx",
