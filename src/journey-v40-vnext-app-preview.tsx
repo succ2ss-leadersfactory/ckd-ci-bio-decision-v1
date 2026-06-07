@@ -12,6 +12,7 @@ import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussio
 import { V39NotebookLmGuidedResearchLab } from './journey-v39-notebooklm-guided-research-lab';
 import { V39PromptPracticeOptimizedLab } from './journey-v39-prompt-practice-optimized-lab';
 import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero, V39StepNavigationProvider } from './journey-v39-ux-components';
+import { V40VNextFinalExecutionMemoLab } from './journey-v40-vnext-final-execution-memo-lab';
 import { V40VNextOneOnOnePracticeLab } from './journey-v40-vnext-one-on-one-practice-lab';
 import { V40VNextPeopleSelectionLab } from './journey-v40-vnext-people-selection-lab';
 import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
@@ -44,6 +45,8 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   'V40VNextTaskBoundaryCoordinationLab',
   'V40VNextPeopleSelectionLab',
   'V40VNextOneOnOnePracticeLab',
+  'V40VNextFinalExecutionMemoLab',
+  'ckd.v40-vnext.finalExecutionMemo.v1',
   'Perplexity 리서치 질문',
   'perplexityAnswer',
   'notebookSourceBundle',
@@ -148,7 +151,7 @@ function V40TaskPriorityFlowStep() { return <div className="space-y-4"><V39FlowS
 function V40TaskBoundaryCoordinationStep() { return <div className="space-y-4"><V39FlowStrip currentStep={10} /><V39StepHero eyebrow="업무관리 3 · 혼자 해결하면 안 되는 일 구분하기" icon="🧱" title="팀원이 혼자 처리할 일과 팀장이 연결해야 할 일을 나눕니다" tone="violet" description="업무관리의 마지막은 사람을 평가하는 것이 아니라 일의 경계를 정리하는 것입니다. 팀원 자율 처리, 팀장 확인, 부서 협조, 상위 공유, 주의 표현을 구분합니다." badges={[{ label: '경계', value: '혼자 처리 vs 확인 필요', tone: 'violet', icon: '🧱' }, { label: '협조', value: '부서 확인', tone: 'cyan', icon: '🔗' }, { label: '다음', value: '사람관리 Lab', tone: 'indigo', icon: '👥' }]} /><V40VNextTaskBoundaryCoordinationLab /></div>; }
 function V40TeamMemberStep() { return <div className="space-y-4"><V39FlowStrip currentStep={11} /><V39StepHero eyebrow="사람관리 1 · 먼저 이야기할 팀원 고르기" icon="👥" title="신호를 보고, 해석을 늦추고, 먼저 대화할 팀원을 고릅니다" tone="indigo" description="9·10단계 실행 결과를 바탕으로 팀원별 실행 신호를 보고, 관찰한 행동과 위험한 해석을 분리한 뒤 1on1 대화 초점을 하나로 좁힙니다." badges={[{ label: '인물 계승', value: '기존 7명 유지', tone: 'indigo', icon: '👥' }, { label: '핵심', value: '관찰과 해석 분리', tone: 'amber', icon: '🔎' }, { label: '다음', value: '1on1 실천', tone: 'emerald', icon: '💬' }]} /><V40VNextPeopleSelectionLab /></div>; }
 function V40PeopleDialogueStep() { return <div className="space-y-4"><V39FlowStrip currentStep={12} /><V39StepHero eyebrow="사람관리 2 · 1on1 대화 설계와 실천하기" icon="💬" title="첫 문장에서 행동 합의까지 1on1을 연습합니다" tone="emerald" description="첫 문장만 만드는 것이 아니라 확인 질문, 팀원 예상 반응, 리더 재질문, 2주 행동 합의, 리허설, 후속 확인 질문까지 실제 대화 흐름으로 만듭니다." badges={[{ label: '대화 방식', value: '확인으로 시작', tone: 'emerald', icon: '💬' }, { label: '실천', value: '3분 역할극', tone: 'sky', icon: '🎭' }, { label: '다음', value: '통합 실행 메모', tone: 'indigo', icon: '✅' }]} /><V40VNextOneOnOnePracticeLab /></div>; }
-function V40FinalStep() { return <div className="space-y-4"><V39FlowStrip currentStep={13} /><V39StepHero eyebrow="13단계 · 2주 실행 메모와 복기 질문 완성하기" icon="✅" title="성과관리, 업무관리, 사람관리 결과를 하나의 2주 실행 메모로 묶습니다" tone="indigo" description="성과 기준, 고객군 흐름, 실행 과제, 업무 흐름, 일의 경계, 1on1 첫 문장과 복기 질문을 하나의 메모로 정리합니다." badges={[{ label: '성과관리', value: '무엇을 볼 것인가', tone: 'emerald', icon: '📈' }, { label: '업무관리', value: '일의 구조를 어떻게 짤 것인가', tone: 'cyan', icon: '🧩' }, { label: '사람관리', value: '누구와 어떻게 맞출 것인가', tone: 'indigo', icon: '👥' }]} /><V39FinalCallPlanTeamSevenUxCard /><V39InstructorDiscussionUxLab /></div>; }
+function V40FinalStep() { return <div className="space-y-4"><V39FlowStrip currentStep={13} /><V39StepHero eyebrow="13단계 · 2주 실행 메모와 복기 질문 완성하기" icon="✅" title="성과관리, 업무관리, 사람관리 결과를 하나의 2주 실행 메모로 묶습니다" tone="indigo" description="성과 기준, 고객군 흐름, 실행 과제, 업무 흐름, 일의 경계, 1on1 첫 문장과 복기 질문을 하나의 메모로 정리합니다." badges={[{ label: '성과관리', value: '무엇을 볼 것인가', tone: 'emerald', icon: '📈' }, { label: '업무관리', value: '일의 구조를 어떻게 짤 것인가', tone: 'cyan', icon: '🧩' }, { label: '사람관리', value: '누구와 어떻게 맞출 것인가', tone: 'indigo', icon: '👥' }]} /><V40VNextFinalExecutionMemoLab /><V39FinalCallPlanTeamSevenUxCard /><V39InstructorDiscussionUxLab /></div>; }
 
 function renderStep(step: number, participant: V40VNextParticipant, setParticipant: (next: V40VNextParticipant) => void) {
   switch (V40_VNEXT_VISIBLE_APP_STEPS[step]?.id) {
