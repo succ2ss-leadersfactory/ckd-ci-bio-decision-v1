@@ -25,6 +25,9 @@ const V39_TEAM_SEVEN_COACHING_MAP_SMOKE_MARKERS = [
   '업무배분 판단',
   '1on1 코칭 목적',
   '부담 편중 점검',
+  '먼저 이야기할 팀원 고르기',
+  'AI로 먼저 만날 이유 정리하기',
+  '먼저 이야기할 이유',
 ].join('|');
 void V39_TEAM_SEVEN_COACHING_MAP_SMOKE_MARKERS;
 
@@ -187,14 +190,14 @@ function isDecisionFilled(item: V39TeamSevenMemberDecision) {
 function buildCoachingJudgmentPrompt(profile: TeamMemberProfile, decision: V39TeamSevenMemberDecision) {
   const visibleProfile = displayProfile(profile, decision);
   return [
-    '당신은 팀장의 코칭 대상 선정 판단을 돕는 AI 사고 파트너입니다.',
+    '당신은 팀장이 먼저 이야기할 팀원을 고르는 판단을 돕는 AI 사고 파트너입니다.',
     '',
-    '아래 정보는 실제 인물이 아니라 익명화된 코칭 후보 정보입니다.',
-    '팀원을 평가하거나 성격을 단정하지 말고, 관찰 가능한 신호와 코칭 필요성을 정리해 주세요.',
-    '대화 스크립트나 질문 목록은 만들지 마세요. 9단계에서 대화 준비를 할 수 있도록 코칭 초점까지만 정리합니다.',
+    '아래 정보는 실제 인물이 아니라 익명화된 1on1 후보 정보입니다.',
+    '팀원을 평가하거나 성격을 단정하지 말고, 관찰 가능한 신호와 먼저 대화할 이유를 정리해 주세요.',
+    '대화 스크립트나 질문 목록은 만들지 마세요. 9단계에서 첫 문장을 준비할 수 있도록 대화 초점까지만 정리합니다.',
     '',
     '[입력]',
-    `- 코칭 후보 별칭: ${visibleProfile.label}`,
+    `- 1on1 후보 별칭: ${visibleProfile.label}`,
     `- 역할/상황: ${visibleProfile.role}`,
     `- 업무 스타일: ${visibleProfile.workStyle}`,
     `- 고객 대응 방식: ${visibleProfile.customerStyle}`,
@@ -205,9 +208,9 @@ function buildCoachingJudgmentPrompt(profile: TeamMemberProfile, decision: V39Te
     `- 팀장이 오해하기 쉬운 지점: ${visibleProfile.misreadRisk}`,
     `- 지금 1on1이 필요한 이유 후보: ${visibleProfile.oneOnOneReason}`,
     `- 팀장 고민 질문: ${visibleProfile.leaderQuestion}`,
-    `- 현재 선택한 1on1 목적: ${decision.coachingPurpose || '아직 선택하지 않음'}`,
+    `- 현재 선택한 대화 목적: ${decision.coachingPurpose || '아직 선택하지 않음'}`,
     `- 팀장이 생각한 선택 이유: ${decision.selectionReason || decision.leaderSupport || '아직 작성하지 않음'}`,
-    `- 9단계로 넘기고 싶은 코칭 초점: ${decision.coachingFocus || '아직 작성하지 않음'}`,
+    `- 9단계로 넘기고 싶은 대화 초점: ${decision.coachingFocus || '아직 작성하지 않음'}`,
     '',
     '[요청]',
     '아래 항목으로 정리해 주세요.',
@@ -218,7 +221,7 @@ function buildCoachingJudgmentPrompt(profile: TeamMemberProfile, decision: V39Te
     '4. 리스크로 볼 수 있는 부분',
     '5. 지금 1on1을 미루면 생길 수 있는 비용',
     '6. 먼저 대화할 필요성: 높음/중간/낮음 중 하나와 그 이유',
-    '7. 9단계로 넘길 코칭 초점 한 줄',
+    '7. 9단계로 넘길 대화 초점 한 줄',
     '',
     '주의:',
     '- 팀원을 평가하지 마세요.',
@@ -254,13 +257,13 @@ function CandidateCard({ profile, current, priorityCount, copied, onApplyDraft, 
             판단 초안 가져오기
           </button>
           <button type="button" className="rounded-2xl bg-sky-700 px-3 py-2 text-xs font-black text-white" onClick={onCopyAiPrompt}>
-            {copied ? '프롬프트 복사 완료' : 'AI로 코칭 필요 신호 정리하기'}
+            {copied ? '프롬프트 복사 완료' : 'AI로 먼저 만날 이유 정리하기'}
           </button>
         </div>
       </div>
 
       <div className="mt-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-3 text-xs font-bold leading-5 text-indigo-950">
-        <p className="font-black">역할/성향 요약</p>
+        <p className="font-black">역할/일하는 방식 요약</p>
         <p className="mt-1">{profile.workStyle}</p>
       </div>
 
@@ -269,7 +272,7 @@ function CandidateCard({ profile, current, priorityCount, copied, onApplyDraft, 
         <div className="rounded-2xl bg-slate-50 p-3"><span className="font-black text-slate-950">현재 신호</span><br />{profile.currentSignal}</div>
         <div className="rounded-2xl bg-violet-50 p-3"><span className="font-black text-violet-900">최근 변화 신호</span><br />{profile.recentChange}</div>
         <div className="rounded-2xl bg-emerald-50 p-3"><span className="font-black text-emerald-900">강점</span><br />{profile.strength}</div>
-        <div className="rounded-2xl bg-amber-50 p-3"><span className="font-black text-amber-900">리스크</span><br />{profile.risk}</div>
+        <div className="rounded-2xl bg-amber-50 p-3"><span className="font-black text-amber-900">걱정되는 지점</span><br />{profile.risk}</div>
         <div className="rounded-2xl bg-rose-50 p-3"><span className="font-black text-rose-900">팀장이 오해하기 쉬운 지점</span><br />{profile.misreadRisk}</div>
         <div className="rounded-2xl bg-cyan-50 p-3"><span className="font-black text-cyan-900">지금 1on1이 필요한 이유</span><br />{profile.oneOnOneReason}</div>
         <div className="rounded-2xl bg-sky-50 p-3"><span className="font-black text-sky-900">팀장 질문</span><br />{profile.leaderQuestion}</div>
@@ -277,7 +280,7 @@ function CandidateCard({ profile, current, priorityCount, copied, onApplyDraft, 
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <label className="space-y-1">
-          <span className="text-xs font-black text-slate-500">1on1 코칭 목적</span>
+          <span className="text-xs font-black text-slate-500">먼저 이야기할 이유</span>
           <select className="min-h-11 w-full rounded-2xl border px-3 py-2 text-sm font-bold" value={current.coachingPurpose} onChange={(event) => onUpdate({ coachingPurpose: event.target.value })}>
             <option value="">선택하세요</option>
             {COACHING_PURPOSE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -290,10 +293,10 @@ function CandidateCard({ profile, current, priorityCount, copied, onApplyDraft, 
         </label>
         <label className="space-y-1 md:col-span-2">
           <span className="text-xs font-black text-slate-500">선택 이유</span>
-          <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.selectionReason || current.leaderSupport} onChange={(event) => onUpdate({ selectionReason: event.target.value, leaderSupport: event.target.value })} placeholder="왜 지금 이 팀원과 먼저 1on1이 필요하다고 느끼는지 적어 주세요." />
+          <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.selectionReason || current.leaderSupport} onChange={(event) => onUpdate({ selectionReason: event.target.value, leaderSupport: event.target.value })} placeholder="왜 지금 이 팀원과 먼저 이야기해야 한다고 느끼는지 적어 주세요." />
         </label>
         <label className="space-y-1 md:col-span-2">
-          <span className="text-xs font-black text-slate-500">9단계로 넘길 코칭 초점</span>
+          <span className="text-xs font-black text-slate-500">9단계로 넘길 대화 초점</span>
           <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.coachingFocus || ''} onChange={(event) => onUpdate({ coachingFocus: event.target.value })} placeholder="예: 부담을 먼저 듣고, 이번 2주 동안 어디까지 실행할지 함께 좁힌다." />
         </label>
         <label className="space-y-1 md:col-span-2">
@@ -302,7 +305,7 @@ function CandidateCard({ profile, current, priorityCount, copied, onApplyDraft, 
         </label>
         <label className="space-y-1 md:col-span-2">
           <span className="text-xs font-black text-slate-500">AI 판단 정리 붙여넣기</span>
-          <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.aiJudgmentDraft || ''} onChange={(event) => onUpdate({ aiJudgmentDraft: event.target.value })} placeholder="AI 결과를 붙여넣는 경우, 관찰 신호·확인할 해석·코칭 초점까지만 남기세요. 대화 스크립트와 질문 목록은 9단계에서 만듭니다." />
+          <textarea className="min-h-24 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={current.aiJudgmentDraft || ''} onChange={(event) => onUpdate({ aiJudgmentDraft: event.target.value })} placeholder="AI 결과를 붙여넣는 경우, 관찰 신호·확인할 해석·대화 초점까지만 남기세요. 첫 문장과 질문은 9단계에서 만듭니다." />
         </label>
       </div>
     </article>
@@ -367,10 +370,10 @@ export function V39TeamSevenCoachingMap() {
     <section className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Coaching Target Selection</p>
-          <h2 className="mt-2 text-xl font-black text-slate-950">코칭 대상 선정</h2>
+          <p className="text-xs font-black uppercase tracking-wide text-indigo-700">1on1 Target Selection</p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">먼저 이야기할 팀원 고르기</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-700">
-            7명의 팀원 유형을 먼저 자세히 살펴본 뒤, 지금 1on1 코칭이 필요하다고 느껴지는 팀원을 선택합니다. 실제 팀원과 가장 유사한 사람을 떠올리되, 사람을 평가하거나 성격을 단정하지 않습니다. 우선 1on1 대상은 최대 2명만 선택하고, 9단계로 넘길 코칭 초점까지만 정리합니다.
+            7명의 팀원 장면을 먼저 살펴본 뒤, 이번 2주 실행을 위해 팀장이 먼저 앉아 이야기해야 할 사람을 고릅니다. 실제 팀원과 가장 유사한 사람을 떠올리되, 사람을 평가하거나 성격을 단정하지 않습니다. 우선 1on1 대상은 최대 2명만 선택하고, 9단계로 넘길 대화 초점까지만 정리합니다.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 md:w-72">
@@ -398,7 +401,7 @@ export function V39TeamSevenCoachingMap() {
 
       <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-xs font-bold leading-5 text-sky-950">
         <p className="font-black">AI 활용 기준</p>
-        <p className="mt-1">8단계 AI는 대화문을 만드는 도구가 아닙니다. 관찰 사실과 해석을 분리하고, 지금 대화하지 않을 때의 비용과 9단계로 넘길 코칭 초점을 정리하는 데만 사용합니다.</p>
+        <p className="mt-1">8단계 AI는 대화문을 만드는 도구가 아닙니다. 관찰 사실과 해석을 분리하고, 지금 대화하지 않을 때의 비용과 9단계로 넘길 대화 초점을 정리하는 데만 사용합니다.</p>
       </div>
 
       <div className="mt-4 grid gap-3 xl:grid-cols-2">
@@ -424,7 +427,7 @@ export function V39TeamSevenCoachingMap() {
         <details>
           <summary className="cursor-pointer text-sm font-black text-slate-950">실제 고민 팀원 직접 등록</summary>
           <p className="mt-2 text-xs font-bold leading-5 text-slate-600">
-            위 7명 유형을 먼저 본 뒤에도 충분히 맞는 사람이 없다면 익명으로 등록합니다. 실제 팀원을 등록할 때는 익명 별칭과 관찰 가능한 신호만 적습니다. 예: “팀원 A”, “경력 많은 팀원”, “후속조치 기록이 자주 늦어짐”.
+            위 7명 장면을 먼저 본 뒤에도 충분히 맞는 사람이 없다면 익명으로 등록합니다. 실제 팀원을 등록할 때는 익명 별칭과 관찰 가능한 신호만 적습니다. 예: “팀원 A”, “경력 많은 팀원”, “후속조치 기록이 자주 늦어짐”.
           </p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="space-y-1">
@@ -444,7 +447,7 @@ export function V39TeamSevenCoachingMap() {
               <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={directDecision.directStrength || ''} onChange={(event) => updateDecision(DIRECT_PROFILE, { directStrength: event.target.value })} placeholder="예: 고객 관계 안정성, 자료 정리, 빠른 실행" />
             </label>
             <label className="space-y-1">
-              <span className="text-xs font-black text-slate-500">리스크</span>
+              <span className="text-xs font-black text-slate-500">걱정되는 지점</span>
               <textarea className="min-h-20 w-full rounded-2xl border px-3 py-2 text-sm leading-6" value={directDecision.directRisk || ''} onChange={(event) => updateDecision(DIRECT_PROFILE, { directRisk: event.target.value })} placeholder="예: 부담 누적, 실행 지연, 표현 안전선 우려" />
             </label>
             <label className="space-y-1 md:col-span-2">
