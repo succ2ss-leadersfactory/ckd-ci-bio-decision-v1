@@ -23,7 +23,7 @@ Route:
 Tested commit:
 
 ```text
-b0e43829205e97f65d3476647f53b72c1fdb872a
+1cc970744be524e39e23ab2a2bcb12b4c0ff47fb
 ```
 
 Actions status before browser QA:
@@ -167,12 +167,22 @@ Chrome desktop / Edge desktop / Android Chrome / Samsung Internet / tablet etc.
 | Check | Result | Note |
 |---|---|---|
 | Step 8 title/identity is 먼저 이야기할 팀원 고르기 | Pass / Fail |  |
+| Header uses 1on1 Target Selection, not Coaching Target Selection | Pass / Fail |  |
+| “누구를 먼저 만날지 고르는 4가지 기준” card appears | Pass / Fail |  |
+| Team meeting vs 1on1 distinction card appears | Pass / Fail |  |
+| 7명별 먼저 만날지 판단하는 한 줄 기준 appears | Pass / Fail |  |
 | 7 team member narrative profiles appear | Pass / Fail |  |
 | Team member profiles read like realistic Korean pharmaceutical sales team members | Pass / Fail |  |
 | 문교원 사원 appears as an MZ junior who asks for meaning/criteria without being stereotyped | Pass / Fail |  |
+| Candidate card label says “먼저 이야기할 이유”, not “1on1 코칭 목적” | Pass / Fail |  |
+| AI button says “AI로 먼저 만날 이유 정리하기” | Pass / Fail |  |
+| Step 8 AI prompt frames AI as helping select a conversation priority, not generating a script | Pass / Fail |  |
+| “9단계로 넘길 대화 초점” appears, not “코칭 초점” | Pass / Fail |  |
+| “걱정되는 지점” appears instead of risk-heavy participant-facing wording where appropriate | Pass / Fail |  |
 | Actual team member registration is anonymous or safe if used | Pass / Fail |  |
 | No work allocation map dominates | Pass / Fail |  |
 | No customer group × team member assignment appears | Pass / Fail |  |
+| No old “코칭 대상 선정” title appears in visible UI | Pass / Fail |  |
 
 ## 12. Step 9 Result — 첫 문장 준비하기
 
