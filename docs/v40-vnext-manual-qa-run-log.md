@@ -9,11 +9,11 @@ This file records the current verification status after adding the v40-vNext man
 - Branch: `feature/v37-preview-shell`
 - Route under test: `/journey-v40-vnext-preview.html`
 - QA checklist: `docs/v40-vnext-manual-qa-checklist.md`
-- Latest verified head before this log update: `eff598987a86f658218c391351fa8281f4a3c171`
+- Latest verified head: `5ce13eb7e9b4d6e0b7b10c865601cd1fc8f3032b`
 
 ## 2. Automated verification status
 
-The following checks were confirmed successful for head `eff598987a86f658218c391351fa8281f4a3c171`.
+The following checks were confirmed successful for head `5ce13eb7e9b4d6e0b7b10c865601cd1fc8f3032b`.
 
 - [x] Vercel deployment status: success
 - [x] C1Bio MVP CI: success
