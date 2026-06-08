@@ -43,7 +43,9 @@ for (const marker of [
   '<div id="journey-root"></div>',
   '/src/journey-v40-vnext-app-preview.tsx',
   'v40-vNext route only',
-  'display: none !important',
+  '역할과 팀원 구성 이해하기',
+  '여러분은 오늘 C1바이오 영업팀장입니다',
+  '여러분',
 ]) mustInclude(files.html, marker, 'v40-vNext html');
 
 for (const marker of [
@@ -63,16 +65,11 @@ for (const marker of [
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
 
 for (const marker of [
-  'V40VNextShell',
-  '상단 제목 제거',
-  '상단 단계 overview 제거',
-  'v40-vNext 보호 기준 박스 제거',
-  '하단 이동 버튼 유지',
-]) mustInclude(files.shell, marker, 'v40-vNext minimal shell');
-
-for (const marker of [
   'V40VNextFlowStrip',
-  'v40-vNext 11단계 전용 흐름',
+  'v40-vNext 12단계 전용 흐름',
+  '팀장 역할 시작',
+  '역할·팀원 이해',
+  '말해도 되는 선',
   '성과관리 1',
   '성과관리 2',
   '업무관리 1',
@@ -106,7 +103,9 @@ for (const marker of [
 ]) mustInclude(files.compactPerformanceLab, marker, 'compact performance bridge lab');
 
 for (const marker of [
-  '조별 역할 잡기',
+  '팀장 역할 시작하기',
+  '역할과 팀원 구성 이해하기',
+  '말해도 되는 선 확인',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
