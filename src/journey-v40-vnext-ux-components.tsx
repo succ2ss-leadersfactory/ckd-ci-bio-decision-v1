@@ -5,7 +5,8 @@ type V40VNextStepNavigator = (stepNumber: number) => void;
 
 const V40_VNEXT_UX_COMPONENT_MARKERS = [
   'V40VNextFlowStrip',
-  '12단계 전체 흐름',
+  '파일럿 11단계 전체 흐름',
+  '12단계 최종 실행 메모 숨김',
   '팀장 역할 시작',
   '역할·팀원 이해',
   '말해도 되는 선',
@@ -16,7 +17,6 @@ const V40_VNEXT_UX_COMPONENT_MARKERS = [
   '업무관리 3',
   '사람관리 1',
   '사람관리 2',
-  '최종 실행 메모',
   '1단계 팀·이름 필수 게이트',
 ].join('|');
 void V40_VNEXT_UX_COMPONENT_MARKERS;
@@ -39,7 +39,6 @@ const v40FlowItems = [
   { step: 9, label: '업무관리 3: 혼자 해결하면 안 되는 일 구분하기', shortLabel: '업무관리 3', icon: '🧱' },
   { step: 10, label: '사람관리 1: 먼저 이야기할 팀원 고르기', shortLabel: '사람관리 1', icon: '👤' },
   { step: 11, label: '사람관리 2: 1on1 대화 설계와 실천하기', shortLabel: '사람관리 2', icon: '💬' },
-  { step: 12, label: '2주 실행 메모와 복기 질문 완성하기', shortLabel: '최종 실행 메모', icon: '✅' },
 ];
 
 function v40ParticipantIdentityReady() {
