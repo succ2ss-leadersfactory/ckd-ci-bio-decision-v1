@@ -153,6 +153,10 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextPerformanceEnhancedCascadeLab',
+  '전사전략과제 초기 선택 없음',
+  '팀 전략과제 선택 보기 4개 제시',
+  'CSF 보기 4개 제시',
+  '선택한 CSF별 KPI 후보 4개',
   'AI에게 보낼 프롬프트',
   'AI가 제안한 CSF/KPI 후보 붙여넣기',
   'AI 답변 항목별로 정리하기',
