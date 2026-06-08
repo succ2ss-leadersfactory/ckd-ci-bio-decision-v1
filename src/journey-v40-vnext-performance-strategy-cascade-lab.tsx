@@ -34,10 +34,12 @@ const V40_VNEXT_PERFORMANCE_CASCADE_MARKERS = [
 void V40_VNEXT_PERFORMANCE_CASCADE_MARKERS;
 
 type KpiType = '활동' | '전환' | '품질' | '리스크';
+type Theme = 'followup' | 'record' | 'crm' | 'question' | 'message' | 'boundary' | 'contact' | 'gap' | 'purpose' | 'blocker';
 type Kpi = { id: string; label: string; type: KpiType; evidence: string; question: string; caution: string };
 type Csf = { id: string; label: string; meaning: string; guide: string; kpis: Kpi[] };
 type TeamStrategyOption = { id: string; label: string; guide: string; csfs: Csf[] };
 type StrategyCard = { id: string; enterpriseTask: string; sourceHint: string; teamStrategyOptions: TeamStrategyOption[] };
+type FlatKpi = Kpi & { csfId: string; csfLabel: string };
 
 type State = {
   selectedStrategyId: string;
@@ -69,10 +71,6 @@ type State = {
   teamMeetingSentenceThree: string;
   finalExecutionStandard: string;
 };
-
-type FlatKpi = Kpi & { csfId: string; csfLabel: string };
-
-type CsfTheme = 'followup' | 'record' | 'question' | 'crm' | 'message' | 'boundary' | 'contact' | 'gap' | 'purpose' | 'blocker';
 
 const DEFAULT_STATE: State = {
   selectedStrategyId: '',
@@ -113,90 +111,96 @@ const FLOW_OPTIONS = [
   { id: 'safety-first', label: '고객 질문과 자료 사용 범위는 승인자료·표현 안전선을 먼저 점검한다.' },
 ];
 
-function kpi(id: string, label: string, type: KpiType, evidence: string, question: string, caution: string): Kpi {
+function makeKpi(id: string, label: string, type: KpiType, evidence: string, question: string, caution: string): Kpi {
   return { id, label, type, evidence, question, caution };
 }
 
-function kpiSet(prefix: string, theme: CsfTheme): Kpi[] {
-  const commonMid = kpi(`${prefix}-mid-check`, '팀장 중간 점검 질문 작성 건수', '품질', '중간 점검 질문, 후속 확인 질문, 기록 샘플 점검 메모', '팀장이 이번 주에 실제로 물어볼 질문은 무엇인가요?', '질문이 추궁처럼 들리지 않게 관찰 중심으로 표현합니다.');
-  const commonRisk = kpi(`${prefix}-risk-expression`, '위험 표현 점검률', '리스크', '수정한 표현, 보류한 답변, 확인 필요 질문', '고객에게 오해를 줄 수 있는 표현은 무엇인가요?', '처방 유도, 경쟁사 비방, 비교 우위 단정 표현을 쓰지 않습니다.');
-  const byTheme: Record<CsfTheme, Kpi[]> = {
+function kpisFor(prefix: string, theme: Theme): Kpi[] {
+  const mid = makeKpi(`${prefix}-mid-check`, '팀장 중간 점검 질문 작성 건수', '품질', '중간 점검 질문, 후속 확인 질문, 기록 샘플 점검 메모', '팀장이 이번 주에 실제로 물어볼 질문은 무엇인가요?', '질문이 추궁처럼 들리지 않게 관찰 중심으로 표현합니다.');
+  const risk = makeKpi(`${prefix}-risk-expression`, '위험 표현 점검률', '리스크', '수정한 표현, 보류한 답변, 확인 필요 질문', '고객에게 오해를 줄 수 있는 표현은 무엇인가요?', '처방 유도, 경쟁사 비방, 비교 우위 단정 표현을 쓰지 않습니다.');
+  const sets: Record<Theme, Kpi[]> = {
     followup: [
-      kpi(`${prefix}-followup-complete`, '후속조치 완료율', '전환', '자료 전달 후 확인, 다음 일정, 미해결 요청 처리 기록', '후속조치가 늦어진 이유는 고객 제약인가요, 우리 실행 제약인가요?', '후속조치를 고객 압박이나 처방 유도처럼 표현하지 않습니다.'),
-      kpi(`${prefix}-next-contact`, '다음 접점 확보 건수', '전환', '다음 접점 목적, 일정, 준비 자료, 고객 확인 질문', '다음 접점은 실제 일정인가요, 가능성 언급인가요?', '다음 접점 확보를 과도한 설득으로 운영하지 않습니다.'),
-      kpi(`${prefix}-delay-reason`, '후속 지연 사유 기록률', '품질', '지연 사유, 고객 일정, 내부 준비, 팀장 지원 필요', '지연 이유가 고객 제약인지 우리 실행 제약인지 보이나요?', '지연을 팀원 태도 문제로 단정하지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-followup-complete`, '후속조치 완료율', '전환', '자료 전달 후 확인, 다음 일정, 미해결 요청 처리 기록', '후속조치가 늦어진 이유는 고객 제약인가요, 우리 실행 제약인가요?', '후속조치를 고객 압박이나 처방 유도처럼 표현하지 않습니다.'),
+      makeKpi(`${prefix}-next-contact`, '다음 접점 확보 건수', '전환', '다음 접점 목적, 일정, 준비 자료, 고객 확인 질문', '다음 접점은 실제 일정인가요, 가능성 언급인가요?', '다음 접점 확보를 과도한 설득으로 운영하지 않습니다.'),
+      makeKpi(`${prefix}-delay-reason`, '후속 지연 사유 기록률', '품질', '지연 사유, 고객 일정, 내부 준비, 팀장 지원 필요', '지연 이유가 고객 제약인지 우리 실행 제약인지 보이나요?', '지연을 팀원 태도 문제로 단정하지 않습니다.'),
+      mid,
     ],
     record: [
-      kpi(`${prefix}-question-record`, '고객 질문 기록률', '품질', '고객 질문 내용, 질문 배경, 후속 확인 필요 항목', '고객 질문이 단순 확인이었나요, 다음 논의로 이어질 질문이었나요?', '고객 질문을 처방 가능성이나 제품 선호로 단정하지 않습니다.'),
-      kpi(`${prefix}-next-action-record`, '후속 행동 포함 기록률', '품질', '다음 행동, 담당자, 시점, 고객 질문, 준비 자료', '기록에 다음 행동이 없으면 무엇을 더 확인해야 하나요?', '기록 입력률 자체를 성과로 단정하지 않습니다.'),
-      kpi(`${prefix}-record-quality`, '고객 반응 기록 충실도', '품질', '고객 반응, 피드백, 제약요인, 다음 행동 포함 여부', '기록을 보고 다음 행동을 정할 수 있을 만큼 충분한가요?', '고객 감정이나 의도를 확인 없이 해석하지 않습니다.'),
-      commonMid,
-    ],
-    question: [
-      kpi(`${prefix}-fact-interpretation`, '사실-해석 분리 기록률', '품질', '관찰 사실, 팀원 해석, 고객 확인 필요 사항', '고객 반응과 우리의 해석이 분리되어 있나요?', '반응을 선호나 처방 가능성으로 단정하지 않습니다.'),
-      kpi(`${prefix}-confirm-question`, '확인 질문 작성 건수', '품질', '고객에게 확인할 질문, 팀원에게 물어볼 질문', '성급한 해석 대신 어떤 확인 질문을 남겼나요?', '확인 질문이 유도 질문이 되지 않게 합니다.'),
-      kpi(`${prefix}-interpretation-risk`, '과잉해석 수정 건수', '리스크', '긍정 반응 단정, 의도 추정, 제품 선호 해석 수정', '어떤 표현을 더 안전하게 바꿔야 하나요?', '고객의 의도를 확인 없이 말하지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-question-record`, '고객 질문 기록률', '품질', '고객 질문 내용, 질문 배경, 후속 확인 필요 항목', '고객 질문이 단순 확인이었나요, 다음 논의로 이어질 질문이었나요?', '고객 질문을 처방 가능성이나 제품 선호로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-next-action-record`, '후속 행동 포함 기록률', '품질', '다음 행동, 담당자, 시점, 고객 질문, 준비 자료', '기록에 다음 행동이 없으면 무엇을 더 확인해야 하나요?', '기록 입력률 자체를 성과로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-record-quality`, '고객 반응 기록 충실도', '품질', '고객 반응, 피드백, 제약요인, 다음 행동 포함 여부', '기록을 보고 다음 행동을 정할 수 있을 만큼 충분한가요?', '고객 감정이나 의도를 확인 없이 해석하지 않습니다.'),
+      mid,
     ],
     crm: [
-      kpi(`${prefix}-crm-next-action`, '후속 행동 포함 CRM 기록률', '품질', '다음 행동, 담당자, 시점, 고객 질문, 준비 자료', '기록에 다음 행동이 없으면 무엇을 더 확인해야 하나요?', 'CRM 입력률 자체를 성과로 단정하지 않습니다.'),
-      kpi(`${prefix}-crm-timeliness`, 'CRM 기록 적시성', '활동', '방문 후 기록 시점, 누락 기록, 지연 사유', '기록 지연이 일정 문제인지 기록 기준 문제인지 확인했나요?', '기록 지연을 즉시 태도 문제로 해석하지 않습니다.'),
-      kpi(`${prefix}-crm-bottleneck`, 'CRM 기반 실행 제약 확인 건수', '리스크', '기록에서 보이는 일정 변경, 내부 지원 요청, 자료 확인 필요', 'CRM 기록만 보고 무엇을 지원할 수 있나요?', '기록을 감시 도구처럼 쓰지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-crm-next-action`, '후속 행동 포함 CRM 기록률', '품질', '다음 행동, 담당자, 시점, 고객 질문, 준비 자료', '기록에 다음 행동이 없으면 무엇을 더 확인해야 하나요?', 'CRM 입력률 자체를 성과로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-crm-timeliness`, 'CRM 기록 적시성', '활동', '방문 후 기록 시점, 누락 기록, 지연 사유', '기록 지연이 일정 문제인지 기록 기준 문제인지 확인했나요?', '기록 지연을 즉시 태도 문제로 해석하지 않습니다.'),
+      makeKpi(`${prefix}-crm-bottleneck`, 'CRM 기반 실행 제약 확인 건수', '리스크', '기록에서 보이는 일정 변경, 내부 지원 요청, 자료 확인 필요', 'CRM 기록만 보고 무엇을 지원할 수 있나요?', '기록을 감시 도구처럼 쓰지 않습니다.'),
+      mid,
+    ],
+    question: [
+      makeKpi(`${prefix}-fact-interpretation`, '사실-해석 분리 기록률', '품질', '관찰 사실, 팀원 해석, 고객 확인 필요 사항', '고객 반응과 우리의 해석이 분리되어 있나요?', '반응을 선호나 처방 가능성으로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-confirm-question`, '확인 질문 작성 건수', '품질', '고객에게 확인할 질문, 팀원에게 물어볼 질문', '성급한 해석 대신 어떤 확인 질문을 남겼나요?', '확인 질문이 유도 질문이 되지 않게 합니다.'),
+      makeKpi(`${prefix}-interpretation-risk`, '과잉해석 수정 건수', '리스크', '긍정 반응 단정, 의도 추정, 제품 선호 해석 수정', '어떤 표현을 더 안전하게 바꿔야 하나요?', '고객의 의도를 확인 없이 말하지 않습니다.'),
+      mid,
     ],
     message: [
-      kpi(`${prefix}-approved-material`, '승인자료 사용 확인률', '리스크', '사용 자료, 전달 메시지, 고객 질문 범위, 자료 확인 메모', '사용한 자료와 답변 범위가 승인자료 안에 있나요?', '승인 범위 밖 내용을 확장하지 않습니다.'),
-      kpi(`${prefix}-message-consistency`, '공통 메시지 사용률', '품질', '팀 공통 문장, 고객 질문 대응 문장, 수정한 표현', '팀원이 같은 핵심 문장을 안전하게 쓰고 있나요?', '일관성이 기계적 반복으로 느껴지지 않게 합니다.'),
-      kpi(`${prefix}-risk-correction`, '위험 표현 수정 건수', '리스크', '비교 우위 단정, 처방 유도, 허가 외 사용 암시 수정 기록', '고객에게 부담이나 오해를 줄 수 있는 표현은 무엇인가요?', '경쟁사 비방, 비교 우위 단정, 처방 유도 표현을 쓰지 않습니다.'),
-      commonRisk,
+      makeKpi(`${prefix}-approved-material`, '승인자료 사용 확인률', '리스크', '사용 자료, 전달 메시지, 고객 질문 범위, 자료 확인 메모', '사용한 자료와 답변 범위가 승인자료 안에 있나요?', '승인 범위 밖 내용을 확장하지 않습니다.'),
+      makeKpi(`${prefix}-message-consistency`, '공통 메시지 사용률', '품질', '팀 공통 문장, 고객 질문 대응 문장, 수정한 표현', '팀원이 같은 핵심 문장을 안전하게 쓰고 있나요?', '일관성이 기계적 반복으로 느껴지지 않게 합니다.'),
+      makeKpi(`${prefix}-risk-correction`, '위험 표현 수정 건수', '리스크', '비교 우위 단정, 처방 유도, 허가 외 사용 암시 수정 기록', '고객에게 부담이나 오해를 줄 수 있는 표현은 무엇인가요?', '경쟁사 비방, 비교 우위 단정, 처방 유도 표현을 쓰지 않습니다.'),
+      risk,
     ],
     boundary: [
-      kpi(`${prefix}-question-boundary`, '고객 질문 대응 범위 확인 건수', '품질', '고객 질문, 답변 가능 범위, 추가 확인 필요 여부', '이 질문은 바로 답할 수 있나요, 확인 후 답해야 하나요?', '확인되지 않은 답변을 현장에서 확정적으로 말하지 않습니다.'),
-      kpi(`${prefix}-confirm-later`, '확인 후 대응 건수', '품질', '즉답하지 않고 확인 후 대응한 고객 질문', '바로 답하지 말고 확인해야 하는 질문은 무엇인가요?', '확인 필요를 회피가 아니라 안전관리로 설명합니다.'),
-      kpi(`${prefix}-cp-check`, 'CP 확인 필요 건수', '리스크', '확인 필요 질문, 관련 부서 확인 요청, 보류 답변 기록', '이 사안은 팀장 또는 관련 부서 확인이 필요한가요?', '확인 필요를 실행 지연이 아니라 안전관리로 설명합니다.'),
-      commonRisk,
+      makeKpi(`${prefix}-question-boundary`, '고객 질문 대응 범위 확인 건수', '품질', '고객 질문, 답변 가능 범위, 추가 확인 필요 여부', '이 질문은 바로 답할 수 있나요, 확인 후 답해야 하나요?', '확인되지 않은 답변을 현장에서 확정적으로 말하지 않습니다.'),
+      makeKpi(`${prefix}-confirm-later`, '확인 후 대응 건수', '품질', '즉답하지 않고 확인 후 대응한 고객 질문', '바로 답하지 말고 확인해야 하는 질문은 무엇인가요?', '확인 필요를 회피가 아니라 안전관리로 설명합니다.'),
+      makeKpi(`${prefix}-cp-check`, 'CP 확인 필요 건수', '리스크', '확인 필요 질문, 관련 부서 확인 요청, 보류 답변 기록', '이 사안은 팀장 또는 관련 부서 확인이 필요한가요?', '확인 필요를 실행 지연이 아니라 안전관리로 설명합니다.'),
+      risk,
     ],
     contact: [
-      kpi(`${prefix}-nonface-follow`, '비대면 접점 후속 확인률', '전환', '전화·메시지 후속 확인, 자료 확인 여부, 고객 질문', '자료 전달 후 실제 확인이나 질문이 있었나요?', '자료 전달 자체를 고객 이해나 성과로 단정하지 않습니다.'),
-      kpi(`${prefix}-material-response`, '자료 요청 대응률', '전환', '자료 요청 내용, 승인자료 여부, 대응 시점, 후속 확인', '고객 요청에 승인자료 범위 안에서 대응했나요?', '자료 요청을 제품 선호나 처방 의향으로 해석하지 않습니다.'),
-      kpi(`${prefix}-contact-reaction`, '대체 접점 반응 기록률', '품질', '비대면 접점 이후 고객 질문, 확인 요청, 미응답 사유', '대체 접점 이후 실제 반응이 기록되어 있나요?', '무응답을 부정적 반응으로 단정하지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-nonface-follow`, '비대면 접점 후속 확인률', '전환', '전화·메시지 후속 확인, 자료 확인 여부, 고객 질문', '자료 전달 후 실제 확인이나 질문이 있었나요?', '자료 전달 자체를 고객 이해나 성과로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-material-response`, '자료 요청 대응률', '전환', '자료 요청 내용, 승인자료 여부, 대응 시점, 후속 확인', '고객 요청에 승인자료 범위 안에서 대응했나요?', '자료 요청을 제품 선호나 처방 의향으로 해석하지 않습니다.'),
+      makeKpi(`${prefix}-contact-reaction`, '대체 접점 반응 기록률', '품질', '비대면 접점 이후 고객 질문, 확인 요청, 미응답 사유', '대체 접점 이후 실제 반응이 기록되어 있나요?', '무응답을 부정적 반응으로 단정하지 않습니다.'),
+      mid,
     ],
     gap: [
-      kpi(`${prefix}-untouched-check`, '미접촉 고객 확인률', '활동', '미접촉 기간, 접근 경로, 접점 공백 사유', '미접촉은 고객 제약 때문인가요, 우리 실행 루틴 때문인가요?', '미접촉 고객을 무리하게 압박하지 않습니다.'),
-      kpi(`${prefix}-gap-reason`, '접점 공백 사유 기록률', '리스크', '일정 제약, 접근 경로 부재, 내부 준비 부족, 고객 상황', '접점 공백의 이유가 기록에 남아 있나요?', '공백을 팀원 노력 부족으로 단정하지 않습니다.'),
-      kpi(`${prefix}-recovery-purpose`, '접점 회복 목적 작성률', '품질', '접근 목적, 확인 질문, 다음 행동', '다시 접촉하는 이유와 확인할 질문이 분명한가요?', '접점 회복을 고객 압박으로 운영하지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-untouched-check`, '미접촉 고객 확인률', '활동', '미접촉 기간, 접근 경로, 접점 공백 사유', '미접촉은 고객 제약 때문인가요, 우리 실행 루틴 때문인가요?', '미접촉 고객을 무리하게 압박하지 않습니다.'),
+      makeKpi(`${prefix}-gap-reason`, '접점 공백 사유 기록률', '리스크', '일정 제약, 접근 경로 부재, 내부 준비 부족, 고객 상황', '접점 공백의 이유가 기록에 남아 있나요?', '공백을 팀원 노력 부족으로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-recovery-purpose`, '접점 회복 목적 작성률', '품질', '접근 목적, 확인 질문, 다음 행동', '다시 접촉하는 이유와 확인할 질문이 분명한가요?', '접점 회복을 고객 압박으로 운영하지 않습니다.'),
+      mid,
     ],
     purpose: [
-      kpi(`${prefix}-visit-purpose`, '접점 목적 작성률', '활동', '방문 목적, 확인 질문, 준비 자료, 예상 후속 행동', '접점 전에 무엇을 확인하려는지 명확한가요?', '방문 수 자체를 성과로 단정하지 않습니다.'),
-      kpi(`${prefix}-next-topic`, '다음 논의 주제 기록률', '품질', '다음 논의 주제, 고객 질문, 추가 확인 필요 사항', '다음 논의 주제가 고객 질문과 연결되어 있나요?', '고객에게 부담을 주는 후속 논의로 운영하지 않습니다.'),
-      kpi(`${prefix}-no-purpose-visit`, '목적 불명확 접점 확인 건수', '리스크', '목적이 약한 반복 방문, 후속 행동 없는 방문', '목적 없는 반복 접점을 줄일 수 있나요?', '활동량 감소를 무조건 부정적으로 보지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-visit-purpose`, '접점 목적 작성률', '활동', '방문 목적, 확인 질문, 준비 자료, 예상 후속 행동', '접점 전에 무엇을 확인하려는지 명확한가요?', '방문 수 자체를 성과로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-next-topic`, '다음 논의 주제 기록률', '품질', '다음 논의 주제, 고객 질문, 추가 확인 필요 사항', '다음 논의 주제가 고객 질문과 연결되어 있나요?', '고객에게 부담을 주는 후속 논의로 운영하지 않습니다.'),
+      makeKpi(`${prefix}-no-purpose-visit`, '목적 불명확 접점 확인 건수', '리스크', '목적이 약한 반복 방문, 후속 행동 없는 방문', '목적 없는 반복 접점을 줄일 수 있나요?', '활동량 감소를 무조건 부정적으로 보지 않습니다.'),
+      mid,
     ],
     blocker: [
-      kpi(`${prefix}-blocker-found`, '실행 제약 확인 건수', '리스크', '고객 접근 제약, 일정 변경, 내부 지원 요청, 자료 확인 필요', '막힌 지점은 팀원이 혼자 해결할 일인가요, 팀장이 연결할 일인가요?', '실행 부진을 고객 탓이나 팀원 탓으로 단정하지 않습니다.'),
-      kpi(`${prefix}-support-action`, '팀장 지원 실행 건수', '전환', '팀장 연결, 자료 확인, 부서 협조, 우선순위 조정', '팀장이 실제로 연결하거나 조정한 것은 무엇인가요?', '지원이 과잉개입이 되지 않게 합니다.'),
-      kpi(`${prefix}-blocked-followup`, '막힌 후속조치 처리율', '전환', '막힌 후속조치, 처리 상태, 다음 확인 시점', '막힌 일이 방치되지 않고 다음 확인으로 이어졌나요?', '처리율만 보고 무리한 압박을 하지 않습니다.'),
-      commonMid,
+      makeKpi(`${prefix}-blocker-found`, '실행 제약 확인 건수', '리스크', '고객 접근 제약, 일정 변경, 내부 지원 요청, 자료 확인 필요', '막힌 지점은 팀원이 혼자 해결할 일인가요, 팀장이 연결할 일인가요?', '실행 부진을 고객 탓이나 팀원 탓으로 단정하지 않습니다.'),
+      makeKpi(`${prefix}-support-action`, '팀장 지원 실행 건수', '전환', '팀장 연결, 자료 확인, 부서 협조, 우선순위 조정', '팀장이 실제로 연결하거나 조정한 것은 무엇인가요?', '지원이 과잉개입이 되지 않게 합니다.'),
+      makeKpi(`${prefix}-blocked-followup`, '막힌 후속조치 처리율', '전환', '막힌 후속조치, 처리 상태, 다음 확인 시점', '막힌 일이 방치되지 않고 다음 확인으로 이어졌나요?', '처리율만 보고 무리한 압박을 하지 않습니다.'),
+      mid,
     ],
   };
-  return byTheme[theme];
+  return sets[theme];
 }
 
-function makeCsf(prefix: string, theme: CsfTheme, label: string, meaning: string, guide: string): Csf {
-  return { id: `${prefix}-${theme}`, label, meaning, guide, kpis: kpiSet(`${prefix}-${theme}`, theme) };
+function makeCsf(prefix: string, theme: Theme, label: string, meaning: string, guide: string): Csf {
+  return { id: `${prefix}-${theme}`, label, meaning, guide, kpis: kpisFor(`${prefix}-${theme}`, theme) };
 }
 
-function sharedCsf(prefix: string, type: 'standard' | 'risk'): Csf {
-  return type === 'standard'
-    ? makeCsf(prefix, 'record', '팀원이 같은 기준으로 실행해야 한다', '팀 공통 기준과 기록 방식이 공유되어야 합니다.', '팀 전략과제를 실행하려면 무엇을 같은 기준으로 볼지 먼저 정리합니다.')
-    : makeCsf(prefix, 'boundary', '성과 실행과 안전선이 함께 관리되어야 한다', '성과관리 지표가 고객 압박이나 위험 표현으로 흐르지 않아야 합니다.', '제약영업에서는 숫자와 함께 승인자료 범위, 표현 안전선을 반드시 봅니다.');
-}
-
-function strategyOption(id: string, label: string, guide: string, csfList: Csf[]): TeamStrategyOption {
-  return { id, label, guide, csfs: csfList };
+function makeTeamStrategy(id: string, label: string, guide: string, themes: Theme[]): TeamStrategyOption {
+  const defaultLabels: Record<Theme, [string, string, string]> = {
+    followup: ['후속 행동이 일정 안에 실행되어야 한다', '고객 질문·자료 요청·다음 약속이 방치되지 않아야 합니다.', '고객 반응 이후 실제 실행으로 이어지는지를 봅니다.'],
+    record: ['고객 질문과 반응이 구체적으로 기록되어야 한다', '질문과 반응이 다음 행동의 근거로 남아야 합니다.', '후속 실행을 만들 수 있을 만큼 기록이 구체적인지 봅니다.'],
+    crm: ['CRM 기록에 다음 행동이 포함되어야 한다', '방문 사실보다 다음 행동과 지원 필요가 남아야 합니다.', '기록이 실행의 출발점이 되는지 봅니다.'],
+    question: ['고객 반응과 팀원의 해석이 분리되어야 한다', '고객 반응을 제품 선호나 처방 가능성으로 단정하지 않아야 합니다.', '사실과 해석을 분리하고 확인 질문으로 바꿉니다.'],
+    message: ['승인자료 범위 안에서 메시지를 전달해야 한다', '허가 외 사용 암시와 과장 표현을 막아야 합니다.', '성과 실행과 안전선을 함께 관리합니다.'],
+    boundary: ['답변 가능 범위가 정리되어야 한다', '현장에서 즉흥적으로 답하지 않고 확인 후 대응해야 합니다.', '질문 대응의 안전선을 만듭니다.'],
+    contact: ['방문 외 접점 이후 실제 반응이 확인되어야 한다', '자료 전달 자체가 아니라 확인·질문·다음 논의가 남아야 합니다.', '대체 접점 이후 반응을 기록으로 확인합니다.'],
+    gap: ['접점 공백의 이유가 확인되어야 한다', '미접촉의 원인이 고객 제약인지 실행 루틴인지 분리해야 합니다.', '공백을 비난보다 진단으로 봅니다.'],
+    purpose: ['접점 목적이 명확해야 한다', '접점이 활동량이 아니라 목적 있는 실행이어야 합니다.', '무엇을 확인하려는 접점인지 먼저 정리합니다.'],
+    blocker: ['실행을 막는 제약이 확인되어야 한다', '지연 원인을 팀원 탓으로 단정하지 않고 확인해야 합니다.', '막힌 이유와 팀장 지원 필요를 함께 확인합니다.'],
+  };
+  return { id, label, guide, csfs: themes.map((theme) => makeCsf(id, theme, ...defaultLabels[theme])) };
 }
 
 const STRATEGY_CARDS: StrategyCard[] = [
@@ -205,30 +209,10 @@ const STRATEGY_CARDS: StrategyCard[] = [
     enterpriseTask: '고객가치 기반 성장 강화',
     sourceHint: '고객 접점 이후의 반응, 질문, 다음 행동이 실제 실행으로 이어지도록 만드는 전사 방향입니다.',
     teamStrategyOptions: [
-      strategyOption('customer-contact-conversion', '고객 접점 이후 실행 전환율 강화', '방문과 접촉 이후 실제 후속 행동으로 이어지는 흐름을 강화하려는 팀에 적합합니다.', [
-        makeCsf('customer-contact-conversion', 'record', '고객 질문과 반응이 구체적으로 기록되어야 한다', '질문과 반응이 다음 행동의 근거로 남아야 합니다.', '후속 실행을 만들 수 있을 만큼 기록이 구체적인지 봅니다.'),
-        makeCsf('customer-contact-conversion', 'followup', '후속 행동이 일정 안에 실행되어야 한다', '고객 질문·자료 요청·다음 약속이 방치되지 않아야 합니다.', '고객 반응 이후 실제 실행으로 이어지는지를 봅니다.'),
-        makeCsf('customer-contact-conversion', 'blocker', '후속 실행을 막는 제약이 확인되어야 한다', '후속조치 지연 원인을 팀원 탓으로 단정하지 않고 확인해야 합니다.', '막힌 이유와 팀장 지원 필요를 함께 확인합니다.'),
-        sharedCsf('customer-contact-conversion-risk', 'risk'),
-      ]),
-      strategyOption('customer-question-followup', '고객 질문 기반 후속 실행 체계화', '고객 질문을 단순 기록이 아니라 다음 행동으로 연결하려는 팀에 적합합니다.', [
-        makeCsf('customer-question-followup', 'question', '고객 반응과 팀원의 해석이 분리되어야 한다', '고객 반응을 제품 선호나 처방 가능성으로 단정하지 않아야 합니다.', '사실과 해석을 분리하고 확인 질문으로 바꿉니다.'),
-        makeCsf('customer-question-followup', 'record', '확인 질문이 고객 기록에 남아야 한다', '다음 대화에서 확인할 질문이 기록되어야 합니다.', '고객 반응 이후 무엇을 확인할지 남깁니다.'),
-        makeCsf('customer-question-followup', 'followup', '확인 질문이 다음 행동으로 이어져야 한다', '질문 기록이 실제 후속 실행으로 연결되어야 합니다.', '질문을 기록에서 실행으로 바꾸는 조건입니다.'),
-        sharedCsf('customer-question-followup-risk', 'risk'),
-      ]),
-      strategyOption('customer-record-quality', '고객 반응 기록 품질 고도화', '방문 수보다 고객 반응 기록의 질을 높이려는 팀에 적합합니다.', [
-        makeCsf('customer-record-quality', 'record', '고객 반응 기록이 다음 행동을 정할 만큼 충분해야 한다', '단순 반응 메모가 아니라 다음 행동의 근거가 필요합니다.', '기록을 실행 가능한 정보로 바꿉니다.'),
-        makeCsf('customer-record-quality', 'question', '관찰 사실과 해석이 분리되어야 한다', '기록 품질은 단정이 아니라 확인 가능성에서 나옵니다.', '고객 반응에 대한 과잉해석을 줄입니다.'),
-        makeCsf('customer-record-quality', 'blocker', '기록에서 실행 제약이 보여야 한다', '기록을 보면 팀장이 지원할 지점을 찾을 수 있어야 합니다.', '기록을 점검이 아니라 지원 근거로 씁니다.'),
-        sharedCsf('customer-record-quality-standard', 'standard'),
-      ]),
-      strategyOption('key-customer-flow', '핵심 고객 접점 목적과 후속 흐름 정렬', '핵심 고객 접점의 목적과 다음 논의 흐름을 선명하게 만들려는 팀에 적합합니다.', [
-        makeCsf('key-customer-flow', 'purpose', '접점 목적이 명확해야 한다', '접점이 활동량이 아니라 목적 있는 실행이어야 합니다.', '무엇을 확인하려는 접점인지 먼저 정리합니다.'),
-        makeCsf('key-customer-flow', 'record', '다음 논의 주제가 기록되어야 한다', '다음 대화 주제가 고객 질문과 연결되어야 합니다.', '접점 후 남은 논의 주제를 확인합니다.'),
-        makeCsf('key-customer-flow', 'followup', '다음 접점의 이유가 고객 질문과 연결되어야 한다', '다음 접점은 무리한 재방문이 아니라 질문에 대한 후속이어야 합니다.', '다음 접점의 목적과 안전선을 함께 봅니다.'),
-        sharedCsf('key-customer-flow-standard', 'standard'),
-      ]),
+      makeTeamStrategy('customer-contact-conversion', '고객 접점 이후 실행 전환율 강화', '방문과 접촉 이후 실제 후속 행동으로 이어지는 흐름을 강화하려는 팀에 적합합니다.', ['record', 'followup', 'blocker', 'boundary']),
+      makeTeamStrategy('customer-question-followup', '고객 질문 기반 후속 실행 체계화', '고객 질문을 단순 기록이 아니라 다음 행동으로 연결하려는 팀에 적합합니다.', ['question', 'record', 'followup', 'boundary']),
+      makeTeamStrategy('customer-record-quality', '고객 반응 기록 품질 고도화', '방문 수보다 고객 반응 기록의 질을 높이려는 팀에 적합합니다.', ['record', 'question', 'blocker', 'purpose']),
+      makeTeamStrategy('key-customer-flow', '핵심 고객 접점 목적과 후속 흐름 정렬', '핵심 고객 접점의 목적과 다음 논의 흐름을 선명하게 만들려는 팀에 적합합니다.', ['purpose', 'record', 'followup', 'boundary']),
     ],
   },
   {
@@ -236,30 +220,10 @@ const STRATEGY_CARDS: StrategyCard[] = [
     enterpriseTask: '디지털 기반 실행관리 고도화',
     sourceHint: 'CRM과 기록을 실행관리, 팀장 점검, 지원 행동으로 연결하는 전사 방향입니다.',
     teamStrategyOptions: [
-      strategyOption('crm-execution-system', 'CRM 기반 영업 실행관리 체계 강화', 'CRM 입력은 많은데 실제 후속 실행으로 이어지지 않는 팀에 적합합니다.', [
-        makeCsf('crm-execution-system', 'crm', 'CRM 기록에 다음 행동이 포함되어야 한다', '방문 사실보다 다음 행동과 지원 필요가 남아야 합니다.', '기록이 실행의 출발점이 되는지 봅니다.'),
-        makeCsf('crm-execution-system', 'followup', '기록된 후속 행동이 실행되어야 한다', '기록이 실행으로 이어지지 않으면 성과관리 기준이 약해집니다.', '후속 실행의 완료와 지연 이유를 봅니다.'),
-        makeCsf('crm-execution-system', 'blocker', '팀장이 막힌 지점을 확인할 수 있어야 한다', '기록이 팀장 코칭과 지원으로 이어져야 합니다.', '기록을 보고 연결할 일을 찾습니다.'),
-        sharedCsf('crm-execution-system-risk', 'risk'),
-      ]),
-      strategyOption('crm-quality-advance', 'CRM 기록 품질 고도화', '기록 품질을 높여 팀장이 지원할 지점을 확인하려는 팀에 적합합니다.', [
-        makeCsf('crm-quality-advance', 'record', '고객 질문과 다음 행동이 기록에 함께 남아야 한다', '질문만 있고 실행이 없거나 실행만 있고 맥락이 없는 기록을 줄여야 합니다.', '고객 기록을 실행 가능한 정보로 바꿉니다.'),
-        makeCsf('crm-quality-advance', 'blocker', '막힌 이유가 기록에 남아야 한다', '실행 제약이 보이지 않으면 팀장이 지원하기 어렵습니다.', '고객 제약과 내부 제약을 분리합니다.'),
-        makeCsf('crm-quality-advance', 'question', '기록 속 해석과 사실이 분리되어야 한다', '기록이 추측 중심이면 후속 판단이 흔들립니다.', '사실 중심 기록을 강화합니다.'),
-        sharedCsf('crm-quality-advance-standard', 'standard'),
-      ]),
-      strategyOption('weekly-execution-rhythm', '주간 실행 점검 리듬 정착', '기록 시점과 점검 리듬이 불안정한 팀에 적합합니다.', [
-        makeCsf('weekly-execution-rhythm', 'crm', '방문 후 기록이 제때 남아야 한다', '기록 지연은 후속 실행 지연으로 이어질 수 있습니다.', '기록 시점과 실행 리듬을 함께 봅니다.'),
-        makeCsf('weekly-execution-rhythm', 'purpose', '주간 점검 기준이 명확해야 한다', '무엇을 볼지 정해져야 점검이 감시가 되지 않습니다.', '중간 점검 질문과 기준을 만듭니다.'),
-        makeCsf('weekly-execution-rhythm', 'followup', '점검 후 보완 행동이 실행되어야 한다', '점검에서 끝나지 않고 다음 행동으로 이어져야 합니다.', '주간 점검을 실행 조정으로 연결합니다.'),
-        sharedCsf('weekly-execution-rhythm-standard', 'standard'),
-      ]),
-      strategyOption('crm-coaching-question', 'CRM 기반 코칭 질문 운영', '기록 점검이 감시로 느껴지지 않게 바꾸려는 팀에 적합합니다.', [
-        makeCsf('crm-coaching-question', 'question', '기록 점검 질문이 관찰 중심이어야 한다', '팀장 질문이 추궁이 아니라 확인으로 들려야 합니다.', '기록에서 코칭 질문을 뽑습니다.'),
-        makeCsf('crm-coaching-question', 'blocker', '팀원이 말한 막힌 지점을 팀장이 연결해야 한다', '팀원이 혼자 해결할 일과 연결해야 할 일을 구분합니다.', '기록 기반 지원을 강화합니다.'),
-        makeCsf('crm-coaching-question', 'record', '코칭 후 다음 행동이 기록에 남아야 한다', '대화가 실행 합의로 남아야 합니다.', '코칭 결과를 실행 기록으로 연결합니다.'),
-        sharedCsf('crm-coaching-question-risk', 'risk'),
-      ]),
+      makeTeamStrategy('crm-execution-system', 'CRM 기반 영업 실행관리 체계 강화', 'CRM 입력은 많은데 실제 후속 실행으로 이어지지 않는 팀에 적합합니다.', ['crm', 'followup', 'blocker', 'boundary']),
+      makeTeamStrategy('crm-quality-advance', 'CRM 기록 품질 고도화', '기록 품질을 높여 팀장이 지원할 지점을 확인하려는 팀에 적합합니다.', ['record', 'blocker', 'question', 'purpose']),
+      makeTeamStrategy('weekly-execution-rhythm', '주간 실행 점검 리듬 정착', '기록 시점과 점검 리듬이 불안정한 팀에 적합합니다.', ['crm', 'purpose', 'followup', 'record']),
+      makeTeamStrategy('crm-coaching-question', 'CRM 기반 코칭 질문 운영', '기록 점검이 감시로 느껴지지 않게 바꾸려는 팀에 적합합니다.', ['question', 'blocker', 'record', 'boundary']),
     ],
   },
   {
@@ -267,30 +231,10 @@ const STRATEGY_CARDS: StrategyCard[] = [
     enterpriseTask: '지속가능한 성장 기반 강화',
     sourceHint: '고객 커뮤니케이션의 일관성, 승인자료 범위, 표현 안전선을 함께 관리하는 전사 방향입니다.',
     teamStrategyOptions: [
-      strategyOption('approved-communication', '승인자료 기반 고객 커뮤니케이션 일관성 강화', '고객 커뮤니케이션의 안전성과 일관성을 높이려는 팀에 적합합니다.', [
-        makeCsf('approved-communication', 'message', '승인자료 범위 안에서 메시지를 전달해야 한다', '허가 외 사용 암시와 과장 표현을 막아야 합니다.', '성과 실행과 안전선을 함께 관리합니다.'),
-        makeCsf('approved-communication', 'boundary', '고객 질문의 답변 가능 범위가 정리되어야 한다', '현장에서 즉흥적으로 답하지 않고 확인 후 대응해야 합니다.', '답변 가능 범위를 분리합니다.'),
-        makeCsf('approved-communication', 'record', '고객 질문과 대응 범위가 기록되어야 한다', '고객 질문과 답변 범위가 기록에 남아야 안전하게 후속 대응할 수 있습니다.', '질문과 대응 범위를 함께 남깁니다.'),
-        sharedCsf('approved-communication-standard', 'standard'),
-      ]),
-      strategyOption('question-response-boundary', '고객 질문 답변 가능 범위 관리', '현장에서 애매한 질문에 즉흥적으로 답하는 위험을 줄이고 싶은 팀에 적합합니다.', [
-        makeCsf('question-response-boundary', 'boundary', '즉답 가능한 질문과 확인 필요 질문이 구분되어야 한다', '질문을 모두 기회로 보지 말고 답변 가능 범위를 봐야 합니다.', '질문 대응의 안전선을 만듭니다.'),
-        makeCsf('question-response-boundary', 'question', '고객 질문의 맥락과 한계가 기록되어야 한다', '질문 배경과 답변 가능 범위를 기록해야 합니다.', '질문 기록을 안전한 후속으로 연결합니다.'),
-        makeCsf('question-response-boundary', 'message', '확인 후 대응 문장이 준비되어야 한다', '보류하거나 확인 후 답하는 표현이 필요합니다.', '현장 대응 문장을 안전하게 만듭니다.'),
-        sharedCsf('question-response-boundary-risk', 'risk'),
-      ]),
-      strategyOption('safe-expression-replace', '위험 표현 점검 및 대체 문장 정착', '비교 우위 단정, 처방 유도, 허가 외 사용 암시를 예방하려는 팀에 적합합니다.', [
-        makeCsf('safe-expression-replace', 'message', '자주 쓰는 표현의 위험성이 점검되어야 한다', '현장 문장이 오해를 낳지 않게 사전에 점검해야 합니다.', '위험 표현을 대체 문장으로 바꿉니다.'),
-        makeCsf('safe-expression-replace', 'boundary', '확인 필요한 질문을 임의로 확장하지 않아야 한다', '답변 범위를 넘는 질문은 확인 후 대응해야 합니다.', '확인 후 대응을 안전관리로 설명합니다.'),
-        makeCsf('safe-expression-replace', 'record', '수정한 표현과 이유가 팀 기록에 남아야 한다', '한 번 수정한 표현이 팀 공통 언어로 남아야 합니다.', '개별 수정이 아니라 팀 학습으로 연결합니다.'),
-        sharedCsf('safe-expression-replace-standard', 'standard'),
-      ]),
-      strategyOption('common-response-message', '팀 공통 고객 대응 문장 정렬', '팀원별 표현 편차를 줄이고 공통 언어를 만들려는 팀에 적합합니다.', [
-        makeCsf('common-response-message', 'message', '팀 공통 고객 대응 문장이 정리되어야 한다', '팀원별 표현 편차를 줄이기 위해 공통 문장이 필요합니다.', '자주 쓰는 문장을 함께 점검합니다.'),
-        makeCsf('common-response-message', 'boundary', '표현 안전선과 확인 필요 기준이 공유되어야 한다', '어디까지 말할 수 있는지 팀원들이 알아야 합니다.', '말해도 되는 선을 함께 정리합니다.'),
-        makeCsf('common-response-message', 'purpose', '회의 후 적용할 문장이 실제 현장으로 이어져야 한다', '회의에서 끝나지 않고 다음 고객 접점에서 적용되어야 합니다.', '회의 내용을 실행 문장으로 바꿉니다.'),
-        sharedCsf('common-response-message-risk', 'risk'),
-      ]),
+      makeTeamStrategy('approved-communication', '승인자료 기반 고객 커뮤니케이션 일관성 강화', '고객 커뮤니케이션의 안전성과 일관성을 높이려는 팀에 적합합니다.', ['message', 'boundary', 'record', 'purpose']),
+      makeTeamStrategy('question-response-boundary', '고객 질문 답변 가능 범위 관리', '현장에서 애매한 질문에 즉흥적으로 답하는 위험을 줄이고 싶은 팀에 적합합니다.', ['boundary', 'question', 'message', 'record']),
+      makeTeamStrategy('safe-expression-replace', '위험 표현 점검 및 대체 문장 정착', '비교 우위 단정, 처방 유도, 허가 외 사용 암시를 예방하려는 팀에 적합합니다.', ['message', 'boundary', 'record', 'question']),
+      makeTeamStrategy('common-response-message', '팀 공통 고객 대응 문장 정렬', '팀원별 표현 편차를 줄이고 공통 언어를 만들려는 팀에 적합합니다.', ['message', 'boundary', 'purpose', 'record']),
     ],
   },
   {
@@ -298,30 +242,10 @@ const STRATEGY_CARDS: StrategyCard[] = [
     enterpriseTask: '시장 변화 대응력 강화',
     sourceHint: '고객 접점 방식이 달라질 때도 반응과 후속 확인이 끊기지 않게 만드는 전사 방향입니다.',
     teamStrategyOptions: [
-      strategyOption('contact-diversification', '고객 접점 방식 다변화와 후속 확인 체계 강화', '방문 외 접점의 효과를 단순 발송이 아니라 후속 확인으로 보려는 팀에 적합합니다.', [
-        makeCsf('contact-diversification', 'contact', '방문 외 접점 이후 실제 반응이 확인되어야 한다', '자료 전달 자체가 아니라 확인·질문·다음 논의가 남아야 합니다.', '대체 접점 이후 반응을 기록으로 확인합니다.'),
-        makeCsf('contact-diversification', 'followup', '대체 접점 이후 후속 행동이 실행되어야 한다', '비대면 접점도 후속 실행으로 연결되어야 합니다.', '대체 접점을 실행 흐름으로 연결합니다.'),
-        makeCsf('contact-diversification', 'record', '대체 접점의 목적과 반응이 기록되어야 한다', '무엇을 위해 연락했고 어떤 반응이 있었는지 남아야 합니다.', '대체 접점을 활동량이 아니라 기록 품질로 봅니다.'),
-        sharedCsf('contact-diversification-risk', 'risk'),
-      ]),
-      strategyOption('material-request-followup', '자료 요청 이후 확인 흐름 강화', '자료 전달 이후 반응 확인이 약한 팀에 적합합니다.', [
-        makeCsf('material-request-followup', 'contact', '자료 요청 이후 확인이 이루어져야 한다', '자료 전달 자체가 아니라 확인과 질문이 남아야 합니다.', '자료 요청을 후속 확인으로 연결합니다.'),
-        makeCsf('material-request-followup', 'boundary', '자료 사용 범위가 승인자료 안에 있어야 한다', '자료 대응은 승인자료와 표현 안전선 안에서 이루어져야 합니다.', '자료 대응의 안전성을 봅니다.'),
-        makeCsf('material-request-followup', 'followup', '자료 확인 후 다음 행동이 정리되어야 한다', '자료 전달 이후 후속 질문과 다음 행동이 남아야 합니다.', '자료 전달을 후속 실행으로 바꿉니다.'),
-        sharedCsf('material-request-followup-standard', 'standard'),
-      ]),
-      strategyOption('contact-gap-check', '접점 공백 고객 접근 경로 점검', '무리한 접촉 확대보다 접점 공백의 이유를 먼저 보려는 팀에 적합합니다.', [
-        makeCsf('contact-gap-check', 'gap', '접점 공백의 이유가 확인되어야 한다', '미접촉의 원인이 고객 제약인지 실행 루틴인지 분리해야 합니다.', '공백을 비난보다 진단으로 봅니다.'),
-        makeCsf('contact-gap-check', 'purpose', '접점 회복의 목적이 명확해야 한다', '다시 접촉하는 이유와 확인할 질문이 분명해야 합니다.', '무리한 확대가 아니라 목적 있는 회복을 만듭니다.'),
-        makeCsf('contact-gap-check', 'record', '접점 공백과 접근 경로가 기록되어야 한다', '공백 기간, 경로, 다음 행동이 기록으로 남아야 합니다.', '접점 공백을 관리 가능한 정보로 바꿉니다.'),
-        sharedCsf('contact-gap-check-risk', 'risk'),
-      ]),
-      strategyOption('hybrid-contact-flow', '대면·비대면 접점 실행 흐름 통합', '접점 방식이 다양해졌지만 실행 흐름이 끊기는 팀에 적합합니다.', [
-        makeCsf('hybrid-contact-flow', 'contact', '접점 방식별 반응이 같은 기준으로 기록되어야 한다', '대면과 비대면의 반응을 함께 비교할 수 있어야 합니다.', '접점 방식을 하나의 기록 기준으로 맞춥니다.'),
-        makeCsf('hybrid-contact-flow', 'followup', '접점 방식과 무관하게 다음 행동이 남아야 한다', '어떤 접점이든 후속 행동으로 이어져야 합니다.', '대면·비대면을 같은 실행 흐름으로 연결합니다.'),
-        makeCsf('hybrid-contact-flow', 'crm', 'CRM에서 접점 흐름을 확인할 수 있어야 한다', '흩어진 접점을 CRM 실행 흐름으로 묶어야 합니다.', 'CRM으로 접점 흐름을 점검합니다.'),
-        sharedCsf('hybrid-contact-flow-standard', 'standard'),
-      ]),
+      makeTeamStrategy('contact-diversification', '고객 접점 방식 다변화와 후속 확인 체계 강화', '방문 외 접점의 효과를 단순 발송이 아니라 후속 확인으로 보려는 팀에 적합합니다.', ['contact', 'followup', 'record', 'boundary']),
+      makeTeamStrategy('material-request-followup', '자료 요청 이후 확인 흐름 강화', '자료 전달 이후 반응 확인이 약한 팀에 적합합니다.', ['contact', 'boundary', 'followup', 'message']),
+      makeTeamStrategy('contact-gap-check', '접점 공백 고객 접근 경로 점검', '무리한 접촉 확대보다 접점 공백의 이유를 먼저 보려는 팀에 적합합니다.', ['gap', 'purpose', 'record', 'blocker']),
+      makeTeamStrategy('hybrid-contact-flow', '대면·비대면 접점 실행 흐름 통합', '접점 방식이 다양해졌지만 실행 흐름이 끊기는 팀에 적합합니다.', ['contact', 'followup', 'crm', 'record']),
     ],
   },
 ];
@@ -449,6 +373,7 @@ export function V40VNextPerformanceStrategyCascadeLab() {
   const hasCsfSelection = state.selectedCsfIds.length >= 2;
   const hasKpiSelection = state.selectedKpiIds.length >= 2;
   const cascadePrompt = useMemo(() => buildCascadePrompt(strategy, state), [strategy, state]);
+  const teamStrategyOptions = strategy?.teamStrategyOptions ?? [];
 
   return (
     <section className="space-y-4">
@@ -470,7 +395,7 @@ export function V40VNextPerformanceStrategyCascadeLab() {
           <>
             <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">팀 전략과제 선택 보기 4개 제시 · 처음에는 선택된 보기가 없습니다. 선택한 전사전략과제를 우리 조가 실제로 실행할 성과관리 과제로 바꿉니다.</p>
             <div className="grid gap-3 md:grid-cols-2">
-              {strategy.teamStrategyOptions.map((option) => (
+              {teamStrategyOptions.map((option) => (
                 <button key={option.id} type="button" onClick={() => setState({ ...state, selectedTeamTaskId: option.id, customTeamTask: option.label, selectedCsfIds: [], selectedKpiIds: [], aiCascadePrompt: '', aiCascadeDraft: '', finalCsfKpiMemo: '' })} className={`rounded-2xl border p-4 text-left ${state.selectedTeamTaskId === option.id ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200 bg-white hover:border-slate-400'}`}>
                   <p className="font-black text-slate-950">{option.label}</p>
                   <p className="mt-2 text-xs font-bold leading-5 text-slate-600">가이드: {option.guide}</p>
