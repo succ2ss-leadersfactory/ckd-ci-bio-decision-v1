@@ -79,15 +79,19 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextPromptPracticeReviewLab',
+  '상황 보기 선택',
   '일반적인 질문',
-  '일반적인 질문 복사하기',
-  'AI 결과 붙여넣기',
+  '일반적인 질문만 복사하기',
+  '일반적인 질문 결과 붙여넣기',
+  '정리된 프롬프트',
+  '정리된 프롬프트 복사하기',
+  '프롬프트 결과 붙여넣기',
   '구체성',
   '맥락 반영',
   '실행 가능성',
   '리더의 언어',
   '사실 검증 가능성',
-  'ckd.v40-vnext.promptPracticeReview.v1',
+  'ckd.v40-vnext.promptPracticeReview.v2',
 ]) mustInclude(files.promptReviewLab, marker, 'v40-vNext prompt review lab');
 
 for (const marker of [
