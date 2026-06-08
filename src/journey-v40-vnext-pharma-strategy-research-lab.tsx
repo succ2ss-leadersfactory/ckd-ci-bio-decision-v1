@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 
 const STORAGE_KEY = 'ckd.v40-vnext.pharmaStrategyResearch.v1';
@@ -23,6 +23,8 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'LM Studio 인포그래픽 생성 요청',
   '업로드한 소스와 3단계 정리 결과를 근거로',
   '산출물 형식만 지시',
+  'URL 추출 1회 계산',
+  '핸들러 useCallback 안정화',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ].join('|');
 void V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS;
@@ -127,19 +129,19 @@ const NOTEBOOK_SECTION_ALIASES: Array<{ key: string; labels: string[] }> = [
   { key: 'caution', labels: ['주의해야 할 표현', '주의 표현', '위험 표현', '컴플라이언스 주의 표현'] },
 ];
 
-function topicOf(state: State) {
-  return TOPICS.find((item) => item.id === state.selectedTopicId) ?? TOPICS[0];
+function topicOf(topicId: string) {
+  return TOPICS.find((item) => item.id === topicId) ?? TOPICS[0];
 }
 
-function titleOf(state: State) {
-  return state.customTopic.trim() || topicOf(state).title;
+function titleOf(state: Pick<State, 'selectedTopicId' | 'customTopic'>) {
+  return state.customTopic.trim() || topicOf(state.selectedTopicId).title;
 }
 
 function safeRule() {
   return '실제 고객명·기관명·의료진명·제품명·내부 수치·개인정보는 제외하고, 단정적 비교·비방·허가 범위 밖 암시 표현은 피합니다.';
 }
 
-function buildPerplexityPrompt(state: State) {
+function buildPerplexityPrompt(state: Pick<State, 'selectedTopicId' | 'customTopic' | 'teamSituation' | 'leaderQuestion'>) {
   return `2026년 현재 제약·바이오 산업에서 중요한 전략 과제인 "${titleOf(state)}"에 대해 최신 공개자료를 찾아주세요.
 
 목적:
@@ -152,7 +154,7 @@ C1바이오 영업팀장 교육 실습에서 NotebookLM에 넣을 신뢰 가능�
 ${state.teamSituation}
 
 영업팀 관점 참고 질문:
-${state.leaderQuestion || topicOf(state).focus}
+${state.leaderQuestion || topicOf(state.selectedTopicId).focus}
 
 찾아야 할 자료:
 1. 2025~2026년 제약·바이오 산업 전망 자료
@@ -193,13 +195,12 @@ function extractUrls(text: string) {
   return Array.from(new Set(matches.map((url) => url.replace(/[.,;:]+$/g, '').trim()).filter(Boolean)));
 }
 
-function buildWebSourceUrlText(state: State) {
-  const urls = extractUrls(state.perplexityAnswer);
+function buildWebSourceUrlText(urls: string[]) {
   if (urls.length === 0) return 'Perplexity 답변에서 URL을 찾지 못했습니다. Perplexity 답변에 출처 링크가 포함되어 있는지 확인하세요.';
   return urls.join('\n');
 }
 
-function buildNotebookAnalysisPrompt(state: State) {
+function buildNotebookAnalysisPrompt(state: Pick<State, 'selectedTopicId' | 'customTopic'>) {
   return `업로드한 소스만 근거로 분석해 주세요.
 
 나는 C1바이오 영업팀장 이대호 팀장입니다. 2026년 제약업계 전략 과제 "${titleOf(state)}"를 영업팀 추진계획으로 바꾸려고 합니다.
@@ -274,7 +275,7 @@ function parseNotebookAnswer(answer: string): ParsedNotebookSections {
   };
 }
 
-function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: State) {
+function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: Pick<State, 'selectedTopicId' | 'customTopic' | 'teamSituation'>) {
   const common = `LM Studio ${kind} 생성 요청
 
 역할:
@@ -369,44 +370,47 @@ function TextArea({ value, onChange, placeholder, readOnly = false }: { value: s
 export function V40VNextPharmaStrategyResearchLab() {
   const [state, setState] = useStored<State>(STORAGE_KEY, DEFAULT_STATE);
   const [copyMessage, setCopyMessage] = useState('');
-  const topic = topicOf(state);
-  const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state]);
-  const webSourceUrls = useMemo(() => buildWebSourceUrlText(state), [state]);
-  const webSourceUrlCount = useMemo(() => extractUrls(state.perplexityAnswer).length, [state.perplexityAnswer]);
-  const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state]);
-  const report = useMemo(() => buildStudioPrompt('보고서', state), [state]);
-  const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state]);
-  const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state]);
+  const topic = useMemo(() => topicOf(state.selectedTopicId), [state.selectedTopicId]);
+  const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state.selectedTopicId, state.customTopic, state.teamSituation, state.leaderQuestion]);
+  const extractedUrls = useMemo(() => extractUrls(state.perplexityAnswer), [state.perplexityAnswer]);
+  const webSourceUrls = useMemo(() => buildWebSourceUrlText(extractedUrls), [extractedUrls]);
+  const webSourceUrlCount = extractedUrls.length;
+  const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state.selectedTopicId, state.customTopic]);
+  const report = useMemo(() => buildStudioPrompt('보고서', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
+  const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
+  const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
 
-  const update = (patch: Partial<State>) => setState({ ...state, ...patch });
+  const update = useCallback((patch: Partial<State>) => {
+    setState((current) => ({ ...current, ...patch }));
+  }, [setState]);
 
-  const copyText = async (text: string, label: string) => {
+  const copyText = useCallback(async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopyMessage(`${label} 내용을 복사했습니다.`);
     } catch {
       setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.');
     }
-  };
+  }, []);
 
-  const structureNotebookAnswer = () => {
+  const structureNotebookAnswer = useCallback(() => {
     const parsed = parseNotebookAnswer(state.notebookAnswer);
     const hasParsedValue = Object.values(parsed).some((value) => Boolean(value?.trim()));
     if (!hasParsedValue) {
       setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [영업팀 추진 과제 1], [우리 팀 실행 영향], [2주 실행관리 질문], [KPI 후보], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
       return;
     }
-    setState({
-      ...state,
-      issueOne: parsed.issueOne || state.issueOne,
-      issueTwo: parsed.issueTwo || state.issueTwo,
-      issueThree: parsed.issueThree || state.issueThree,
-      teamImpact: parsed.teamImpact || state.teamImpact,
-      metricQuestions: parsed.metricQuestions || state.metricQuestions,
-      caution: parsed.caution || state.caution,
-    });
+    setState((current) => ({
+      ...current,
+      issueOne: parsed.issueOne || current.issueOne,
+      issueTwo: parsed.issueTwo || current.issueTwo,
+      issueThree: parsed.issueThree || current.issueThree,
+      teamImpact: parsed.teamImpact || current.teamImpact,
+      metricQuestions: parsed.metricQuestions || current.metricQuestions,
+      caution: parsed.caution || current.caution,
+    }));
     setCopyMessage('NotebookLM 결과를 항목별 칸에 정리했습니다. 비어 있는 항목은 기존 입력값을 유지했습니다.');
-  };
+  }, [setState, state.notebookAnswer]);
 
   return <section className="space-y-4">
     <Section title="1단계: Perplexity로 최신 공개자료와 URL 찾기">
