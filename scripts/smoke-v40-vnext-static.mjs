@@ -52,6 +52,10 @@ for (const marker of [
   'V40VNextPreviewApp',
   'V40VNextFlowStrip',
   'V40VNextProgressCoachPanel',
+  '역할과 팀원 구성 이해하기',
+  '여러분은 오늘 C1바이오 영업팀장입니다',
+  '팀 선택 1팀~8팀',
+  '이름/닉네임 입력',
   '성과관리 → 업무관리 → 사람관리',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
@@ -82,9 +86,11 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextProgressCoachPanel',
-  '조별 진행 코치',
-  'v40-vNext 11단계 기준',
-  '조별 진행 상태',
+  '팀장 역할 진행 코치',
+  'v40-vNext 12단계 기준',
+  '팀장 역할 진행 상태',
+  '팀',
+  '이름/닉네임',
 ]) mustInclude(files.progressCoach, marker, 'v40-vNext progress coach');
 
 for (const marker of [
