@@ -42,16 +42,15 @@ for (const marker of [
   '/src/journey-v40-vnext-app-preview.tsx',
   'v40-vNext route only',
   '역할과 팀원 구성 이해하기',
-  '여러분은 오늘 C1바이오 영업팀장입니다',
-  '여러분',
 ]) mustInclude(files.html, marker, 'v40-vNext html');
 
 for (const marker of [
   'V40VNextPreviewApp',
-  'v40-vNext 12단계 전용 흐름',
+  '12단계 전체 흐름',
   '팀장 역할 시작하기',
   '역할과 팀원 구성 이해하기',
-  '여러분은 오늘 C1바이오 영업팀장입니다',
+  '여러분의 역할은 영업팀장 이대호 팀장입니다',
+  '이대호 팀장 소개',
   '팀 선택 1팀~8팀',
   '이름/닉네임 입력',
   'V40VNextPerformanceCompactCascadeLab',
@@ -71,7 +70,8 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextFlowStrip',
-  'v40-vNext 12단계 전용 흐름',
+  '12단계 전체 흐름',
+  '전체 흐름',
   '팀장 역할 시작',
   '역할·팀원 이해',
   '말해도 되는 선',
@@ -84,6 +84,8 @@ for (const marker of [
   '사람관리 2',
   '최종 실행 메모',
 ]) mustInclude(files.ux, marker, 'v40-vNext UX components');
+
+mustNotInclude(files.ux, 'v40-vNext 12단계 전용 흐름</span>', 'old visible flow strip label');
 
 for (const marker of [
   'V40VNextProgressCoachPanel',
