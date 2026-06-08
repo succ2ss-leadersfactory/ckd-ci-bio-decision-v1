@@ -27,6 +27,7 @@ const files = {
   config: read('src/journey-v40-vnext-preview-config.ts'),
   ux: read('src/journey-v40-vnext-ux-components.tsx'),
   promptReviewLab: read('src/journey-v40-vnext-prompt-practice-review-lab.tsx'),
+  researchTrimmedLab: read('src/journey-v40-vnext-research-strategy-trimmed-lab.tsx'),
   progressCoach: read('src/journey-v40-vnext-progress-coach-panel.tsx'),
   compactPerformanceLab: read('src/journey-v40-vnext-performance-compact-cascade-lab.tsx'),
   enhancedPerformanceLabV2: read('src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx'),
@@ -55,8 +56,9 @@ for (const marker of [
   '함께 하는 우리 팀원',
   '일반적인 질문',
   'V40VNextPromptPracticeReviewLab',
-  'V39ResearchStrategyLab',
+  'V40VNextResearchStrategyTrimmedLab',
   '5단계 안내 wrapper 제거',
+  '5단계 v39 내부 상단 안내 3개 블록 숨김',
   '구체성',
   '맥락 반영',
   '실행 가능성',
@@ -83,6 +85,14 @@ mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wra
 mustNotInclude(files.app, 'NotebookLM 사용 순서 안내', 'legacy NotebookLM guide text in v40 app');
 mustNotInclude(files.app, '5단계로 넘길 실행 질문 확정하기', 'legacy step handoff text in v40 app');
 mustNotInclude(files.app, '4단계 최종 점검 안내', 'legacy step check text in v40 app');
+
+for (const marker of [
+  'V40VNextResearchStrategyTrimmedLab',
+  'v40에서 v39 리서치 안내 3개 블록 숨김',
+  '4단계 AI 전략 리서치 숨김',
+  'AI 없이도 할 수 있습니다 숨김',
+  '3단계 구조화 프롬프트 연결 숨김',
+]) mustInclude(files.researchTrimmedLab, marker, 'v40-vNext trimmed research lab');
 
 for (const marker of [
   'V40VNextPromptPracticeReviewLab',
@@ -162,6 +172,7 @@ for (const marker of [
   'src/journey-v40-vnext-preview-config.ts',
   'src/journey-v40-vnext-ux-components.tsx',
   'src/journey-v40-vnext-prompt-practice-review-lab.tsx',
+  'src/journey-v40-vnext-research-strategy-trimmed-lab.tsx',
   'src/journey-v40-vnext-progress-coach-panel.tsx',
   'src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx',
   'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
