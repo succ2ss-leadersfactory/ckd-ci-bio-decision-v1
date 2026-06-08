@@ -7,7 +7,7 @@ const V40_VNEXT_CONFIG_SMOKE_MARKERS = [
   'AI 질문 다듬기',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
-  '성과관리 3: 고객 기록에서 성과 신호 읽기',
+  '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
   '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
@@ -60,8 +60,8 @@ export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'customer-judgment',
-    title: '성과관리 3: 고객 기록에서 성과 신호 읽기',
-    description: '가상 CRM 기록에서 성과 단서, 부족 정보, 위험한 해석, 팀장 확인 질문을 구분합니다.',
+    title: '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
+    description: '7명의 팀원별 CRM 기록을 보고 성과 단서, 부족 정보, 위험한 해석, 팀장 확인 질문을 구분합니다.',
   },
   {
     id: 'customer-priority',
