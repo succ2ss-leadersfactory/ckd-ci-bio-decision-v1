@@ -8,6 +8,9 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '2026년 제약업계 전략 과제 선택',
   '영업팀 추진계획 수립 실습',
   'Perplexity 전략 과제 프롬프트',
+  'Perplexity 출처 URL만 분리',
+  'NotebookLM 웹 소스 URL 복사',
+  '분리된 웹 소스 URL',
   'NotebookLM 소스 제목 복사',
   'NotebookLM 소스 본문 복사',
   'NotebookLM 소스 TXT 다운로드',
@@ -111,6 +114,17 @@ ${state.leaderQuestion || topicOf(state).focus}
 [영업팀 실행 리스크]
 [2주 실행관리 질문]
 [주의해야 할 표현]`;
+}
+
+function extractUrls(text: string) {
+  const matches = text.match(/https?:\/\/[^\s)\]]+/g) ?? [];
+  return Array.from(new Set(matches.map((url) => url.replace(/[.,;:]+$/g, '').trim()).filter(Boolean)));
+}
+
+function buildWebSourceUrlText(state: State) {
+  const urls = extractUrls(state.perplexityAnswer);
+  if (urls.length === 0) return 'Perplexity 답변에서 URL을 찾지 못했습니다. Perplexity 답변에 출처 링크가 포함되어 있는지 확인하세요.';
+  return urls.join('\n');
 }
 
 function buildNotebookSourceTitle(state: State) {
@@ -224,6 +238,8 @@ export function V40VNextPharmaStrategyResearchLab() {
   const [copyMessage, setCopyMessage] = useState('');
   const topic = topicOf(state);
   const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state]);
+  const webSourceUrls = useMemo(() => buildWebSourceUrlText(state), [state]);
+  const webSourceUrlCount = useMemo(() => extractUrls(state.perplexityAnswer).length, [state.perplexityAnswer]);
   const sourceTitle = useMemo(() => buildNotebookSourceTitle(state), [state]);
   const sourceBody = useMemo(() => buildNotebookSourceBody(state), [state]);
   const sourceFileText = useMemo(() => buildNotebookSourceFileText(state), [state]);
@@ -266,9 +282,18 @@ export function V40VNextPharmaStrategyResearchLab() {
       <Field label="Perplexity 답변 붙여넣기"><TextArea value={state.perplexityAnswer} onChange={(value) => update({ perplexityAnswer: value })} placeholder="Perplexity 답변을 붙여넣으세요. 출처, 발행기관, 날짜가 포함되어 있으면 좋습니다." /></Field>
     </Section>
 
-    <Section title="2단계: NotebookLM 소스 등록과 분석 질문 실행">
+    <Section title="2단계: Perplexity 결과에서 NotebookLM 웹 소스만 분리">
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">
+        NotebookLM에서 ‘웹’ 소스로 등록할 때는 분석 내용이 아니라 URL만 넣어야 합니다. 아래 URL 목록을 복사해 하나씩 웹 소스로 등록하세요. 긴 분석문은 웹 소스 입력칸에 넣지 않습니다.
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-black text-slate-700">분리된 웹 소스 URL: {webSourceUrlCount}개</div>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(webSourceUrls, 'NotebookLM 웹 소스 URL')}>NotebookLM 웹 소스 URL 복사</button>
+      <Field label="분리된 웹 소스 URL"><TextArea value={webSourceUrls} readOnly /></Field>
+    </Section>
+
+    <Section title="3단계: NotebookLM 보조 소스 등록과 분석 질문 실행">
       <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
-        NotebookLM 왼쪽 소스 추가에서 ‘웹’ 모드가 선택되어 있으면 일반 텍스트는 URL이 아니므로 실행 화살표가 활성화되지 않을 수 있습니다. 가장 안정적인 방법은 TXT 파일을 다운로드한 뒤 NotebookLM에서 소스 추가 → 파일 업로드로 넣는 것입니다. 텍스트로 넣을 때는 웹이 아니라 텍스트 붙여넣기 유형을 선택하세요.
+        웹 URL이 등록되지 않거나 자료 전체를 보조 소스로 넣고 싶다면 TXT 파일 다운로드를 사용하세요. NotebookLM에서 소스 추가 → 파일 업로드로 TXT 파일을 넣은 뒤, 소스가 등록되면 채팅창에 분석 질문을 붙여넣습니다.
       </div>
       <div className="grid gap-2 md:grid-cols-4">
         <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceTitle, 'NotebookLM 소스 제목')}>NotebookLM 소스 제목 복사</button>
@@ -285,7 +310,7 @@ export function V40VNextPharmaStrategyResearchLab() {
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
 
-    <Section title="3단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
+    <Section title="4단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
       <Field label="LM Studio 보고서 생성 요청"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, 'LM Studio 보고서 생성 요청')}>보고서 요청문 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
       <Field label="LM Studio 슬라이드 생성 요청"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, 'LM Studio 슬라이드 생성 요청')}>슬라이드 요청문 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
       <Field label="LM Studio 인포그래픽 생성 요청"><TextArea value={infographic} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, 'LM Studio 인포그래픽 생성 요청')}>인포그래픽 요청문 복사</button><TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
