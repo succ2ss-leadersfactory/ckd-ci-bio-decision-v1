@@ -55,6 +55,8 @@ for (const marker of [
   '함께 하는 우리 팀원',
   '일반적인 질문',
   'V40VNextPromptPracticeReviewLab',
+  'V39ResearchStrategyLab',
+  '5단계 안내 wrapper 제거',
   '구체성',
   '맥락 반영',
   '실행 가능성',
@@ -76,6 +78,11 @@ for (const marker of [
   '박재욱 사원',
   '문교원 사원',
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
+
+mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wrapper import/use in v40 app');
+mustNotInclude(files.app, 'NotebookLM 사용 순서 안내', 'legacy NotebookLM guide text in v40 app');
+mustNotInclude(files.app, '5단계로 넘길 실행 질문 확정하기', 'legacy step handoff text in v40 app');
+mustNotInclude(files.app, '4단계 최종 점검 안내', 'legacy step check text in v40 app');
 
 for (const marker of [
   'V40VNextPromptPracticeReviewLab',
