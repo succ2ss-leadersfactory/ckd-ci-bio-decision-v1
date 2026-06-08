@@ -65,7 +65,7 @@ mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wra
 for (const marker of [
   'V40VNextResearchStrategyTrimmedLab',
   'V40VNextPharmaStrategyResearchLab',
-  "return <V40VNextPharmaStrategyResearchLab />",
+  'return <V40VNextPharmaStrategyResearchLab />',
 ]) mustInclude(files.researchTrimmedLab, marker, 'v40-vNext research bridge lab');
 
 for (const marker of [
@@ -112,9 +112,9 @@ for (const marker of [
   '업로드한 소스만 근거로 분석해 주세요',
   '업로드한 소스와 3단계 정리 결과를 근거로',
   '산출물 형식만 지시받은 대로 작성',
-  'LM Studio 보고서 생성 요청',
-  'LM Studio 슬라이드 생성 요청',
-  'LM Studio 인포그래픽 생성 요청',
+  'LM Studio ${kind} 생성 요청',
+  '8장짜리 발표용 슬라이드 구성안',
+  '1페이지 인포그래픽 구성안',
 ]) mustInclude(files.pharmaResearchPrompts, marker, 'v40-vNext pharma research prompt module');
 
 for (const marker of [
