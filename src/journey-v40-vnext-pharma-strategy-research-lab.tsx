@@ -7,7 +7,10 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'V40VNextPharmaStrategyResearchLab',
   '2026년 제약업계 전략 과제 선택',
   '영업팀 추진계획 수립 실습',
+  'Perplexity 최신자료 검색 전용 프롬프트',
   'Perplexity 전략 과제 프롬프트',
+  '전략 제안이나 실행계획을 만들지 말고',
+  'URL이 없는 자료는 제외',
   'Perplexity 출처 URL만 분리',
   'NotebookLM 웹 소스 URL 복사',
   '분리된 웹 소스 URL',
@@ -88,32 +91,52 @@ function safeRule() {
 }
 
 function buildPerplexityPrompt(state: State) {
-  return `2026년 현재 제약·바이오 산업의 전략 과제 "${titleOf(state)}"를 공개자료 기반으로 조사해 주세요.
+  return `2026년 현재 제약·바이오 산업에서 중요한 전략 과제인 "${titleOf(state)}"에 대해 최신 공개자료를 찾아주세요.
 
 목적:
-C1바이오 영업팀장 이대호 팀장이 이 과제를 영업팀 추진계획으로 바꾸기 위한 실습 자료를 만들려고 합니다.
+C1바이오 영업팀장 교육 실습에서 NotebookLM에 넣을 신뢰 가능한 소스 자료를 수집하려고 합니다.
 
-우리 팀 상황:
+중요:
+전략 제안이나 실행계획을 만들지 말고, 최신 자료와 출처 URL을 찾는 데 집중해 주세요. 영업팀 추진 과제, KPI, 2주 실행계획, 주의 표현은 나중에 NotebookLM에서 소스 기반으로 분석할 예정입니다.
+
+우리 팀 상황 참고:
 ${state.teamSituation}
 
-영업팀 관점의 질문:
+영업팀 관점 참고 질문:
 ${state.leaderQuestion || topicOf(state).focus}
 
-조사 기준:
-1. 2025~2026년 공개자료, 정책·규제 자료, 산업 리포트, 보도자료, 신뢰 가능한 기사 중심으로 정리
-2. 글로벌 동향과 한국 제약영업 현장에 주는 의미 구분
-3. 출처명, 발행기관, 날짜 또는 최근성 단서 제시
-4. 영업팀이 2주 안에 실행관리로 바꿀 수 있는 추진 과제 후보 제안
-5. ${safeRule()}
+찾아야 할 자료:
+1. 2025~2026년 제약·바이오 산업 전망 자료
+2. 선택한 전략 과제와 관련된 산업 리포트, 정책·규제 자료, 협회 자료, 신뢰 가능한 기사
+3. FDA, EMA, MFDS, KHIDI, 보건산업 관련 기관, 제약·바이오 협회, 컨설팅사 자료
+4. 영업팀이 고객 질문과 실행관리 기준을 만들 때 참고할 수 있는 자료
 
 출력 형식:
-[2026 전략 과제 요약]
-[핵심 변화 신호]
-[근거/출처]
-[영업팀 추진 기회]
-[영업팀 실행 리스크]
-[2주 실행관리 질문]
-[주의해야 할 표현]`;
+아래 형식으로만 정리해 주세요. 전략 요약, 추진 과제, 실행 리스크, KPI는 작성하지 마세요.
+
+[자료 1]
+- 제목:
+- 발행기관/매체:
+- 발행일 또는 최근성:
+- 핵심 내용 2줄:
+- URL:
+
+[자료 2]
+- 제목:
+- 발행기관/매체:
+- 발행일 또는 최근성:
+- 핵심 내용 2줄:
+- URL:
+
+[자료 3]
+...
+
+주의:
+- URL이 없는 자료는 제외하세요.
+- 가능하면 8~12개 자료를 제시해 주세요.
+- 실제 고객명, 병원명, 의료진명, 제품명, 매출·처방 정보는 포함하지 마세요.
+- 처방 유도, 경쟁사 비방, 비교 우위 단정, 허가 외 사용 암시 표현은 쓰지 마세요.
+- ${safeRule()}`;
 }
 
 function extractUrls(text: string) {
@@ -143,14 +166,14 @@ ${state.teamSituation}
 3. 영업팀 관점의 리서치 질문
 ${state.leaderQuestion || topicOf(state).focus}
 
-4. Perplexity 공개자료 리서치 결과
+4. Perplexity에서 찾은 공개자료 목록
 ${state.perplexityAnswer || '아직 Perplexity 답변이 붙여넣어지지 않았습니다. Perplexity 답변을 먼저 붙여넣은 뒤 이 본문을 다시 복사하세요.'}
 
-5. 영업팀 추진계획으로 연결할 때 볼 관점
-- 고객 대화에서 새롭게 확인해야 할 질문
-- 영업활동 기록에서 남겨야 할 고객 반응과 다음 행동
-- 팀원이 2주 안에 실행할 수 있는 작은 행동 기준
-- 팀장이 중간 점검에서 확인할 실행 신호
+5. NotebookLM에서 분석할 관점
+- 소스들이 공통적으로 말하는 2026년 변화 신호
+- 고객 질문과 영업활동 기록에 영향을 주는 쟁점
+- 팀원이 2주 안에 확인할 수 있는 실행 신호
+- 팀장이 중간 점검에서 물어볼 질문
 - 표현 안전성, 사실 확인 가능성, 내부 확인 필요 여부
 
 6. 주의해야 할 표현
@@ -270,16 +293,17 @@ export function V40VNextPharmaStrategyResearchLab() {
   };
 
   return <section className="space-y-4">
-    <Section title="1단계: 2026년 제약업계 전략 과제 선택과 Perplexity 탐색">
+    <Section title="1단계: Perplexity로 최신 공개자료와 URL 찾기">
       <Field label="2026년 전략 과제 선택"><select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>{TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950"><p className="font-black">이 과제의 영업팀 추진 초점</p><p className="mt-1">{topic.focus}</p><p className="mt-1">KPI 후보: {topic.kpis.join(' · ')}</p></div>
       <Field label="전략 과제 직접 입력"><input className="w-full rounded-xl border px-3 py-2" value={state.customTopic} onChange={(event) => update({ customTopic: event.target.value })} placeholder="예: CDMO/CMO 전략 확대와 영업팀 고객가치 제안" /></Field>
       <Field label="우리 팀 상황"><TextArea value={state.teamSituation} onChange={(value) => update({ teamSituation: value })} /></Field>
-      <Field label="영업팀 관점의 리서치 질문"><TextArea value={state.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 전략 과제를 영업팀의 고객 대화, 2주 실행관리, 팀원 코칭으로 어떻게 바꿀 수 있을까?" /></Field>
-      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(pPrompt, 'Perplexity 전략 과제 프롬프트')}>Perplexity 프롬프트 복사</button>
+      <Field label="영업팀 관점 참고 질문"><TextArea value={state.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 전략 과제를 영업팀의 고객 대화, 2주 실행관리, 팀원 코칭으로 어떻게 바꿀 수 있을까?" /></Field>
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">Perplexity에는 답을 완성하라고 요청하지 않습니다. 최신 공개자료, 발행기관, 최근성, URL만 찾게 한 뒤 NotebookLM에서 소스 기반 분석을 진행합니다.</div>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(pPrompt, 'Perplexity 최신자료 검색 전용 프롬프트')}>Perplexity 최신자료 검색 프롬프트 복사</button>
       {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{pPrompt}</pre>
-      <Field label="Perplexity 답변 붙여넣기"><TextArea value={state.perplexityAnswer} onChange={(value) => update({ perplexityAnswer: value })} placeholder="Perplexity 답변을 붙여넣으세요. 출처, 발행기관, 날짜가 포함되어 있으면 좋습니다." /></Field>
+      <Field label="Perplexity 자료 목록 결과 붙여넣기"><TextArea value={state.perplexityAnswer} onChange={(value) => update({ perplexityAnswer: value })} placeholder="Perplexity가 제시한 자료 목록과 URL을 그대로 붙여넣으세요. 전략 요약이나 실행계획이 아니라 자료 목록 중심이면 가장 좋습니다." /></Field>
     </Section>
 
     <Section title="2단계: Perplexity 결과에서 NotebookLM 웹 소스만 분리">
