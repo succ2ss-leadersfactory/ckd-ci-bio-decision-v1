@@ -1,5 +1,5 @@
 import { useStored } from './journey-storage';
-import { V40VNextPerformanceEnhancedCascadeLab } from './journey-v40-vnext-performance-enhanced-cascade-lab';
+import { V40VNextPerformanceEnhancedCascadeLabV2 } from './journey-v40-vnext-performance-enhanced-cascade-lab-v2';
 import { V40_VNEXT_PERFORMANCE_CASCADE_STORAGE_KEY } from './journey-v40-vnext-performance-strategy-cascade-lab';
 
 type CompactPerformanceState = Record<string, any> & {
@@ -16,7 +16,7 @@ const DEFAULT_COMPACT_PERFORMANCE_STATE: CompactPerformanceState = {};
 
 const V40_VNEXT_COMPACT_PERFORMANCE_MARKERS = [
   'V40VNextPerformanceCompactCascadeLab',
-  'V40VNextPerformanceEnhancedCascadeLab',
+  'V40VNextPerformanceEnhancedCascadeLabV2',
   '6·7단계 숨김 기본 운영',
   '우리 조의 2주 성과관리 기준 정리',
   '이번 2주 동안 기록에서 먼저 볼 것',
@@ -49,7 +49,7 @@ export function V40VNextPerformanceCompactCascadeLab() {
 
   return (
     <section className="space-y-4">
-      <V40VNextPerformanceEnhancedCascadeLab />
+      <V40VNextPerformanceEnhancedCascadeLabV2 />
       <section className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm md:p-5">
         <div className="rounded-3xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-950">
           <p className="font-black">우리 조의 2주 성과관리 기준 정리</p>
