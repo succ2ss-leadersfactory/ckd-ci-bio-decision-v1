@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>
   <style>
-    /* v40-vNext learner screen cleanup: hide top metadata and development/protection notice only on this route. */
-    #journey-root main > div > header,
     #journey-root main > div > section.sticky,
-    #journey-root main > div > section > div.mb-4.rounded-3xl.border.border-slate-200.bg-white.p-4.shadow-sm.md\:p-5:first-child {
+    #journey-root main > div > section > div.mb-4.rounded-3xl.border.border-slate-200.bg-white.p-4.shadow-sm.md\:p-5:first-child,
+    #journey-root main > div > header h1 + p {
       display: none !important;
     }
   </style>
@@ -17,6 +16,15 @@
   <div id="journey-root"></div>
   <script>
     window.__V40_VNEXT_PROTECTION_MARKERS = 'v40-vNext route only|journey-v39-preview.html 보호|src/journey-v39-app-preview.tsx 보호|조별 실습형|업무관리 Lab 보강|상단 메타 UI 제거';
+    window.addEventListener('DOMContentLoaded', function () {
+      var title = 'C1바이오 영업팀장 AI 리더십 Lab Journey';
+      var updateTitle = function () {
+        var h1 = document.querySelector('#journey-root main > div > header h1');
+        if (h1 && h1.textContent !== title) h1.textContent = title;
+      };
+      updateTitle();
+      new MutationObserver(updateTitle).observe(document.getElementById('journey-root'), { childList: true, subtree: true });
+    });
   </script>
   <script type="module" src="/src/journey-v40-vnext-app-preview.tsx"></script>
 </body>
