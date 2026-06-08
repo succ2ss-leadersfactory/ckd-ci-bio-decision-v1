@@ -2,13 +2,14 @@ import type { JourneyStep } from './journey-shell';
 
 const V40_VNEXT_CONFIG_SMOKE_MARKERS = [
   'v40-vNext 계승형 후속 버전',
-  '조별 역할 잡기',
+  '팀장 역할 시작하기',
+  '역할과 팀원 구성 이해하기',
   '말해도 되는 선 확인',
   'AI 질문 다듬기',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '6·7단계 숨김 기본 운영',
-  '우리 조의 2주 성과관리 기준',
+  '여러분의 2주 성과관리 기준',
   '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
   '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
@@ -37,18 +38,23 @@ void V40_VNEXT_CONFIG_SMOKE_MARKERS;
 export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
   {
     id: 'entry',
-    title: '조별 역할 잡기',
-    description: '개인 실습이 아니라 우리 조가 C1바이오 영업팀장 역할로 대표 상황을 정합니다.',
+    title: '팀장 역할 시작하기',
+    description: '개인 실습이 아니라 여러분이 C1바이오 영업팀장 역할로 대표 상황을 정합니다.',
+  },
+  {
+    id: 'role-team-intro',
+    title: '역할과 팀원 구성 이해하기',
+    description: '여러분이 맡을 팀장 역할, 가상 팀원 7명, 오늘 판단해야 할 관리 흐름을 먼저 확인합니다.',
   },
   {
     id: 'ai-safety',
     title: '말해도 되는 선 확인',
-    description: '실제 고객명, 기관명, 제품명, 내부 수치, 팀원 실명은 넣지 않고 가상·익명 상황으로 바꿉니다.',
+    description: '현장 사례는 식별되거나 민감한 정보가 드러나지 않도록 가상·익명 상황으로 바꿉니다.',
   },
   {
     id: 'prompt-practice',
     title: 'AI 질문 다듬기',
-    description: '우리 조의 대표 고민을 AI가 알아들을 수 있는 질문으로 바꿉니다.',
+    description: '여러분의 대표 고민을 AI가 알아들을 수 있는 질문으로 바꿉니다.',
   },
   {
     id: 'research-strategy',
@@ -58,7 +64,7 @@ export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
   {
     id: 'dashboard-analysis',
     title: '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
-    description: '전사전략과제를 우리 조의 팀 전략과제, 성공조건, 관리 지표와 2주 성과관리 기준으로 번역합니다.',
+    description: '전사전략과제를 여러분의 팀 전략과제, 성공조건, 관리 지표와 2주 성과관리 기준으로 번역합니다.',
   },
   {
     id: 'task-execution-design',
