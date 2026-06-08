@@ -3,7 +3,8 @@ import { V40_VNEXT_VISIBLE_APP_STEPS } from './journey-v40-vnext-preview-config'
 const V40_VNEXT_PROGRESS_COACH_MARKERS = [
   'V40VNextProgressCoachPanel',
   '팀장 역할 진행 코치',
-  'v40-vNext 12단계 기준',
+  'v40-vNext 파일럿 11단계 기준',
+  '12단계 최종 실행 메모 숨김',
   '팀장 역할 진행 상태',
   '영역별 바로가기',
   '팀',
@@ -36,7 +37,7 @@ const PHASES: Phase[] = [
   { label: '준비·역할', range: [0, 3], description: '팀장 역할, 팀원 구성, 안전선, AI 질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
   { label: '성과관리', range: [4, 5], description: '시장 변화, CSF/KPI, 2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
   { label: '업무관리', range: [6, 8], description: '실행 과제, 우선순위, 업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
-  { label: '사람관리·통합', range: [9, 11], description: '1on1 대화와 최종 실행 메모', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
+  { label: '사람관리', range: [9, 10], description: '1on1 대상 선택과 대화 실천', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
 ];
 
 const STEP_GUIDES = [
@@ -51,7 +52,6 @@ const STEP_GUIDES = [
   { action: '혼자 처리할 일과 연결해야 할 일을 나눕니다.', output: '업무 경계 선언문' },
   { action: '먼저 이야기할 팀원을 고르고 관찰과 해석을 분리합니다.', output: '1on1 대상과 대화 초점' },
   { action: '1on1 첫 문장, 역할극, 행동 합의를 연습합니다.', output: '코칭 문장과 2주 행동 합의' },
-  { action: '성과·업무·사람관리 결과를 하나의 메모로 묶습니다.', output: '2주 실행 메모와 복기 질문' },
 ];
 
 function phaseStatus(currentStep: number, phase: Phase) {
