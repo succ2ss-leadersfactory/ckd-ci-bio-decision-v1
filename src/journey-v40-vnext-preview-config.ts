@@ -2,6 +2,8 @@ import type { JourneyStep } from './journey-shell';
 
 const V40_VNEXT_CONFIG_SMOKE_MARKERS = [
   'v40-vNext 계승형 후속 버전',
+  '파일럿 11단계 운영',
+  '12단계 최종 실행 메모 숨김',
   '팀장 역할 시작하기',
   '역할과 팀원 구성 이해하기',
   '말해도 되는 선 확인',
@@ -17,7 +19,6 @@ const V40_VNEXT_CONFIG_SMOKE_MARKERS = [
   '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
   '사람관리 1: 먼저 이야기할 팀원 고르기',
   '사람관리 2: 1on1 첫 문장 준비하기',
-  '2주 실행 메모와 복기 질문 완성하기',
   '성과관리 → 업무관리 → 사람관리',
   '실행 과제화',
   '우선순위와 업무 흐름',
@@ -90,11 +91,6 @@ export const V40_VNEXT_VISIBLE_APP_STEPS: JourneyStep[] = [
     id: 'people-dialogue',
     title: '사람관리 2: 1on1 첫 문장 준비하기',
     description: '지적이 아니라 확인으로 시작하는 첫 문장과 확인 질문을 준비합니다.',
-  },
-  {
-    id: 'final-call-plan-card',
-    title: '2주 실행 메모와 복기 질문 완성하기',
-    description: '성과관리, 업무관리, 사람관리 결과를 하나의 2주 실행 메모와 복기 질문으로 묶습니다.',
   },
 ];
 
