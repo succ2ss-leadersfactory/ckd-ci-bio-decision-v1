@@ -6,7 +6,6 @@ import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { removeStoredPrefix, useStored } from './journey-storage';
 import { V39FinalCallPlanTeamSevenUxCard } from './journey-v39-final-call-plan-team-seven-ux-card';
 import { V39InstructorDiscussionUxLab } from './journey-v39-instructor-discussion-ux-lab';
-import { V39ResearchStrategyLab } from './journey-v39-research-strategy-lab';
 import { V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39StepHero } from './journey-v39-ux-components';
 import { V40VNextFlowStrip, V40VNextStepNavigationProvider } from './journey-v40-vnext-ux-components';
 import { V40VNextFinalExecutionMemoLab } from './journey-v40-vnext-final-execution-memo-lab';
@@ -15,6 +14,7 @@ import { V40VNextPeopleSelectionLab } from './journey-v40-vnext-people-selection
 import { V40VNextPerformanceCompactCascadeLab } from './journey-v40-vnext-performance-compact-cascade-lab';
 import { V40VNextProgressCoachPanel } from './journey-v40-vnext-progress-coach-panel';
 import { V40VNextPromptPracticeReviewLab } from './journey-v40-vnext-prompt-practice-review-lab';
+import { V40VNextResearchStrategyTrimmedLab } from './journey-v40-vnext-research-strategy-trimmed-lab';
 import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
 import { V40VNextTaskExecutionBridgeLab } from './journey-v40-vnext-task-execution-bridge-lab';
 import { V40VNextTaskPriorityFlowLab } from './journey-v40-vnext-task-management-lab';
@@ -33,8 +33,9 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   '함께 하는 우리 팀원',
   '일반적인 질문',
   'V40VNextPromptPracticeReviewLab',
-  'V39ResearchStrategyLab',
+  'V40VNextResearchStrategyTrimmedLab',
   '5단계 안내 wrapper 제거',
+  '5단계 v39 내부 상단 안내 3개 블록 숨김',
   '구체성',
   '맥락 반영',
   '실행 가능성',
@@ -92,7 +93,7 @@ function RoleTeamIntroStep() {
 
 function V40AiSafetyStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={3} /><V39StepHero eyebrow="3단계 · 말해도 되는 선 확인" icon="🛡️" title="현장 사례는 AI에 넣기 전에 한 번 가립니다" tone="amber" description="실제 현장 사례를 그대로 넣지 않습니다. 민감한 내용을 가상·익명 표현으로 바꿀수록 AI는 더 안전한 초안 도구가 됩니다." badges={[{ label: '먼저 할 일', value: '민감정보 제거', tone: 'amber', icon: '🛡️' }, { label: '방식', value: '가상·익명화', tone: 'slate', icon: '✂️' }, { label: '다음', value: '질문 다듬기', tone: 'violet', icon: '✍️' }]} /><V39SafetyStrip>기록에서 다음 행동의 단서를 찾고, AI 초안은 팀장 언어로 다시 고칩니다.</V39SafetyStrip><AiSafetyLab /></div>; }
 function V40PromptPracticeStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={4} /><V39StepHero eyebrow="4단계 · AI 질문 다듬기" icon="✍️" title="일반적인 질문으로 먼저 AI 결과를 받아보고 점검합니다" tone="violet" description="바로 완벽한 질문을 만들기보다, 일반적인 질문을 복사해 AI 답변을 받아본 뒤 결과 품질을 기준으로 점검합니다." badges={[{ label: '질문', value: '일반적인 질문', tone: 'violet', icon: '✍️' }, { label: '점검', value: '5가지 기준', tone: 'emerald', icon: '✅' }, { label: '다음', value: '성과관리 Lab', tone: 'sky', icon: '🔭' }]} /><V40VNextPromptPracticeReviewLab /></div>; }
-function V40ResearchStrategyStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={5} /><V39StepHero eyebrow="성과관리 1 · 시장 변화에서 성과 질문 찾기" icon="🔭" title="자료를 모으는 게 아니라 성과관리 질문을 뽑습니다" tone="sky" description="Perplexity로 공개자료를 찾고, NotebookLM으로 소스 기반 종합을 만들고, Studio 산출물 초안까지 정리합니다." badges={[{ label: '성과관리', value: '시장 변화 → 성과 질문', tone: 'sky', icon: '📈' }, { label: 'NotebookLM', value: '소스 기반 종합', tone: 'emerald', icon: '📚' }, { label: 'Studio', value: '보고서·슬라이드 초안', tone: 'violet', icon: '🎞️' }]} /><V39ResearchStrategyLab /></div>; }
+function V40ResearchStrategyStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={5} /><V39StepHero eyebrow="성과관리 1 · 시장 변화에서 성과 질문 찾기" icon="🔭" title="자료를 모으는 게 아니라 성과관리 질문을 뽑습니다" tone="sky" description="Perplexity로 공개자료를 찾고, NotebookLM으로 소스 기반 종합을 만들고, Studio 산출물 초안까지 정리합니다." badges={[{ label: '성과관리', value: '시장 변화 → 성과 질문', tone: 'sky', icon: '📈' }, { label: 'NotebookLM', value: '소스 기반 종합', tone: 'emerald', icon: '📚' }, { label: 'Studio', value: '보고서·슬라이드 초안', tone: 'violet', icon: '🎞️' }]} /><V40VNextResearchStrategyTrimmedLab /></div>; }
 function V40DashboardStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={6} /><V39StepHero eyebrow="성과관리 2 · 전사전략과제 분해" icon="🎯" title="전사전략과제를 팀 전략과제·CSF·KPI와 2주 기준으로 바꿉니다" tone="emerald" description="전사전략과제를 선택하고, 여러분이 실행할 팀 전략과제·CSF·KPI를 정한 뒤 2주 성과관리 기준 4줄을 남깁니다." badges={[{ label: '산출물', value: '팀 전략과제·CSF·KPI', tone: 'emerald', icon: '🎯' }, { label: '압축 산출물', value: '2주 성과관리 기준', tone: 'sky', icon: '📝' }, { label: '주의', value: '민감정보 입력 금지', tone: 'amber', icon: '🛡️' }]} /><V40VNextPerformanceCompactCascadeLab /></div>; }
 function V40TaskExecutionDesignStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={7} /><V39StepHero eyebrow="업무관리 1 · 성과 기준을 실행 과제로 바꾸기" icon="🧩" title="성과 기준을 팀원이 실제로 할 수 있는 일로 바꿉니다" tone="cyan" description="성과관리에서 남긴 2주 기준을 업무지시, 완료 기준, 지원 조건으로 바꿉니다." badges={[{ label: '앞에서 가져온 것', value: '2주 성과관리 기준', tone: 'emerald', icon: '📈' }, { label: '지금 할 일', value: '실행 과제화', tone: 'cyan', icon: '🧩' }, { label: '다음', value: '업무 흐름 정리', tone: 'amber', icon: '🧭' }]} /><V40VNextTaskExecutionBridgeLab /></div>; }
 function V40TaskPriorityFlowStep() { return <div className="space-y-4"><V40VNextFlowStrip currentStep={8} /><V39StepHero eyebrow="업무관리 2 · 우선순위와 업무 흐름 정리하기" icon="🧭" title="무엇을 먼저 하고 무엇을 잠시 줄일지 정합니다" tone="amber" description="업무관리는 일을 더 얹는 것이 아니라 실행 흐름을 다시 짜는 일입니다." badges={[{ label: '핵심', value: '우선순위·흐름', tone: 'amber', icon: '🧭' }, { label: '신호', value: '막힘 신호', tone: 'cyan', icon: '🔎' }, { label: '다음', value: '일의 경계 구분', tone: 'violet', icon: '🧱' }]} /><V40VNextTaskPriorityFlowLab /></div>; }
