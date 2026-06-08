@@ -10,6 +10,7 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'Perplexity 전략 과제 프롬프트',
   'NotebookLM 소스 제목 복사',
   'NotebookLM 소스 본문 복사',
+  'NotebookLM 소스 TXT 다운로드',
   'NotebookLM 분석 질문 복사',
   'NotebookLM 소스 묶음 복사',
   'NotebookLM 전략 과제 분석 프롬프트',
@@ -142,6 +143,12 @@ ${state.perplexityAnswer || '아직 Perplexity 답변이 붙여넣어지지 않�
 ${safeRule()}`;
 }
 
+function buildNotebookSourceFileText(state: State) {
+  return `${buildNotebookSourceTitle(state)}
+
+${buildNotebookSourceBody(state)}`;
+}
+
 function buildNotebookAnalysisPrompt(state: State) {
   return `업로드한 소스만 근거로 분석해 주세요.
 
@@ -196,6 +203,10 @@ ${safeRule()}`;
 1페이지 인포그래픽 구조. 상단 핵심 메시지, 중단 추진 과제 3개, 하단 2주 실행관리 질문과 KPI 후보.`;
 }
 
+function sanitizeFileName(text: string) {
+  return text.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, '_').slice(0, 60);
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span>{children}</label>;
 }
@@ -215,6 +226,7 @@ export function V40VNextPharmaStrategyResearchLab() {
   const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state]);
   const sourceTitle = useMemo(() => buildNotebookSourceTitle(state), [state]);
   const sourceBody = useMemo(() => buildNotebookSourceBody(state), [state]);
+  const sourceFileText = useMemo(() => buildNotebookSourceFileText(state), [state]);
   const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state]);
   const report = useMemo(() => buildStudioPrompt('보고서', state), [state]);
   const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state]);
@@ -227,6 +239,18 @@ export function V40VNextPharmaStrategyResearchLab() {
     } catch {
       setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.');
     }
+  };
+  const downloadSourceFile = () => {
+    const blob = new Blob([sourceFileText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${sanitizeFileName(sourceTitle)}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    setCopyMessage('NotebookLM 업로드용 TXT 파일을 다운로드했습니다. NotebookLM에서 소스 추가 → 파일 업로드로 넣어 주세요.');
   };
 
   return <section className="space-y-4">
@@ -244,11 +268,12 @@ export function V40VNextPharmaStrategyResearchLab() {
 
     <Section title="2단계: NotebookLM 소스 등록과 분석 질문 실행">
       <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
-        NotebookLM의 소스 추가 화면에는 먼저 제목과 본문을 넣고, 소스가 등록된 뒤 NotebookLM 채팅창에 분석 질문을 넣습니다. Perplexity 답변 전체를 그대로 붙여넣는 방식보다 실행 화살표가 활성화될 가능성이 높습니다.
+        NotebookLM 왼쪽 소스 추가에서 ‘웹’ 모드가 선택되어 있으면 일반 텍스트는 URL이 아니므로 실행 화살표가 활성화되지 않을 수 있습니다. 가장 안정적인 방법은 TXT 파일을 다운로드한 뒤 NotebookLM에서 소스 추가 → 파일 업로드로 넣는 것입니다. 텍스트로 넣을 때는 웹이 아니라 텍스트 붙여넣기 유형을 선택하세요.
       </div>
-      <div className="grid gap-2 md:grid-cols-3">
+      <div className="grid gap-2 md:grid-cols-4">
         <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceTitle, 'NotebookLM 소스 제목')}>NotebookLM 소스 제목 복사</button>
         <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceBody, 'NotebookLM 소스 본문')}>NotebookLM 소스 본문 복사</button>
+        <button type="button" className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-black text-white" onClick={downloadSourceFile}>NotebookLM 소스 TXT 다운로드</button>
         <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 분석 질문 복사</button>
       </div>
       <Field label="NotebookLM 소스 제목"><input className="w-full rounded-xl border px-3 py-2" value={sourceTitle} readOnly /></Field>
