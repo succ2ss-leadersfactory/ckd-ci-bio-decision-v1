@@ -2,11 +2,12 @@ import { V40_VNEXT_VISIBLE_APP_STEPS } from './journey-v40-vnext-preview-config'
 
 const V40_VNEXT_PROGRESS_COACH_MARKERS = [
   'V40VNextProgressCoachPanel',
-  '조별 진행 코치',
-  '중복 상단 요약 제거',
-  'v40-vNext 11단계 기준',
-  '조별 진행 상태',
+  '팀장 역할 진행 코치',
+  'v40-vNext 12단계 기준',
+  '팀장 역할 진행 상태',
   '영역별 바로가기',
+  '팀',
+  '이름/닉네임',
 ].join('|');
 void V40_VNEXT_PROGRESS_COACH_MARKERS;
 
@@ -31,16 +32,17 @@ type Phase = {
 };
 
 const PHASES: Phase[] = [
-  { label: '준비·질문', range: [0, 2], description: '역할, 안전선, AI 질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
-  { label: '성과관리', range: [3, 4], description: '시장 변화, CSF/KPI, 2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
-  { label: '업무관리', range: [5, 7], description: '실행 과제, 우선순위, 업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
-  { label: '사람관리·통합', range: [8, 10], description: '1on1 대화와 최종 실행 메모', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
+  { label: '준비·역할', range: [0, 3], description: '팀장 역할, 팀원 구성, 안전선, AI 질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
+  { label: '성과관리', range: [4, 5], description: '시장 변화, CSF/KPI, 2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
+  { label: '업무관리', range: [6, 8], description: '실행 과제, 우선순위, 업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
+  { label: '사람관리·통합', range: [9, 11], description: '1on1 대화와 최종 실행 메모', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
 ];
 
 const STEP_GUIDES = [
-  { action: '조 이름, 테이블, 대표 상황을 정합니다.', output: '우리 조가 다룰 대표 상황' },
-  { action: 'AI에 넣으면 안 되는 민감정보를 먼저 지웁니다.', output: '말해도 되는 선 합의' },
-  { action: '우리 조의 고민을 AI가 일할 수 있는 질문으로 바꿉니다.', output: '복사 가능한 AI 질문' },
+  { action: '팀, 이름/닉네임, 대표 상황을 정합니다.', output: '여러분이 다룰 대표 상황' },
+  { action: '여러분이 맡을 팀장 역할과 가상 팀원 7명을 확인합니다.', output: '팀장 역할과 팀원 구성 이해' },
+  { action: 'AI에 넣기 전 민감한 정보를 먼저 가립니다.', output: '말해도 되는 선 합의' },
+  { action: '여러분의 고민을 AI가 일할 수 있는 질문으로 바꿉니다.', output: '복사 가능한 AI 질문' },
   { action: '공개자료 기반 리서치를 성과관리 질문으로 연결합니다.', output: '리서치·전략회의 산출물' },
   { action: '전사전략과제를 팀 전략과제·CSF·KPI와 2주 기준으로 바꿉니다.', output: '팀 전략과제·CSF·KPI·2주 기준' },
   { action: '성과 기준을 팀원이 실행할 수 있는 업무지시로 바꿉니다.', output: '수정한 업무지시문과 완료 기준' },
@@ -76,8 +78,8 @@ export function V40VNextProgressCoachPanel({ currentStep, participant, onStepSel
     <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
       <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">조별 진행 코치</p>
-          <p className="mt-1 text-sm font-bold leading-6 text-slate-600">상단 단계 안내와 중복되는 큰 제목은 줄이고, 이 영역에서는 조별 진행 상태와 영역별 이동만 확인합니다.</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">팀장 역할 진행 코치</p>
+          <p className="mt-1 text-sm font-bold leading-6 text-slate-600">이 영역에서는 여러분의 진행 상태와 영역별 이동만 확인합니다. 실제 활동은 팀 단위로 하되, 판단 기준은 영업팀장 역할입니다.</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700">
           현재 영역: {phase.label}
@@ -86,11 +88,11 @@ export function V40VNextProgressCoachPanel({ currentStep, participant, onStepSel
 
       <div className="grid gap-3 lg:grid-cols-[1.15fr_1.15fr_2fr]">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-black text-slate-500">조별 진행 상태</p>
+          <p className="text-xs font-black text-slate-500">팀장 역할 진행 상태</p>
           <div className="mt-3 space-y-2 text-sm font-bold leading-6 text-slate-700">
-            <p><span className="font-black text-slate-950">조:</span> {participant.groupName || '미선택'} / {participant.tableName || '미선택'}</p>
+            <p><span className="font-black text-slate-950">팀:</span> {participant.groupName || '미선택'} / <span className="font-black text-slate-950">이름/닉네임:</span> {participant.tableName || '미입력'}</p>
             <p><span className="font-black text-slate-950">대표 상황:</span> {shortSituation(participant.representativeSituation)}</p>
-            <p><span className="font-black text-slate-950">역할 합의:</span> {participant.roleAccepted ? '완료' : '미완료'}</p>
+            <p><span className="font-black text-slate-950">역할 확인:</span> {participant.roleAccepted ? '완료' : '미완료'}</p>
           </div>
         </div>
 
