@@ -48,7 +48,6 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextPreviewApp',
-  'V40VNextShell',
   'V40VNextFlowStrip',
   'V40VNextProgressCoachPanel',
   '성과관리 → 업무관리 → 사람관리',
@@ -121,7 +120,6 @@ for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
   'src/journey-v40-vnext-preview-config.ts',
   'src/journey-v40-vnext-ux-components.tsx',
-  'src/journey-v40-vnext-shell.tsx',
   'src/journey-v40-vnext-progress-coach-panel.tsx',
   'src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx',
   'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
