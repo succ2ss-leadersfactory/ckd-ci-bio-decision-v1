@@ -17,6 +17,7 @@ const V40_VNEXT_UX_COMPONENT_MARKERS = [
   '사람관리 1',
   '사람관리 2',
   '최종 실행 메모',
+  '1단계 팀·이름 필수 게이트',
 ].join('|');
 void V40_VNEXT_UX_COMPONENT_MARKERS;
 
@@ -40,6 +41,25 @@ const v40FlowItems = [
   { step: 11, label: '사람관리 2: 1on1 대화 설계와 실천하기', shortLabel: '사람관리 2', icon: '💬' },
   { step: 12, label: '2주 실행 메모와 복기 질문 완성하기', shortLabel: '최종 실행 메모', icon: '✅' },
 ];
+
+function v40ParticipantIdentityReady() {
+  if (typeof window === 'undefined') return true;
+  try {
+    const raw = window.localStorage.getItem('ckd.v40-vnext.participant.v1');
+    if (!raw) return false;
+    const participant = JSON.parse(raw) as { groupName?: string; tableName?: string };
+    return Boolean(String(participant.groupName ?? '').trim() && String(participant.tableName ?? '').trim());
+  } catch {
+    return false;
+  }
+}
+
+function guardV40StepSelect(targetStepNumber: number) {
+  if (targetStepNumber <= 1) return true;
+  if (v40ParticipantIdentityReady()) return true;
+  window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+  return false;
+}
 
 export function V40VNextFlowStrip({ currentStep, onStepSelect }: { currentStep: number; onStepSelect?: V40VNextStepNavigator }) {
   const contextStepSelect = useContext(V40VNextStepNavigationContext);
@@ -78,7 +98,10 @@ export function V40VNextFlowStrip({ currentStep, onStepSelect }: { currentStep: 
                   aria-current={isCurrent ? 'step' : undefined}
                   aria-label={`${item.step}단계 ${item.label}로 이동`}
                   title={`${item.step}단계 ${item.label}로 이동`}
-                  onClick={() => handleStepSelect(item.step)}
+                  onClick={() => {
+                    if (!guardV40StepSelect(item.step)) return;
+                    handleStepSelect(item.step);
+                  }}
                 >
                   {chipContent}
                 </button>
