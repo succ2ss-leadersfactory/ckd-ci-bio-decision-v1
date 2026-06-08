@@ -14,9 +14,12 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'Perplexity 출처 URL만 분리',
   'NotebookLM 웹 소스 URL 복사',
   '분리된 웹 소스 URL',
+  'NotebookLM 소스 등록하기',
   'NotebookLM 소스 제목 복사',
   'NotebookLM 소스 본문 복사',
   'NotebookLM 소스 TXT 다운로드',
+  'NotebookLM 소스 기반 전략 과제 압축',
+  'NotebookLM 프롬프트 복사',
   'NotebookLM 분석 질문 복사',
   'NotebookLM 소스 묶음 복사',
   'NotebookLM 전략 과제 분석 프롬프트',
@@ -315,26 +318,32 @@ export function V40VNextPharmaStrategyResearchLab() {
       <Field label="분리된 웹 소스 URL"><TextArea value={webSourceUrls} readOnly /></Field>
     </Section>
 
-    <Section title="3단계: NotebookLM 보조 소스 등록과 분석 질문 실행">
+    <Section title="3단계: NotebookLM 소스 등록하기">
       <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
-        웹 URL이 등록되지 않거나 자료 전체를 보조 소스로 넣고 싶다면 TXT 파일 다운로드를 사용하세요. NotebookLM에서 소스 추가 → 파일 업로드로 TXT 파일을 넣은 뒤, 소스가 등록되면 채팅창에 분석 질문을 붙여넣습니다.
+        먼저 2단계에서 분리한 URL을 NotebookLM의 웹 소스로 등록합니다. 웹 URL이 등록되지 않거나 자료 전체를 보조 소스로 넣고 싶다면 TXT 파일 다운로드를 사용하세요.
       </div>
-      <div className="grid gap-2 md:grid-cols-4">
+      <div className="grid gap-2 md:grid-cols-3">
         <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceTitle, 'NotebookLM 소스 제목')}>NotebookLM 소스 제목 복사</button>
         <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceBody, 'NotebookLM 소스 본문')}>NotebookLM 소스 본문 복사</button>
         <button type="button" className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-black text-white" onClick={downloadSourceFile}>NotebookLM 소스 TXT 다운로드</button>
-        <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 분석 질문 복사</button>
       </div>
       <Field label="NotebookLM 소스 제목"><input className="w-full rounded-xl border px-3 py-2" value={sourceTitle} readOnly /></Field>
       <Field label="NotebookLM 소스 본문"><TextArea value={sourceBody} readOnly /></Field>
-      <Field label="NotebookLM 분석 질문"><TextArea value={analysisPrompt} readOnly /></Field>
+    </Section>
+
+    <Section title="4단계: NotebookLM 소스 기반 전략 과제 압축">
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">
+        NotebookLM에 웹 소스 또는 TXT 보조 소스를 등록한 뒤, 아래 프롬프트를 채팅창에 붙여넣어 소스 기반으로 전략 과제와 2주 실행관리 질문을 압축합니다.
+      </div>
+      <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 프롬프트 복사</button>
+      <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{analysisPrompt}</pre>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
       <div className="grid gap-3 md:grid-cols-2"><Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
       <Field label="2주 실행관리 질문과 KPI 후보"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
 
-    <Section title="4단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
+    <Section title="5단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
       <Field label="LM Studio 보고서 생성 요청"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, 'LM Studio 보고서 생성 요청')}>보고서 요청문 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
       <Field label="LM Studio 슬라이드 생성 요청"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, 'LM Studio 슬라이드 생성 요청')}>슬라이드 요청문 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
       <Field label="LM Studio 인포그래픽 생성 요청"><TextArea value={infographic} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, 'LM Studio 인포그래픽 생성 요청')}>인포그래픽 요청문 복사</button><TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
