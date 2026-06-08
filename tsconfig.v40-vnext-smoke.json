@@ -9,6 +9,7 @@
     "src/journey-v40-vnext-preview-config.ts",
     "src/journey-v40-vnext-performance-strategy-cascade-lab.tsx",
     "src/journey-v40-vnext-performance-dynamic-flow-labs.tsx",
+    "src/journey-v40-vnext-performance-enhanced-cascade-lab.tsx",
     "src/journey-v40-vnext-performance-compact-cascade-lab.tsx",
     "src/journey-v40-vnext-task-execution-bridge-lab.tsx",
     "src/journey-v40-vnext-task-management-lab.tsx",
