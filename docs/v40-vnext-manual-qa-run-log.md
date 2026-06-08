@@ -10,11 +10,11 @@ This file records the current verification status after adding the v40-vNext man
 - Route under test: `/journey-v40-vnext-preview.html`
 - QA checklist: `docs/v40-vnext-manual-qa-checklist.md`
 - Browser QA console snippets: `docs/v40-vnext-browser-qa-console-snippets.md`
-- Latest verified head: `a13cd1f020d3978395f8ae59cfaec880243279f4`
+- Latest verified head: `d5cca32c5e156d6a2d21c53faa47daed43ac178c`
 
 ## 2. Automated verification status
 
-The following checks were confirmed successful for head `a13cd1f020d3978395f8ae59cfaec880243279f4`.
+The following checks were confirmed successful for head `d5cca32c5e156d6a2d21c53faa47daed43ac178c`.
 
 - [x] C1Bio MVP CI: success
 - [x] v35 Smoke: success
