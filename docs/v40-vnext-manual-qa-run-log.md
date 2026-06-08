@@ -10,11 +10,11 @@ This file records the current verification status after adding the v40-vNext man
 - Route under test: `/journey-v40-vnext-preview.html`
 - QA checklist: `docs/v40-vnext-manual-qa-checklist.md`
 - Browser QA console snippets: `docs/v40-vnext-browser-qa-console-snippets.md`
-- Latest verified head: `d5cca32c5e156d6a2d21c53faa47daed43ac178c`
+- Latest verified head: `f856d42c1af22c1257655056631d55ef07120c81`
 
 ## 2. Automated verification status
 
-The following checks were confirmed successful for head `d5cca32c5e156d6a2d21c53faa47daed43ac178c`.
+The following checks were confirmed successful for head `f856d42c1af22c1257655056631d55ef07120c81`.
 
 - [x] C1Bio MVP CI: success
 - [x] v35 Smoke: success
@@ -24,6 +24,7 @@ The following checks were confirmed successful for head `d5cca32c5e156d6a2d21c53
 - [x] v40-lite Smoke: success
 - [x] v40-vNext Smoke: success
 - [x] v40-vNext static smoke check: success
+- [x] v40-vNext NotebookLM parser smoke check: success
 - [x] v40-vNext scoped TypeScript check: success
 - [x] Vite build: success
 
@@ -38,6 +39,8 @@ The Step 4 research flow was optimized after repeated browser checks and should 
 - NotebookLM pasted output can be parsed into separate fields with `NotebookLM 결과 항목별로 정리하기`.
 - LM Studio prompts are simplified as output-format instructions based on uploaded sources and the Step 3 organized result.
 - Step 4 component memoization was optimized: URL extraction is computed once, handlers are stabilized with `useCallback`, and prompt memo dependencies are narrowed.
+- Step 4 research lab internals were split into data, prompt, and parser modules while preserving the participant-facing screen and behavior.
+- `smoke:v40-vnext:static` now runs the real static smoke file and the NotebookLM parser smoke test instead of returning a placeholder pass.
 
 ## 4. Manual browser QA status
 
@@ -87,6 +90,7 @@ Confirm the optimized Step 4 research flow is clear and not duplicative.
 - [ ] `NotebookLM 결과 항목별로 정리하기` fills 추진 과제 1/2/3, 우리 팀 실행 영향, 2주 실행관리 질문과 KPI 후보, and 주의해야 할 표현 where matching headings are present.
 - [ ] LM Studio 보고서/슬라이드/인포그래픽 prompts are concise output-format instructions, not long pasted content repeats.
 - [ ] Copy buttons still work after changing topic, team situation, and pasted outputs.
+- [ ] Values remain saved in localStorage after navigating away and returning to Step 4 in the same browser.
 
 ### C. Step 11 to Step 12 data connection
 
