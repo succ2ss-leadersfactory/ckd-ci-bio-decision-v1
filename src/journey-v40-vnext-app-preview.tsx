@@ -12,7 +12,8 @@ import { V39FlowStrip, V39MinimumChecklist, V39MiniFlow, V39SafetyStrip, V39Step
 import { V40VNextFinalExecutionMemoLab } from './journey-v40-vnext-final-execution-memo-lab';
 import { V40VNextOneOnOnePracticeLab } from './journey-v40-vnext-one-on-one-practice-lab';
 import { V40VNextPeopleSelectionLab } from './journey-v40-vnext-people-selection-lab';
-import { V40VNextPerformanceRecordEvidenceLab, V40VNextPerformanceStrategyCascadeLab, V40VNextPerformanceTwoWeekFlowLab } from './journey-v40-vnext-performance-strategy-cascade-lab';
+import { V40VNextPerformanceStrategyCascadeLab } from './journey-v40-vnext-performance-strategy-cascade-lab';
+import { V40VNextPerformanceRecordEvidenceLab, V40VNextPerformanceTwoWeekFlowLab } from './journey-v40-vnext-performance-dynamic-flow-labs';
 import { V40VNextProgressCoachPanel } from './journey-v40-vnext-progress-coach-panel';
 import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
 import { V40VNextTaskExecutionDesignLab, V40VNextTaskPriorityFlowLab } from './journey-v40-vnext-task-management-lab';
@@ -36,11 +37,18 @@ const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   'ckd.v40-vnext.performanceCascade.v1',
   '전사전략과제 → 팀 전략과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
   '팀원별 CRM 기록에서 다음 행동의 신호를 찾습니다',
-  '가상 CRM 기록 카드',
+  '팀원별 가상 CRM 기록 판독',
   '성과 단서가 가장 뚜렷한 기록',
   '부족 정보가 가장 큰 기록',
   '위험한 해석이 숨어 있는 기록',
   '7단계로 넘길 실행 신호',
+  '이번 2주 성과관리 초점',
+  '먼저 볼 실행 신호',
+  '잠시 줄일 활동',
+  'selectedTeamTaskId',
+  'selectedCsfIds',
+  'selectedKpiIds',
+  'executionSignalMemo',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
   '업무관리 2: 우선순위와 업무 흐름 정리하기',
   '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
