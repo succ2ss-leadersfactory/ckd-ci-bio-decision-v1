@@ -26,6 +26,9 @@ const files = {
   app: read('src/journey-v40-vnext-app-preview.tsx'),
   config: read('src/journey-v40-vnext-preview-config.ts'),
   performanceLab: read('src/journey-v40-vnext-performance-strategy-cascade-lab.tsx'),
+  dynamicPerformanceLab: read('src/journey-v40-vnext-performance-dynamic-flow-labs.tsx'),
+  compactPerformanceLab: read('src/journey-v40-vnext-performance-compact-cascade-lab.tsx'),
+  taskExecutionBridgeLab: read('src/journey-v40-vnext-task-execution-bridge-lab.tsx'),
   taskLab: read('src/journey-v40-vnext-task-management-lab.tsx'),
   boundaryLab: read('src/journey-v40-vnext-task-boundary-coordination-lab.tsx'),
   peopleSelectionLab: read('src/journey-v40-vnext-people-selection-lab.tsx'),
@@ -53,13 +56,18 @@ for (const marker of [
   '성과관리 → 업무관리 → 사람관리',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
+  '6·7단계 숨김 기본 운영',
+  '우리 조의 2주 성과관리 기준',
+  '이번 2주 동안 먼저 볼 성과 신호',
+  '잠시 줄일 활동',
+  '팀장 중간 점검 질문',
+  '8단계 업무관리로 넘길 실행 기준',
   '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
   '팀원별 CRM 기록에서 다음 행동의 신호를 찾습니다',
   '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
   'V40VNextPerformanceStrategyCascadeLab',
-  'V40VNextPerformanceRecordEvidenceLab',
-  'V40VNextPerformanceTwoWeekFlowLab',
-  'V40VNextTaskExecutionDesignLab',
+  'V40VNextPerformanceCompactCascadeLab',
+  'V40VNextTaskExecutionBridgeLab',
   'V40VNextTaskPriorityFlowLab',
   'V40VNextTaskBoundaryCoordinationLab',
   'V40VNextPeopleSelectionLab',
@@ -95,6 +103,8 @@ for (const marker of [
   '조별 역할 잡기',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
+  '6·7단계 숨김 기본 운영',
+  '우리 조의 2주 성과관리 기준',
   '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
   '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
   '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
@@ -110,10 +120,7 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextPerformanceStrategyCascadeLab',
-  'V40VNextPerformanceRecordEvidenceLab',
-  'V40VNextPerformanceTwoWeekFlowLab',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
-  '성과관리 3: 고객 기록에서 성과 신호 읽기',
   '전사전략과제 → 팀 전략과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
   '전사전략과제 초기 선택 없음',
   '전사전략과제 선택 후 팀 전략과제 선택창 활성화',
@@ -121,21 +128,6 @@ for (const marker of [
   '선택한 팀 전략과제별 CSF 4개 제시',
   '선택한 CSF별 KPI 4개 제시',
   'KPI 선택 후 AI 확장 요청 활성화',
-  '7명 전체 카드',
-  '집중 판독할 기록 3개',
-  '성과 단서가 가장 뚜렷한 기록',
-  '부족 정보가 가장 큰 기록',
-  '위험한 해석이 숨어 있는 기록',
-  '7단계로 넘길 실행 신호',
-  '김재호 차장',
-  '김문호 차장',
-  '유희관 과장',
-  '이대은 대리',
-  '신재영 대리',
-  '박재욱 사원',
-  '문교원 사원',
-  'AI에게 고객 활동 기록 해석 초안 요청',
-  'AI에게 2주 실행 흐름 초안 요청',
   '전사전략과제 선택',
   '우리 조가 실행할 팀 전략과제 선택',
   'CSF 선택',
@@ -145,6 +137,37 @@ for (const marker of [
   '지속가능한 성장 기반 강화',
   '시장 변화 대응력 강화',
 ]) mustInclude(files.performanceLab, marker, 'performance cascade lab');
+
+for (const marker of [
+  'V40VNextPerformanceRecordEvidenceLab',
+  'V40VNextPerformanceTwoWeekFlowLab',
+  '팀원별 가상 CRM 기록 판독',
+  '7단계로 넘길 실행 신호',
+  'selectedTeamTaskId',
+  'selectedCsfIds',
+  'selectedKpiIds',
+  'executionSignalMemo',
+  'AI에게 2주 실행 흐름 초안 요청',
+]) mustInclude(files.dynamicPerformanceLab, marker, 'hidden advanced performance labs');
+
+for (const marker of [
+  'V40VNextPerformanceCompactCascadeLab',
+  '6·7단계 숨김 기본 운영',
+  '우리 조의 2주 성과관리 기준',
+  '이번 2주 동안 먼저 볼 성과 신호',
+  '잠시 줄일 활동',
+  '팀장 중간 점검 질문',
+  '8단계 업무관리로 넘길 실행 기준',
+  'ckd.v40-vnext.performanceCascade.v1',
+]) mustInclude(files.compactPerformanceLab, marker, 'compact performance bridge lab');
+
+for (const marker of [
+  'V40VNextTaskExecutionBridgeLab',
+  '5단계 성과관리 압축 산출물 → 6단계 업무관리 실행 과제화',
+  '이번 2주 동안 먼저 볼 성과 신호',
+  '8단계 업무관리로 넘길 실행 기준',
+  'ckd.v40-vnext.performanceCascade.v1',
+]) mustInclude(files.taskExecutionBridgeLab, marker, 'task execution bridge lab');
 
 for (const marker of [
   'V40VNextTaskExecutionDesignLab',
@@ -186,7 +209,19 @@ for (const marker of [
 ]) mustInclude(files.finalMemoLab, marker, 'v40-vNext final memo lab');
 
 for (const marker of ['journeyV40VNextPreview', 'journey-v40-vnext-preview.html']) mustInclude(files.vite, marker, 'vite v40-vNext route');
-for (const marker of ['src/journey-v40-vnext-app-preview.tsx', 'src/journey-v40-vnext-preview-config.ts', 'src/journey-v40-vnext-performance-strategy-cascade-lab.tsx', 'src/journey-v40-vnext-task-management-lab.tsx', 'src/journey-v40-vnext-task-boundary-coordination-lab.tsx', 'src/journey-v40-vnext-people-selection-lab.tsx', 'src/journey-v40-vnext-one-on-one-practice-lab.tsx', 'src/journey-v40-vnext-final-execution-memo-lab.tsx']) mustInclude(files.tsconfig, marker, 'v40-vNext tsconfig');
+for (const marker of [
+  'src/journey-v40-vnext-app-preview.tsx',
+  'src/journey-v40-vnext-preview-config.ts',
+  'src/journey-v40-vnext-performance-strategy-cascade-lab.tsx',
+  'src/journey-v40-vnext-performance-dynamic-flow-labs.tsx',
+  'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
+  'src/journey-v40-vnext-task-execution-bridge-lab.tsx',
+  'src/journey-v40-vnext-task-management-lab.tsx',
+  'src/journey-v40-vnext-task-boundary-coordination-lab.tsx',
+  'src/journey-v40-vnext-people-selection-lab.tsx',
+  'src/journey-v40-vnext-one-on-one-practice-lab.tsx',
+  'src/journey-v40-vnext-final-execution-memo-lab.tsx',
+]) mustInclude(files.tsconfig, marker, 'v40-vNext tsconfig');
 for (const marker of ['journey-v40-vnext-app-preview.tsx', 'v40-vNext route only']) {
   mustNotInclude(files.journeyHtml, marker, 'operating journey route');
   mustNotInclude(files.v39Html, marker, 'v39 preview route');
