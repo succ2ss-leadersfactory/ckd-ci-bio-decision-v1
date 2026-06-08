@@ -71,21 +71,17 @@ for (const marker of [
   'Perplexity 출처 URL만 분리',
   'NotebookLM 웹 소스 URL 복사',
   '분리된 웹 소스 URL',
-  'NotebookLM 소스 등록하기',
-  'NotebookLM 소스 제목 복사',
-  'NotebookLM 소스 본문 복사',
-  'NotebookLM 소스 TXT 다운로드',
   'NotebookLM 소스 기반 전략 과제 압축',
   'NotebookLM 프롬프트 복사',
   'NotebookLM 분석 질문 복사',
   'NotebookLM 결과 항목별로 정리하기',
   'parseNotebookAnswer',
   'NOTEBOOK_SECTION_ALIASES',
-  'NotebookLM 소스 묶음 복사',
-  'NotebookLM 전략 과제 분석 프롬프트',
   'LM Studio 보고서 생성 요청',
   'LM Studio 슬라이드 생성 요청',
   'LM Studio 인포그래픽 생성 요청',
+  '업로드한 소스와 3단계 정리 결과를 근거로',
+  '산출물 형식만 지시',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ]) mustInclude(files.researchTrimmedLab, marker, 'v40-vNext research bridge lab');
 
@@ -100,26 +96,29 @@ for (const marker of [
   'Perplexity 출처 URL만 분리',
   'NotebookLM 웹 소스 URL 복사',
   '분리된 웹 소스 URL',
-  'NotebookLM 소스 등록하기',
-  'NotebookLM 소스 제목 복사',
-  'NotebookLM 소스 본문 복사',
-  'NotebookLM 소스 TXT 다운로드',
   'NotebookLM 소스 기반 전략 과제 압축',
   'NotebookLM 프롬프트 복사',
   'NotebookLM 분석 질문 복사',
   'NotebookLM 결과 항목별로 정리하기',
   'parseNotebookAnswer',
   'NOTEBOOK_SECTION_ALIASES',
-  'NotebookLM 소스 묶음 복사',
-  'NotebookLM 전략 과제 분석 프롬프트',
   'LM Studio 보고서 생성 요청',
   'LM Studio 슬라이드 생성 요청',
   'LM Studio 인포그래픽 생성 요청',
+  '업로드한 소스와 3단계 정리 결과를 근거로',
+  '산출물 형식만 지시',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ]) mustInclude(files.pharmaResearchLab, marker, 'v40-vNext pharma strategy research lab');
 
-mustNotInclude(files.pharmaResearchLab, 'NotebookLM 소스 묶음 생성', 'legacy source bundle generation button');
-mustNotInclude(files.pharmaResearchLab, 'NotebookLM 소스 묶음 검토·수정', 'legacy source bundle review field');
+for (const marker of [
+  'NotebookLM 소스 등록하기',
+  'NotebookLM 소스 제목 복사',
+  'NotebookLM 소스 본문 복사',
+  'NotebookLM 소스 TXT 다운로드',
+  'NotebookLM 소스 묶음 복사',
+  'NotebookLM 소스 묶음 생성',
+  'NotebookLM 소스 묶음 검토·수정',
+]) mustNotInclude(files.pharmaResearchLab, marker, 'removed duplicate NotebookLM source section');
 
 for (const marker of [
   'V40VNextPromptPracticeReviewLab',
