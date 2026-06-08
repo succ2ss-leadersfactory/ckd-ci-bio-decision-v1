@@ -18,6 +18,25 @@ export type JourneyShellProps = {
   children: React.ReactNode;
 };
 
+function isV40VNextEntryBlocked(title: string, currentStep: number) {
+  if (title !== 'C1바이오 영업팀장 AI 리더십 Lab Journey') return false;
+  if (currentStep !== 0) return false;
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const raw = window.localStorage.getItem('ckd.v40-vnext.participant.v1');
+    if (!raw) return true;
+    const participant = JSON.parse(raw) as { groupName?: string; tableName?: string };
+    return !String(participant.groupName ?? '').trim() || !String(participant.tableName ?? '').trim();
+  } catch {
+    return true;
+  }
+}
+
+function showV40VNextEntryGateMessage() {
+  window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+}
+
 export function JourneyShell({
   title,
   subtitle,
@@ -35,6 +54,15 @@ export function JourneyShell({
   const progress = steps.length <= 1 ? 100 : Math.round(((safeStep + 1) / steps.length) * 100);
   const stepScrollerRef = React.useRef<HTMLDivElement | null>(null);
   const activeChipRef = React.useRef<HTMLElement | null>(null);
+  const entryGateBlocked = isV40VNextEntryBlocked(title, safeStep);
+
+  const handleNext = () => {
+    if (entryGateBlocked) {
+      showV40VNextEntryGateMessage();
+      return;
+    }
+    onNext();
+  };
 
   React.useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -154,11 +182,12 @@ export function JourneyShell({
             <div className="hidden min-w-0 flex-1 text-center md:block">
               <p className="truncate text-sm font-bold text-slate-900">{activeStep?.title || '-'}</p>
               <p className="text-xs text-slate-500">입력 내용은 브라우저에 자동 저장됩니다.</p>
+              {entryGateBlocked ? <p className="mt-1 text-xs font-black text-amber-700">팀과 이름/닉네임 입력 후 다음 단계로 이동할 수 있습니다.</p> : null}
             </div>
             <button
               className="min-h-12 flex-1 rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white disabled:opacity-40 md:flex-none md:min-w-32"
               disabled={safeStep >= steps.length - 1}
-              onClick={onNext}
+              onClick={handleNext}
             >
               다음 단계
             </button>
