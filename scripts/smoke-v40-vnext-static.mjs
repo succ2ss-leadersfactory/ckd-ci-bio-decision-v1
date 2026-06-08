@@ -92,6 +92,9 @@ for (const marker of [
   '4단계 AI 전략 리서치 숨김',
   'AI 없이도 할 수 있습니다 숨김',
   '3단계 구조화 프롬프트 연결 숨김',
+  'NotebookLM 소스 묶음 검토·수정 숨김',
+  '소스 묶음 복사 버튼 숨김',
+  'NotebookLM 소스 묶음 복사로 버튼명 변경',
 ]) mustInclude(files.researchTrimmedLab, marker, 'v40-vNext trimmed research lab');
 
 for (const marker of [
