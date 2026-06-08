@@ -26,6 +26,7 @@ const files = {
   app: read('src/journey-v40-vnext-app-preview.tsx'),
   config: read('src/journey-v40-vnext-preview-config.ts'),
   ux: read('src/journey-v40-vnext-ux-components.tsx'),
+  promptReviewLab: read('src/journey-v40-vnext-prompt-practice-review-lab.tsx'),
   progressCoach: read('src/journey-v40-vnext-progress-coach-panel.tsx'),
   compactPerformanceLab: read('src/journey-v40-vnext-performance-compact-cascade-lab.tsx'),
   enhancedPerformanceLabV2: read('src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx'),
@@ -51,6 +52,14 @@ for (const marker of [
   '역할과 팀원 구성 이해하기',
   '여러분의 역할은 영업팀장 이대호 팀장입니다',
   '이대호 팀장 소개',
+  '함께 하는 우리 팀원',
+  '일반적인 질문',
+  'V40VNextPromptPracticeReviewLab',
+  '구체성',
+  '맥락 반영',
+  '실행 가능성',
+  '리더의 언어',
+  '사실 검증 가능성',
   '팀 선택 1팀~8팀',
   '이름/닉네임 입력',
   'V40VNextPerformanceCompactCascadeLab',
@@ -67,6 +76,19 @@ for (const marker of [
   '박재욱 사원',
   '문교원 사원',
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
+
+for (const marker of [
+  'V40VNextPromptPracticeReviewLab',
+  '일반적인 질문',
+  '일반적인 질문 복사하기',
+  'AI 결과 붙여넣기',
+  '구체성',
+  '맥락 반영',
+  '실행 가능성',
+  '리더의 언어',
+  '사실 검증 가능성',
+  'ckd.v40-vnext.promptPracticeReview.v1',
+]) mustInclude(files.promptReviewLab, marker, 'v40-vNext prompt review lab');
 
 for (const marker of [
   'V40VNextFlowStrip',
@@ -128,6 +150,7 @@ for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
   'src/journey-v40-vnext-preview-config.ts',
   'src/journey-v40-vnext-ux-components.tsx',
+  'src/journey-v40-vnext-prompt-practice-review-lab.tsx',
   'src/journey-v40-vnext-progress-coach-panel.tsx',
   'src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx',
   'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
