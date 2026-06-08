@@ -8,6 +8,7 @@ const V40_VNEXT_PROGRESS_COACH_MARKERS = [
   '영역별 바로가기',
   '팀',
   '이름/닉네임',
+  '1단계 팀·이름 필수 게이트',
 ].join('|');
 void V40_VNEXT_PROGRESS_COACH_MARKERS;
 
@@ -69,10 +70,19 @@ function shortSituation(value: string) {
   return trimmed.length > 72 ? `${trimmed.slice(0, 72)}…` : trimmed;
 }
 
+function participantIdentityReady(participant: ParticipantSummary) {
+  return Boolean(participant.groupName.trim() && participant.tableName.trim());
+}
+
+function showEntryGateMessage() {
+  window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+}
+
 export function V40VNextProgressCoachPanel({ currentStep, participant, onStepSelect }: ProgressCoachPanelProps) {
   const current = V40_VNEXT_VISIBLE_APP_STEPS[currentStep] ?? V40_VNEXT_VISIBLE_APP_STEPS[0];
   const guide = STEP_GUIDES[currentStep] ?? STEP_GUIDES[0];
   const phase = currentPhase(currentStep);
+  const identityReady = participantIdentityReady(participant);
 
   return (
     <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
@@ -85,6 +95,8 @@ export function V40VNextProgressCoachPanel({ currentStep, participant, onStepSel
           현재 영역: {phase.label}
         </div>
       </div>
+
+      {!identityReady ? <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold leading-6 text-amber-900">1단계에서 팀과 이름/닉네임을 입력하면 2단계 이후를 자유롭게 선택할 수 있습니다.</div> : null}
 
       <div className="grid gap-3 lg:grid-cols-[1.15fr_1.15fr_2fr]">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -111,7 +123,13 @@ export function V40VNextProgressCoachPanel({ currentStep, participant, onStepSel
               <button
                 key={item.label}
                 type="button"
-                onClick={() => onStepSelect(item.range[0])}
+                onClick={() => {
+                  if (!identityReady && item.range[0] > 0) {
+                    showEntryGateMessage();
+                    return;
+                  }
+                  onStepSelect(item.range[0]);
+                }}
                 className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${active ? item.tone : 'border-slate-200 bg-white text-slate-700'}`}
               >
                 <p className="text-xs font-black">{status}</p>
