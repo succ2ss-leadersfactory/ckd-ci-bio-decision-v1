@@ -25,9 +25,10 @@ const files = {
   html: read('journey-v40-vnext-preview.html'),
   app: read('src/journey-v40-vnext-app-preview.tsx'),
   config: read('src/journey-v40-vnext-preview-config.ts'),
+  ux: read('src/journey-v40-vnext-ux-components.tsx'),
+  progressCoach: read('src/journey-v40-vnext-progress-coach-panel.tsx'),
   performanceLab: read('src/journey-v40-vnext-performance-strategy-cascade-lab.tsx'),
   dynamicPerformanceLab: read('src/journey-v40-vnext-performance-dynamic-flow-labs.tsx'),
-  enhancedPerformanceLab: read('src/journey-v40-vnext-performance-enhanced-cascade-lab.tsx'),
   enhancedPerformanceLabV2: read('src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx'),
   compactPerformanceLab: read('src/journey-v40-vnext-performance-compact-cascade-lab.tsx'),
   taskExecutionBridgeLab: read('src/journey-v40-vnext-task-execution-bridge-lab.tsx'),
@@ -44,37 +45,27 @@ const files = {
   v40LiteHtml: read('journey-v40-lite-preview.html'),
 };
 
-for (const marker of [
-  '<title>C1바이오 영업팀장 AI 리더십 Lab Journey v40-vNext</title>',
-  '<div id="journey-root"></div>',
-  '/src/journey-v40-vnext-app-preview.tsx',
-  'v40-vNext route only',
-]) mustInclude(files.html, marker, 'v40-vNext html');
+for (const marker of ['<title>C1바이오 영업팀장 AI 리더십 Lab Journey v40-vNext</title>', '<div id="journey-root"></div>', '/src/journey-v40-vnext-app-preview.tsx', 'v40-vNext route only']) mustInclude(files.html, marker, 'v40-vNext html');
 
 for (const marker of [
   'V40VNextPreviewApp',
   'v40-vNext 계승형 후속 버전',
   'v39 기준 원본 보호',
   '성과관리 → 업무관리 → 사람관리',
+  'v40-vNext 11단계 전용 흐름',
+  'V40VNextFlowStrip',
+  'V40VNextStepNavigationProvider',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '6·7단계 숨김 기본 운영',
   '우리 조의 2주 성과관리 기준',
-  '이번 2주 동안 먼저 볼 성과 신호',
-  '잠시 줄일 활동',
-  '팀장 중간 점검 질문',
-  '8단계 업무관리로 넘길 실행 기준',
-  '성과관리 3: 팀원별 CRM 기록에서 실행 신호 찾기',
-  '팀원별 CRM 기록에서 다음 행동의 신호를 찾습니다',
-  '성과관리 4: 팀 전략과제·CSF·KPI별 2주 실행 흐름 정하기',
-  'V40VNextPerformanceStrategyCascadeLab',
+  '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
+  '업무관리 2: 우선순위와 업무 흐름 정리하기',
+  '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
+  '사람관리 1: 먼저 이야기할 팀원 고르기',
+  '사람관리 2: 1on1 대화 설계와 실천하기',
   'V40VNextPerformanceCompactCascadeLab',
   'V40VNextTaskExecutionBridgeLab',
-  'V40VNextTaskPriorityFlowLab',
-  'V40VNextTaskBoundaryCoordinationLab',
-  'V40VNextPeopleSelectionLab',
-  'V40VNextOneOnOnePracticeLab',
-  'V40VNextFinalExecutionMemoLab',
   'V40VNextProgressCoachPanel',
   'ckd.v40-vnext.performanceCascade.v1',
   'ckd.v40-vnext.finalExecutionMemo.v1',
@@ -102,6 +93,32 @@ for (const marker of [
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
 
 for (const marker of [
+  'V40VNextFlowStrip',
+  'v40-vNext 11단계 전용 흐름',
+  '성과관리 1',
+  '성과관리 2',
+  '업무관리 1',
+  '업무관리 2',
+  '업무관리 3',
+  '사람관리 1',
+  '사람관리 2',
+  '최종 실행 메모',
+]) mustInclude(files.ux, marker, 'v40-vNext UX components');
+
+for (const marker of [
+  'V40VNextProgressCoachPanel',
+  '조별 진행 코치',
+  '중복 상단 요약 제거',
+  'v40-vNext 11단계 기준',
+  '조별 진행 상태',
+  '영역별 바로가기',
+  '준비·질문',
+  '성과관리',
+  '업무관리',
+  '사람관리·통합',
+]) mustInclude(files.progressCoach, marker, 'v40-vNext progress coach');
+
+for (const marker of [
   '조별 역할 잡기',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
@@ -125,32 +142,16 @@ for (const marker of [
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
   '전사전략과제 → 팀 전략과제 → CSF → KPI → 고객 활동 기록 → 2주 실행',
   '전사전략과제 초기 선택 없음',
-  '전사전략과제 선택 후 팀 전략과제 선택창 활성화',
   '팀 전략과제 선택 보기 4개 제시',
   '선택한 팀 전략과제별 CSF 4개 제시',
   '선택한 CSF별 KPI 4개 제시',
-  'KPI 선택 후 AI 확장 요청 활성화',
-  '전사전략과제 선택',
-  '우리 조가 실행할 팀 전략과제 선택',
-  'CSF 선택',
-  'KPI 선택',
   '고객가치 기반 성장 강화',
   '디지털 기반 실행관리 고도화',
   '지속가능한 성장 기반 강화',
   '시장 변화 대응력 강화',
 ]) mustInclude(files.performanceLab, marker, 'performance cascade lab');
 
-for (const marker of [
-  'V40VNextPerformanceRecordEvidenceLab',
-  'V40VNextPerformanceTwoWeekFlowLab',
-  '팀원별 가상 CRM 기록 판독',
-  '7단계로 넘길 실행 신호',
-  'selectedTeamTaskId',
-  'selectedCsfIds',
-  'selectedKpiIds',
-  'executionSignalMemo',
-  'AI에게 2주 실행 흐름 초안 요청',
-]) mustInclude(files.dynamicPerformanceLab, marker, 'hidden advanced performance labs');
+for (const marker of ['V40VNextPerformanceRecordEvidenceLab', 'V40VNextPerformanceTwoWeekFlowLab', '팀원별 가상 CRM 기록 판독', '7단계로 넘길 실행 신호', 'selectedTeamTaskId', 'selectedCsfIds', 'selectedKpiIds', 'executionSignalMemo', 'AI에게 2주 실행 흐름 초안 요청']) mustInclude(files.dynamicPerformanceLab, marker, 'hidden advanced performance labs');
 
 for (const marker of [
   'V40VNextPerformanceEnhancedCascadeLabV2',
@@ -171,75 +172,24 @@ for (const marker of [
   'ckd.v40-vnext.performanceCascade.v1',
 ]) mustInclude(files.enhancedPerformanceLabV2, marker, 'enhanced performance cascade UX V2');
 
-for (const marker of [
-  'V40VNextPerformanceCompactCascadeLab',
-  'V40VNextPerformanceEnhancedCascadeLabV2',
-  '6·7단계 숨김 기본 운영',
-  '우리 조의 2주 성과관리 기준 정리',
-  '이번 2주 동안 기록에서 먼저 볼 것',
-  '이번 2주 동안 잠시 줄일 일',
-  '팀장이 중간에 물어볼 확인 질문',
-  '다음 단계에서 실행 과제로 바꿀 기준',
-  '2주 성과관리 기준 초안 만들기',
-  'ckd.v40-vnext.performanceCascade.v1',
-]) mustInclude(files.compactPerformanceLab, marker, 'compact performance bridge lab');
-
-for (const marker of [
-  'V40VNextTaskExecutionBridgeLab',
-  '5단계 성과관리 압축 산출물 → 6단계 업무관리 실행 과제화',
-  '이번 2주 동안 먼저 볼 성과 신호',
-  '8단계 업무관리로 넘길 실행 기준',
-  'ckd.v40-vnext.performanceCascade.v1',
-]) mustInclude(files.taskExecutionBridgeLab, marker, 'task execution bridge lab');
-
-for (const marker of [
-  'V40VNextTaskExecutionDesignLab',
-  'V40VNextTaskPriorityFlowLab',
-  '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
-  '업무관리 2: 우선순위와 업무 흐름 정리하기',
-  'ckd.v40-vnext.taskManagement.v10',
-]) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
-
-for (const marker of [
-  'V40VNextTaskBoundaryCoordinationLab',
-  '업무관리 3: 혼자 해결하면 안 되는 일 구분하기',
-  '네 가지 바구니로 분류',
-  '업무 경계 선언문',
-]) mustInclude(files.boundaryLab, marker, 'v40-vNext boundary coordination lab');
-
-for (const marker of [
-  'V40VNextPeopleSelectionLab',
-  '사람관리 1: 먼저 이야기할 팀원 고르기',
-  '관찰한 행동은 말할 수 있지만, 위험한 해석은 확인 없이 말하지 않습니다',
-  'ckd.v40-vnext.peopleManagement.v2',
-]) mustInclude(files.peopleSelectionLab, marker, 'v40-vNext people selection lab');
-
-for (const marker of [
-  'V40VNextOneOnOnePracticeLab',
-  '사람관리 2: 1on1 대화 설계와 실천하기',
-  'AI 역할극 리허설 1 · 내가 팀장 역할',
-  'AI 역할극 리허설 2 · AI가 코칭 팀장 역할',
-  'ckd.v40-vnext.peopleManagement.v2',
-]) mustInclude(files.oneOnOneLab, marker, 'v40-vNext one-on-one lab');
-
-for (const marker of [
-  'V40VNextFinalExecutionMemoLab',
-  'ckd.v40-vnext.performanceCascade.v1',
-  'ckd.v40-vnext.taskManagement.v10',
-  'ckd.v40-vnext.peopleManagement.v2',
-  'ckd.v40-vnext.finalExecutionMemo.v1',
-  'v40-vNext 최신 결과로 채우기',
-]) mustInclude(files.finalMemoLab, marker, 'v40-vNext final memo lab');
+for (const marker of ['V40VNextPerformanceCompactCascadeLab', 'V40VNextPerformanceEnhancedCascadeLabV2', '6·7단계 숨김 기본 운영', '우리 조의 2주 성과관리 기준 정리', '이번 2주 동안 기록에서 먼저 볼 것', '이번 2주 동안 잠시 줄일 일', '팀장이 중간에 물어볼 확인 질문', '다음 단계에서 실행 과제로 바꿀 기준', '2주 성과관리 기준 초안 만들기', 'ckd.v40-vnext.performanceCascade.v1']) mustInclude(files.compactPerformanceLab, marker, 'compact performance bridge lab');
+for (const marker of ['V40VNextTaskExecutionBridgeLab', '5단계 성과관리 압축 산출물 → 6단계 업무관리 실행 과제화', '이번 2주 동안 먼저 볼 성과 신호', '8단계 업무관리로 넘길 실행 기준', 'ckd.v40-vnext.performanceCascade.v1']) mustInclude(files.taskExecutionBridgeLab, marker, 'task execution bridge lab');
+for (const marker of ['V40VNextTaskExecutionDesignLab', 'V40VNextTaskPriorityFlowLab', '업무관리 1: 성과 기준을 실행 과제로 바꾸기', '업무관리 2: 우선순위와 업무 흐름 정리하기', 'ckd.v40-vnext.taskManagement.v10']) mustInclude(files.taskLab, marker, 'v40-vNext task management lab');
+for (const marker of ['V40VNextTaskBoundaryCoordinationLab', '업무관리 3: 혼자 해결하면 안 되는 일 구분하기', '네 가지 바구니로 분류', '업무 경계 선언문']) mustInclude(files.boundaryLab, marker, 'v40-vNext boundary coordination lab');
+for (const marker of ['V40VNextPeopleSelectionLab', '사람관리 1: 먼저 이야기할 팀원 고르기', '관찰한 행동은 말할 수 있지만, 위험한 해석은 확인 없이 말하지 않습니다', 'ckd.v40-vnext.peopleManagement.v2']) mustInclude(files.peopleSelectionLab, marker, 'v40-vNext people selection lab');
+for (const marker of ['V40VNextOneOnOnePracticeLab', '사람관리 2: 1on1 대화 설계와 실천하기', 'AI 역할극 리허설 1 · 내가 팀장 역할', 'AI 역할극 리허설 2 · AI가 코칭 팀장 역할', 'ckd.v40-vnext.peopleManagement.v2']) mustInclude(files.oneOnOneLab, marker, 'v40-vNext one-on-one lab');
+for (const marker of ['V40VNextFinalExecutionMemoLab', 'ckd.v40-vnext.performanceCascade.v1', 'ckd.v40-vnext.taskManagement.v10', 'ckd.v40-vnext.peopleManagement.v2', 'ckd.v40-vnext.finalExecutionMemo.v1', 'v40-vNext 최신 결과로 채우기']) mustInclude(files.finalMemoLab, marker, 'v40-vNext final memo lab');
 
 for (const marker of ['journeyV40VNextPreview', 'journey-v40-vnext-preview.html']) mustInclude(files.vite, marker, 'vite v40-vNext route');
 for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
   'src/journey-v40-vnext-preview-config.ts',
+  'src/journey-v40-vnext-ux-components.tsx',
   'src/journey-v40-vnext-performance-strategy-cascade-lab.tsx',
   'src/journey-v40-vnext-performance-dynamic-flow-labs.tsx',
-  'src/journey-v40-vnext-performance-enhanced-cascade-lab.tsx',
   'src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx',
   'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
+  'src/journey-v40-vnext-progress-coach-panel.tsx',
   'src/journey-v40-vnext-task-execution-bridge-lab.tsx',
   'src/journey-v40-vnext-task-management-lab.tsx',
   'src/journey-v40-vnext-task-boundary-coordination-lab.tsx',
