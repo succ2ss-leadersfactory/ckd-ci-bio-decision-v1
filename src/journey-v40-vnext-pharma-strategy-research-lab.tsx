@@ -14,20 +14,14 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'Perplexity 출처 URL만 분리',
   'NotebookLM 웹 소스 URL 복사',
   '분리된 웹 소스 URL',
-  'NotebookLM 소스 등록하기',
-  'NotebookLM 소스 제목 복사',
-  'NotebookLM 소스 본문 복사',
-  'NotebookLM 소스 TXT 다운로드',
   'NotebookLM 소스 기반 전략 과제 압축',
   'NotebookLM 프롬프트 복사',
   'NotebookLM 분석 질문 복사',
   'NotebookLM 결과 항목별로 정리하기',
-  'NotebookLM 소스 묶음 복사',
-  'NotebookLM 전략 과제 분석 프롬프트',
   'LM Studio 보고서 생성 요청',
   'LM Studio 슬라이드 생성 요청',
   'LM Studio 인포그래픽 생성 요청',
-  '업로드한 소스와 4단계 정리 결과를 근거로',
+  '업로드한 소스와 3단계 정리 결과를 근거로',
   '산출물 형식만 지시',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ].join('|');
@@ -65,12 +59,42 @@ type ParsedNotebookSections = {
 };
 
 const TOPICS: Topic[] = [
-  { id: 'ai-commercial', title: 'AI 기반 영업·마케팅 실행관리 고도화', focus: 'AI 결과를 고객 접점 준비, 기록 품질, 후속 질문으로 바꾸는 기준을 세웁니다.', kpis: ['AI 활용 전 안전성 점검률', '고객 질문 기록률', '후속 실행안 작성률', '위험 표현 수정 건수'] },
-  { id: 'market-access', title: '약가·급여·시장접근성 변화 대응', focus: '가치 근거, 자료 요청, 사용 맥락 질문을 안전하게 기록하고 후속 대응으로 연결합니다.', kpis: ['가치 근거 질문 기록률', '승인자료 기반 후속 대응률', '자료 요청 처리 리드타임', '고객 관심 주제 분류율'] },
-  { id: 'patent-portfolio', title: '특허만료·제네릭/바이오시밀러 경쟁 대응', focus: '고객 세그먼트별 질문, 대체 선택 기준, 안전한 후속 커뮤니케이션을 정리합니다.', kpis: ['핵심 고객군별 질문 기록률', '후속 접점 확보율', '경쟁 비교 위험표현 수정 건수', '세그먼트별 실행 완료율'] },
-  { id: 'cdmo-cmo', title: 'CDMO/CMO 전략 확대와 공급·품질 신뢰 강화', focus: '공급·품질 관련 고객 우려를 듣고 내부 확인 필요 이슈와 설명 가능 범위를 구분합니다.', kpis: ['공급·품질 문의 기록률', '내부 확인 필요 이슈 공유건수', '고객 우려 후속 확인율', '안전 답변 가이드 활용률'] },
-  { id: 'therapy-growth', title: '비만·대사질환·항암·면역 등 고성장 치료영역 대응', focus: '고객 질문과 승인자료 기반 후속 대화를 안전하게 연결합니다.', kpis: ['치료영역 질문 기록률', '승인자료 기반 대화율', '후속 정보 제공 계획률', '고객 의도 단정 표현 수정건수'] },
-  { id: 'digital-journey', title: '디지털 채널·환자 여정 기반 고객 접점 혁신', focus: '방문, 비대면, 자료 제공, 후속 확인을 하나의 고객 접점 흐름으로 설계합니다.', kpis: ['대체 접점 실행률', '자료 제공 후 후속 확인율', '채널별 고객 반응 기록률', '2주 접점 흐름 완료율'] },
+  {
+    id: 'ai-commercial',
+    title: 'AI 기반 영업·마케팅 실행관리 고도화',
+    focus: 'AI 결과를 고객 접점 준비, 기록 품질, 후속 질문으로 바꾸는 기준을 세웁니다.',
+    kpis: ['AI 활용 전 안전성 점검률', '고객 질문 기록률', '후속 실행안 작성률', '위험 표현 수정 건수'],
+  },
+  {
+    id: 'market-access',
+    title: '약가·급여·시장접근성 변화 대응',
+    focus: '가치 근거, 자료 요청, 사용 맥락 질문을 안전하게 기록하고 후속 대응으로 연결합니다.',
+    kpis: ['가치 근거 질문 기록률', '승인자료 기반 후속 대응률', '자료 요청 처리 리드타임', '고객 관심 주제 분류율'],
+  },
+  {
+    id: 'patent-portfolio',
+    title: '특허만료·제네릭/바이오시밀러 경쟁 대응',
+    focus: '고객 세그먼트별 질문, 대체 선택 기준, 안전한 후속 커뮤니케이션을 정리합니다.',
+    kpis: ['핵심 고객군별 질문 기록률', '후속 접점 확보율', '경쟁 비교 위험표현 수정 건수', '세그먼트별 실행 완료율'],
+  },
+  {
+    id: 'cdmo-cmo',
+    title: 'CDMO/CMO 전략 확대와 공급·품질 신뢰 강화',
+    focus: '공급·품질 관련 고객 우려를 듣고 내부 확인 필요 이슈와 설명 가능 범위를 구분합니다.',
+    kpis: ['공급·품질 문의 기록률', '내부 확인 필요 이슈 공유건수', '고객 우려 후속 확인율', '안전 답변 가이드 활용률'],
+  },
+  {
+    id: 'therapy-growth',
+    title: '비만·대사질환·항암·면역 등 고성장 치료영역 대응',
+    focus: '고객 질문과 승인자료 기반 후속 대화를 안전하게 연결합니다.',
+    kpis: ['치료영역 질문 기록률', '승인자료 기반 대화율', '후속 정보 제공 계획률', '고객 의도 단정 표현 수정건수'],
+  },
+  {
+    id: 'digital-journey',
+    title: '디지털 채널·환자 여정 기반 고객 접점 혁신',
+    focus: '방문, 비대면, 자료 제공, 후속 확인을 하나의 고객 접점 흐름으로 설계합니다.',
+    kpis: ['대체 접점 실행률', '자료 제공 후 후속 확인율', '채널별 고객 반응 기록률', '2주 접점 흐름 완료율'],
+  },
 ];
 
 const DEFAULT_STATE: State = {
@@ -175,42 +199,6 @@ function buildWebSourceUrlText(state: State) {
   return urls.join('\n');
 }
 
-function buildNotebookSourceTitle(state: State) {
-  return `2026년 제약업계 전략 과제 리서치 - ${titleOf(state)}`;
-}
-
-function buildNotebookSourceBody(state: State) {
-  return `이 자료는 2026년 제약·바이오 산업 전략 과제 "${titleOf(state)}"가 C1바이오 영업팀의 실행관리와 고객 접점 운영에 주는 영향을 정리하기 위한 공개자료 기반 리서치 메모이다.
-
-1. 전략 과제
-${titleOf(state)}
-
-2. 우리 팀 상황
-${state.teamSituation}
-
-3. 영업팀 관점의 리서치 질문
-${state.leaderQuestion || topicOf(state).focus}
-
-4. Perplexity에서 찾은 공개자료 목록
-${state.perplexityAnswer || '아직 Perplexity 답변이 붙여넣어지지 않았습니다. Perplexity 답변을 먼저 붙여넣은 뒤 이 본문을 다시 복사하세요.'}
-
-5. NotebookLM에서 분석할 관점
-- 소스들이 공통적으로 말하는 2026년 변화 신호
-- 고객 질문과 영업활동 기록에 영향을 주는 쟁점
-- 팀원이 2주 안에 확인할 수 있는 실행 신호
-- 팀장이 중간 점검에서 물어볼 질문
-- 표현 안전성, 사실 확인 가능성, 내부 확인 필요 여부
-
-6. 주의해야 할 표현
-${safeRule()}`;
-}
-
-function buildNotebookSourceFileText(state: State) {
-  return `${buildNotebookSourceTitle(state)}
-
-${buildNotebookSourceBody(state)}`;
-}
-
 function buildNotebookAnalysisPrompt(state: State) {
   return `업로드한 소스만 근거로 분석해 주세요.
 
@@ -293,8 +281,8 @@ function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽
 당신은 제약영업 전략회의 자료를 만드는 편집자이자 비주얼 커뮤니케이션 전문가입니다.
 
 입력자료:
-- 업로드한 소스와 4단계 정리 결과를 근거로 작성합니다.
-- 4단계 정리 결과에는 전략 과제, 핵심 변화 신호, 영업팀 추진 과제, 우리 팀 실행 영향, 2주 실행관리 질문, KPI 후보, 주의 표현이 포함되어 있습니다.
+- 업로드한 소스와 3단계 정리 결과를 근거로 작성합니다.
+- 3단계 정리 결과에는 전략 과제, 핵심 변화 신호, 영업팀 추진 과제, 우리 팀 실행 영향, 2주 실행관리 질문, KPI 후보, 주의 표현이 포함되어 있습니다.
 - 아래 주제와 맥락을 기준으로 자료를 재구성하되, 입력 내용을 길게 반복하지 말고 최종 산출물 형식에 맞게 압축합니다.
 
 주제:
@@ -366,10 +354,6 @@ ${state.teamSituation}
 8. 아이콘/도식/레이아웃 제안`;
 }
 
-function sanitizeFileName(text: string) {
-  return text.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, '_').slice(0, 60);
-}
-
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span>{children}</label>;
 }
@@ -389,14 +373,13 @@ export function V40VNextPharmaStrategyResearchLab() {
   const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state]);
   const webSourceUrls = useMemo(() => buildWebSourceUrlText(state), [state]);
   const webSourceUrlCount = useMemo(() => extractUrls(state.perplexityAnswer).length, [state.perplexityAnswer]);
-  const sourceTitle = useMemo(() => buildNotebookSourceTitle(state), [state]);
-  const sourceBody = useMemo(() => buildNotebookSourceBody(state), [state]);
-  const sourceFileText = useMemo(() => buildNotebookSourceFileText(state), [state]);
   const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state]);
   const report = useMemo(() => buildStudioPrompt('보고서', state), [state]);
   const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state]);
   const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state]);
+
   const update = (patch: Partial<State>) => setState({ ...state, ...patch });
+
   const copyText = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -405,18 +388,7 @@ export function V40VNextPharmaStrategyResearchLab() {
       setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.');
     }
   };
-  const downloadSourceFile = () => {
-    const blob = new Blob([sourceFileText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${sanitizeFileName(sourceTitle)}.txt`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-    setCopyMessage('NotebookLM 업로드용 TXT 파일을 다운로드했습니다. NotebookLM에서 소스 추가 → 파일 업로드로 넣어 주세요.');
-  };
+
   const structureNotebookAnswer = () => {
     const parsed = parseNotebookAnswer(state.notebookAnswer);
     const hasParsedValue = Object.values(parsed).some((value) => Boolean(value?.trim()));
@@ -438,8 +410,16 @@ export function V40VNextPharmaStrategyResearchLab() {
 
   return <section className="space-y-4">
     <Section title="1단계: Perplexity로 최신 공개자료와 URL 찾기">
-      <Field label="2026년 전략 과제 선택"><select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>{TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950"><p className="font-black">이 과제의 영업팀 추진 초점</p><p className="mt-1">{topic.focus}</p><p className="mt-1">KPI 후보: {topic.kpis.join(' · ')}</p></div>
+      <Field label="2026년 전략 과제 선택">
+        <select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>
+          {TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+        </select>
+      </Field>
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">
+        <p className="font-black">이 과제의 영업팀 추진 초점</p>
+        <p className="mt-1">{topic.focus}</p>
+        <p className="mt-1">KPI 후보: {topic.kpis.join(' · ')}</p>
+      </div>
       <Field label="전략 과제 직접 입력"><input className="w-full rounded-xl border px-3 py-2" value={state.customTopic} onChange={(event) => update({ customTopic: event.target.value })} placeholder="예: CDMO/CMO 전략 확대와 영업팀 고객가치 제안" /></Field>
       <Field label="우리 팀 상황"><TextArea value={state.teamSituation} onChange={(value) => update({ teamSituation: value })} /></Field>
       <Field label="영업팀 관점 참고 질문"><TextArea value={state.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 전략 과제를 영업팀의 고객 대화, 2주 실행관리, 팀원 코칭으로 어떻게 바꿀 수 있을까?" /></Field>
@@ -459,36 +439,34 @@ export function V40VNextPharmaStrategyResearchLab() {
       <Field label="분리된 웹 소스 URL"><TextArea value={webSourceUrls} readOnly /></Field>
     </Section>
 
-    <Section title="3단계: NotebookLM 소스 등록하기">
-      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
-        먼저 2단계에서 분리한 URL을 NotebookLM의 웹 소스로 등록합니다. 웹 URL이 등록되지 않거나 자료 전체를 보조 소스로 넣고 싶다면 TXT 파일 다운로드를 사용하세요.
-      </div>
-      <div className="grid gap-2 md:grid-cols-3">
-        <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceTitle, 'NotebookLM 소스 제목')}>NotebookLM 소스 제목 복사</button>
-        <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceBody, 'NotebookLM 소스 본문')}>NotebookLM 소스 본문 복사</button>
-        <button type="button" className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-black text-white" onClick={downloadSourceFile}>NotebookLM 소스 TXT 다운로드</button>
-      </div>
-      <Field label="NotebookLM 소스 제목"><input className="w-full rounded-xl border px-3 py-2" value={sourceTitle} readOnly /></Field>
-      <Field label="NotebookLM 소스 본문"><TextArea value={sourceBody} readOnly /></Field>
-    </Section>
-
-    <Section title="4단계: NotebookLM 소스 기반 전략 과제 압축">
+    <Section title="3단계: NotebookLM 소스 기반 전략 과제 압축">
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">
-        NotebookLM에 웹 소스 또는 TXT 보조 소스를 등록한 뒤, 아래 프롬프트를 채팅창에 붙여넣어 소스 기반으로 전략 과제와 2주 실행관리 질문을 압축합니다.
+        2단계에서 분리한 URL을 NotebookLM 웹 소스로 등록한 뒤, 아래 프롬프트를 채팅창에 붙여넣어 소스 기반으로 전략 과제와 2주 실행관리 질문을 압축합니다.
       </div>
       <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 프롬프트 복사</button>
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{analysisPrompt}</pre>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={structureNotebookAnswer}>NotebookLM 결과 항목별로 정리하기</button>
-      <div className="grid gap-3 md:grid-cols-2"><Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field>
+        <Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field>
+        <Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field>
+        <Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field>
+      </div>
       <Field label="2주 실행관리 질문과 KPI 후보"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
 
-    <Section title="5단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
-      <Field label="LM Studio 보고서 생성 요청"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, 'LM Studio 보고서 생성 요청')}>보고서 요청문 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
-      <Field label="LM Studio 슬라이드 생성 요청"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, 'LM Studio 슬라이드 생성 요청')}>슬라이드 요청문 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
-      <Field label="LM Studio 인포그래픽 생성 요청"><TextArea value={infographic} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, 'LM Studio 인포그래픽 생성 요청')}>인포그래픽 요청문 복사</button><TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
+    <Section title="4단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
+      <Field label="LM Studio 보고서 생성 요청"><TextArea value={report} readOnly /></Field>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, 'LM Studio 보고서 생성 요청')}>보고서 요청문 복사</button>
+      <TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
+      <Field label="LM Studio 슬라이드 생성 요청"><TextArea value={slides} readOnly /></Field>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, 'LM Studio 슬라이드 생성 요청')}>슬라이드 요청문 복사</button>
+      <TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
+      <Field label="LM Studio 인포그래픽 생성 요청"><TextArea value={infographic} readOnly /></Field>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, 'LM Studio 인포그래픽 생성 요청')}>인포그래픽 요청문 복사</button>
+      <TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
       <Field label="전략회의 메모"><TextArea value={state.meetingMemo} onChange={(value) => update({ meetingMemo: value })} /></Field>
       <Field label="예상 질문"><TextArea value={state.expectedQuestions} onChange={(value) => update({ expectedQuestions: value })} /></Field>
     </Section>
