@@ -28,6 +28,7 @@ const files = {
   performanceLab: read('src/journey-v40-vnext-performance-strategy-cascade-lab.tsx'),
   dynamicPerformanceLab: read('src/journey-v40-vnext-performance-dynamic-flow-labs.tsx'),
   enhancedPerformanceLab: read('src/journey-v40-vnext-performance-enhanced-cascade-lab.tsx'),
+  enhancedPerformanceLabV2: read('src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx'),
   compactPerformanceLab: read('src/journey-v40-vnext-performance-compact-cascade-lab.tsx'),
   taskExecutionBridgeLab: read('src/journey-v40-vnext-task-execution-bridge-lab.tsx'),
   taskLab: read('src/journey-v40-vnext-task-management-lab.tsx'),
@@ -152,7 +153,7 @@ for (const marker of [
 ]) mustInclude(files.dynamicPerformanceLab, marker, 'hidden advanced performance labs');
 
 for (const marker of [
-  'V40VNextPerformanceEnhancedCascadeLab',
+  'V40VNextPerformanceEnhancedCascadeLabV2',
   '전사전략과제 초기 선택 없음',
   '팀 전략과제 선택 보기 4개 제시',
   'CSF 보기 4개 제시',
@@ -160,6 +161,7 @@ for (const marker of [
   'AI에게 보낼 프롬프트',
   'AI가 제안한 CSF/KPI 후보 붙여넣기',
   'AI 답변 항목별로 정리하기',
+  '큰 제목 기준으로 CSF·KPI·확인 질문·주의 표현·최종 문장을 분리합니다',
   'AI가 제안한 CSF 후보',
   'AI가 제안한 KPI 후보',
   'AI가 제안한 확인 질문',
@@ -167,11 +169,11 @@ for (const marker of [
   'AI 정리 결과를 2주 기준 초안에 반영하기',
   '2주 성과관리 기준 초안 만들기',
   'ckd.v40-vnext.performanceCascade.v1',
-]) mustInclude(files.enhancedPerformanceLab, marker, 'enhanced performance cascade UX');
+]) mustInclude(files.enhancedPerformanceLabV2, marker, 'enhanced performance cascade UX V2');
 
 for (const marker of [
   'V40VNextPerformanceCompactCascadeLab',
-  'V40VNextPerformanceEnhancedCascadeLab',
+  'V40VNextPerformanceEnhancedCascadeLabV2',
   '6·7단계 숨김 기본 운영',
   '우리 조의 2주 성과관리 기준 정리',
   '이번 2주 동안 기록에서 먼저 볼 것',
@@ -236,6 +238,7 @@ for (const marker of [
   'src/journey-v40-vnext-performance-strategy-cascade-lab.tsx',
   'src/journey-v40-vnext-performance-dynamic-flow-labs.tsx',
   'src/journey-v40-vnext-performance-enhanced-cascade-lab.tsx',
+  'src/journey-v40-vnext-performance-enhanced-cascade-lab-v2.tsx',
   'src/journey-v40-vnext-performance-compact-cascade-lab.tsx',
   'src/journey-v40-vnext-task-execution-bridge-lab.tsx',
   'src/journey-v40-vnext-task-management-lab.tsx',
