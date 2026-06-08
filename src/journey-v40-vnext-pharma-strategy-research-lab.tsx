@@ -8,6 +8,9 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '2026년 제약업계 전략 과제 선택',
   '영업팀 추진계획 수립 실습',
   'Perplexity 전략 과제 프롬프트',
+  'NotebookLM 소스 제목 복사',
+  'NotebookLM 소스 본문 복사',
+  'NotebookLM 분석 질문 복사',
   'NotebookLM 소스 묶음 복사',
   'NotebookLM 전략 과제 분석 프롬프트',
   'LM Studio 보고서 생성 요청',
@@ -18,6 +21,7 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
 void V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS;
 
 type Topic = { id: string; title: string; focus: string; kpis: string[] };
+
 type State = {
   selectedTopicId: string;
   customTopic: string;
@@ -67,35 +71,139 @@ const DEFAULT_STATE: State = {
   expectedQuestions: '',
 };
 
-function topicOf(state: State) { return TOPICS.find((item) => item.id === state.selectedTopicId) ?? TOPICS[0]; }
-function titleOf(state: State) { return state.customTopic.trim() || topicOf(state).title; }
-function safeRule() { return '실제 고객명·기관명·의료진명·제품명·내부 수치·개인정보는 제외하고, 단정적 비교·비방·허가 범위 밖 암시 표현은 피합니다.'; }
-
-function perplexityPrompt(state: State) {
-  return `2026년 현재 제약·바이오 산업의 전략 과제 "${titleOf(state)}"를 공개자료 기반으로 조사해 주세요.\n\n목적: C1바이오 영업팀장 이대호 팀장이 이 과제를 영업팀 추진계획으로 바꾸기 위한 실습 자료를 만들려고 합니다.\n\n우리 팀 상황:\n${state.teamSituation}\n\n영업팀 관점의 질문:\n${state.leaderQuestion || topicOf(state).focus}\n\n조사 기준:\n1. 2025~2026년 공개자료, 정책·규제 자료, 산업 리포트, 보도자료, 신뢰 가능한 기사 중심으로 정리\n2. 글로벌 동향과 한국 제약영업 현장에 주는 의미 구분\n3. 출처명, 발행기관, 날짜 또는 최근성 단서 제시\n4. 영업팀이 2주 안에 실행관리로 바꿀 수 있는 추진 과제 후보 제안\n5. ${safeRule()}\n\n출력 형식:\n[2026 전략 과제 요약]\n[핵심 변화 신호]\n[근거/출처]\n[영업팀 추진 기회]\n[영업팀 실행 리스크]\n[2주 실행관리 질문]\n[주의해야 할 표현]`;
+function topicOf(state: State) {
+  return TOPICS.find((item) => item.id === state.selectedTopicId) ?? TOPICS[0];
 }
 
-function sourceBundle(state: State) {
-  return `NotebookLM 소스 묶음\n\n[전략 과제]\n${titleOf(state)}\n\n[우리 팀 상황]\n${state.teamSituation}\n\n[영업팀 관점 질문]\n${state.leaderQuestion || topicOf(state).focus}\n\n[Perplexity 공개자료 리서치 결과]\n${state.perplexityAnswer || 'Perplexity 답변을 먼저 붙여넣은 뒤 다시 복사하세요.'}\n\n[소스 확인 기준]\n- 실제로 열리는 공개자료 링크와 자료명을 우선 사용합니다.\n- 2025~2026년 자료, 공식기관, 협회, 기업 발표, 신뢰 가능한 언론을 우선합니다.\n- ${safeRule()}`;
+function titleOf(state: State) {
+  return state.customTopic.trim() || topicOf(state).title;
 }
 
-function notebookPrompt(state: State) {
-  return `NotebookLM 전략 과제 분석 프롬프트\n\n역할: 제약산업 전략과 제약영업 실행관리를 모두 이해하는 분석가 관점에서 봐주세요.\n\n맥락: 나는 C1바이오 영업팀장 이대호 팀장입니다. 업로드한 공개자료 소스만 근거로 2026년 제약업계 전략 과제를 우리 영업팀 추진계획으로 바꾸려고 합니다.\n\n전략 과제: ${titleOf(state)}\n우리 팀 상황: ${state.teamSituation}\n\n요청:\n1. 업로드된 소스에 근거한 핵심 변화 신호 정리\n2. 고객 대화, 실행관리, 팀원 코칭에 주는 영향 설명\n3. 영업팀 추진 과제 3개로 압축\n4. 각 추진 과제를 2주 실행관리 질문과 KPI 후보로 전환\n5. ${safeRule()}\n\n출력 형식:\n[핵심 변화 신호]\n[출처/근거 요약]\n[영업팀 추진 과제 1]\n[영업팀 추진 과제 2]\n[영업팀 추진 과제 3]\n[우리 팀 실행 영향]\n[2주 실행관리 질문]\n[KPI 후보]\n[주의해야 할 표현]`;
+function safeRule() {
+  return '실제 고객명·기관명·의료진명·제품명·내부 수치·개인정보는 제외하고, 단정적 비교·비방·허가 범위 밖 암시 표현은 피합니다.';
 }
 
-function studioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: State) {
-  const base = `LM Studio ${kind} 생성 요청\n\n목적: 2026년 제약업계 전략 과제 "${titleOf(state)}"를 C1바이오 영업팀 추진계획으로 설명하는 교육용 전략회의 자료를 만든다.\n\n핵심 내용:\n- 추진 과제 1: ${state.issueOne || '영업팀 추진 과제 1'}\n- 추진 과제 2: ${state.issueTwo || '영업팀 추진 과제 2'}\n- 추진 과제 3: ${state.issueThree || '영업팀 추진 과제 3'}\n- 우리 팀 실행 영향: ${state.teamImpact || '우리 팀 실행 영향'}\n- 2주 실행관리 질문: ${state.metricQuestions || '2주 실행관리 질문'}\n- 주의 표현: ${state.caution || '주의해야 할 표현'}\n\n주의: ${safeRule()}`;
-  if (kind === '보고서') return `${base}\n\n요청 형식: 1~2페이지 보고서 초안. 배경, 변화 신호, 추진 과제 3개, 2주 실행관리 질문, KPI 후보, 리스크 표현 점검 순서.`;
-  if (kind === '슬라이드') return `${base}\n\n요청 형식: 발표용 8장 슬라이드 구성안. 각 장은 제목, 핵심 메시지, 시각화 아이디어, 발표자 메모 포함.`;
-  return `${base}\n\n요청 형식: 1페이지 인포그래픽 구조. 상단 핵심 메시지, 중단 추진 과제 3개, 하단 2주 실행관리 질문과 KPI 후보.`;
+function buildPerplexityPrompt(state: State) {
+  return `2026년 현재 제약·바이오 산업의 전략 과제 "${titleOf(state)}"를 공개자료 기반으로 조사해 주세요.
+
+목적:
+C1바이오 영업팀장 이대호 팀장이 이 과제를 영업팀 추진계획으로 바꾸기 위한 실습 자료를 만들려고 합니다.
+
+우리 팀 상황:
+${state.teamSituation}
+
+영업팀 관점의 질문:
+${state.leaderQuestion || topicOf(state).focus}
+
+조사 기준:
+1. 2025~2026년 공개자료, 정책·규제 자료, 산업 리포트, 보도자료, 신뢰 가능한 기사 중심으로 정리
+2. 글로벌 동향과 한국 제약영업 현장에 주는 의미 구분
+3. 출처명, 발행기관, 날짜 또는 최근성 단서 제시
+4. 영업팀이 2주 안에 실행관리로 바꿀 수 있는 추진 과제 후보 제안
+5. ${safeRule()}
+
+출력 형식:
+[2026 전략 과제 요약]
+[핵심 변화 신호]
+[근거/출처]
+[영업팀 추진 기회]
+[영업팀 실행 리스크]
+[2주 실행관리 질문]
+[주의해야 할 표현]`;
+}
+
+function buildNotebookSourceTitle(state: State) {
+  return `2026년 제약업계 전략 과제 리서치 - ${titleOf(state)}`;
+}
+
+function buildNotebookSourceBody(state: State) {
+  return `이 자료는 2026년 제약·바이오 산업 전략 과제 "${titleOf(state)}"가 C1바이오 영업팀의 실행관리와 고객 접점 운영에 주는 영향을 정리하기 위한 공개자료 기반 리서치 메모이다.
+
+1. 전략 과제
+${titleOf(state)}
+
+2. 우리 팀 상황
+${state.teamSituation}
+
+3. 영업팀 관점의 리서치 질문
+${state.leaderQuestion || topicOf(state).focus}
+
+4. Perplexity 공개자료 리서치 결과
+${state.perplexityAnswer || '아직 Perplexity 답변이 붙여넣어지지 않았습니다. Perplexity 답변을 먼저 붙여넣은 뒤 이 본문을 다시 복사하세요.'}
+
+5. 영업팀 추진계획으로 연결할 때 볼 관점
+- 고객 대화에서 새롭게 확인해야 할 질문
+- 영업활동 기록에서 남겨야 할 고객 반응과 다음 행동
+- 팀원이 2주 안에 실행할 수 있는 작은 행동 기준
+- 팀장이 중간 점검에서 확인할 실행 신호
+- 표현 안전성, 사실 확인 가능성, 내부 확인 필요 여부
+
+6. 주의해야 할 표현
+${safeRule()}`;
+}
+
+function buildNotebookAnalysisPrompt(state: State) {
+  return `업로드한 소스만 근거로 분석해 주세요.
+
+나는 C1바이오 영업팀장 이대호 팀장입니다. 2026년 제약업계 전략 과제 "${titleOf(state)}"를 영업팀 추진계획으로 바꾸려고 합니다.
+
+요청:
+1. 소스에 근거한 핵심 변화 신호를 3개로 정리해 주세요.
+2. 이 전략 과제가 영업팀의 고객 대화, 실행관리, 팀원 코칭에 주는 영향을 설명해 주세요.
+3. 영업팀 추진 과제 3개로 압축해 주세요.
+4. 각 추진 과제를 2주 실행관리 질문과 KPI 후보로 바꿔 주세요.
+5. 고객 의도 단정, 처방 유도, 경쟁사 비방, 허가 외 사용 암시처럼 조심할 표현을 따로 표시해 주세요.
+
+출력 형식:
+[핵심 변화 신호]
+[출처/근거 요약]
+[영업팀 추진 과제 1]
+[영업팀 추진 과제 2]
+[영업팀 추진 과제 3]
+[우리 팀 실행 영향]
+[2주 실행관리 질문]
+[KPI 후보]
+[주의해야 할 표현]`;
+}
+
+function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: State) {
+  const base = `LM Studio ${kind} 생성 요청
+
+목적:
+2026년 제약업계 전략 과제 "${titleOf(state)}"를 C1바이오 영업팀 추진계획으로 설명하는 교육용 전략회의 자료를 만든다.
+
+핵심 내용:
+- 추진 과제 1: ${state.issueOne || '영업팀 추진 과제 1'}
+- 추진 과제 2: ${state.issueTwo || '영업팀 추진 과제 2'}
+- 추진 과제 3: ${state.issueThree || '영업팀 추진 과제 3'}
+- 우리 팀 실행 영향: ${state.teamImpact || '우리 팀 실행 영향'}
+- 2주 실행관리 질문: ${state.metricQuestions || '2주 실행관리 질문'}
+- 주의 표현: ${state.caution || '주의해야 할 표현'}
+
+주의:
+${safeRule()}`;
+  if (kind === '보고서') return `${base}
+
+요청 형식:
+1~2페이지 보고서 초안. 배경, 변화 신호, 추진 과제 3개, 2주 실행관리 질문, KPI 후보, 리스크 표현 점검 순서.`;
+  if (kind === '슬라이드') return `${base}
+
+요청 형식:
+발표용 8장 슬라이드 구성안. 각 장은 제목, 핵심 메시지, 시각화 아이디어, 발표자 메모 포함.`;
+  return `${base}
+
+요청 형식:
+1페이지 인포그래픽 구조. 상단 핵심 메시지, 중단 추진 과제 3개, 하단 2주 실행관리 질문과 KPI 후보.`;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span>{children}</label>;
 }
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return <section className="rounded-2xl border bg-white p-5 shadow-sm"><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-4">{children}</div></section>;
 }
+
 function TextArea({ value, onChange, placeholder, readOnly = false }: { value: string; onChange?: (value: string) => void; placeholder?: string; readOnly?: boolean }) {
   return <textarea className="min-h-36 w-full rounded-xl border px-3 py-2 text-sm leading-6" value={value} readOnly={readOnly} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />;
 }
@@ -104,16 +212,23 @@ export function V40VNextPharmaStrategyResearchLab() {
   const [state, setState] = useStored<State>(STORAGE_KEY, DEFAULT_STATE);
   const [copyMessage, setCopyMessage] = useState('');
   const topic = topicOf(state);
-  const pPrompt = useMemo(() => perplexityPrompt(state), [state]);
-  const nSource = useMemo(() => sourceBundle(state), [state]);
-  const nPrompt = useMemo(() => notebookPrompt(state), [state]);
-  const report = useMemo(() => studioPrompt('보고서', state), [state]);
-  const slides = useMemo(() => studioPrompt('슬라이드', state), [state]);
-  const infographic = useMemo(() => studioPrompt('인포그래픽', state), [state]);
+  const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state]);
+  const sourceTitle = useMemo(() => buildNotebookSourceTitle(state), [state]);
+  const sourceBody = useMemo(() => buildNotebookSourceBody(state), [state]);
+  const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state]);
+  const report = useMemo(() => buildStudioPrompt('보고서', state), [state]);
+  const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state]);
+  const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state]);
   const update = (patch: Partial<State>) => setState({ ...state, ...patch });
   const copyText = async (text: string, label: string) => {
-    try { await navigator.clipboard.writeText(text); setCopyMessage(`${label} 내용을 복사했습니다.`); } catch { setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.'); }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyMessage(`${label} 내용을 복사했습니다.`);
+    } catch {
+      setCopyMessage('복사가 차단되었습니다. 내용을 직접 선택해 복사하세요.');
+    }
   };
+
   return <section className="space-y-4">
     <Section title="1단계: 2026년 제약업계 전략 과제 선택과 Perplexity 탐색">
       <Field label="2026년 전략 과제 선택"><select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>{TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>
@@ -125,16 +240,26 @@ export function V40VNextPharmaStrategyResearchLab() {
       {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{pPrompt}</pre>
       <Field label="Perplexity 답변 붙여넣기"><TextArea value={state.perplexityAnswer} onChange={(value) => update({ perplexityAnswer: value })} placeholder="Perplexity 답변을 붙여넣으세요. 출처, 발행기관, 날짜가 포함되어 있으면 좋습니다." /></Field>
-      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(nSource, 'NotebookLM 소스 묶음')}>NotebookLM 소스 묶음 복사</button>
     </Section>
-    <Section title="2단계: NotebookLM 소스 기반 전략 과제 압축">
-      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(nPrompt, 'NotebookLM 전략 과제 분석 프롬프트')}>NotebookLM 프롬프트 복사</button>
-      <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{nPrompt}</pre>
+
+    <Section title="2단계: NotebookLM 소스 등록과 분석 질문 실행">
+      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
+        NotebookLM의 소스 추가 화면에는 먼저 제목과 본문을 넣고, 소스가 등록된 뒤 NotebookLM 채팅창에 분석 질문을 넣습니다. Perplexity 답변 전체를 그대로 붙여넣는 방식보다 실행 화살표가 활성화될 가능성이 높습니다.
+      </div>
+      <div className="grid gap-2 md:grid-cols-3">
+        <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceTitle, 'NotebookLM 소스 제목')}>NotebookLM 소스 제목 복사</button>
+        <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(sourceBody, 'NotebookLM 소스 본문')}>NotebookLM 소스 본문 복사</button>
+        <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 분석 질문 복사</button>
+      </div>
+      <Field label="NotebookLM 소스 제목"><input className="w-full rounded-xl border px-3 py-2" value={sourceTitle} readOnly /></Field>
+      <Field label="NotebookLM 소스 본문"><TextArea value={sourceBody} readOnly /></Field>
+      <Field label="NotebookLM 분석 질문"><TextArea value={analysisPrompt} readOnly /></Field>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
       <div className="grid gap-3 md:grid-cols-2"><Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
       <Field label="2주 실행관리 질문과 KPI 후보"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
+
     <Section title="3단계: LM Studio 보고서·슬라이드·인포그래픽 생성 요청">
       <Field label="LM Studio 보고서 생성 요청"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, 'LM Studio 보고서 생성 요청')}>보고서 요청문 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
       <Field label="LM Studio 슬라이드 생성 요청"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, 'LM Studio 슬라이드 생성 요청')}>슬라이드 요청문 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
