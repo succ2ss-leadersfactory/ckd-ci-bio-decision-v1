@@ -82,6 +82,8 @@ for (const marker of [
   'LM Studio 인포그래픽 생성 요청',
   '업로드한 소스와 3단계 정리 결과를 근거로',
   '산출물 형식만 지시',
+  'URL 추출 1회 계산',
+  '핸들러 useCallback 안정화',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ]) mustInclude(files.researchTrimmedLab, marker, 'v40-vNext research bridge lab');
 
@@ -107,6 +109,8 @@ for (const marker of [
   'LM Studio 인포그래픽 생성 요청',
   '업로드한 소스와 3단계 정리 결과를 근거로',
   '산출물 형식만 지시',
+  'URL 추출 1회 계산',
+  '핸들러 useCallback 안정화',
   'ckd.v40-vnext.pharmaStrategyResearch.v1',
 ]) mustInclude(files.pharmaResearchLab, marker, 'v40-vNext pharma strategy research lab');
 
