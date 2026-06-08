@@ -5,7 +5,7 @@ type V40VNextStepNavigator = (stepNumber: number) => void;
 
 const V40_VNEXT_UX_COMPONENT_MARKERS = [
   'V40VNextFlowStrip',
-  'v40-vNext 12단계 전용 흐름',
+  '12단계 전체 흐름',
   '팀장 역할 시작',
   '역할·팀원 이해',
   '말해도 되는 선',
@@ -50,7 +50,7 @@ export function V40VNextFlowStrip({ currentStep, onStepSelect }: { currentStep: 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
       <div className="mb-2 flex items-center justify-between gap-3 text-xs font-black text-slate-500">
-        <span>v40-vNext 12단계 전용 흐름</span>
+        <span>전체 흐름</span>
         <span>{safeCurrent} / {total}</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
