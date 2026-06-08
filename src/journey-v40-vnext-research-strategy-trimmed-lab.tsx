@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 
 const V40_RESEARCH_STORAGE_KEY = 'ckd.v40-vnext.pharmaStrategyResearch.v1';
@@ -237,11 +237,11 @@ function buildStudioPrompt(type: '보고서' | '슬라이드' | '인포그래픽
 1페이지 인포그래픽 구조로 만든다. 상단 핵심 메시지, 중단 전략 과제 3개, 하단 2주 실행관리 질문과 KPI 후보를 시각 중심으로 정리한다.`;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-black text-slate-500">{label}</span>{children}</label>;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return <section className="rounded-2xl border bg-white p-5 shadow-sm"><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-4">{children}</div></section>;
 }
 
