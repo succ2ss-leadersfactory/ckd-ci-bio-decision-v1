@@ -25,10 +25,11 @@ const rootElement = document.getElementById('journey-root') ?? document.getEleme
 const V40_VNEXT_STATIC_ROUTE_MARKERS = [
   'V40VNextPreviewApp',
   'journey-v40-vnext-preview.html',
-  'v40-vNext 12단계 전용 흐름',
+  '12단계 전체 흐름',
   '팀장 역할 시작하기',
   '역할과 팀원 구성 이해하기',
-  '여러분은 오늘 C1바이오 영업팀장입니다',
+  '여러분의 역할은 영업팀장 이대호 팀장입니다',
+  '이대호 팀장 소개',
   '팀 선택 1팀~8팀',
   '이름/닉네임 입력',
   '성과관리 → 업무관리 → 사람관리',
@@ -61,6 +62,7 @@ type TeamMember = {
   name: string;
   role: string;
   signal: string;
+  coachingFocus: string;
 };
 
 const V40_VNEXT_STORAGE_KEYS = {
@@ -79,13 +81,13 @@ const DEFAULT_PROGRESS: V40VNextProgress = { step: 0 };
 const TEAM_OPTIONS = ['1팀', '2팀', '3팀', '4팀', '5팀', '6팀', '7팀', '8팀'];
 
 const TEAM_MEMBERS: TeamMember[] = [
-  { name: '김재호 차장', role: '경험 많은 선임 영업 담당', signal: '성과 경험은 많지만 기록 방식이 개인화되어 있습니다.' },
-  { name: '김문호 차장', role: '안정적 실행형 담당', signal: '기본 활동은 꾸준하지만 새로운 실행 기준 전환은 느릴 수 있습니다.' },
-  { name: '유희관 과장', role: '관계 기반 영업 담당', signal: '고객 관계는 좋지만 후속 실행 증거가 약해질 수 있습니다.' },
-  { name: '이대은 대리', role: '활동량 높은 실행형 담당', signal: '움직임은 빠르지만 우선순위와 기록 품질 점검이 필요합니다.' },
-  { name: '신재영 대리', role: '분석적이고 신중한 담당', signal: '판단은 세밀하지만 실행 속도와 대화 타이밍을 살펴야 합니다.' },
-  { name: '박재욱 사원', role: '신입에 가까운 성장형 담당', signal: '업무 기준과 고객 대화의 안전선을 구체적으로 알려줘야 합니다.' },
-  { name: '문교원 사원', role: '새로운 방식에 빠르게 적응하는 담당', signal: '도구 활용은 빠르지만 현장 언어로 바꾸는 코칭이 필요합니다.' },
+  { name: '김재호 차장', role: '경험 많은 선임 영업 담당', signal: '성과 경험은 많지만 기록 방식이 개인화되어 있습니다.', coachingFocus: '개인 노하우를 팀 기준과 공유 가능한 실행 방식으로 바꾸는 것이 핵심입니다.' },
+  { name: '김문호 차장', role: '안정적 실행형 담당', signal: '기본 활동은 꾸준하지만 새로운 실행 기준 전환은 느릴 수 있습니다.', coachingFocus: '기존 루틴을 존중하면서 새 CSF/KPI 기준으로 무엇을 바꿀지 합의해야 합니다.' },
+  { name: '유희관 과장', role: '관계 기반 영업 담당', signal: '고객 관계는 좋지만 후속 실행 증거가 약해질 수 있습니다.', coachingFocus: '좋은 관계를 후속 행동, 질문 기록, 다음 접점 계획으로 연결하도록 도와야 합니다.' },
+  { name: '이대은 대리', role: '활동량 높은 실행형 담당', signal: '움직임은 빠르지만 우선순위와 기록 품질 점검이 필요합니다.', coachingFocus: '많이 움직이는 것보다 먼저 볼 고객 신호와 잠시 줄일 활동을 정리해야 합니다.' },
+  { name: '신재영 대리', role: '분석적이고 신중한 담당', signal: '판단은 세밀하지만 실행 속도와 대화 타이밍을 살펴야 합니다.', coachingFocus: '분석이 실행 지연으로 이어지지 않도록 2주 단위의 작은 행동 합의가 필요합니다.' },
+  { name: '박재욱 사원', role: '신입에 가까운 성장형 담당', signal: '업무 기준과 고객 대화의 안전선을 구체적으로 알려줘야 합니다.', coachingFocus: '성과 압박보다 기준, 예시 문장, 확인 질문을 구체적으로 제공하는 것이 중요합니다.' },
+  { name: '문교원 사원', role: '새로운 방식에 빠르게 적응하는 담당', signal: '도구 활용은 빠르지만 현장 언어로 바꾸는 코칭이 필요합니다.', coachingFocus: 'AI나 도구의 결과를 그대로 쓰지 않고 고객 접점에 맞는 표현으로 바꾸게 해야 합니다.' },
 ];
 
 function scrollV40VNextToTop() {
@@ -119,7 +121,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40VNextParti
         icon="🤝"
         title="여러분은 C1바이오 영업팀장 역할로 시작합니다"
         tone="indigo"
-        description="실제 활동은 팀 단위로 진행하지만, 화면에서의 역할은 한 명의 영업팀장입니다. 여러분은 대표 상황을 정하고, 시장 변화와 팀원 실행 신호를 바탕으로 2주 실행 메모를 완성합니다."
+        description="실제 활동은 팀 단위로 진행하지만, 화면에서의 역할은 영업팀장입니다. 여러분은 대표 상황을 정하고, 시장 변화와 팀원 실행 신호를 바탕으로 2주 실행 메모를 완성합니다."
         badges={[
           { label: '운영 방식', value: '팀장 역할 실습', tone: 'indigo', icon: '🤝' },
           { label: '참여 단위', value: '팀 활동', tone: 'emerald', icon: '👥' },
@@ -130,7 +132,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40VNextParti
         <V39MiniFlow
           items={[
             { icon: '🤝', title: '팀장 역할 잡기', body: 'C1바이오 영업팀장 관점에서 판단합니다.' },
-            { icon: '👥', title: '팀원 구성 이해', body: '다음 단계에서 7명의 가상 팀원을 확인합니다.' },
+            { icon: '👥', title: '팀원 구성 이해', body: '다음 단계에서 이대호 팀장과 7명의 가상 팀원을 확인합니다.' },
             { icon: '📝', title: '대표 상황 정하기', body: '여러분이 다룰 대표 상황을 1개로 좁힙니다.' },
           ]}
         />
@@ -169,7 +171,7 @@ function EntryStep({ participant, setParticipant }: { participant: V40VNextParti
         </label>
         <label className="flex items-start gap-2 rounded-xl bg-slate-50 p-3">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>여러분은 오늘 C1바이오 영업팀장 역할로 판단하고, AI 결과는 답이 아니라 초안으로 다루겠습니다.</span>
+          <span>여러분은 오늘 C1바이오 영업팀장 이대호 팀장 역할로 판단하고, AI 결과는 답이 아니라 초안으로 다루겠습니다.</span>
         </label>
       </ShellCard>
     </div>
@@ -183,19 +185,19 @@ function RoleTeamIntroStep() {
       <V39StepHero
         eyebrow="2단계 · 역할과 팀원 구성 이해하기"
         icon="👥"
-        title="여러분은 오늘 C1바이오 영업팀장입니다"
+        title="여러분의 역할은 영업팀장 이대호 팀장입니다"
         tone="indigo"
-        description="실제 활동은 팀 단위로 진행하지만, 판단의 기준은 모두 팀장 역할입니다. 여러분은 7명의 팀원을 이끄는 영업팀장으로서 성과관리, 업무관리, 사람관리를 차례로 판단합니다."
+        description="이대호 팀장은 C1바이오 영업팀을 맡은 현장형 팀장입니다. 여러분은 이대호 팀장의 입장에서 시장 변화, 전사전략, 팀원 실행 신호를 읽고 성과관리·업무관리·사람관리를 차례로 판단합니다."
         badges={[
-          { label: '역할', value: '영업팀장', tone: 'indigo', icon: '👤' },
+          { label: '역할', value: '이대호 팀장', tone: 'indigo', icon: '👤' },
           { label: '팀원', value: '가상 7명', tone: 'emerald', icon: '👥' },
           { label: '판단 흐름', value: '성과·업무·사람관리', tone: 'amber', icon: '🧭' },
         ]}
       />
       <section className="grid gap-3 md:grid-cols-3">
         <div className="rounded-3xl border border-cyan-100 bg-cyan-50 p-4">
-          <p className="text-sm font-black text-cyan-950">여러분의 역할</p>
-          <p className="mt-2 text-sm leading-6 text-cyan-900">시장 변화와 전사전략을 팀 실행 기준으로 바꾸고, 팀원별 실행 신호를 읽어 2주 실행 메모를 완성하는 영업팀장입니다.</p>
+          <p className="text-sm font-black text-cyan-950">이대호 팀장 소개</p>
+          <p className="mt-2 text-sm leading-6 text-cyan-900">영업 현장의 실행 압박과 팀원 성장 책임을 동시에 안고 있는 팀장입니다. 숫자만 보지 않고, 고객 접점 이후의 행동과 팀원별 실행 신호를 연결해야 합니다.</p>
         </div>
         <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
           <p className="text-sm font-black text-emerald-950">오늘의 관리 흐름</p>
@@ -203,20 +205,21 @@ function RoleTeamIntroStep() {
         </div>
         <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4">
           <p className="text-sm font-black text-amber-950">판단 원칙</p>
-          <p className="mt-2 text-sm leading-6 text-amber-900">AI는 답을 대신 정하지 않습니다. 여러분이 먼저 판단하고, AI 초안은 비교·수정·보완하는 재료로만 사용합니다.</p>
+          <p className="mt-2 text-sm leading-6 text-amber-900">AI는 답을 대신 정하지 않습니다. 이대호 팀장인 여러분이 먼저 판단하고, AI 초안은 비교·수정·보완하는 재료로만 사용합니다.</p>
         </div>
       </section>
-      <ShellCard title="가상 팀원 7명">
+      <ShellCard title="가상 팀원 7명과 특징">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {TEAM_MEMBERS.map((member) => (
             <div key={member.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="font-black text-slate-950">{member.name}</p>
               <p className="mt-1 text-xs font-bold text-slate-500">{member.role}</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">{member.signal}</p>
+              <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-600">코칭 초점: {member.coachingFocus}</p>
             </div>
           ))}
         </div>
-        <p className="text-xs font-bold leading-5 text-slate-500">이 인물들은 교육용 가상 팀원입니다. 이후 단계에서 여러분은 이 팀원들의 실행 신호, 업무 흐름, 1on1 대화 초점을 판단합니다.</p>
+        <p className="text-xs font-bold leading-5 text-slate-500">이 인물들은 교육용 가상 팀원입니다. 이후 단계에서 여러분은 이대호 팀장으로서 이들의 실행 신호, 업무 흐름, 1on1 대화 초점을 판단합니다.</p>
       </ShellCard>
     </div>
   );
@@ -260,6 +263,7 @@ function V40VNextPreviewApp() {
   const safeStep = clampV40VNextStep(progress.step);
   const goToStep = (nextStep: number) => { setProgress({ step: clampV40VNextStep(nextStep) }); scrollV40VNextToTop(); };
   const handleReset = () => { removeStoredPrefix('ckd.v40-vnext.'); setParticipant(DEFAULT_PARTICIPANT); setProgress(DEFAULT_PROGRESS); scrollV40VNextToTop(); };
+  void handleReset;
   return (
     <V40VNextStepNavigationProvider onStepSelect={(stepNumber) => goToStep(stepNumber - 1)}>
       <JourneyShell
