@@ -5,7 +5,10 @@ type V40VNextStepNavigator = (stepNumber: number) => void;
 
 const V40_VNEXT_UX_COMPONENT_MARKERS = [
   'V40VNextFlowStrip',
-  'v40-vNext 11단계 전용 흐름',
+  'v40-vNext 12단계 전용 흐름',
+  '팀장 역할 시작',
+  '역할·팀원 이해',
+  '말해도 되는 선',
   '성과관리 1',
   '성과관리 2',
   '업무관리 1',
@@ -24,17 +27,18 @@ export function V40VNextStepNavigationProvider({ onStepSelect, children }: { onS
 }
 
 const v40FlowItems = [
-  { step: 1, label: '조별 역할 잡기', shortLabel: '역할 잡기', icon: '🤝' },
-  { step: 2, label: '말해도 되는 선 확인', shortLabel: '안전선 확인', icon: '🛡️' },
-  { step: 3, label: 'AI 질문 다듬기', shortLabel: '질문 다듬기', icon: '✍️' },
-  { step: 4, label: '성과관리 1: 시장 변화에서 성과 질문 찾기', shortLabel: '성과관리 1', icon: '🔭' },
-  { step: 5, label: '성과관리 2: 전략과제·CSF·KPI 분해', shortLabel: '성과관리 2', icon: '🎯' },
-  { step: 6, label: '업무관리 1: 성과 기준을 실행 과제로 바꾸기', shortLabel: '업무관리 1', icon: '🧩' },
-  { step: 7, label: '업무관리 2: 우선순위와 업무 흐름 정리하기', shortLabel: '업무관리 2', icon: '🧭' },
-  { step: 8, label: '업무관리 3: 혼자 해결하면 안 되는 일 구분하기', shortLabel: '업무관리 3', icon: '🧱' },
-  { step: 9, label: '사람관리 1: 먼저 이야기할 팀원 고르기', shortLabel: '사람관리 1', icon: '👥' },
-  { step: 10, label: '사람관리 2: 1on1 대화 설계와 실천하기', shortLabel: '사람관리 2', icon: '💬' },
-  { step: 11, label: '2주 실행 메모와 복기 질문 완성하기', shortLabel: '최종 실행 메모', icon: '✅' },
+  { step: 1, label: '팀장 역할 시작하기', shortLabel: '팀장 역할 시작', icon: '🤝' },
+  { step: 2, label: '역할과 팀원 구성 이해하기', shortLabel: '역할·팀원 이해', icon: '👥' },
+  { step: 3, label: '말해도 되는 선 확인', shortLabel: '안전선 확인', icon: '🛡️' },
+  { step: 4, label: 'AI 질문 다듬기', shortLabel: '질문 다듬기', icon: '✍️' },
+  { step: 5, label: '성과관리 1: 시장 변화에서 성과 질문 찾기', shortLabel: '성과관리 1', icon: '🔭' },
+  { step: 6, label: '성과관리 2: 전략과제·CSF·KPI 분해', shortLabel: '성과관리 2', icon: '🎯' },
+  { step: 7, label: '업무관리 1: 성과 기준을 실행 과제로 바꾸기', shortLabel: '업무관리 1', icon: '🧩' },
+  { step: 8, label: '업무관리 2: 우선순위와 업무 흐름 정리하기', shortLabel: '업무관리 2', icon: '🧭' },
+  { step: 9, label: '업무관리 3: 혼자 해결하면 안 되는 일 구분하기', shortLabel: '업무관리 3', icon: '🧱' },
+  { step: 10, label: '사람관리 1: 먼저 이야기할 팀원 고르기', shortLabel: '사람관리 1', icon: '👤' },
+  { step: 11, label: '사람관리 2: 1on1 대화 설계와 실천하기', shortLabel: '사람관리 2', icon: '💬' },
+  { step: 12, label: '2주 실행 메모와 복기 질문 완성하기', shortLabel: '최종 실행 메모', icon: '✅' },
 ];
 
 export function V40VNextFlowStrip({ currentStep, onStepSelect }: { currentStep: number; onStepSelect?: V40VNextStepNavigator }) {
@@ -46,7 +50,7 @@ export function V40VNextFlowStrip({ currentStep, onStepSelect }: { currentStep: 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
       <div className="mb-2 flex items-center justify-between gap-3 text-xs font-black text-slate-500">
-        <span>v40-vNext 11단계 전용 흐름</span>
+        <span>v40-vNext 12단계 전용 흐름</span>
         <span>{safeCurrent} / {total}</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
