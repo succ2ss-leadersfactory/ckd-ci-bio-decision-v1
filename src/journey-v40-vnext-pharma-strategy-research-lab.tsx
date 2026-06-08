@@ -21,6 +21,7 @@ const V40_VNEXT_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'NotebookLM 소스 기반 전략 과제 압축',
   'NotebookLM 프롬프트 복사',
   'NotebookLM 분석 질문 복사',
+  'NotebookLM 결과 항목별로 정리하기',
   'NotebookLM 소스 묶음 복사',
   'NotebookLM 전략 과제 분석 프롬프트',
   'LM Studio 보고서 생성 요청',
@@ -52,6 +53,15 @@ type State = {
   expectedQuestions: string;
 };
 
+type ParsedNotebookSections = {
+  issueOne?: string;
+  issueTwo?: string;
+  issueThree?: string;
+  teamImpact?: string;
+  metricQuestions?: string;
+  caution?: string;
+};
+
 const TOPICS: Topic[] = [
   { id: 'ai-commercial', title: 'AI 기반 영업·마케팅 실행관리 고도화', focus: 'AI 결과를 고객 접점 준비, 기록 품질, 후속 질문으로 바꾸는 기준을 세웁니다.', kpis: ['AI 활용 전 안전성 점검률', '고객 질문 기록률', '후속 실행안 작성률', '위험 표현 수정 건수'] },
   { id: 'market-access', title: '약가·급여·시장접근성 변화 대응', focus: '가치 근거, 자료 요청, 사용 맥락 질문을 안전하게 기록하고 후속 대응으로 연결합니다.', kpis: ['가치 근거 질문 기록률', '승인자료 기반 후속 대응률', '자료 요청 처리 리드타임', '고객 관심 주제 분류율'] },
@@ -80,6 +90,16 @@ const DEFAULT_STATE: State = {
   meetingMemo: '',
   expectedQuestions: '',
 };
+
+const NOTEBOOK_SECTION_ALIASES: Array<{ key: string; labels: string[] }> = [
+  { key: 'issueOne', labels: ['영업팀 추진 과제 1', '영업팀 추진과제 1', '추진 과제 1', '추진과제 1', '과제 1'] },
+  { key: 'issueTwo', labels: ['영업팀 추진 과제 2', '영업팀 추진과제 2', '추진 과제 2', '추진과제 2', '과제 2'] },
+  { key: 'issueThree', labels: ['영업팀 추진 과제 3', '영업팀 추진과제 3', '추진 과제 3', '추진과제 3', '과제 3'] },
+  { key: 'teamImpact', labels: ['우리 팀 실행 영향', '팀 실행 영향', '영업팀 실행 영향', '실행 영향'] },
+  { key: 'questions', labels: ['2주 실행관리 질문', '2주 실행 관리 질문', '실행관리 질문', '실행 질문'] },
+  { key: 'kpis', labels: ['KPI 후보', '관리 지표 후보', '지표 후보'] },
+  { key: 'caution', labels: ['주의해야 할 표현', '주의 표현', '위험 표현', '컴플라이언스 주의 표현'] },
+];
 
 function topicOf(state: State) {
   return TOPICS.find((item) => item.id === state.selectedTopicId) ?? TOPICS[0];
@@ -213,6 +233,57 @@ function buildNotebookAnalysisPrompt(state: State) {
 [주의해야 할 표현]`;
 }
 
+function normalizeHeading(line: string) {
+  return line
+    .replace(/^\s{0,3}#{1,6}\s*/, '')
+    .replace(/^\s*[-*+>]\s*/, '')
+    .replace(/\*\*/g, '')
+    .replace(/__+/g, '')
+    .trim();
+}
+
+function detectNotebookSection(line: string) {
+  const normalized = normalizeHeading(line);
+  const withoutBrackets = normalized.replace(/^\[/, '').replace(/\]$/, '').trim();
+  for (const item of NOTEBOOK_SECTION_ALIASES) {
+    if (item.labels.some((label) => normalized === `[${label}]` || withoutBrackets === label || normalized.startsWith(`[${label}]`) || normalized.startsWith(`${label}:`) || normalized.startsWith(`${label}`))) {
+      return item.key;
+    }
+  }
+  return null;
+}
+
+function cleanParsedText(value?: string) {
+  return (value ?? '').replace(/^\n+|\n+$/g, '').trim();
+}
+
+function parseNotebookAnswer(answer: string): ParsedNotebookSections {
+  const buckets: Record<string, string[]> = {};
+  let currentKey: string | null = null;
+  for (const line of answer.split(/\r?\n/)) {
+    const detectedKey = detectNotebookSection(line);
+    if (detectedKey) {
+      currentKey = detectedKey;
+      if (!buckets[currentKey]) buckets[currentKey] = [];
+      continue;
+    }
+    if (currentKey) buckets[currentKey].push(line);
+  }
+
+  const questions = cleanParsedText(buckets.questions?.join('\n'));
+  const kpis = cleanParsedText(buckets.kpis?.join('\n'));
+  const metricQuestions = [questions ? `[2주 실행관리 질문]\n${questions}` : '', kpis ? `[KPI 후보]\n${kpis}` : ''].filter(Boolean).join('\n\n');
+
+  return {
+    issueOne: cleanParsedText(buckets.issueOne?.join('\n')),
+    issueTwo: cleanParsedText(buckets.issueTwo?.join('\n')),
+    issueThree: cleanParsedText(buckets.issueThree?.join('\n')),
+    teamImpact: cleanParsedText(buckets.teamImpact?.join('\n')),
+    metricQuestions,
+    caution: cleanParsedText(buckets.caution?.join('\n')),
+  };
+}
+
 function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: State) {
   const base = `LM Studio ${kind} 생성 요청
 
@@ -294,6 +365,24 @@ export function V40VNextPharmaStrategyResearchLab() {
     URL.revokeObjectURL(url);
     setCopyMessage('NotebookLM 업로드용 TXT 파일을 다운로드했습니다. NotebookLM에서 소스 추가 → 파일 업로드로 넣어 주세요.');
   };
+  const structureNotebookAnswer = () => {
+    const parsed = parseNotebookAnswer(state.notebookAnswer);
+    const hasParsedValue = Object.values(parsed).some((value) => Boolean(value?.trim()));
+    if (!hasParsedValue) {
+      setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [영업팀 추진 과제 1], [우리 팀 실행 영향], [2주 실행관리 질문], [KPI 후보], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
+      return;
+    }
+    setState({
+      ...state,
+      issueOne: parsed.issueOne || state.issueOne,
+      issueTwo: parsed.issueTwo || state.issueTwo,
+      issueThree: parsed.issueThree || state.issueThree,
+      teamImpact: parsed.teamImpact || state.teamImpact,
+      metricQuestions: parsed.metricQuestions || state.metricQuestions,
+      caution: parsed.caution || state.caution,
+    });
+    setCopyMessage('NotebookLM 결과를 항목별 칸에 정리했습니다. 비어 있는 항목은 기존 입력값을 유지했습니다.');
+  };
 
   return <section className="space-y-4">
     <Section title="1단계: Perplexity로 최신 공개자료와 URL 찾기">
@@ -338,6 +427,7 @@ export function V40VNextPharmaStrategyResearchLab() {
       <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 프롬프트 복사</button>
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{analysisPrompt}</pre>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={structureNotebookAnswer}>NotebookLM 결과 항목별로 정리하기</button>
       <div className="grid gap-3 md:grid-cols-2"><Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
       <Field label="2주 실행관리 질문과 KPI 후보"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
