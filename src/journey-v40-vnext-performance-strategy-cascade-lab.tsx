@@ -21,10 +21,19 @@ const V40_VNEXT_PERFORMANCE_CASCADE_MARKERS = [
   '선택한 CSF별 KPI 4개 제시',
   'KPI 선택 후 AI 확장 요청 활성화',
   '가상 CRM 기록 카드',
+  '7명 전체 카드',
+  '집중 판독할 기록 3개',
   '성과 단서가 가장 뚜렷한 기록',
   '부족 정보가 가장 큰 기록',
   '위험한 해석이 숨어 있는 기록',
   '7단계로 넘길 실행 신호',
+  '김재호 차장',
+  '김문호 차장',
+  '유희관 과장',
+  '이대은 대리',
+  '신재영 대리',
+  '박재욱 사원',
+  '문교원 사원',
   'AI에게 CSF/KPI 후보 확장 요청',
   'AI에게 고객 활동 기록 해석 초안 요청',
   'AI에게 2주 실행 흐름 초안 요청',
@@ -148,6 +157,17 @@ const CRM_RECORD_CARDS: CrmRecordCard[] = [
     question: '다음 연락 때 고객에게 무엇을 확인하려고 하나요?',
   },
   {
+    id: 'record-kim-munho',
+    owner: '김문호 차장',
+    headline: '활동량은 많지만 전략과제 연결이 흐린 기록',
+    memo: '이번 주 주요 고객 8곳 방문. 자료 전달 6건. 다음 주에도 방문 확대 예정.',
+    fact: '방문 수와 자료 전달 건수는 확인됩니다.',
+    signal: '활동량은 보이나 선택한 팀 전략과제나 CSF와 직접 연결된 후속 행동은 약합니다.',
+    missing: '고객별 질문, 자료 전달 목적, 후속 확인 계획, 우선순위 판단 근거가 빠져 있습니다.',
+    risk: '방문 수가 많다는 이유만으로 실행 품질이나 전략 기여가 높다고 단정하면 위험합니다.',
+    question: '방문 확대보다 먼저 확인해야 할 고객 반응이나 후속 행동은 무엇인가요?',
+  },
+  {
     id: 'record-yoo-heekwan',
     owner: '유희관 과장',
     headline: '성과 단서가 비교적 뚜렷한 기록',
@@ -170,6 +190,17 @@ const CRM_RECORD_CARDS: CrmRecordCard[] = [
     question: '승인자료 범위 안에서 어떤 표현으로 다시 정리할 수 있을까요?',
   },
   {
+    id: 'record-shin-jaeyoung',
+    owner: '신재영 대리',
+    headline: '조심스럽지만 실행 자신감이 낮아 보이는 기록',
+    memo: '고객이 추가 확인을 요청했으나 바로 답변하지 않고 확인 후 회신 예정. 어떤 자료를 준비해야 할지 팀장 확인 필요.',
+    fact: '추가 확인 요청, 즉답 보류, 팀장 확인 필요가 기록되어 있습니다.',
+    signal: '확인 후 대응 건수와 팀장 지원 필요 신호는 뚜렷합니다.',
+    missing: '확인할 자료의 범위, 회신 시점, 고객에게 다시 확인할 질문이 더 필요합니다.',
+    risk: '조심스러운 대응을 실행력 부족으로 단정하면 위험합니다.',
+    question: '확인 후 회신을 위해 팀장이 먼저 도와야 할 것은 무엇인가요?',
+  },
+  {
     id: 'record-park-jaewook',
     owner: '박재욱 사원',
     headline: '활동은 있지만 성과관리 단서가 부족한 기록',
@@ -179,6 +210,17 @@ const CRM_RECORD_CARDS: CrmRecordCard[] = [
     missing: '고객 질문, 자료 전달 목적, 다음 행동, 확인 필요 사항이 빠져 있습니다.',
     risk: '방문 완료를 실행 품질이나 고객 반응으로 해석하면 위험합니다.',
     question: '이번 방문에서 다음 행동으로 연결할 질문이나 반응이 있었나요?',
+  },
+  {
+    id: 'record-moon-gyowon',
+    owner: '문교원 사원',
+    headline: '기록은 꼼꼼하지만 우선순위가 분산된 기록',
+    memo: '고객 질문 3건, 자료 요청 2건, 다음 연락 3건 기록. 다만 어떤 고객을 먼저 확인할지는 아직 정하지 못함.',
+    fact: '질문, 자료 요청, 다음 연락 후보가 비교적 구체적으로 기록되어 있습니다.',
+    signal: '기록 품질은 좋지만 우선순위와 2주 실행 순서가 필요합니다.',
+    missing: '먼저 확인할 고객 기준, 팀 전략과제와의 연결, 금주 중간 점검 질문이 부족합니다.',
+    risk: '꼼꼼한 기록을 곧바로 실행 우선순위가 명확하다고 해석하면 위험합니다.',
+    question: '이번 주에는 어떤 기준으로 먼저 확인할 고객을 정하면 좋을까요?',
   },
 ];
 
@@ -288,7 +330,7 @@ export function V40VNextPerformanceRecordEvidenceLab() {
   const selectedKpis = flatKpis(strategy, state).filter((kpiItem) => state.selectedKpiIds.includes(kpiItem.id));
   const recordPrompt = useMemo(() => buildRecordPrompt(strategy, state), [strategy, state]);
   const hasKpis = selectedKpis.length > 0;
-  return <section className="space-y-4"><Card title="5단계에서 만든 팀 전략과제·CSF·KPI 다시 보기"><p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">전사전략과제: <b>{strategy?.enterpriseTask || '미선택'}</b><br />팀 전략과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p><p className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">이제 KPI를 숫자로 바로 보지 않습니다. 가상 CRM 기록에서 확인 가능한 사실, 성과 단서, 부족 정보, 위험한 해석을 먼저 나눠 봅니다.</p></Card><Card title="KPI 확인 항목 고르기">{!hasKpis ? <LockedPanel title="선택한 KPI가 없습니다" body="5단계에서 전사전략과제, 팀 전략과제, CSF, KPI를 먼저 선택해야 고객 활동 기록 확인 항목을 볼 수 있습니다." /> : <div className="grid gap-3 md:grid-cols-2">{selectedKpis.map((kpiItem) => <button key={kpiItem.id} type="button" onClick={() => setState({ ...state, selectedEvidenceIds: toggle(state.selectedEvidenceIds, kpiItem.evidence) })} className={`rounded-2xl border p-4 text-left ${state.selectedEvidenceIds.includes(kpiItem.evidence) ? 'border-sky-400 bg-sky-50' : 'border-slate-200 bg-white'}`}><p className="text-xs font-black text-sky-700">{kpiItem.label}</p><p className="mt-1 font-black text-slate-950">{kpiItem.evidence}</p><p className="mt-2 text-xs font-bold leading-5 text-slate-600">팀장 질문: {kpiItem.question}</p></button>)}</div>}</Card><Card title="가상 CRM 기록 카드 판독"><p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">우리 조는 영업팀장입니다. 아래 가상 CRM 기록 카드 4개 중에서 성과 단서가 가장 뚜렷한 기록, 부족 정보가 가장 큰 기록, 위험한 해석이 숨어 있는 기록을 각각 선택하세요.</p><div className="grid gap-3 md:grid-cols-2">{CRM_RECORD_CARDS.map((record) => <RecordCardButton key={record.id} record={record} selected={[state.selectedStrongSignalRecordId, state.selectedMissingInfoRecordId, state.selectedRiskRecordId].includes(record.id)} onClick={() => setState({ ...state, selectedStrongSignalRecordId: record.id })} />)}</div><div className="grid gap-3 md:grid-cols-3"><label className="space-y-1"><span className="text-xs font-black text-slate-500">성과 단서가 가장 뚜렷한 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedStrongSignalRecordId ?? ''} onChange={(event) => setState({ ...state, selectedStrongSignalRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label><label className="space-y-1"><span className="text-xs font-black text-slate-500">부족 정보가 가장 큰 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedMissingInfoRecordId ?? ''} onChange={(event) => setState({ ...state, selectedMissingInfoRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label><label className="space-y-1"><span className="text-xs font-black text-slate-500">위험한 해석이 숨어 있는 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedRiskRecordId ?? ''} onChange={(event) => setState({ ...state, selectedRiskRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label></div></Card><Card title="우리 조 판독 결과 정리"><Field label="확인 가능한 사실" value={state.recordFactMemo} onChange={(value) => setState({ ...state, recordFactMemo: value })} placeholder="예: 자료 전달, 고객 질문, 추가 확인 예정처럼 기록에서 실제로 확인 가능한 사실만 씁니다." /><Field label="아직 부족한 정보" value={state.recordMissingMemo ?? state.missingInfo} onChange={(value) => setState({ ...state, recordMissingMemo: value, missingInfo: value })} placeholder="예: 다음 접점의 목적, 고객 질문의 배경, 후속조치 지연 이유가 부족합니다." /><Field label="과잉해석하면 안 되는 부분" value={state.recordRiskMemo ?? state.overInterpretationRisk} onChange={(value) => setState({ ...state, recordRiskMemo: value, overInterpretationRisk: value })} placeholder="예: 반응 좋음, 고개 끄덕임을 관심이나 전환 가능성으로 단정하지 않습니다." /><Field label="팀원에게 확인할 질문" value={state.recordQuestionMemo ?? state.teamQuestion} onChange={(value) => setState({ ...state, recordQuestionMemo: value, teamQuestion: value })} placeholder="예: 다음 연락 때 고객에게 무엇을 확인하려고 하나요?" /></Card><Card title="AI와 비교하고 7단계로 넘길 실행 신호 정리"><div className="flex flex-wrap gap-2"><Button onClick={() => setState({ ...state, aiRecordPrompt: recordPrompt })}>AI에게 고객 활동 기록 해석 초안 요청</Button><Button onClick={() => copyText(state.aiRecordPrompt || recordPrompt)}>프롬프트 복사</Button></div><Field label="AI 기록 해석 초안 붙여넣기" value={state.aiRecordDraft} onChange={(value) => setState({ ...state, aiRecordDraft: value })} min="min-h-32" /><Field label="AI 해석에서 수정한 위험 표현" value={state.revisedRiskExpression} onChange={(value) => setState({ ...state, revisedRiskExpression: value })} placeholder="예: ‘관심이 높다’ 대신 ‘추가 확인할 질문이 남았다’로 수정합니다." /><Field label="7단계로 넘길 실행 신호" value={state.executionSignalMemo} onChange={(value) => setState({ ...state, executionSignalMemo: value })} placeholder="예: 후속 행동이 있는 기록과 없는 기록의 차이를 먼저 확인하고, 금요일 점검에서 막힌 이유와 지원 필요 사항을 묻는다." /></Card></section>;
+  return <section className="space-y-4"><Card title="5단계에서 만든 팀 전략과제·CSF·KPI 다시 보기"><p className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-700">전사전략과제: <b>{strategy?.enterpriseTask || '미선택'}</b><br />팀 전략과제: <b>{state.customTeamTask || '미선택'}</b><br />선택 CSF: <b>{selectedLabels(flatCsfs(strategy, state), state.selectedCsfIds)}</b><br />선택 KPI: <b>{selectedLabels(flatKpis(strategy, state), state.selectedKpiIds)}</b></p><p className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-bold leading-5 text-sky-950">이제 KPI를 숫자로 바로 보지 않습니다. 아래 7명 전체 카드에서 집중 판독할 기록 3개를 고르고, 확인 가능한 사실·성과 단서·부족 정보·위험한 해석을 나눠 봅니다.</p></Card><Card title="KPI 확인 항목 고르기">{!hasKpis ? <LockedPanel title="선택한 KPI가 없습니다" body="5단계에서 전사전략과제, 팀 전략과제, CSF, KPI를 먼저 선택해야 고객 활동 기록 확인 항목을 볼 수 있습니다." /> : <div className="grid gap-3 md:grid-cols-2">{selectedKpis.map((kpiItem) => <button key={kpiItem.id} type="button" onClick={() => setState({ ...state, selectedEvidenceIds: toggle(state.selectedEvidenceIds, kpiItem.evidence) })} className={`rounded-2xl border p-4 text-left ${state.selectedEvidenceIds.includes(kpiItem.evidence) ? 'border-sky-400 bg-sky-50' : 'border-slate-200 bg-white'}`}><p className="text-xs font-black text-sky-700">{kpiItem.label}</p><p className="mt-1 font-black text-slate-950">{kpiItem.evidence}</p><p className="mt-2 text-xs font-bold leading-5 text-slate-600">팀장 질문: {kpiItem.question}</p></button>)}</div>}</Card><Card title="가상 CRM 기록 카드 판독"><p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">아래 7명의 가상 CRM 기록은 실제 고객명, 병원명, 제품명, 매출자료를 모두 제거한 교육용 기록입니다. 7개를 모두 세밀하게 분석하지 않습니다. 먼저 전체를 훑어본 뒤, 우리 조가 이번 2주 성과관리에서 집중 판독할 기록 3개를 고릅니다.</p><div className="grid gap-3 md:grid-cols-2">{CRM_RECORD_CARDS.map((record) => <RecordCardButton key={record.id} record={record} selected={[state.selectedStrongSignalRecordId, state.selectedMissingInfoRecordId, state.selectedRiskRecordId].includes(record.id)} onClick={() => setState({ ...state, selectedStrongSignalRecordId: record.id })} />)}</div><div className="grid gap-3 md:grid-cols-3"><label className="space-y-1"><span className="text-xs font-black text-slate-500">성과 단서가 가장 뚜렷한 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedStrongSignalRecordId ?? ''} onChange={(event) => setState({ ...state, selectedStrongSignalRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label><label className="space-y-1"><span className="text-xs font-black text-slate-500">부족 정보가 가장 큰 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedMissingInfoRecordId ?? ''} onChange={(event) => setState({ ...state, selectedMissingInfoRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label><label className="space-y-1"><span className="text-xs font-black text-slate-500">위험한 해석이 숨어 있는 기록</span><select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold" value={state.selectedRiskRecordId ?? ''} onChange={(event) => setState({ ...state, selectedRiskRecordId: event.target.value })}><option value="">선택하세요</option>{CRM_RECORD_CARDS.map((record) => <option key={record.id} value={record.id}>{record.owner}</option>)}</select></label></div></Card><Card title="우리 조 판독 결과 정리"><Field label="확인 가능한 사실" value={state.recordFactMemo} onChange={(value) => setState({ ...state, recordFactMemo: value })} placeholder="예: 자료 전달, 고객 질문, 추가 확인 예정처럼 기록에서 실제로 확인 가능한 사실만 씁니다." /><Field label="아직 부족한 정보" value={state.recordMissingMemo ?? state.missingInfo} onChange={(value) => setState({ ...state, recordMissingMemo: value, missingInfo: value })} placeholder="예: 다음 접점의 목적, 고객 질문의 배경, 후속조치 지연 이유가 부족합니다." /><Field label="과잉해석하면 안 되는 부분" value={state.recordRiskMemo ?? state.overInterpretationRisk} onChange={(value) => setState({ ...state, recordRiskMemo: value, overInterpretationRisk: value })} placeholder="예: 반응 좋음, 고개 끄덕임을 관심이나 전환 가능성으로 단정하지 않습니다." /><Field label="팀원에게 확인할 질문" value={state.recordQuestionMemo ?? state.teamQuestion} onChange={(value) => setState({ ...state, recordQuestionMemo: value, teamQuestion: value })} placeholder="예: 다음 연락 때 고객에게 무엇을 확인하려고 하나요?" /></Card><Card title="AI와 비교하고 7단계로 넘길 실행 신호 정리"><div className="flex flex-wrap gap-2"><Button onClick={() => setState({ ...state, aiRecordPrompt: recordPrompt })}>AI에게 고객 활동 기록 해석 초안 요청</Button><Button onClick={() => copyText(state.aiRecordPrompt || recordPrompt)}>프롬프트 복사</Button></div><Field label="AI 기록 해석 초안 붙여넣기" value={state.aiRecordDraft} onChange={(value) => setState({ ...state, aiRecordDraft: value })} min="min-h-32" /><Field label="AI 해석에서 수정한 위험 표현" value={state.revisedRiskExpression} onChange={(value) => setState({ ...state, revisedRiskExpression: value })} placeholder="예: ‘관심이 높다’ 대신 ‘추가 확인할 질문이 남았다’로 수정합니다." /><Field label="7단계로 넘길 실행 신호" value={state.executionSignalMemo} onChange={(value) => setState({ ...state, executionSignalMemo: value })} placeholder="예: 후속 행동이 있는 기록과 없는 기록의 차이를 먼저 확인하고, 금요일 점검에서 막힌 이유와 지원 필요 사항을 묻는다." /></Card></section>;
 }
 
 export function V40VNextPerformanceTwoWeekFlowLab() {
