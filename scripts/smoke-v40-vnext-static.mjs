@@ -58,6 +58,7 @@ for (const marker of [
   'V40VNextTaskExecutionBridgeLab',
   'V40VNextFlowStrip',
   'V40VNextProgressCoachPanel',
+  '1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요',
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
 
 mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wrapper import/use in v40 app');
@@ -153,16 +154,22 @@ for (const marker of [
 
 for (const marker of [
   'V40VNextFlowStrip',
+  '파일럿 11단계 전체 흐름',
+  '12단계 최종 실행 메모 숨김',
   '전체 흐름',
   '성과관리 1',
   '업무관리 1',
   '사람관리 1',
-  '최종 실행 메모',
+  '사람관리 2',
 ]) mustInclude(files.ux, marker, 'v40-vNext UX components');
+
+mustNotInclude(files.ux, '2주 실행 메모와 복기 질문 완성하기', 'hidden final memo step in v40 flow strip');
 
 for (const marker of [
   'V40VNextProgressCoachPanel',
   '팀장 역할 진행 코치',
+  'v40-vNext 파일럿 11단계 기준',
+  '12단계 최종 실행 메모 숨김',
   '팀장 역할 진행 상태',
   '팀',
   '이름/닉네임',
@@ -182,12 +189,16 @@ for (const marker of [
 ]) mustInclude(files.compactPerformanceLab, marker, 'compact performance bridge lab');
 
 for (const marker of [
+  '파일럿 11단계 운영',
+  '12단계 최종 실행 메모 숨김',
   '팀장 역할 시작하기',
   '역할과 팀원 구성 이해하기',
   '말해도 되는 선 확인',
   '성과관리 1: 시장 변화에서 성과 질문 찾기',
   '성과관리 2: 전사전략과제를 팀 전략과제·CSF·KPI로 분해하기',
 ]) mustInclude(files.config, marker, 'v40-vNext config');
+
+mustNotInclude(files.config, "id: 'final-call-plan-card'", 'hidden final memo step in v40 config');
 
 for (const marker of [
   'src/journey-v40-vnext-app-preview.tsx',
