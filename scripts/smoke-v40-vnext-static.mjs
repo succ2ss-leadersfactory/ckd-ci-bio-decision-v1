@@ -64,9 +64,11 @@ for (const marker of [
 for (const marker of [
   'isV40VNextEntryBlocked',
   'ckd.v40-vnext.participant.v1',
-  '1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요',
-  '팀과 이름/닉네임 입력 후 다음 단계로 이동할 수 있습니다.',
-]) mustInclude(files.shell, marker, 'v40-vNext entry gate in JourneyShell');
+  '먼저 팀과 이름/닉네임을 입력해 주세요',
+  '팀과 이름/닉네임을 입력하면 다음으로 넘어갈 수 있습니다.',
+  'AI 리더십 실습',
+  '입력 내용 저장',
+]) mustInclude(files.shell, marker, 'v40-vNext entry gate and shell copy');
 
 mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wrapper import/use in v40 app');
 
