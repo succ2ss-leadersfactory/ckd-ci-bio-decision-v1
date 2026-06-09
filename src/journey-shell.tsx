@@ -34,7 +34,7 @@ function isV40VNextEntryBlocked(title: string, currentStep: number) {
 }
 
 function showV40VNextEntryGateMessage() {
-  window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+  window.alert('먼저 팀과 이름/닉네임을 입력해 주세요. 그다음부터는 필요한 단계로 바로 이동할 수 있습니다.');
 }
 
 export function JourneyShell({
@@ -86,8 +86,8 @@ export function JourneyShell({
         <header className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-sm">
           <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-5 md:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100">
-              <span className="rounded-full bg-white/10 px-3 py-1">AI Leadership Lab Journey</span>
-              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-50">자동 저장</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">AI 리더십 실습</span>
+              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-50">입력 내용 저장</span>
             </div>
             <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">
               <div className="flex w-fit shrink-0 items-center rounded-2xl bg-white px-4 py-3 shadow-md">
@@ -106,12 +106,12 @@ export function JourneyShell({
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">Step {safeStep + 1} / {steps.length}</span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">진행률 {progress}%</span>
+                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">{safeStep + 1} / {steps.length}</span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">진행 {progress}%</span>
                 </div>
                 <h2 className="mt-2 text-xl font-black leading-tight text-slate-950">{activeStep?.title || '-'}</h2>
                 {activeStep?.description ? <p className="mt-1 text-sm leading-6 text-slate-600">{activeStep.description}</p> : null}
-                {nextStep ? <p className="mt-2 text-xs font-semibold text-slate-500">다음 단계: {nextStep.title}</p> : <p className="mt-2 text-xs font-semibold text-emerald-700">마지막 단계입니다. 최종 산출물을 확인하세요.</p>}
+                {nextStep ? <p className="mt-2 text-xs font-semibold text-slate-500">다음에 볼 화면: {nextStep.title}</p> : <p className="mt-2 text-xs font-semibold text-emerald-700">파일럿 과정의 마지막 화면입니다. 여기까지 정리한 내용을 바탕으로 토의합니다.</p>}
               </div>
               <div className="w-full md:w-56">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-500">
@@ -177,19 +177,19 @@ export function JourneyShell({
               disabled={safeStep <= 0}
               onClick={onPrev}
             >
-              이전 단계
+              이전
             </button>
             <div className="hidden min-w-0 flex-1 text-center md:block">
               <p className="truncate text-sm font-bold text-slate-900">{activeStep?.title || '-'}</p>
-              <p className="text-xs text-slate-500">입력 내용은 브라우저에 자동 저장됩니다.</p>
-              {entryGateBlocked ? <p className="mt-1 text-xs font-black text-amber-700">팀과 이름/닉네임 입력 후 다음 단계로 이동할 수 있습니다.</p> : null}
+              <p className="text-xs text-slate-500">입력한 내용은 이 브라우저에 저장됩니다.</p>
+              {entryGateBlocked ? <p className="mt-1 text-xs font-black text-amber-700">팀과 이름/닉네임을 입력하면 다음으로 넘어갈 수 있습니다.</p> : null}
             </div>
             <button
               className="min-h-12 flex-1 rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white disabled:opacity-40 md:flex-none md:min-w-32"
               disabled={safeStep >= steps.length - 1}
               onClick={handleNext}
             >
-              다음 단계
+              다음
             </button>
           </div>
         </nav>
