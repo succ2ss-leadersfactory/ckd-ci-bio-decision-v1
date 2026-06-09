@@ -23,6 +23,7 @@ function mustNotInclude(source, marker, label) {
 
 const files = {
   html: read('journey-v40-vnext-preview.html'),
+  shell: read('src/journey-shell.tsx'),
   app: read('src/journey-v40-vnext-app-preview.tsx'),
   config: read('src/journey-v40-vnext-preview-config.ts'),
   ux: read('src/journey-v40-vnext-ux-components.tsx'),
@@ -58,8 +59,14 @@ for (const marker of [
   'V40VNextTaskExecutionBridgeLab',
   'V40VNextFlowStrip',
   'V40VNextProgressCoachPanel',
-  '1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요',
 ]) mustInclude(files.app, marker, 'v40-vNext app shell');
+
+for (const marker of [
+  'isV40VNextEntryBlocked',
+  'ckd.v40-vnext.participant.v1',
+  '1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요',
+  '팀과 이름/닉네임 입력 후 다음 단계로 이동할 수 있습니다.',
+]) mustInclude(files.shell, marker, 'v40-vNext entry gate in JourneyShell');
 
 mustNotInclude(files.app, 'V39NotebookLmGuidedResearchLab', 'legacy notebook wrapper import/use in v40 app');
 
