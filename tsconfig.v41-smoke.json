@@ -9,6 +9,7 @@
     "src/journey-v41-preview-config.ts",
     "src/journey-v41-ux-components.tsx",
     "src/journey-v41-progress-coach-panel.tsx",
+    "src/journey-v41-lab-storage-scope.tsx",
     "src/journey-v40-vnext-app-preview.tsx",
     "src/journey-v40-vnext-preview-config.ts",
     "src/journey-v40-vnext-ux-components.tsx",
