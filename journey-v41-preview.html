@@ -10,12 +10,25 @@
     #journey-root main > div > header h1 + p {
       display: none !important;
     }
+    body::before {
+      content: 'v41 통합 확인 버전 · 3단계 질문 다듬기 통합 적용';
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
   </style>
 </head>
 <body>
   <div id="journey-root"></div>
   <script>
-    window.__V41_PREVIEW_PROTECTION_MARKERS = 'v41 isolated preview route|pilot URLs preserved|ckd-ai-lab.html 보호|journey-v40-vnext-preview.html 보호|v40 parity scaffold|journey-v41-preview.html';
+    window.__V41_PREVIEW_PROTECTION_MARKERS = 'v41 isolated preview route|v41 merged version badge|3단계 질문 다듬기 통합 적용|pilot URLs preserved|ckd-ai-lab.html 보호|journey-v40-vnext-preview.html 보호|v40 parity scaffold|journey-v41-preview.html';
   </script>
   <script type="module" src="/src/journey-v41-app-preview.tsx"></script>
 </body>
