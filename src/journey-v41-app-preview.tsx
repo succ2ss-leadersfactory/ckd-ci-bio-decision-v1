@@ -9,7 +9,7 @@ import { V41LabStorageScope, V41_STORAGE_SCOPE_KEYS } from './journey-v41-lab-st
 import { V41FlowStrip, V41StepNavigationProvider } from './journey-v41-ux-components';
 import { V41ProgressCoachPanel } from './journey-v41-progress-coach-panel';
 import { clampV41Step, V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
-import { V40VNextPromptPracticeReviewLab } from './journey-v40-vnext-prompt-practice-review-lab';
+import { V41PromptPracticeReviewLab } from './journey-v41-prompt-practice-review-lab';
 import { V40VNextResearchStrategyTrimmedLab } from './journey-v40-vnext-research-strategy-trimmed-lab';
 import { V40VNextPerformanceCompactCascadeLab } from './journey-v40-vnext-performance-compact-cascade-lab';
 import { V40VNextTaskExecutionBridgeLab } from './journey-v40-vnext-task-execution-bridge-lab';
@@ -32,6 +32,8 @@ const V41_PREVIEW_APP_MARKERS = [
   'v41 entry step simplified',
   'v41 entry and team intro copy refined',
   'v41 learner-facing title refined',
+  'v41 prompt practice lab cloned',
+  'V41PromptPracticeReviewLab',
   'v41 team name gate',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
@@ -254,7 +256,7 @@ function V41PreviewApp() {
     <EntryStep key="entry" participant={participant} setParticipant={setParticipant} />,
     <RoleTeamIntroStep key="role-team-intro" />,
     <LabStep key="ai-safety" currentStep={3}><AiSafetyLab /></LabStep>,
-    <ScopedLabStep key="prompt-practice" currentStep={4} pairs={[V41_STORAGE_SCOPE_KEYS.promptPractice]}><V40VNextPromptPracticeReviewLab /></ScopedLabStep>,
+    <LabStep key="prompt-practice" currentStep={4}><V41PromptPracticeReviewLab /></LabStep>,
     <ScopedLabStep key="research-strategy" currentStep={5} pairs={[V41_STORAGE_SCOPE_KEYS.pharmaResearch]}><V40VNextResearchStrategyTrimmedLab /></ScopedLabStep>,
     <ScopedLabStep key="dashboard-analysis" currentStep={6} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade]}><V40VNextPerformanceCompactCascadeLab /></ScopedLabStep>,
     <ScopedLabStep key="task-execution-design" currentStep={7} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade, V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskExecutionBridgeLab /></ScopedLabStep>,
