@@ -107,10 +107,20 @@ for (const marker of [
 
 for (const marker of [
   'V41ProgressCoachPanel',
-  'V41_VISIBLE_APP_STEPS',
+  '지금 할 일',
+  '현재 단계에서 하나만 확인하세요',
+  'v41 progress coach copy refined',
+  '진행 정보',
+  '이번 단계 산출물',
   'ckd.v41.participant.v1',
   'v41 파일럿 11단계 기준',
 ]) mustInclude(files.progressCoach, marker, 'v41 progress coach panel');
+
+for (const marker of [
+  '팀장 역할 진행 코치',
+  '이 영역에서는 여러분의 진행 상태와 영역별 이동만 확인합니다',
+  '팀장 역할 진행 상태',
+]) mustNotInclude(files.progressCoach, marker, 'old progress coach copy');
 
 for (const marker of [
   'src/journey-v41-app-preview.tsx',
