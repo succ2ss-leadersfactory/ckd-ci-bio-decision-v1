@@ -30,6 +30,7 @@ const files = {
   taskBoundaryLab: read('src/journey-v41-task-boundary-coordination-lab.tsx'),
   peopleSelectionLab: read('src/journey-v41-people-selection-lab.tsx'),
   oneOnOneLab: read('src/journey-v41-one-on-one-practice-lab.tsx'),
+  viteConfig: read('vite.config.ts'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
   pilotEntry: read('ckd-ai-lab.html'),
@@ -37,6 +38,7 @@ const files = {
 };
 
 for (const marker of ['<title>C1바이오 영업팀장 AI 리더십 Lab Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 isolated preview route']) mustInclude(files.html, marker, 'v41 html');
+for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) mustInclude(files.viteConfig, marker, 'v41 Vite build input');
 for (const marker of ['V41PreviewApp', 'V41PeopleSelectionLab', 'V41OneOnOnePracticeLab', 'v41 one-on-one practice lab cloned', 'V41_VISIBLE_APP_STEPS', 'V41FlowStrip', 'V41ProgressCoachPanel', 'ckd.v41.peopleManagement.v2']) mustInclude(files.app, marker, 'v41 app');
 for (const marker of ['V40VNextPeopleSelectionLab', 'V40VNextOneOnOnePracticeLab', "import './journey-v40-vnext-app-preview'"]) mustNotInclude(files.app, marker, 'old app dependency');
 
