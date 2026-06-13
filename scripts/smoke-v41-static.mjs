@@ -94,6 +94,18 @@ for (const marker of [
 for (const marker of [
   'V41_VISIBLE_APP_STEPS',
   'clampV41Step',
+  'v41 field-friendly step labels',
+  '시작하기',
+  '팀원 보기',
+  'AI 입력 기준',
+  '질문 다듬기',
+  '시장 변화 읽기',
+  '팀 기준 만들기',
+  '업무지시 만들기',
+  '할 일·줄일 일',
+  '업무 경계 나누기',
+  '1on1 대상 고르기',
+  '1on1 첫 문장',
   '파일럿 11단계 운영 계승',
   '12단계 최종 실행 메모 숨김 유지',
 ]) mustInclude(files.config, marker, 'v41 config');
@@ -101,9 +113,32 @@ for (const marker of [
 for (const marker of [
   'V41FlowStrip',
   'V41StepNavigationProvider',
+  'v41 field-friendly flow chips',
+  '흐름',
+  '시작',
+  '팀원 보기',
+  'AI 기준',
+  '질문 다듬기',
+  '시장 읽기',
+  '팀 기준',
+  '업무지시',
+  '할 일·줄일 일',
+  '업무 경계',
+  '1on1 대상',
+  '첫 문장',
   'ckd.v41.participant.v1',
   'v41 파일럿 11단계 전체 흐름',
 ]) mustInclude(files.ux, marker, 'v41 ux components');
+
+for (const marker of [
+  '팀장 역할 시작하기',
+  '역할과 팀원 구성 이해하기',
+  '성과관리 1: 시장 변화에서 성과 질문 찾기',
+  '성과관리 2: 전략과제·CSF·KPI 분해',
+  '업무관리 1: 성과 기준을 실행 과제로 바꾸기',
+  '업무관리 2: 우선순위와 업무 흐름 정리하기',
+  '사람관리 2: 1on1 대화 설계와 실천하기',
+]) mustNotInclude(files.ux, marker, 'old long flow chip labels');
 
 for (const marker of [
   'V41ProgressCoachPanel',
