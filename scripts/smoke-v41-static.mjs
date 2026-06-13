@@ -27,6 +27,7 @@ const files = {
   config: read('src/journey-v41-preview-config.ts'),
   ux: read('src/journey-v41-ux-components.tsx'),
   progressCoach: read('src/journey-v41-progress-coach-panel.tsx'),
+  storageScope: read('src/journey-v41-lab-storage-scope.tsx'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
   pilotEntry: read('ckd-ai-lab.html'),
@@ -49,8 +50,14 @@ for (const marker of [
   'V41_VISIBLE_APP_STEPS',
   'V41FlowStrip',
   'V41ProgressCoachPanel',
+  'V41LabStorageScope',
   'ckd.v41.participant.v1',
   'ckd.v41.progress.v1',
+  'ckd.v41.promptPracticeReview.v2',
+  'ckd.v41.pharmaStrategyResearch.v1',
+  'ckd.v41.performanceCascade.v1',
+  'ckd.v41.taskManagement.v10',
+  'ckd.v41.peopleManagement.v2',
   'existing pilot URLs preserved',
 ]) mustInclude(files.app, marker, 'v41 preview app');
 
@@ -58,7 +65,23 @@ for (const marker of [
   "import './journey-v40-vnext-app-preview'",
   'ckd.v40-vnext.participant.v1',
   'ckd.v40-vnext.progress.v1',
-]) mustNotInclude(files.app, marker, 'v40 whole-app or storage dependency in v41 app');
+]) mustNotInclude(files.app, marker, 'v40 whole-app or shell storage dependency in v41 app');
+
+for (const marker of [
+  'V41LabStorageScope',
+  'V41_STORAGE_SCOPE_KEYS',
+  'v41 inherited lab storage isolation',
+  'ckd.v40-vnext.promptPracticeReview.v2',
+  'ckd.v41.promptPracticeReview.v2',
+  'ckd.v40-vnext.pharmaStrategyResearch.v1',
+  'ckd.v41.pharmaStrategyResearch.v1',
+  'ckd.v40-vnext.performanceCascade.v1',
+  'ckd.v41.performanceCascade.v1',
+  'ckd.v40-vnext.taskManagement.v10',
+  'ckd.v41.taskManagement.v10',
+  'ckd.v40-vnext.peopleManagement.v2',
+  'ckd.v41.peopleManagement.v2',
+]) mustInclude(files.storageScope, marker, 'v41 lab storage scope');
 
 for (const marker of [
   'V41_VISIBLE_APP_STEPS',
@@ -86,6 +109,7 @@ for (const marker of [
   'src/journey-v41-preview-config.ts',
   'src/journey-v41-ux-components.tsx',
   'src/journey-v41-progress-coach-panel.tsx',
+  'src/journey-v41-lab-storage-scope.tsx',
   'src/journey-v40-vnext-app-preview.tsx',
 ]) mustInclude(files.tsconfig, marker, 'v41 tsconfig');
 
