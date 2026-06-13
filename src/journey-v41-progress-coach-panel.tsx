@@ -2,12 +2,13 @@ import { V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
 
 const V41_PROGRESS_COACH_MARKERS = [
   'V41ProgressCoachPanel',
-  '팀장 역할 진행 코치',
+  '지금 할 일',
+  '현재 단계에서 하나만 확인하세요',
+  'v41 progress coach copy refined',
   'v41 파일럿 11단계 기준',
-  'v40-vNext parity scaffold',
   '12단계 최종 실행 메모 숨김 유지',
-  '팀장 역할 진행 상태',
-  '영역별 바로가기',
+  '진행 정보',
+  '바로 이동',
   '팀',
   '이름/닉네임',
   '1단계 팀·이름 필수 게이트',
@@ -30,35 +31,36 @@ type ProgressCoachPanelProps = {
 
 type Phase = {
   label: string;
+  shortLabel: string;
   range: [number, number];
   description: string;
   tone: string;
 };
 
 const PHASES: Phase[] = [
-  { label: '준비·역할', range: [0, 3], description: '팀장 역할, 팀원 구성, 안전선, AI 질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
-  { label: '성과관리', range: [4, 5], description: '시장 변화, CSF/KPI, 2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
-  { label: '업무관리', range: [6, 8], description: '실행 과제, 우선순위, 업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
-  { label: '사람관리', range: [9, 10], description: '1on1 대상 선택과 대화 실천', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
+  { label: '준비·역할', shortLabel: '준비', range: [0, 3], description: '역할·안전선·질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
+  { label: '성과관리', shortLabel: '성과', range: [4, 5], description: '시장 변화·2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
+  { label: '업무관리', shortLabel: '업무', range: [6, 8], description: '실행 과제·업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
+  { label: '사람관리', shortLabel: '사람', range: [9, 10], description: '1on1 대상·첫 문장', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
 ];
 
 const STEP_GUIDES = [
-  { action: '팀, 이름/닉네임, 대표 상황을 정합니다.', output: '여러분이 다룰 대표 상황' },
-  { action: '여러분이 맡을 팀장 역할과 가상 팀원 7명을 확인합니다.', output: '팀장 역할과 팀원 구성 이해' },
-  { action: 'AI에 넣기 전 민감한 정보를 먼저 가립니다.', output: '말해도 되는 선 합의' },
-  { action: '여러분의 고민을 AI가 일할 수 있는 질문으로 바꿉니다.', output: '복사 가능한 AI 질문' },
-  { action: '공개자료 기반 리서치를 성과관리 질문으로 연결합니다.', output: '리서치·전략회의 산출물' },
-  { action: '전사전략과제를 팀 전략과제·CSF·KPI와 2주 기준으로 바꿉니다.', output: '팀 전략과제·CSF·KPI·2주 기준' },
-  { action: '성과 기준을 팀원이 실행할 수 있는 업무지시로 바꿉니다.', output: '수정한 업무지시문과 완료 기준' },
-  { action: '먼저 할 일, 잠시 줄일 일, 중간 확인 질문을 정합니다.', output: '업무 흐름 3단계' },
-  { action: '혼자 처리할 일과 연결해야 할 일을 나눕니다.', output: '업무 경계 선언문' },
-  { action: '먼저 이야기할 팀원을 고르고 관찰과 해석을 분리합니다.', output: '1on1 대상과 대화 초점' },
-  { action: '1on1 첫 문장, 역할극, 행동 합의를 연습합니다.', output: '코칭 문장과 2주 행동 합의' },
+  { action: '팀과 이름을 입력합니다.', output: '팀 / 이름' },
+  { action: '이대호 팀장과 팀원 7명을 확인합니다.', output: '역할 이해' },
+  { action: 'AI에 넣기 전 가려야 할 정보를 확인합니다.', output: '입력 기준' },
+  { action: '막연한 고민을 AI 질문으로 바꿉니다.', output: '수정한 질문' },
+  { action: '시장 변화에서 우리 팀 질문을 뽑습니다.', output: '성과 질문' },
+  { action: '전사전략을 팀 기준과 2주 실행 기준으로 바꿉니다.', output: 'CSF·KPI·2주 기준' },
+  { action: '성과 기준을 업무지시로 바꿉니다.', output: '업무지시문' },
+  { action: '먼저 할 일과 잠시 줄일 일을 정합니다.', output: '업무 흐름' },
+  { action: '혼자 할 일과 연결할 일을 나눕니다.', output: '업무 경계' },
+  { action: '먼저 이야기할 팀원을 고릅니다.', output: '1on1 대상' },
+  { action: '1on1 첫 문장과 행동 합의를 준비합니다.', output: '첫 문장·합의' },
 ];
 
 function phaseStatus(currentStep: number, phase: Phase) {
   if (currentStep > phase.range[1]) return '완료';
-  if (currentStep >= phase.range[0]) return '진행 중';
+  if (currentStep >= phase.range[0]) return '진행';
   return '예정';
 }
 
@@ -68,8 +70,8 @@ function currentPhase(currentStep: number) {
 
 function shortSituation(value: string) {
   const trimmed = value.trim();
-  if (!trimmed) return '대표 상황 미작성';
-  return trimmed.length > 72 ? `${trimmed.slice(0, 72)}…` : trimmed;
+  if (!trimmed) return '선택 입력';
+  return trimmed.length > 42 ? `${trimmed.slice(0, 42)}…` : trimmed;
 }
 
 function participantIdentityReady(participant: ParticipantSummary) {
@@ -90,31 +92,31 @@ export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }
     <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
       <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">팀장 역할 진행 코치</p>
-          <p className="mt-1 text-sm font-bold leading-6 text-slate-600">이 영역에서는 여러분의 진행 상태와 영역별 이동만 확인합니다. 실제 활동은 팀 단위로 하되, 판단 기준은 영업팀장 역할입니다.</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">지금 할 일</p>
+          <h2 className="mt-1 text-lg font-black leading-tight text-slate-950 md:text-xl">{guide.action}</h2>
+          <p className="mt-1 text-sm font-bold leading-6 text-slate-500">현재 단계에서 하나만 확인하세요. 필요한 영역은 오른쪽 카드로 바로 이동할 수 있습니다.</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700">
-          현재 영역: {phase.label}
+        <div className="w-fit rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700">
+          {currentStep + 1} / {V41_VISIBLE_APP_STEPS.length} · {phase.label}
         </div>
       </div>
 
-      {!identityReady ? <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold leading-6 text-amber-900">1단계에서 팀과 이름/닉네임을 입력하면 2단계 이후를 자유롭게 선택할 수 있습니다.</div> : null}
+      {!identityReady ? <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold leading-6 text-amber-900">팀과 이름/닉네임을 입력하면 2단계 이후를 자유롭게 선택할 수 있습니다.</div> : null}
 
-      <div className="grid gap-3 lg:grid-cols-[1.15fr_1.15fr_2fr]">
+      <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1.8fr]">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-black text-slate-500">팀장 역할 진행 상태</p>
-          <div className="mt-3 space-y-2 text-sm font-bold leading-6 text-slate-700">
-            <p><span className="font-black text-slate-950">팀:</span> {participant.groupName || '미선택'} / <span className="font-black text-slate-950">이름/닉네임:</span> {participant.tableName || '미입력'}</p>
-            <p><span className="font-black text-slate-950">대표 상황:</span> {shortSituation(participant.representativeSituation)}</p>
-            <p><span className="font-black text-slate-950">역할 확인:</span> {participant.roleAccepted ? '완료' : '미완료'}</p>
+          <p className="text-xs font-black text-slate-500">진행 정보</p>
+          <div className="mt-3 space-y-1.5 text-sm font-bold leading-6 text-slate-700">
+            <p><span className="font-black text-slate-950">팀:</span> {participant.groupName || '미선택'}</p>
+            <p><span className="font-black text-slate-950">이름:</span> {participant.tableName || '미입력'}</p>
+            <p><span className="font-black text-slate-950">상황:</span> {shortSituation(participant.representativeSituation)}</p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-black text-slate-500">이번 단계 코칭 포인트</p>
-          <p className="mt-2 text-sm font-black leading-6 text-slate-900">{guide.action}</p>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-500">산출물: {guide.output}</p>
-          <p className="mt-2 text-xs font-bold leading-5 text-slate-400">현재 단계: {current.title}</p>
+        <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
+          <p className="text-xs font-black text-cyan-700">이번 단계 산출물</p>
+          <p className="mt-2 text-sm font-black leading-6 text-cyan-950">{guide.output}</p>
+          <p className="mt-2 text-xs font-bold leading-5 text-cyan-800">{current.title}</p>
         </div>
 
         <div className="grid gap-2 md:grid-cols-4">
@@ -132,11 +134,11 @@ export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }
                   }
                   onStepSelect(item.range[0]);
                 }}
-                className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${active ? item.tone : 'border-slate-200 bg-white text-slate-700'}`}
+                className={`rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${active ? item.tone : 'border-slate-200 bg-white text-slate-700'}`}
               >
-                <p className="text-xs font-black">{status}</p>
-                <p className="mt-1 text-sm font-black">{item.label}</p>
-                <p className="mt-2 text-xs font-bold leading-5 opacity-80">{item.description}</p>
+                <p className="text-[11px] font-black">{status}</p>
+                <p className="mt-1 text-sm font-black">{item.shortLabel}</p>
+                <p className="mt-1 text-xs font-bold leading-5 opacity-80">{item.description}</p>
               </button>
             );
           })}
