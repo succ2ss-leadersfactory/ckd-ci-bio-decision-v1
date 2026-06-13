@@ -10,7 +10,7 @@ import { V41FlowStrip, V41StepNavigationProvider } from './journey-v41-ux-compon
 import { V41ProgressCoachPanel } from './journey-v41-progress-coach-panel';
 import { clampV41Step, V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
 import { V41PromptPracticeReviewLab } from './journey-v41-prompt-practice-review-lab';
-import { V40VNextResearchStrategyTrimmedLab } from './journey-v40-vnext-research-strategy-trimmed-lab';
+import { V41ResearchStrategyTrimmedLab } from './journey-v41-research-strategy-trimmed-lab';
 import { V40VNextPerformanceCompactCascadeLab } from './journey-v40-vnext-performance-compact-cascade-lab';
 import { V40VNextTaskExecutionBridgeLab } from './journey-v40-vnext-task-execution-bridge-lab';
 import { V40VNextTaskPriorityFlowLab } from './journey-v40-vnext-task-management-lab';
@@ -33,7 +33,9 @@ const V41_PREVIEW_APP_MARKERS = [
   'v41 entry and team intro copy refined',
   'v41 learner-facing title refined',
   'v41 prompt practice lab cloned',
+  'v41 research strategy lab cloned',
   'V41PromptPracticeReviewLab',
+  'V41ResearchStrategyTrimmedLab',
   'v41 team name gate',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
@@ -211,20 +213,11 @@ function RoleTeamIntroStep() {
 }
 
 function LabStep({ currentStep, children }: { currentStep: number; children: ReactNode }) {
-  return (
-    <div className="space-y-4">
-      <V41FlowStrip currentStep={currentStep} />
-      {children}
-    </div>
-  );
+  return <div className="space-y-4"><V41FlowStrip currentStep={currentStep} />{children}</div>;
 }
 
 function ScopedLabStep({ currentStep, pairs, children }: { currentStep: number; pairs: V41StorageScopePair[]; children: ReactNode }) {
-  return (
-    <LabStep currentStep={currentStep}>
-      <V41LabStorageScope pairs={pairs}>{children}</V41LabStorageScope>
-    </LabStep>
-  );
+  return <LabStep currentStep={currentStep}><V41LabStorageScope pairs={pairs}>{children}</V41LabStorageScope></LabStep>;
 }
 
 function V41PreviewApp() {
@@ -232,32 +225,17 @@ function V41PreviewApp() {
   const [progress, setProgress] = useStored<V41Progress>(V41_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const currentStep = clampV41Step(progress.step);
 
-  const selectStep = (stepIndex: number) => {
-    setProgress({ step: clampV41Step(stepIndex) });
-    scrollV41ToTop();
-  };
-
+  const selectStep = (stepIndex: number) => { setProgress({ step: clampV41Step(stepIndex) }); scrollV41ToTop(); };
   const goPrev = () => selectStep(currentStep - 1);
-  const goNext = () => {
-    if (currentStep === 0 && !isParticipantReady(participant)) {
-      showV41EntryGateMessage();
-      return;
-    }
-    selectStep(currentStep + 1);
-  };
-  const resetV41 = () => {
-    removeStoredPrefix('ckd.v41.');
-    setParticipant(DEFAULT_PARTICIPANT);
-    setProgress(DEFAULT_PROGRESS);
-    scrollV41ToTop();
-  };
+  const goNext = () => { if (currentStep === 0 && !isParticipantReady(participant)) { showV41EntryGateMessage(); return; } selectStep(currentStep + 1); };
+  const resetV41 = () => { removeStoredPrefix('ckd.v41.'); setParticipant(DEFAULT_PARTICIPANT); setProgress(DEFAULT_PROGRESS); scrollV41ToTop(); };
 
   const screens = [
     <EntryStep key="entry" participant={participant} setParticipant={setParticipant} />,
     <RoleTeamIntroStep key="role-team-intro" />,
     <LabStep key="ai-safety" currentStep={3}><AiSafetyLab /></LabStep>,
     <LabStep key="prompt-practice" currentStep={4}><V41PromptPracticeReviewLab /></LabStep>,
-    <ScopedLabStep key="research-strategy" currentStep={5} pairs={[V41_STORAGE_SCOPE_KEYS.pharmaResearch]}><V40VNextResearchStrategyTrimmedLab /></ScopedLabStep>,
+    <LabStep key="research-strategy" currentStep={5}><V41ResearchStrategyTrimmedLab /></LabStep>,
     <ScopedLabStep key="dashboard-analysis" currentStep={6} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade]}><V40VNextPerformanceCompactCascadeLab /></ScopedLabStep>,
     <ScopedLabStep key="task-execution-design" currentStep={7} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade, V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskExecutionBridgeLab /></ScopedLabStep>,
     <ScopedLabStep key="task-priority-flow" currentStep={8} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskPriorityFlowLab /></ScopedLabStep>,
@@ -268,30 +246,14 @@ function V41PreviewApp() {
 
   return (
     <V41StepNavigationProvider onStepSelect={(stepNumber) => selectStep(stepNumber - 1)}>
-      <JourneyShell
-        title="C1바이오 영업팀장 AI 리더십 Lab"
-        subtitle="성과관리, 업무관리, 사람관리 흐름을 팀장 관점으로 연습합니다. v41 Preview는 기존 파일럿과 분리된 검증용 화면입니다."
-        steps={V41_VISIBLE_APP_STEPS}
-        currentStep={currentStep}
-        onPrev={goPrev}
-        onNext={goNext}
-        onStepSelect={selectStep}
-        hideStepOverview
-      >
+      <JourneyShell title="C1바이오 영업팀장 AI 리더십 Lab" subtitle="성과관리, 업무관리, 사람관리 흐름을 팀장 관점으로 연습합니다. v41 Preview는 기존 파일럿과 분리된 검증용 화면입니다." steps={V41_VISIBLE_APP_STEPS} currentStep={currentStep} onPrev={goPrev} onNext={goNext} onStepSelect={selectStep} hideStepOverview>
         <V41ProgressCoachPanel currentStep={currentStep} participant={participant} onStepSelect={selectStep} />
-        <div className="mb-4 flex justify-end">
-          <button type="button" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-500 shadow-sm hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700" onClick={resetV41}>
-            v41 입력 초기화
-          </button>
-        </div>
+        <div className="mb-4 flex justify-end"><button type="button" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-500 shadow-sm hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700" onClick={resetV41}>v41 입력 초기화</button></div>
         {screens[currentStep] ?? screens[0]}
       </JourneyShell>
     </V41StepNavigationProvider>
   );
 }
 
-if (!rootElement) {
-  throw new Error('journey-root element is required for v41 preview app.');
-}
-
+if (!rootElement) throw new Error('journey-root element is required for v41 preview app.');
 createRoot(rootElement).render(<V41PreviewApp />);
