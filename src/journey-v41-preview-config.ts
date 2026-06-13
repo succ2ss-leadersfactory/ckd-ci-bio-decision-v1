@@ -4,11 +4,10 @@ const V41_CONFIG_SMOKE_MARKERS = [
   'v41 계승형 후속 버전',
   'v41 field-friendly step labels',
   'v40-vNext parity scaffold',
-  '파일럿 11단계 운영 계승',
-  '12단계 최종 실행 메모 숨김 유지',
+  '파일럿 10단계 운영 전환',
+  'AI 입력 기준은 질문 다듬기 단계에 통합',
   '시작하기',
   '팀원 보기',
-  'AI 입력 기준',
   '질문 다듬기',
   '시장 변화 읽기',
   '팀 기준 만들기',
@@ -29,17 +28,12 @@ export const V41_VISIBLE_APP_STEPS: JourneyStep[] = [
   {
     id: 'role-team-intro',
     title: '팀원 보기',
-    description: '이대호 팀장 역할과 팀원 7명을 확인합니다.',
-  },
-  {
-    id: 'ai-safety',
-    title: 'AI 입력 기준',
-    description: 'AI에 넣어도 되는 말과 가려야 할 말을 구분합니다.',
+    description: '이대호 팀장과 팀원 7명의 기본 정보를 확인합니다.',
   },
   {
     id: 'prompt-practice',
     title: '질문 다듬기',
-    description: '막연한 고민을 AI가 답하기 쉬운 질문으로 바꿉니다.',
+    description: '제약영업 상황을 골라 한 줄 질문과 정리된 프롬프트를 비교합니다.',
   },
   {
     id: 'research-strategy',
