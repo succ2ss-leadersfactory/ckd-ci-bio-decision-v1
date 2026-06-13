@@ -5,6 +5,7 @@ import { JourneyShell } from './journey-shell';
 import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { removeStoredPrefix, useStored } from './journey-storage';
 import { V39MinimumChecklist, V39MiniFlow, V39StepHero } from './journey-v39-ux-components';
+import { V41LabStorageScope, V41_STORAGE_SCOPE_KEYS } from './journey-v41-lab-storage-scope';
 import { V41FlowStrip, V41StepNavigationProvider } from './journey-v41-ux-components';
 import { V41ProgressCoachPanel } from './journey-v41-progress-coach-panel';
 import { clampV41Step, V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
@@ -31,8 +32,14 @@ const V41_PREVIEW_APP_MARKERS = [
   'V41_VISIBLE_APP_STEPS',
   'V41FlowStrip',
   'V41ProgressCoachPanel',
+  'V41LabStorageScope',
   'ckd.v41.participant.v1',
   'ckd.v41.progress.v1',
+  'ckd.v41.promptPracticeReview.v2',
+  'ckd.v41.pharmaStrategyResearch.v1',
+  'ckd.v41.performanceCascade.v1',
+  'ckd.v41.taskManagement.v10',
+  'ckd.v41.peopleManagement.v2',
   'existing pilot URLs preserved',
   'ckd-ai-lab.html 보호',
   'journey-v40-vnext-preview.html 보호',
@@ -187,6 +194,14 @@ function LabStep({ currentStep, children }: { currentStep: number; children: Rea
   );
 }
 
+function ScopedLabStep({ currentStep, pairs, children }: { currentStep: number; pairs: Parameters<typeof V41LabStorageScope>[0]['pairs']; children: ReactNode }) {
+  return (
+    <LabStep currentStep={currentStep}>
+      <V41LabStorageScope pairs={pairs}>{children}</V41LabStorageScope>
+    </LabStep>
+  );
+}
+
 function V41PreviewApp() {
   const [participant, setParticipant] = useStored<V41Participant>(V41_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V41Progress>(V41_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
@@ -210,14 +225,14 @@ function V41PreviewApp() {
     <EntryStep key="entry" participant={participant} setParticipant={setParticipant} />,
     <RoleTeamIntroStep key="role-team-intro" />,
     <LabStep key="ai-safety" currentStep={3}><AiSafetyLab /></LabStep>,
-    <LabStep key="prompt-practice" currentStep={4}><V40VNextPromptPracticeReviewLab /></LabStep>,
-    <LabStep key="research-strategy" currentStep={5}><V40VNextResearchStrategyTrimmedLab /></LabStep>,
-    <LabStep key="dashboard-analysis" currentStep={6}><V40VNextPerformanceCompactCascadeLab /></LabStep>,
-    <LabStep key="task-execution-design" currentStep={7}><V40VNextTaskExecutionBridgeLab /></LabStep>,
-    <LabStep key="task-priority-flow" currentStep={8}><V40VNextTaskPriorityFlowLab /></LabStep>,
-    <LabStep key="task-boundary-coordination" currentStep={9}><V40VNextTaskBoundaryCoordinationLab /></LabStep>,
-    <LabStep key="member-role" currentStep={10}><V40VNextPeopleSelectionLab /></LabStep>,
-    <LabStep key="people-dialogue" currentStep={11}><V40VNextOneOnOnePracticeLab /></LabStep>,
+    <ScopedLabStep key="prompt-practice" currentStep={4} pairs={[V41_STORAGE_SCOPE_KEYS.promptPractice]}><V40VNextPromptPracticeReviewLab /></ScopedLabStep>,
+    <ScopedLabStep key="research-strategy" currentStep={5} pairs={[V41_STORAGE_SCOPE_KEYS.pharmaResearch]}><V40VNextResearchStrategyTrimmedLab /></ScopedLabStep>,
+    <ScopedLabStep key="dashboard-analysis" currentStep={6} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade]}><V40VNextPerformanceCompactCascadeLab /></ScopedLabStep>,
+    <ScopedLabStep key="task-execution-design" currentStep={7} pairs={[V41_STORAGE_SCOPE_KEYS.performanceCascade, V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskExecutionBridgeLab /></ScopedLabStep>,
+    <ScopedLabStep key="task-priority-flow" currentStep={8} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskPriorityFlowLab /></ScopedLabStep>,
+    <ScopedLabStep key="task-boundary-coordination" currentStep={9} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskBoundaryCoordinationLab /></ScopedLabStep>,
+    <ScopedLabStep key="member-role" currentStep={10} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement, V41_STORAGE_SCOPE_KEYS.peopleManagement]}><V40VNextPeopleSelectionLab /></ScopedLabStep>,
+    <ScopedLabStep key="people-dialogue" currentStep={11} pairs={[V41_STORAGE_SCOPE_KEYS.peopleManagement]}><V40VNextOneOnOnePracticeLab /></ScopedLabStep>,
   ];
 
   return (
