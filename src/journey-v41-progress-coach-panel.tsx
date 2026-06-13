@@ -5,8 +5,9 @@ const V41_PROGRESS_COACH_MARKERS = [
   '지금 할 일',
   '현재 단계에서 하나만 확인하세요',
   'v41 progress coach copy refined',
-  'v41 파일럿 11단계 기준',
-  '12단계 최종 실행 메모 숨김 유지',
+  'v41 파일럿 10단계 기준',
+  '3단계 질문 다듬기 고정',
+  'AI 입력 기준 별도 단계 표시 금지',
   '진행 정보',
   '바로 이동',
   '팀',
@@ -38,17 +39,16 @@ type Phase = {
 };
 
 const PHASES: Phase[] = [
-  { label: '준비·역할', shortLabel: '준비', range: [0, 3], description: '역할·안전선·질문', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
-  { label: '성과관리', shortLabel: '성과', range: [4, 5], description: '시장 변화·2주 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
-  { label: '업무관리', shortLabel: '업무', range: [6, 8], description: '실행 과제·업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
-  { label: '사람관리', shortLabel: '사람', range: [9, 10], description: '1on1 대상·첫 문장', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
+  { label: '준비·질문', shortLabel: '준비', range: [0, 2], description: '팀 확인·질문 다듬기', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
+  { label: '성과관리', shortLabel: '성과', range: [3, 4], description: '시장 변화·팀 기준', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
+  { label: '업무관리', shortLabel: '업무', range: [5, 7], description: '업무지시·할 일·업무 경계', tone: 'border-amber-200 bg-amber-50 text-amber-900' },
+  { label: '사람관리', shortLabel: '사람', range: [8, 9], description: '1on1 대상·첫 문장', tone: 'border-indigo-200 bg-indigo-50 text-indigo-900' },
 ];
 
 const STEP_GUIDES = [
   { action: '팀과 이름을 입력합니다.', output: '팀 / 이름' },
-  { action: '이대호 팀장과 팀원 7명을 확인합니다.', output: '역할 이해' },
-  { action: 'AI에 넣기 전 가려야 할 정보를 확인합니다.', output: '입력 기준' },
-  { action: '막연한 고민을 AI 질문으로 바꿉니다.', output: '수정한 질문' },
+  { action: '이대호 팀장과 팀원 7명을 확인합니다.', output: '팀원 기본 정보' },
+  { action: '제약영업 상황을 골라 질문을 다듬어 봅니다.', output: '질문 비교와 모범 프롬프트' },
   { action: '시장 변화에서 우리 팀 질문을 뽑습니다.', output: '성과 질문' },
   { action: '전사전략을 팀 기준과 2주 실행 기준으로 바꿉니다.', output: 'CSF·KPI·2주 기준' },
   { action: '성과 기준을 업무지시로 바꿉니다.', output: '업무지시문' },
