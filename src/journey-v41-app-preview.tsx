@@ -30,6 +30,8 @@ const V41_PREVIEW_APP_MARKERS = [
   'journey-v41-preview.html',
   'v41 isolated app shell',
   'v41 entry step simplified',
+  'v41 entry and team intro copy refined',
+  'v41 learner-facing title refined',
   'v41 team name gate',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
@@ -103,14 +105,14 @@ function EntryStep({ participant, setParticipant }: { participant: V41Participan
       <V41FlowStrip currentStep={1} />
       <V39StepHero
         eyebrow="1단계 · 시작하기"
-        icon="🤝"
-        title="먼저 팀과 이름만 입력하세요"
+        icon="🚪"
+        title="팀과 이름을 입력하고 바로 시작하세요"
         tone="indigo"
-        description="오늘은 C1바이오 영업팀장 역할로 판단합니다. 팀과 이름/닉네임을 입력하면 다음 단계부터 자유롭게 이동할 수 있습니다. 대표 상황은 생각나는 만큼만 적어도 됩니다."
+        description="오늘 실습은 C1바이오 영업팀장 관점으로 진행됩니다. 먼저 팀과 이름만 입력하면 다음 단계부터 필요한 화면으로 바로 이동할 수 있습니다."
         badges={[
-          { label: '필수 입력', value: '팀 / 이름', tone: 'indigo', icon: '✅' },
-          { label: '오늘 역할', value: '영업팀장', tone: 'emerald', icon: '👤' },
-          { label: '진행 방식', value: '11단계 실습', tone: 'amber', icon: '🧭' },
+          { label: '필수', value: '팀 / 이름', tone: 'indigo', icon: '✅' },
+          { label: '역할', value: '영업팀장 관점', tone: 'emerald', icon: '👤' },
+          { label: '방식', value: '필요 단계 이동', tone: 'amber', icon: '🧭' },
         ]}
       />
 
@@ -118,15 +120,15 @@ function EntryStep({ participant, setParticipant }: { participant: V41Participan
         <div className="grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl bg-indigo-50 p-4">
             <p className="text-sm font-black text-indigo-950">1. 팀 선택</p>
-            <p className="mt-1 text-xs font-bold leading-5 text-indigo-800">조 활동 기준으로 팀을 선택합니다.</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-indigo-800">조 활동 기준으로 선택합니다.</p>
           </div>
           <div className="rounded-2xl bg-emerald-50 p-4">
             <p className="text-sm font-black text-emerald-950">2. 이름 입력</p>
-            <p className="mt-1 text-xs font-bold leading-5 text-emerald-800">실명, 닉네임, 테이블명 모두 가능합니다.</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-emerald-800">닉네임이나 테이블명도 괜찮습니다.</p>
           </div>
           <div className="rounded-2xl bg-amber-50 p-4">
-            <p className="text-sm font-black text-amber-950">3. 다음으로 이동</p>
-            <p className="mt-1 text-xs font-bold leading-5 text-amber-800">2단계부터는 필요한 화면으로 바로 이동할 수 있습니다.</p>
+            <p className="text-sm font-black text-amber-950">3. 바로 이동</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-amber-800">2단계 이후에는 필요한 화면으로 이동합니다.</p>
           </div>
         </div>
       </section>
@@ -153,7 +155,7 @@ function EntryStep({ participant, setParticipant }: { participant: V41Participan
         </label>
         <label className="flex items-start gap-2 rounded-xl bg-slate-50 p-3">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>오늘은 C1바이오 영업팀장 역할로 판단하고, AI 결과는 답이 아니라 초안으로 다룹니다.</span>
+          <span>AI 결과는 답이 아니라 비교하고 고쳐 쓸 초안으로 다룹니다.</span>
         </label>
         {!ready ? <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-800">팀과 이름/닉네임을 입력하면 다음 단계로 이동할 수 있습니다.</p> : null}
       </ShellCard>
@@ -166,32 +168,32 @@ function RoleTeamIntroStep() {
     <div className="space-y-4">
       <V41FlowStrip currentStep={2} />
       <V39StepHero
-        eyebrow="2단계 · 역할과 팀원 구성 이해하기"
+        eyebrow="2단계 · 팀원 보기"
         icon="👥"
-        title="여러분의 역할은 영업팀장 이대호 팀장입니다"
+        title="오늘 함께 볼 팀원 7명입니다"
         tone="indigo"
-        description="이대호 팀장은 C1바이오 영업팀을 맡은 현장형 팀장입니다. 여러분은 이대호 팀장의 입장에서 시장 변화, 전사전략, 팀원 실행 신호를 읽고 성과관리·업무관리·사람관리를 차례로 판단합니다."
+        description="이대호 팀장 관점에서 팀원별 실행 신호를 가볍게 확인합니다. 지금은 평가가 아니라 이후 1on1과 업무관리에서 참고할 관찰 자료를 보는 단계입니다."
         badges={[
           { label: '역할', value: '이대호 팀장', tone: 'indigo', icon: '👤' },
-          { label: '팀원', value: '함께 하는 팀원 7명', tone: 'emerald', icon: '👥' },
-          { label: '판단 흐름', value: '성과·업무·사람관리', tone: 'amber', icon: '🧭' },
+          { label: '팀원', value: '7명', tone: 'emerald', icon: '👥' },
+          { label: '관점', value: '관찰 먼저', tone: 'amber', icon: '🔎' },
         ]}
       />
       <section className="grid gap-3 md:grid-cols-3">
         <div className="rounded-3xl border border-cyan-100 bg-cyan-50 p-4">
-          <p className="text-sm font-black text-cyan-950">이대호 팀장 소개</p>
-          <p className="mt-2 text-sm leading-6 text-cyan-900">영업 현장의 실행 압박과 팀원 성장 책임을 동시에 안고 있는 팀장입니다. 숫자만 보지 않고, 고객 접점 이후의 행동과 팀원별 실행 신호를 연결해야 합니다.</p>
+          <p className="text-sm font-black text-cyan-950">먼저 볼 것</p>
+          <p className="mt-2 text-sm leading-6 text-cyan-900">팀원별로 어떤 실행 신호가 보이는지 확인합니다.</p>
         </div>
         <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-sm font-black text-emerald-950">오늘의 관리 흐름</p>
-          <p className="mt-2 text-sm leading-6 text-emerald-900">성과관리에서 기준을 세우고, 업무관리에서 실행 과제로 바꾸며, 사람관리에서 1on1 대화와 행동 합의를 준비합니다.</p>
+          <p className="text-sm font-black text-emerald-950">아직 하지 않을 것</p>
+          <p className="mt-2 text-sm leading-6 text-emerald-900">성급하게 평가하거나 원인을 단정하지 않습니다.</p>
         </div>
         <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4">
-          <p className="text-sm font-black text-amber-950">판단 원칙</p>
-          <p className="mt-2 text-sm leading-6 text-amber-900">AI는 답을 대신 정하지 않습니다. 이대호 팀장인 여러분이 먼저 판단하고, AI 초안은 비교·수정·보완하는 재료로만 사용합니다.</p>
+          <p className="text-sm font-black text-amber-950">나중에 쓸 곳</p>
+          <p className="mt-2 text-sm leading-6 text-amber-900">10·11단계에서 1on1 대상과 첫 문장을 준비할 때 다시 활용합니다.</p>
         </div>
       </section>
-      <ShellCard title="함께 하는 우리 팀원">
+      <ShellCard title="팀원별 실행 신호">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {TEAM_MEMBERS.map((member) => (
             <div key={member.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -265,8 +267,8 @@ function V41PreviewApp() {
   return (
     <V41StepNavigationProvider onStepSelect={(stepNumber) => selectStep(stepNumber - 1)}>
       <JourneyShell
-        title="C1바이오 영업팀장 AI 리더십 Lab Journey v41 Preview"
-        subtitle="v40-vNext 파일럿 흐름을 계승한 v41 독립 preview입니다. 기존 파일럿 URL은 그대로 보존합니다."
+        title="C1바이오 영업팀장 AI 리더십 Lab"
+        subtitle="성과관리, 업무관리, 사람관리 흐름을 팀장 관점으로 연습합니다. v41 Preview는 기존 파일럿과 분리된 검증용 화면입니다."
         steps={V41_VISIBLE_APP_STEPS}
         currentStep={currentStep}
         onPrev={goPrev}
