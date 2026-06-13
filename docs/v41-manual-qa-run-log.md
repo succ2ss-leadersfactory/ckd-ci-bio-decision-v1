@@ -17,8 +17,8 @@ Record actual QA runs for the isolated v41 preview lane.
 | v41 typecheck | Pending | Run `npm run typecheck:v41` locally. |
 | v41 full smoke | Pending | Run `npm run smoke:v41` locally. |
 | v41 route access | Pass | `/journey-v41-preview.html` confirmed after adding v41 to Vite build inputs. |
-| Browser QA | Partial | Route access confirmed. Step 1 and Step 4~11 flow still need checklist pass. |
-| Existing pilot route check | Pending | Confirm v40 pilot still opens normally. |
+| Browser QA | Partial | Route access and protected pilot routes confirmed. Step 1 and Step 4~11 flow still need checklist pass. |
+| Existing pilot route check | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
 
 ## Run log template
 
@@ -80,7 +80,7 @@ Copy this block for each QA run.
 - Tester: User browser check
 - Device: PC or notebook browser
 - Browser: Chrome-compatible browser
-- Route tested: `/journey-v41-preview.html`
+- Route tested: `/journey-v41-preview.html`, `/ckd-ai-lab.html`, `/journey-v40-vnext-preview.html`
 - Commit SHA: `2ee3852891efc1491e9fb249263c2833928d721b`
 - Result: Partial
 
@@ -97,7 +97,7 @@ Copy this block for each QA run.
 | Area | Result | Notes |
 | --- | --- | --- |
 | v41 route access | Pass | `/journey-v41-preview.html` opens after Vite build input fix. |
-| existing pilot route protection | Pending | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` still need direct browser check. |
+| existing pilot route protection | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
 | Step 1 gate | Pending | Checklist pass still needed. |
 | Step 4~11 flow | Pending | Checklist pass still needed. |
 
@@ -110,4 +110,4 @@ Copy this block for each QA run.
 ### Decision
 
 - Ready for review: No
-- Follow-up needed: Run local `npm run smoke:v41`, complete browser QA checklist, confirm existing pilot routes, and record final pass.
+- Follow-up needed: Run local `npm run smoke:v41`, complete Step 1 and Step 4~11 browser QA checklist, and record final pass.
