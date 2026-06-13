@@ -20,6 +20,7 @@
     "src/journey-v41-task-execution-bridge-lab.tsx",
     "src/journey-v41-task-priority-flow-lab.tsx",
     "src/journey-v41-task-boundary-coordination-lab.tsx",
+    "src/journey-v41-people-selection-lab.tsx",
     "src/journey-v40-vnext-app-preview.tsx",
     "src/journey-v40-vnext-preview-config.ts",
     "src/journey-v40-vnext-ux-components.tsx",
