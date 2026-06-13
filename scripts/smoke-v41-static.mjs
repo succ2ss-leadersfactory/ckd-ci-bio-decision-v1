@@ -28,6 +28,7 @@ const files = {
   ux: read('src/journey-v41-ux-components.tsx'),
   progressCoach: read('src/journey-v41-progress-coach-panel.tsx'),
   storageScope: read('src/journey-v41-lab-storage-scope.tsx'),
+  promptLab: read('src/journey-v41-prompt-practice-review-lab.tsx'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
   pilotEntry: read('ckd-ai-lab.html'),
@@ -44,6 +45,8 @@ for (const marker of [
 
 for (const marker of [
   'V41PreviewApp',
+  'V41PromptPracticeReviewLab',
+  'v41 prompt practice lab cloned',
   'v41 entry and team intro copy refined',
   'v41 learner-facing title refined',
   '팀과 이름을 입력하고 바로 시작하세요',
@@ -62,6 +65,7 @@ for (const marker of [
 
 for (const marker of [
   "import './journey-v40-vnext-app-preview'",
+  'V40VNextPromptPracticeReviewLab',
   'V39MiniFlow',
   'V39MinimumChecklist',
   'ckd.v40-vnext.participant.v1',
@@ -69,6 +73,25 @@ for (const marker of [
   '먼저 팀과 이름만 입력하세요',
   '여러분의 역할은 영업팀장 이대호 팀장입니다',
 ]) mustNotInclude(files.app, marker, 'old v41 app copy or dependency');
+
+for (const marker of [
+  'V41PromptPracticeReviewLab',
+  'v41 prompt practice lab cloned',
+  'v41 prompt practice copy refined',
+  '질문 다듬기',
+  '먼저 장면을 고릅니다',
+  '한 줄 질문으로 먼저 물어보기',
+  '정리된 프롬프트로 다시 물어보기',
+  '결과 차이 메모',
+  'ckd.v41.promptPracticeReview.v2',
+]) mustInclude(files.promptLab, marker, 'v41 prompt practice lab');
+
+for (const marker of [
+  'V40VNextPromptPracticeReviewLab',
+  'ckd.v40-vnext.promptPracticeReview.v2',
+  '일반적인 질문만 복사하기',
+  '프롬프트 결과 붙여넣기',
+]) mustNotInclude(files.promptLab, marker, 'old v40 prompt lab markers');
 
 for (const marker of [
   'V41LabStorageScope',
@@ -140,6 +163,7 @@ for (const marker of [
   'src/journey-v41-ux-components.tsx',
   'src/journey-v41-progress-coach-panel.tsx',
   'src/journey-v41-lab-storage-scope.tsx',
+  'src/journey-v41-prompt-practice-review-lab.tsx',
 ]) mustInclude(files.tsconfig, marker, 'v41 tsconfig');
 
 for (const marker of [
