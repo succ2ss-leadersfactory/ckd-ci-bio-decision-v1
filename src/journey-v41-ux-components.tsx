@@ -5,19 +5,21 @@ type V41StepNavigator = (stepNumber: number) => void;
 
 const V41_UX_COMPONENT_MARKERS = [
   'V41FlowStrip',
+  'v41 field-friendly flow chips',
   'v41 파일럿 11단계 전체 흐름',
   'v40-vNext parity scaffold',
   '12단계 최종 실행 메모 숨김 유지',
-  '팀장 역할 시작',
-  '역할·팀원 이해',
-  '말해도 되는 선',
-  '성과관리 1',
-  '성과관리 2',
-  '업무관리 1',
-  '업무관리 2',
-  '업무관리 3',
-  '사람관리 1',
-  '사람관리 2',
+  '시작',
+  '팀원 보기',
+  'AI 기준',
+  '질문 다듬기',
+  '시장 읽기',
+  '팀 기준',
+  '업무지시',
+  '할 일·줄일 일',
+  '업무 경계',
+  '1on1 대상',
+  '첫 문장',
   '1단계 팀·이름 필수 게이트',
   'ckd.v41.participant.v1',
 ].join('|');
@@ -30,17 +32,17 @@ export function V41StepNavigationProvider({ onStepSelect, children }: { onStepSe
 }
 
 const v41FlowItems = [
-  { step: 1, label: '팀장 역할 시작하기', shortLabel: '팀장 역할 시작', icon: '🤝' },
-  { step: 2, label: '역할과 팀원 구성 이해하기', shortLabel: '역할·팀원 이해', icon: '👥' },
-  { step: 3, label: '말해도 되는 선 확인', shortLabel: '안전선 확인', icon: '🛡️' },
-  { step: 4, label: 'AI 질문 다듬기', shortLabel: '질문 다듬기', icon: '✍️' },
-  { step: 5, label: '성과관리 1: 시장 변화에서 성과 질문 찾기', shortLabel: '성과관리 1', icon: '🔭' },
-  { step: 6, label: '성과관리 2: 전략과제·CSF·KPI 분해', shortLabel: '성과관리 2', icon: '🎯' },
-  { step: 7, label: '업무관리 1: 성과 기준을 실행 과제로 바꾸기', shortLabel: '업무관리 1', icon: '🧩' },
-  { step: 8, label: '업무관리 2: 우선순위와 업무 흐름 정리하기', shortLabel: '업무관리 2', icon: '🧭' },
-  { step: 9, label: '업무관리 3: 혼자 해결하면 안 되는 일 구분하기', shortLabel: '업무관리 3', icon: '🧱' },
-  { step: 10, label: '사람관리 1: 먼저 이야기할 팀원 고르기', shortLabel: '사람관리 1', icon: '👤' },
-  { step: 11, label: '사람관리 2: 1on1 대화 설계와 실천하기', shortLabel: '사람관리 2', icon: '💬' },
+  { step: 1, label: '시작하기', shortLabel: '시작', icon: '🚪' },
+  { step: 2, label: '팀원 보기', shortLabel: '팀원', icon: '👥' },
+  { step: 3, label: 'AI 입력 기준', shortLabel: 'AI 기준', icon: '🛡️' },
+  { step: 4, label: '질문 다듬기', shortLabel: '질문', icon: '✍️' },
+  { step: 5, label: '시장 변화 읽기', shortLabel: '시장 읽기', icon: '🔭' },
+  { step: 6, label: '팀 기준 만들기', shortLabel: '팀 기준', icon: '🎯' },
+  { step: 7, label: '업무지시 만들기', shortLabel: '업무지시', icon: '🧩' },
+  { step: 8, label: '할 일·줄일 일', shortLabel: '우선순위', icon: '🧭' },
+  { step: 9, label: '업무 경계 나누기', shortLabel: '업무 경계', icon: '🧱' },
+  { step: 10, label: '1on1 대상 고르기', shortLabel: '1on1 대상', icon: '👤' },
+  { step: 11, label: '1on1 첫 문장', shortLabel: '첫 문장', icon: '💬' },
 ];
 
 function v41ParticipantIdentityReady() {
@@ -71,7 +73,7 @@ export function V41FlowStrip({ currentStep, onStepSelect }: { currentStep: numbe
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
       <div className="mb-2 flex items-center justify-between gap-3 text-xs font-black text-slate-500">
-        <span>전체 흐름</span>
+        <span>흐름</span>
         <span>{safeCurrent} / {total}</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
