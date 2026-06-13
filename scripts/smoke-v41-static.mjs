@@ -40,6 +40,7 @@ const files = {
 for (const marker of ['<title>C1바이오 영업팀장 AI 리더십 Lab Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 isolated preview route']) mustInclude(files.html, marker, 'v41 html');
 for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) mustInclude(files.viteConfig, marker, 'v41 Vite build input');
 for (const marker of ['V41PreviewApp', 'V41PeopleSelectionLab', 'V41OneOnOnePracticeLab', 'v41 one-on-one practice lab cloned', 'V41_VISIBLE_APP_STEPS', 'V41FlowStrip', 'V41ProgressCoachPanel', 'ckd.v41.peopleManagement.v2']) mustInclude(files.app, marker, 'v41 app');
+for (const marker of ['v41 step 2 enriched team member signals', 'v41 team signal density restored', 'TEAM_MEMBER_SIGNALS', '방문 신호', '고객 반응', 'Follow-up', '코칭 우선도', '첫 질문']) mustInclude(files.app, marker, 'v41 step 2 enriched team signal content');
 for (const marker of ['V40VNextPeopleSelectionLab', 'V40VNextOneOnOnePracticeLab', "import './journey-v40-vnext-app-preview'"]) mustNotInclude(files.app, marker, 'old app dependency');
 
 for (const marker of ['V41PromptPracticeReviewLab', 'v41 prompt practice lab cloned', 'ckd.v41.promptPracticeReview.v2']) mustInclude(files.promptLab, marker, 'v41 prompt lab');
