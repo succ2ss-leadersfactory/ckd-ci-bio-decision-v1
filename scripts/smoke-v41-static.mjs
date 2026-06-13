@@ -44,10 +44,21 @@ for (const marker of [
 for (const marker of [
   'V41PreviewApp',
   'journey-v41-preview.html',
-  'v40-vNext parity scaffold',
-  "import './journey-v40-vnext-app-preview'",
+  'v41 isolated app shell',
+  'v40-vNext parity scaffold with v41 core',
+  'V41_VISIBLE_APP_STEPS',
+  'V41FlowStrip',
+  'V41ProgressCoachPanel',
+  'ckd.v41.participant.v1',
+  'ckd.v41.progress.v1',
   'existing pilot URLs preserved',
 ]) mustInclude(files.app, marker, 'v41 preview app');
+
+for (const marker of [
+  "import './journey-v40-vnext-app-preview'",
+  'ckd.v40-vnext.participant.v1',
+  'ckd.v40-vnext.progress.v1',
+]) mustNotInclude(files.app, marker, 'v40 whole-app or storage dependency in v41 app');
 
 for (const marker of [
   'V41_VISIBLE_APP_STEPS',
