@@ -17,6 +17,7 @@
     "src/journey-v41-pharma-research-prompts.ts",
     "src/journey-v41-pharma-research-parser.ts",
     "src/journey-v41-performance-compact-cascade-lab.tsx",
+    "src/journey-v41-task-execution-bridge-lab.tsx",
     "src/journey-v40-vnext-app-preview.tsx",
     "src/journey-v40-vnext-preview-config.ts",
     "src/journey-v40-vnext-ux-components.tsx",
