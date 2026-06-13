@@ -6,12 +6,11 @@ type V41StepNavigator = (stepNumber: number) => void;
 const V41_UX_COMPONENT_MARKERS = [
   'V41FlowStrip',
   'v41 field-friendly flow chips',
-  'v41 파일럿 11단계 전체 흐름',
+  'v41 파일럿 10단계 전체 흐름',
   'v40-vNext parity scaffold',
   '12단계 최종 실행 메모 숨김 유지',
   '시작',
   '팀원 보기',
-  'AI 기준',
   '질문 다듬기',
   '시장 읽기',
   '팀 기준',
@@ -20,6 +19,8 @@ const V41_UX_COMPONENT_MARKERS = [
   '업무 경계',
   '1on1 대상',
   '첫 문장',
+  '3단계 질문 다듬기 고정',
+  'AI 입력 기준 별도 단계 표시 금지',
   '1단계 팀·이름 필수 게이트',
   'ckd.v41.participant.v1',
 ].join('|');
@@ -34,15 +35,14 @@ export function V41StepNavigationProvider({ onStepSelect, children }: { onStepSe
 const v41FlowItems = [
   { step: 1, label: '시작하기', shortLabel: '시작', icon: '🚪' },
   { step: 2, label: '팀원 보기', shortLabel: '팀원', icon: '👥' },
-  { step: 3, label: 'AI 입력 기준', shortLabel: 'AI 기준', icon: '🛡️' },
-  { step: 4, label: '질문 다듬기', shortLabel: '질문', icon: '✍️' },
-  { step: 5, label: '시장 변화 읽기', shortLabel: '시장 읽기', icon: '🔭' },
-  { step: 6, label: '팀 기준 만들기', shortLabel: '팀 기준', icon: '🎯' },
-  { step: 7, label: '업무지시 만들기', shortLabel: '업무지시', icon: '🧩' },
-  { step: 8, label: '할 일·줄일 일', shortLabel: '우선순위', icon: '🧭' },
-  { step: 9, label: '업무 경계 나누기', shortLabel: '업무 경계', icon: '🧱' },
-  { step: 10, label: '1on1 대상 고르기', shortLabel: '1on1 대상', icon: '👤' },
-  { step: 11, label: '1on1 첫 문장', shortLabel: '첫 문장', icon: '💬' },
+  { step: 3, label: '질문 다듬기', shortLabel: '질문', icon: '✍️' },
+  { step: 4, label: '시장 변화 읽기', shortLabel: '시장 읽기', icon: '🔭' },
+  { step: 5, label: '팀 기준 만들기', shortLabel: '팀 기준', icon: '🎯' },
+  { step: 6, label: '업무지시 만들기', shortLabel: '업무지시', icon: '🧩' },
+  { step: 7, label: '할 일·줄일 일', shortLabel: '우선순위', icon: '🧭' },
+  { step: 8, label: '업무 경계 나누기', shortLabel: '업무 경계', icon: '🧱' },
+  { step: 9, label: '1on1 대상 고르기', shortLabel: '1on1 대상', icon: '👤' },
+  { step: 10, label: '1on1 첫 문장', shortLabel: '첫 문장', icon: '💬' },
 ];
 
 function v41ParticipantIdentityReady() {
