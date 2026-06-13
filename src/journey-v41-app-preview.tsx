@@ -4,7 +4,7 @@ import './index.css';
 import { JourneyShell } from './journey-shell';
 import { AiSafetyLab } from './journey-v36-ai-safety-lab';
 import { removeStoredPrefix, useStored } from './journey-storage';
-import { V39MinimumChecklist, V39MiniFlow, V39StepHero } from './journey-v39-ux-components';
+import { V39StepHero } from './journey-v39-ux-components';
 import { V41LabStorageScope, V41_STORAGE_SCOPE_KEYS } from './journey-v41-lab-storage-scope';
 import { V41FlowStrip, V41StepNavigationProvider } from './journey-v41-ux-components';
 import { V41ProgressCoachPanel } from './journey-v41-progress-coach-panel';
@@ -21,6 +21,7 @@ import { V40VNextOneOnOnePracticeLab } from './journey-v40-vnext-one-on-one-prac
 type V41Participant = { groupName: string; tableName: string; representativeSituation: string; roleAccepted: boolean };
 type V41Progress = { step: number };
 type TeamMember = { name: string; role: string; signal: string };
+type V41StorageScopePair = (typeof V41_STORAGE_SCOPE_KEYS)[keyof typeof V41_STORAGE_SCOPE_KEYS];
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
 
@@ -28,6 +29,8 @@ const V41_PREVIEW_APP_MARKERS = [
   'V41PreviewApp',
   'journey-v41-preview.html',
   'v41 isolated app shell',
+  'v41 entry step simplified',
+  'v41 team name gate',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
   'V41FlowStrip',
@@ -66,6 +69,14 @@ function scrollV41ToTop() {
   window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
+function isParticipantReady(participant: V41Participant) {
+  return Boolean(participant.groupName.trim() && participant.tableName.trim());
+}
+
+function showV41EntryGateMessage() {
+  window.alert('먼저 팀과 이름/닉네임을 입력해 주세요. 그다음부터는 필요한 단계로 바로 이동할 수 있습니다.');
+}
+
 function V41ComplianceNotice() {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
@@ -85,56 +96,66 @@ function ShellCard({ title, children }: { title: string; children: ReactNode }) 
 }
 
 function EntryStep({ participant, setParticipant }: { participant: V41Participant; setParticipant: (next: V41Participant) => void }) {
+  const ready = isParticipantReady(participant);
+
   return (
     <div className="space-y-4">
       <V41FlowStrip currentStep={1} />
       <V39StepHero
-        eyebrow="1단계 · 팀장 역할 시작하기"
+        eyebrow="1단계 · 시작하기"
         icon="🤝"
-        title="여러분은 C1바이오 영업팀장 역할로 시작합니다"
+        title="먼저 팀과 이름만 입력하세요"
         tone="indigo"
-        description="실제 활동은 팀 단위로 진행하지만, 화면에서의 역할은 영업팀장입니다. 여러분은 대표 상황을 정하고, 시장 변화와 팀원 실행 신호를 바탕으로 2주 실행 메모를 완성합니다."
+        description="오늘은 C1바이오 영업팀장 역할로 판단합니다. 팀과 이름/닉네임을 입력하면 다음 단계부터 자유롭게 이동할 수 있습니다. 대표 상황은 생각나는 만큼만 적어도 됩니다."
         badges={[
-          { label: '운영 방식', value: '팀장 역할 실습', tone: 'indigo', icon: '🤝' },
-          { label: '참여 단위', value: '팀 활동', tone: 'emerald', icon: '👥' },
-          { label: '핵심 산출물', value: '2주 실행 메모', tone: 'amber', icon: '📝' },
+          { label: '필수 입력', value: '팀 / 이름', tone: 'indigo', icon: '✅' },
+          { label: '오늘 역할', value: '영업팀장', tone: 'emerald', icon: '👤' },
+          { label: '진행 방식', value: '11단계 실습', tone: 'amber', icon: '🧭' },
         ]}
       />
+
       <section className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
-        <V39MiniFlow
-          items={[
-            { icon: '🤝', title: '팀장 역할 잡기', body: 'C1바이오 영업팀장 관점에서 판단합니다.' },
-            { icon: '👥', title: '팀원 구성 이해', body: '다음 단계에서 이대호 팀장과 7명의 팀원을 확인합니다.' },
-            { icon: '📝', title: '대표 상황 정하기', body: '여러분이 다룰 대표 상황을 1개로 좁힙니다.' },
-          ]}
-        />
-        <div className="mt-3">
-          <V39MinimumChecklist tone="indigo" items={['팀 선택', '이름/닉네임 입력', '대표 상황 1개 작성', '팀장 역할 확인']} />
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl bg-indigo-50 p-4">
+            <p className="text-sm font-black text-indigo-950">1. 팀 선택</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-indigo-800">조 활동 기준으로 팀을 선택합니다.</p>
+          </div>
+          <div className="rounded-2xl bg-emerald-50 p-4">
+            <p className="text-sm font-black text-emerald-950">2. 이름 입력</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-emerald-800">실명, 닉네임, 테이블명 모두 가능합니다.</p>
+          </div>
+          <div className="rounded-2xl bg-amber-50 p-4">
+            <p className="text-sm font-black text-amber-950">3. 다음으로 이동</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-amber-800">2단계부터는 필요한 화면으로 바로 이동할 수 있습니다.</p>
+          </div>
         </div>
       </section>
+
       <V41ComplianceNotice />
-      <ShellCard title="여러분이 다룰 대표 상황">
+
+      <ShellCard title="시작 정보 입력">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-1">
-            <span className="text-xs font-bold text-slate-500">팀</span>
+            <span className="text-xs font-bold text-slate-500">팀 <span className="text-rose-600">필수</span></span>
             <select className="w-full rounded-xl border bg-white px-3 py-2" value={participant.groupName} onChange={(event) => setParticipant({ ...participant, groupName: event.target.value })}>
               <option value="">팀을 선택하세요</option>
               {TEAM_OPTIONS.map((team) => <option key={team} value={team}>{team}</option>)}
             </select>
           </label>
           <label className="space-y-1">
-            <span className="text-xs font-bold text-slate-500">이름/닉네임</span>
+            <span className="text-xs font-bold text-slate-500">이름/닉네임 <span className="text-rose-600">필수</span></span>
             <input className="w-full rounded-xl border bg-white px-3 py-2" value={participant.tableName} onChange={(event) => setParticipant({ ...participant, tableName: event.target.value })} placeholder="예: 김팀장, A테이블, 리더1" />
           </label>
         </div>
         <label className="block space-y-1">
-          <span className="text-xs font-bold text-slate-500">여러분이 다룰 대표 상황</span>
-          <textarea className="min-h-24 w-full rounded-xl border px-3 py-2" value={participant.representativeSituation} onChange={(event) => setParticipant({ ...participant, representativeSituation: event.target.value })} placeholder="예: 활동 기록은 늘었지만 고객 반응 이후 후속 실행이 약하고, 팀원별 기록 품질 차이가 커지고 있다." />
+          <span className="text-xs font-bold text-slate-500">오늘 다뤄보고 싶은 상황 <span className="text-slate-400">선택</span></span>
+          <textarea className="min-h-20 w-full rounded-xl border px-3 py-2" value={participant.representativeSituation} onChange={(event) => setParticipant({ ...participant, representativeSituation: event.target.value })} placeholder="예: 고객 반응은 기록되는데 다음 행동으로 잘 이어지지 않는다." />
         </label>
         <label className="flex items-start gap-2 rounded-xl bg-slate-50 p-3">
           <input className="mt-1" type="checkbox" checked={participant.roleAccepted} onChange={(event) => setParticipant({ ...participant, roleAccepted: event.target.checked })} />
-          <span>여러분은 오늘 C1바이오 영업팀장 이대호 팀장 역할로 판단하고, AI 결과는 답이 아니라 초안으로 다루겠습니다.</span>
+          <span>오늘은 C1바이오 영업팀장 역할로 판단하고, AI 결과는 답이 아니라 초안으로 다룹니다.</span>
         </label>
+        {!ready ? <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-800">팀과 이름/닉네임을 입력하면 다음 단계로 이동할 수 있습니다.</p> : null}
       </ShellCard>
     </div>
   );
@@ -194,7 +215,7 @@ function LabStep({ currentStep, children }: { currentStep: number; children: Rea
   );
 }
 
-function ScopedLabStep({ currentStep, pairs, children }: { currentStep: number; pairs: Parameters<typeof V41LabStorageScope>[0]['pairs']; children: ReactNode }) {
+function ScopedLabStep({ currentStep, pairs, children }: { currentStep: number; pairs: V41StorageScopePair[]; children: ReactNode }) {
   return (
     <LabStep currentStep={currentStep}>
       <V41LabStorageScope pairs={pairs}>{children}</V41LabStorageScope>
@@ -213,7 +234,13 @@ function V41PreviewApp() {
   };
 
   const goPrev = () => selectStep(currentStep - 1);
-  const goNext = () => selectStep(currentStep + 1);
+  const goNext = () => {
+    if (currentStep === 0 && !isParticipantReady(participant)) {
+      showV41EntryGateMessage();
+      return;
+    }
+    selectStep(currentStep + 1);
+  };
   const resetV41 = () => {
     removeStoredPrefix('ckd.v41.');
     setParticipant(DEFAULT_PARTICIPANT);
