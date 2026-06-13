@@ -46,6 +46,12 @@ for (const marker of [
   'V41PreviewApp',
   'journey-v41-preview.html',
   'v41 isolated app shell',
+  'v41 entry step simplified',
+  'v41 team name gate',
+  '먼저 팀과 이름만 입력하세요',
+  '팀과 이름/닉네임을 입력하면 다음 단계로 이동할 수 있습니다.',
+  'isParticipantReady',
+  'showV41EntryGateMessage',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
   'V41FlowStrip',
@@ -63,9 +69,11 @@ for (const marker of [
 
 for (const marker of [
   "import './journey-v40-vnext-app-preview'",
+  'V39MiniFlow',
+  'V39MinimumChecklist',
   'ckd.v40-vnext.participant.v1',
   'ckd.v40-vnext.progress.v1',
-]) mustNotInclude(files.app, marker, 'v40 whole-app or shell storage dependency in v41 app');
+]) mustNotInclude(files.app, marker, 'removed v40 whole-app, old entry blocks, or shell storage dependency in v41 app');
 
 for (const marker of [
   'V41LabStorageScope',
