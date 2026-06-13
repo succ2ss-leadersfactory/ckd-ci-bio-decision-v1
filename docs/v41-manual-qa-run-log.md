@@ -20,6 +20,7 @@ Record actual QA runs for the isolated v41 preview lane.
 | Browser QA | Partial | Route access, protected pilot routes, Step 1 gate, Step 4~11 navigation, and v41 reset confirmed. Content/function parity with v40 still needs audit. |
 | Existing pilot route check | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
 | v40→v41 content/function parity | Gap found | User confirmed v41 does not yet carry over all v40 content depth and feature behavior. Needs dedicated parity audit before review readiness. |
+| Preview redeploy | Requested | Triggered a fresh Vercel preview deployment after Step 3/4 merge and prompt-practice redesign updates. |
 
 ## Run log template
 
