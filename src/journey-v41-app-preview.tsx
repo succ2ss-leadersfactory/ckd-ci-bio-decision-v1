@@ -14,7 +14,7 @@ import { V41ResearchStrategyTrimmedLab } from './journey-v41-research-strategy-t
 import { V41PerformanceCompactCascadeLab } from './journey-v41-performance-compact-cascade-lab';
 import { V41TaskExecutionBridgeLab } from './journey-v41-task-execution-bridge-lab';
 import { V41TaskPriorityFlowLab } from './journey-v41-task-priority-flow-lab';
-import { V40VNextTaskBoundaryCoordinationLab } from './journey-v40-vnext-task-boundary-coordination-lab';
+import { V41TaskBoundaryCoordinationLab } from './journey-v41-task-boundary-coordination-lab';
 import { V40VNextPeopleSelectionLab } from './journey-v40-vnext-people-selection-lab';
 import { V40VNextOneOnOnePracticeLab } from './journey-v40-vnext-one-on-one-practice-lab';
 
@@ -37,11 +37,13 @@ const V41_PREVIEW_APP_MARKERS = [
   'v41 performance cascade lab cloned',
   'v41 task execution bridge lab cloned',
   'v41 task priority flow lab cloned',
+  'v41 task boundary coordination lab cloned',
   'V41PromptPracticeReviewLab',
   'V41ResearchStrategyTrimmedLab',
   'V41PerformanceCompactCascadeLab',
   'V41TaskExecutionBridgeLab',
   'V41TaskPriorityFlowLab',
+  'V41TaskBoundaryCoordinationLab',
   'v41 team name gate',
   'v40-vNext parity scaffold with v41 core',
   'V41_VISIBLE_APP_STEPS',
@@ -107,7 +109,7 @@ function V41PreviewApp() {
     <LabStep key="dashboard-analysis" currentStep={6}><V41PerformanceCompactCascadeLab /></LabStep>,
     <LabStep key="task-execution-design" currentStep={7}><V41TaskExecutionBridgeLab /></LabStep>,
     <LabStep key="task-priority-flow" currentStep={8}><V41TaskPriorityFlowLab /></LabStep>,
-    <ScopedLabStep key="task-boundary-coordination" currentStep={9} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement]}><V40VNextTaskBoundaryCoordinationLab /></ScopedLabStep>,
+    <LabStep key="task-boundary-coordination" currentStep={9}><V41TaskBoundaryCoordinationLab /></LabStep>,
     <ScopedLabStep key="member-role" currentStep={10} pairs={[V41_STORAGE_SCOPE_KEYS.taskManagement, V41_STORAGE_SCOPE_KEYS.peopleManagement]}><V40VNextPeopleSelectionLab /></ScopedLabStep>,
     <ScopedLabStep key="people-dialogue" currentStep={11} pairs={[V41_STORAGE_SCOPE_KEYS.peopleManagement]}><V40VNextOneOnOnePracticeLab /></ScopedLabStep>,
   ];
