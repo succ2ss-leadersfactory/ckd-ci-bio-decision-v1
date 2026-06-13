@@ -9,6 +9,7 @@
     "typecheck:v39": "tsc -p tsconfig.v39-smoke.json --noEmit",
     "typecheck:v40-lite": "tsc -p tsconfig.v40-lite-smoke.json --noEmit",
     "typecheck:v40-vnext": "tsc -p tsconfig.v40-vnext-smoke.json --noEmit",
+    "typecheck:v41": "tsc -p tsconfig.v41-smoke.json --noEmit",
     "typecheck:full": "tsc --noEmit",
     "smoke:v35:static": "node scripts/smoke-v35-static.mjs",
     "smoke:v35:dist": "node scripts/smoke-v35-dist.mjs",
@@ -31,6 +32,8 @@
     "smoke:v40-lite:static": "node scripts/smoke-v40-lite-static.mjs",
     "smoke:v40-lite": "npm run smoke:v40-lite:static && npm run typecheck:v40-lite && npm run build",
     "smoke:v40-vnext:static": "node scripts/smoke-v40-vnext-static.mjs && node scripts/smoke-v40-vnext-parser.mjs",
+    "smoke:v41:static": "node scripts/smoke-v41-static.mjs",
+    "smoke:v41": "npm run smoke:v41:static && npm run typecheck:v41 && npm run build",
     "audit:linebreaks": "node scripts/audit-content-line-breaks.mjs",
     "smoke:parser": "node scripts/smoke-ai-result-parser.mjs",
     "preview": "vite preview"
