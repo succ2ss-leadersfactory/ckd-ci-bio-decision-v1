@@ -24,6 +24,9 @@ function mustNotInclude(source, marker, label) {
 const files = {
   html: read('journey-v41-preview.html'),
   app: read('src/journey-v41-app-preview.tsx'),
+  config: read('src/journey-v41-preview-config.ts'),
+  ux: read('src/journey-v41-ux-components.tsx'),
+  progressCoach: read('src/journey-v41-progress-coach-panel.tsx'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
   pilotEntry: read('ckd-ai-lab.html'),
@@ -47,7 +50,31 @@ for (const marker of [
 ]) mustInclude(files.app, marker, 'v41 preview app');
 
 for (const marker of [
+  'V41_VISIBLE_APP_STEPS',
+  'clampV41Step',
+  '파일럿 11단계 운영 계승',
+  '12단계 최종 실행 메모 숨김 유지',
+]) mustInclude(files.config, marker, 'v41 config');
+
+for (const marker of [
+  'V41FlowStrip',
+  'V41StepNavigationProvider',
+  'ckd.v41.participant.v1',
+  'v41 파일럿 11단계 전체 흐름',
+]) mustInclude(files.ux, marker, 'v41 ux components');
+
+for (const marker of [
+  'V41ProgressCoachPanel',
+  'V41_VISIBLE_APP_STEPS',
+  'ckd.v41.participant.v1',
+  'v41 파일럿 11단계 기준',
+]) mustInclude(files.progressCoach, marker, 'v41 progress coach panel');
+
+for (const marker of [
   'src/journey-v41-app-preview.tsx',
+  'src/journey-v41-preview-config.ts',
+  'src/journey-v41-ux-components.tsx',
+  'src/journey-v41-progress-coach-panel.tsx',
   'src/journey-v40-vnext-app-preview.tsx',
 ]) mustInclude(files.tsconfig, marker, 'v41 tsconfig');
 
