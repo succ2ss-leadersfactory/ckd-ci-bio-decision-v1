@@ -5,11 +5,13 @@ const V41_ONE_ON_ONE_MARKERS = [
   'V41OneOnOnePracticeLab',
   '1on1 첫 문장',
   '9단계 1on1 준비 내용 확인',
+  '실행관리 주기 반영',
   '첫 문장 만들기',
   '확인 질문 만들기',
   '작은 행동 합의하기',
   '대화 후 메모 남기기',
   'ckd.v41.peopleManagement.v2',
+  'ckd.v41.taskManagement.v10',
 ].join('|');
 void V41_ONE_ON_ONE_MARKERS;
 
@@ -28,8 +30,16 @@ type PeopleState = Record<string, any> & {
   followUpMemo?: string;
 };
 
-const STORAGE_KEY = 'ckd.v41.peopleManagement.v2';
-const DEFAULT_STATE: PeopleState = {};
+type TaskState = Record<string, any> & {
+  executionCycle?: string;
+  boundaryDeclaration?: string;
+  peopleSignal?: string;
+};
+
+const PEOPLE_STORAGE_KEY = 'ckd.v41.peopleManagement.v2';
+const TASK_STORAGE_KEY = 'ckd.v41.taskManagement.v10';
+const DEFAULT_PEOPLE_STATE: PeopleState = {};
+const DEFAULT_TASK_STATE: TaskState = {};
 
 function compact(value?: string) {
   return value?.trim() || '미작성';
@@ -44,15 +54,17 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
 }
 
 export function V41OneOnOnePracticeLab() {
-  const [state, setState] = useStored<PeopleState>(STORAGE_KEY, DEFAULT_STATE);
+  const [state, setState] = useStored<PeopleState>(PEOPLE_STORAGE_KEY, DEFAULT_PEOPLE_STATE);
+  const [taskState] = useStored<TaskState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
   const update = (patch: Partial<PeopleState>) => setState({ ...state, ...patch });
   const hasPreparation = Boolean(state.selectedMemberId || state.observedFact || state.conversationPurpose || state.firstQuestionFocus);
+  const executionCycle = taskState.executionCycle || '이번 실행관리 주기';
 
   const makeDialogue = () => update({
     openingLine: state.openingLine || `최근 실행 흐름을 보면서 함께 확인하고 싶은 부분이 있어요. 먼저 제가 본 사실부터 말씀드리고, 실제로는 어땠는지 같이 맞춰보고 싶습니다.`,
     checkQuestionOne: state.checkQuestionOne || `제가 본 것은 ${compact(state.observedFact)}입니다. 이 상황을 본인은 어떻게 보고 있나요?`,
-    checkQuestionTwo: state.checkQuestionTwo || `이번 실행관리 주기 동안 실행을 더 쉽게 하려면 어떤 지원이나 기준이 필요할까요?`,
-    actionAgreement: state.actionAgreement || '이번 실행관리 주기 동안 바로 시도할 작은 행동 1개와 다음 점검에서 볼 증거 1개를 합의한다.',
+    checkQuestionTwo: state.checkQuestionTwo || `${executionCycle} 동안 실행을 더 쉽게 하려면 어떤 지원이나 기준이 필요할까요?`,
+    actionAgreement: state.actionAgreement || `${executionCycle} 동안 바로 시도할 작은 행동 1개와 다음 점검에서 볼 증거 1개를 합의한다.`,
     followUpMemo: state.followUpMemo || '성격이나 태도 평가가 아니라 관찰 사실, 실행 기준, 필요한 지원을 중심으로 대화를 마무리한다.',
   });
 
@@ -66,12 +78,15 @@ export function V41OneOnOnePracticeLab() {
     <Card title="9단계 1on1 준비 내용 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
         <p><span className="font-black text-slate-700">준비 상태: </span>{hasPreparation ? '9단계 준비 내용 있음' : '9단계에서 먼저 팀원과 관찰 사실을 정리하세요'}</p>
+        <p><span className="font-black text-slate-700">실행관리 주기: </span>{executionCycle}</p>
         <p><span className="font-black text-slate-700">관찰 사실: </span>{compact(state.observedFact)}</p>
         <p><span className="font-black text-slate-700">해석 또는 추정: </span>{compact(state.interpretation)}</p>
         <p><span className="font-black text-slate-700">대화 목적: </span>{compact(state.conversationPurpose)}</p>
         <p><span className="font-black text-slate-700">피해야 할 말: </span>{compact(state.riskToAvoid)}</p>
         <p><span className="font-black text-slate-700">첫 질문 초점: </span>{compact(state.firstQuestionFocus)}</p>
         <p><span className="font-black text-slate-700">다음 1on1 메모: </span>{compact(state.nextDialogueMemo)}</p>
+        <p><span className="font-black text-slate-700">업무 경계 선언문: </span>{compact(taskState.boundaryDeclaration)}</p>
+        <p><span className="font-black text-slate-700">사람관리 신호: </span>{compact(taskState.peopleSignal)}</p>
       </div>
     </Card>
 
@@ -89,7 +104,7 @@ export function V41OneOnOnePracticeLab() {
 
     <Card title="작은 행동 합의하기">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder="이번 실행관리 주기 동안 시도할 작은 행동 1개를 정합니다." />
+        <Field label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder={`${executionCycle} 동안 시도할 작은 행동 1개를 정합니다.`} />
         <Field label="대화 후 메모" value={state.followUpMemo ?? ''} onChange={(value) => update({ followUpMemo: value })} placeholder="대화 후 남길 메모와 후속 확인 기준을 씁니다." />
       </div>
     </Card>
