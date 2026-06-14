@@ -22,3 +22,9 @@ Required browser checks:
 4. Confirm Step 10 reflects the execution cycle selected in Step 6.
 5. Confirm protected v40 routes remain unchanged.
 6. Confirm v41 storage isolation.
+
+## Latest automation baseline
+
+Latest verified head: `ca6ecc7690f854958f30994b343b884ce3fee84d`.
+
+All automated smoke checks passed on this head.
