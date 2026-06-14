@@ -36,9 +36,13 @@ function Box({ label, help, children }: { label: string; help?: string; children
   return <label className="block rounded-2xl border border-violet-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
-function findLegacyPlanningSection() {
-  const heading = Array.from(document.querySelectorAll('h3')).find((item) => item.textContent?.trim() === '팀 기준과 2주 실행계획');
+function sectionByHeading(labelText: string) {
+  const heading = Array.from(document.querySelectorAll('h3')).find((item) => item.textContent?.trim() === labelText);
   return heading?.closest('section') ?? null;
+}
+
+function findLegacyPlanningSection() {
+  return sectionByHeading('팀 기준과 2주 실행계획');
 }
 
 function hideLegacyStep5PlanElements() {
@@ -57,15 +61,41 @@ function clearRadiosInContainer(labelText: string) {
   });
 }
 
-function clearDefaultLookingSelectionsOnce(cascade: CascadeState) {
+function setSectionEnabled(labelText: string, enabled: boolean) {
+  const section = sectionByHeading(labelText);
+  if (!section) return;
+  const style = enabled
+    ? 'opacity:1;pointer-events:auto;filter:none;'
+    : 'opacity:.45;pointer-events:none;filter:grayscale(.15);';
+  section.setAttribute('style', style);
+  section.setAttribute('data-v41-selection-enabled', String(enabled));
+}
+
+function syncStepwiseSelectionGate(cascade: CascadeState) {
   const hasTeamTask = Boolean(cascade.selectedTeamTaskId || cascade.selectedTeamTask || cascade.customTeamTask);
   const hasCsf = Boolean(cascade.selectedCsfId || cascade.selectedCsf);
   const hasKpi = Boolean(cascade.selectedKpi);
   const hasInitiative = Boolean(cascade.selectedInitiative);
-  if (!hasTeamTask) clearRadiosInContainer('팀 전략과제 보기 4개');
-  if (!hasCsf) clearRadiosInContainer('팀 CSF 선택');
-  if (!hasKpi) clearRadiosInContainer('선택한 CSF를 측정할 팀 KPI');
-  if (!hasInitiative) clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+
+  if (!hasTeamTask) {
+    clearRadiosInContainer('팀 전략과제 보기 4개');
+    clearRadiosInContainer('팀 CSF 선택');
+    clearRadiosInContainer('선택한 CSF를 측정할 팀 KPI');
+    clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+  } else if (!hasCsf) {
+    clearRadiosInContainer('팀 CSF 선택');
+    clearRadiosInContainer('선택한 CSF를 측정할 팀 KPI');
+    clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+  } else if (!hasKpi) {
+    clearRadiosInContainer('선택한 CSF를 측정할 팀 KPI');
+    clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+  } else if (!hasInitiative) {
+    clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+  }
+
+  setSectionEnabled('팀 CSF 선택', hasTeamTask);
+  setSectionEnabled('선택한 CSF를 측정할 팀 KPI', hasTeamTask && hasCsf);
+  setSectionEnabled('선택한 CSF를 실행할 세부 추진과제', hasTeamTask && hasCsf && hasKpi);
 }
 
 export function V41PerformanceAiExpansionLab() {
@@ -75,12 +105,13 @@ export function V41PerformanceAiExpansionLab() {
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    hideLegacyStep5PlanElements();
-    window.setTimeout(() => {
+    const sync = () => {
       hideLegacyStep5PlanElements();
-      clearDefaultLookingSelectionsOnce(cascade);
-    }, 0);
-  }, []);
+      syncStepwiseSelectionGate(cascade);
+    };
+    sync();
+    window.setTimeout(sync, 0);
+  }, [cascade.selectedTeamTaskId, cascade.selectedTeamTask, cascade.customTeamTask, cascade.selectedCsfId, cascade.selectedCsf, cascade.selectedKpi, cascade.selectedInitiative]);
 
   const buildPrompt = () => {
     const base = [
@@ -105,7 +136,7 @@ export function V41PerformanceAiExpansionLab() {
     const selectedKpi = (cascade.selectedKpi || '').trim();
     const selectedInitiative = (cascade.selectedInitiative || '').trim();
     if (!teamTask || !selectedCsf || !selectedKpi || !selectedInitiative) {
-      window.alert('먼저 팀 전략과제, CSF, KPI, 세부 추진과제를 직접 선택해 주세요. 자동 선택값은 팀 기준으로 확정하지 않습니다.');
+      window.alert('팀 전략과제 → CSF → KPI → 세부 추진과제 순서로 직접 선택해 주세요. 자동 선택값은 팀 기준으로 확정하지 않습니다.');
       return;
     }
     const source = [ai.result.trim(), ai.review.trim()].filter(Boolean).join('\n\n[사람 검토 보완]\n') || 'AI 확장 결과를 붙여넣고, 우리 팀에 맞는 전략과제·CSF·KPI를 선택해 보완합니다.';
