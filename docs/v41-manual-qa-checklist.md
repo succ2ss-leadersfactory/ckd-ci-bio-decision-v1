@@ -43,34 +43,34 @@ Expected result:
 
 | Step | Screen | Check |
 | --- | --- | --- |
-| 2 | 팀원 보기 | Seven members are visible and the language is observation-focused. |
-| 3 | AI 입력 기준 | Safety guidance loads and warns against sensitive information. |
-| 4 | 질문 다듬기 | One-line question, structured prompt, checklist, and comparison memo work. |
-| 5 | 시장 변화 읽기 | Perplexity prompt, URL extraction, NotebookLM prompt, and organization flow work. |
-| 6 | 팀 기준 만들기 | CSF/KPI selection creates 2-week performance standards. |
-| 7 | 업무지시 만들기 | Step 6 outputs become an actionable task instruction. |
-| 8 | 할 일·줄일 일 | Priority tasks, reduce tasks, 3-step flow, and declaration work. |
-| 9 | 업무 경계 나누기 | Member tasks, leader checks, coordination tasks, and boundary declaration work. |
-| 10 | 1on1 대상 고르기 | Step 9 signal flows into member selection and observation/interpretation notes. |
-| 11 | 1on1 첫 문장 | Opening line, check questions, action agreement, and follow-up memo work. |
+| 1 | 시작하기 | Team/name gate works and later steps remain blocked until required fields are entered. |
+| 2 | 팀원 보기 | Seven members are visible in the intended order and language is observation-focused. |
+| 3 | 질문 다듬기 | One-line question, structured prompt, checklist, and comparison memo work. |
+| 4 | 시장 변화 읽기 | Public-source research prompt and team performance-management question flow work. |
+| 5 | 팀 기준 만들기 | Team strategy task, CSF, KPI, and initiative are selected step-by-step without auto-selection. |
+| 6 | 업무관리 실행계획 만들기 | Step 5 criteria become team standard, execution cycle, execution plan, evidence, and check questions. |
+| 7 | 할 일·줄일 일 | Step 6 execution plan becomes priority tasks, reduced tasks, 3-step flow, and execution declaration. |
+| 8 | 업무 경계 나누기 | Step 7 flow becomes member tasks, leader checks, coordination tasks, boundary declaration, and people signal. |
+| 9 | 1on1 대상 고르기 | Step 8 boundary/people signal flows into direct member selection and observation/interpretation notes. |
+| 10 | 1on1 첫 문장 | Step 9 preparation and Step 6 execution cycle create opening line, check questions, action agreement, and follow-up memo. |
 
 ## Storage isolation
 
 Check browser localStorage.
 
 - [ ] Participant and progress use `ckd.v41.participant.v1` and `ckd.v41.progress.v1`.
-- [ ] Step 4 uses `ckd.v41.promptPracticeReview.v2`.
-- [ ] Step 5 uses `ckd.v41.pharmaStrategyResearch.v1`.
-- [ ] Step 6 uses `ckd.v41.performanceCascade.v1`.
-- [ ] Step 7~9 use `ckd.v41.taskManagement.v10`.
-- [ ] Step 10~11 use `ckd.v41.peopleManagement.v2`.
+- [ ] Step 3 uses `ckd.v41.promptPracticeReview.v2`.
+- [ ] Step 4 uses `ckd.v41.pharmaStrategyResearch.v1`.
+- [ ] Step 5 uses `ckd.v41.performanceCascade.v1` and `ckd.v41.performanceCascade.aiExpansion.v1`.
+- [ ] Step 6~8 use `ckd.v41.taskManagement.v10`.
+- [ ] Step 9~10 use `ckd.v41.peopleManagement.v2`.
 - [ ] v40 pilot keys are not intentionally cleared by v41 reset.
 
 ## Reset QA
 
 - [ ] Click `v41 입력 초기화`.
 - [ ] Confirm Step 1 values are cleared.
-- [ ] Confirm Step 4~11 v41 inputs are cleared.
+- [ ] Confirm Step 3~10 v41 inputs are cleared.
 - [ ] Confirm existing v40 pilot route still opens normally.
 
 ## Tablet/mobile QA
@@ -86,7 +86,8 @@ v41 passes manual QA when:
 
 - v41 loads independently.
 - Step 1 gate works.
-- Step 4~11 data flows are usable.
+- Step 5~10 data flow is usable.
+- Step 10 uses the execution cycle selected in Step 6.
 - v41 storage remains separated from v40 storage.
 - Existing v40 pilot route remains unchanged.
 - Tablet/mobile layout is usable for facilitation.
