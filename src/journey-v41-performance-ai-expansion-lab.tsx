@@ -36,6 +36,15 @@ function Box({ label, help, children }: { label: string; help?: string; children
   return <label className="block rounded-2xl border border-violet-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
+function readCascadeState(): CascadeState {
+  try {
+    const raw = window.localStorage.getItem(CASCADE_KEY);
+    return raw ? { ...DEFAULT_CASCADE, ...JSON.parse(raw) } : DEFAULT_CASCADE;
+  } catch {
+    return DEFAULT_CASCADE;
+  }
+}
+
 function sectionByHeading(labelText: string) {
   const heading = Array.from(document.querySelectorAll('h3')).find((item) => item.textContent?.trim() === labelText);
   return heading?.closest('section') ?? null;
@@ -66,12 +75,13 @@ function setSectionEnabled(labelText: string, enabled: boolean) {
   if (!section) return;
   const style = enabled
     ? 'opacity:1;pointer-events:auto;filter:none;'
-    : 'opacity:.45;pointer-events:none;filter:grayscale(.15);';
+    : 'opacity:.42;pointer-events:none;filter:grayscale(.2);';
   section.setAttribute('style', style);
   section.setAttribute('data-v41-selection-enabled', String(enabled));
 }
 
-function syncStepwiseSelectionGate(cascade: CascadeState) {
+function syncStepwiseSelectionGate() {
+  const cascade = readCascadeState();
   const hasTeamTask = Boolean(cascade.selectedTeamTaskId || cascade.selectedTeamTask || cascade.customTeamTask);
   const hasCsf = Boolean(cascade.selectedCsfId || cascade.selectedCsf);
   const hasKpi = Boolean(cascade.selectedKpi);
@@ -96,6 +106,17 @@ function syncStepwiseSelectionGate(cascade: CascadeState) {
   setSectionEnabled('팀 CSF 선택', hasTeamTask);
   setSectionEnabled('선택한 CSF를 측정할 팀 KPI', hasTeamTask && hasCsf);
   setSectionEnabled('선택한 CSF를 실행할 세부 추진과제', hasTeamTask && hasCsf && hasKpi);
+  hideLegacyStep5PlanElements();
+}
+
+function scheduleGateSync() {
+  window.setTimeout(syncStepwiseSelectionGate, 0);
+  window.setTimeout(syncStepwiseSelectionGate, 50);
+}
+
+function isInsideStep5SelectionArea(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest('section')) && document.body.textContent?.includes('팀 전략과제 보기 4개');
 }
 
 export function V41PerformanceAiExpansionLab() {
@@ -105,13 +126,16 @@ export function V41PerformanceAiExpansionLab() {
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    const sync = () => {
-      hideLegacyStep5PlanElements();
-      syncStepwiseSelectionGate(cascade);
+    scheduleGateSync();
+    const handleChange = (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLInputElement && target.type === 'radio' && isInsideStep5SelectionArea(target)) {
+        scheduleGateSync();
+      }
     };
-    sync();
-    window.setTimeout(sync, 0);
-  }, [cascade.selectedTeamTaskId, cascade.selectedTeamTask, cascade.customTeamTask, cascade.selectedCsfId, cascade.selectedCsf, cascade.selectedKpi, cascade.selectedInitiative]);
+    document.addEventListener('change', handleChange, true);
+    return () => document.removeEventListener('change', handleChange, true);
+  }, []);
 
   const buildPrompt = () => {
     const base = [
@@ -131,17 +155,18 @@ export function V41PerformanceAiExpansionLab() {
   };
 
   const applyToTeamStandard = () => {
-    const teamTask = (cascade.customTeamTask || cascade.selectedTeamTask || '').trim();
-    const selectedCsf = (cascade.selectedCsf || '').trim();
-    const selectedKpi = (cascade.selectedKpi || '').trim();
-    const selectedInitiative = (cascade.selectedInitiative || '').trim();
+    const latestCascade = readCascadeState();
+    const teamTask = (latestCascade.customTeamTask || latestCascade.selectedTeamTask || '').trim();
+    const selectedCsf = (latestCascade.selectedCsf || '').trim();
+    const selectedKpi = (latestCascade.selectedKpi || '').trim();
+    const selectedInitiative = (latestCascade.selectedInitiative || '').trim();
     if (!teamTask || !selectedCsf || !selectedKpi || !selectedInitiative) {
       window.alert('팀 전략과제 → CSF → KPI → 세부 추진과제 순서로 직접 선택해 주세요. 자동 선택값은 팀 기준으로 확정하지 않습니다.');
       return;
     }
     const source = [ai.result.trim(), ai.review.trim()].filter(Boolean).join('\n\n[사람 검토 보완]\n') || 'AI 확장 결과를 붙여넣고, 우리 팀에 맞는 전략과제·CSF·KPI를 선택해 보완합니다.';
     setCascade({
-      ...cascade,
+      ...latestCascade,
       teamStandard: `[5단계 최종 팀 성과기준]\n전사 전략과제: ${enterpriseTitle}\n팀 전략과제: ${teamTask}\n팀 CSF: ${selectedCsf}\n팀 KPI: ${selectedKpi}\n세부 추진과제 후보: ${selectedInitiative}\n\n[AI 확장 실습 및 사람 검토 반영]\n${source}`,
       twoWeekFirstAction: '',
       pauseActivity: '',
