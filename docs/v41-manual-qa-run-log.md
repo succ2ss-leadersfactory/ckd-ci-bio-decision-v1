@@ -13,9 +13,10 @@ Record actual QA runs for the isolated v41 preview lane.
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| v41 static smoke | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed successfully. |
-| v41 typecheck | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed `npm run typecheck:v41` successfully. |
-| v41 full smoke | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed `npm run smoke:v41` successfully. |
+| v41 static smoke | Pass | Latest PR head `b2b74e87c186bbaa775c4e7259c4dddd5150cec8` completed GitHub Actions `v41 Smoke` run `27515089934` successfully. |
+| v41 typecheck | Pass | Latest PR head completed `npm run typecheck:v41` successfully in GitHub Actions. |
+| v41 full smoke | Pass | Latest PR head completed `npm run smoke:v41` successfully in GitHub Actions. |
+| related protected-lane smoke | Pass | C1Bio MVP CI plus v35, v36, v38, v39, v40-lite, and v40-vNext smoke workflows completed successfully on the latest PR head. |
 | v41 route access | Pass | `/journey-v41-preview.html` opens after adding v41 to Vite build inputs. |
 | Browser QA | Partial | Route access, protected pilot routes, Step 1 gate, 10-screen navigation, and v41 reset were partially confirmed. Current Step 5~10 data flow still needs a fresh browser QA run. |
 | Existing pilot route check | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
@@ -105,6 +106,49 @@ Copy this block for each QA run.
 ```
 
 ## Stabilization baseline
+
+## QA Run 2026-06-15 — latest PR-head automated stabilization
+
+- Tester: GitHub Actions
+- Device: `ubuntu-latest`
+- Browser: Not executed in browser
+- Route tested: Repository-level PR checks for v41 and protected-lane smoke coverage
+- Commit SHA: `b2b74e87c186bbaa775c4e7259c4dddd5150cec8`
+- Result: Partial
+
+### Automated checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| C1Bio MVP CI | Pass | Latest PR head completed successfully. |
+| v35 Smoke | Pass | Latest PR head completed successfully. |
+| v36 Smoke | Pass | Latest PR head completed successfully. |
+| v38 Smoke | Pass | Latest PR head completed successfully. |
+| v39 Smoke | Pass | Latest PR head completed successfully. |
+| v40-lite Smoke | Pass | Latest PR head completed successfully. |
+| v40-vNext Smoke | Pass | Latest PR head completed successfully. |
+| v41 Smoke | Pass | Latest PR head completed successfully. |
+
+### Browser checks
+
+| Area | Result | Notes |
+| --- | --- | --- |
+| v41 route access | Not run | Requires fresh Vercel browser check after latest cache-key refresh. |
+| existing pilot route protection | Not run | Requires fresh browser check for `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html`. |
+| Step 5→10 data flow | Not run | Needs browser QA using the table above. |
+| Step 10 execution cycle reflection | Not run | Needs browser QA after selecting execution cycle in Step 6. |
+| storage isolation | Not run | Needs browser localStorage check. |
+
+### Issues found
+
+| Severity | Step | Issue | Action |
+| --- | --- | --- | --- |
+| Low | QA record | QA run log still pointed to the earlier v41 Smoke run after the latest cache-key/documentation commits. | Updated current status and added this latest PR-head automated stabilization record. |
+
+### Decision
+
+- Ready for review: No
+- Follow-up needed: Complete fresh browser QA for the 10-screen flow, verify Step 5→10 data flow, confirm Step 10 reflects the Step 6 execution cycle, and record final browser pass.
 
 ## QA Run 2026-06-15 — CI workflow confirmation
 
