@@ -18,6 +18,9 @@ const V41_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '전사 관점 KPI',
   '핵심 성공 요인',
   '측정 가능한 지표',
+  '우리 팀 상황 제거',
+  '팀장 관점 질문 제거',
+  '전사 전략과제 최신 정보 수집',
   'ckd.v41.pharmaStrategyResearch.v1',
 ].join('|');
 void V41_PHARMA_STRATEGY_RESEARCH_MARKERS;
@@ -39,14 +42,14 @@ export function V41PharmaStrategyResearchLab() {
   const [state, setState] = useStored<PharmaStrategyResearchState>(PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, DEFAULT_PHARMA_RESEARCH_STATE);
   const [copyMessage, setCopyMessage] = useState('');
   const topic = useMemo(() => pharmaTopicOf(state.selectedTopicId), [state.selectedTopicId]);
-  const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state.selectedTopicId, state.customTopic, state.teamSituation, state.leaderQuestion]);
+  const pPrompt = useMemo(() => buildPerplexityPrompt(state), [state.selectedTopicId, state.customTopic]);
   const extractedUrls = useMemo(() => extractUrls(state.perplexityAnswer), [state.perplexityAnswer]);
   const webSourceUrls = useMemo(() => buildWebSourceUrlText(extractedUrls), [extractedUrls]);
   const webSourceUrlCount = extractedUrls.length;
   const analysisPrompt = useMemo(() => buildNotebookAnalysisPrompt(state), [state.selectedTopicId, state.customTopic]);
-  const report = useMemo(() => buildStudioPrompt('보고서', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
-  const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
-  const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state.selectedTopicId, state.customTopic, state.teamSituation]);
+  const report = useMemo(() => buildStudioPrompt('보고서', state), [state.selectedTopicId, state.customTopic]);
+  const slides = useMemo(() => buildStudioPrompt('슬라이드', state), [state.selectedTopicId, state.customTopic]);
+  const infographic = useMemo(() => buildStudioPrompt('인포그래픽', state), [state.selectedTopicId, state.customTopic]);
 
   const update = useCallback((patch: Partial<PharmaStrategyResearchState>) => setState((current) => ({ ...current, ...patch })), [setState]);
   const copyText = useCallback(async (text: string, label: string) => {
@@ -62,7 +65,7 @@ export function V41PharmaStrategyResearchLab() {
     const parsed = parseNotebookAnswer(state.notebookAnswer);
     const hasParsedValue = Object.values(parsed).some((value) => Boolean(value?.trim()));
     if (!hasParsedValue) {
-      setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [영업팀 추진 과제 1], [우리 팀 실행 영향], [2주 실행관리 질문], [KPI 후보], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
+      setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [전사 CSF 후보], [전사 KPI 후보], [팀 방향 전환 질문], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
       return;
     }
     setState((current) => ({ ...current, issueOne: parsed.issueOne || current.issueOne, issueTwo: parsed.issueTwo || current.issueTwo, issueThree: parsed.issueThree || current.issueThree, teamImpact: parsed.teamImpact || current.teamImpact, metricQuestions: parsed.metricQuestions || current.metricQuestions, caution: parsed.caution || current.caution }));
@@ -70,7 +73,7 @@ export function V41PharmaStrategyResearchLab() {
   }, [setState, state.notebookAnswer]);
 
   return <section className="space-y-4">
-    <Section title="1단계: Perplexity로 자료 찾기">
+    <Section title="1단계: Perplexity로 전사 전략과제 자료 찾기">
       <Field label="전략 과제 선택"><select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>{PHARMA_RESEARCH_TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">
         <p className="font-black">전사 추진 초점</p>
@@ -88,9 +91,7 @@ export function V41PharmaStrategyResearchLab() {
         </div>
       </div>
       <Field label="전략 과제 직접 입력"><input className="w-full rounded-xl border px-3 py-2" value={state.customTopic} onChange={(event) => update({ customTopic: event.target.value })} placeholder="예: GLP-1 비만·대사질환 포트폴리오 실행 기반 구축" /></Field>
-      <Field label="우리 팀 상황"><TextArea value={state.teamSituation} onChange={(value) => update({ teamSituation: value })} /></Field>
-      <Field label="팀장 관점 질문"><TextArea value={state.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 전사 전략 과제를 다음 단계에서 우리 팀 실행 기준으로 어떻게 바꿀 수 있을까?" /></Field>
-      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">Perplexity에는 실행계획을 만들라고 하지 않습니다. 최신 공개자료, 발행기관, 최근성, URL만 찾게 합니다.</div>
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">Perplexity에는 선택한 전사 전략과제와 관련된 최신 공개자료만 찾게 합니다. 팀 실행계획, 팀원 행동, 2주 실행관리는 다음 단계에서 다룹니다.</div>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(pPrompt, 'Perplexity 자료 찾기 프롬프트')}>Perplexity 프롬프트 복사</button>
       {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{pPrompt}</pre>
@@ -105,13 +106,13 @@ export function V41PharmaStrategyResearchLab() {
     </Section>
 
     <Section title="3단계: 소스 기반으로 정리하기">
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">분리한 URL을 NotebookLM 웹 소스로 등록한 뒤, 아래 프롬프트로 전략 과제와 2주 실행관리 질문을 정리합니다.</div>
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">분리한 URL을 NotebookLM 웹 소스로 등록한 뒤, 아래 프롬프트로 전사 전략과제의 변화 신호, 전사 CSF, 전사 KPI를 정리합니다.</div>
       <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 프롬프트 복사</button>
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{analysisPrompt}</pre>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={structureNotebookAnswer}>결과 항목별 정리</button>
-      <div className="grid gap-3 md:grid-cols-2"><Field label="추진 과제 1"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="추진 과제 2"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진 과제 3"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="우리 팀 실행 영향"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
-      <Field label="2주 실행관리 질문과 KPI 후보"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
+      <div className="grid gap-3 md:grid-cols-2"><Field label="핵심 변화 신호"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="전사 CSF 후보"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="전사 KPI 후보"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="근거 요약"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
+      <Field label="팀 방향 전환 질문"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
 
