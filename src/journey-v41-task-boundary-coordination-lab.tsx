@@ -3,9 +3,8 @@ import { useStored } from './journey-storage';
 
 const V41_TASK_BOUNDARY_MARKERS = [
   'V41TaskBoundaryCoordinationLab',
-  'v41 task boundary coordination lab cloned',
-  'v41 task boundary copy refined',
   '업무 경계 나누기',
+  '7단계 실행 흐름 확인',
   '팀원이 할 일',
   '팀장이 확인할 일',
   '협조 요청할 일',
@@ -16,6 +15,7 @@ const V41_TASK_BOUNDARY_MARKERS = [
 void V41_TASK_BOUNDARY_MARKERS;
 
 type BoundaryState = Record<string, any> & {
+  executionCycle?: string;
   selectedPriorityTasks?: string[];
   selectedReduceTasks?: string[];
   flowStepOne?: string;
@@ -81,28 +81,31 @@ function OptionGroup({ title, options, value, onChange }: { title: string; optio
 export function V41TaskBoundaryCoordinationLab() {
   const [state, setState] = useStored<BoundaryState>(STORAGE_KEY, DEFAULT_STATE);
   const update = (patch: Partial<BoundaryState>) => setState({ ...state, ...patch });
+  const executionCycle = state.executionCycle || '선택한 실행관리 주기';
+  const flowSummary = [state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean).join(' → ');
 
   const makeBoundary = () => update({
     memberTasks: state.memberTasks || MEMBER_TASK_OPTIONS.slice(0, 2).map((item) => `- ${item}`).join('\n'),
     leaderCheckTasks: state.leaderCheckTasks || LEADER_CHECK_OPTIONS.slice(0, 2).map((item) => `- ${item}`).join('\n'),
     coordinationTasks: state.coordinationTasks || COORDINATION_OPTIONS.slice(0, 2).map((item) => `- ${item}`).join('\n'),
     riskBoundary: state.riskBoundary || '고객 의도 단정, 승인자료 범위 밖 표현, 내부 수치 공유는 팀원이 단독으로 처리하지 않습니다.',
-    boundaryDeclaration: '팀원은 고객 반응과 다음 행동을 기록하고, 팀장은 막힘과 위험 표현을 확인하며, 확인이 필요한 자료·표현은 관련 담당자와 연결합니다.',
-    peopleSignal: '반복해서 다음 행동을 비워 두거나 지원 요청을 숨기는 팀원은 10단계에서 먼저 1on1 대상으로 검토합니다.',
+    boundaryDeclaration: state.boundaryDeclaration || `${executionCycle} 실행 흐름에서 팀원은 실행과 기록을 남기고, 팀장은 막힘 신호와 위험 표현을 확인하며, 내부 확인이 필요한 자료·표현은 관련 담당자와 연결합니다.`,
+    peopleSignal: state.peopleSignal || '반복해서 다음 행동을 비워 두거나 지원 요청을 숨기는 팀원은 다음 사람관리 단계에서 먼저 1on1 대상으로 검토합니다.',
   });
 
   return <section className="space-y-4">
     <section className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-indigo-700">업무 경계 나누기</p>
       <h3 className="mt-1 text-xl font-black text-slate-950">혼자 할 일과 연결할 일을 나눕니다</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">Step 8의 업무 흐름을 기준으로 팀원이 할 일, 팀장이 확인할 일, 협조 요청할 일을 구분합니다.</p>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">7단계에서 정리한 실행 흐름을 기준으로 팀원이 할 일, 팀장이 확인할 일, 협조 요청할 일을 구분합니다.</p>
     </section>
 
-    <Card title="이전 단계에서 넘어온 업무 흐름">
+    <Card title="7단계 실행 흐름 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        <p><span className="font-black text-slate-700">실행관리 주기: </span>{executionCycle}</p>
         <p><span className="font-black text-slate-700">먼저 할 일: </span>{compact(state.selectedPriorityTasks)}</p>
         <p><span className="font-black text-slate-700">잠시 줄일 일: </span>{compact(state.selectedReduceTasks)}</p>
-        <p><span className="font-black text-slate-700">업무 흐름: </span>{compact([state.flowStepOne, state.flowStepTwo, state.flowStepThree].filter(Boolean) as string[])}</p>
+        <p><span className="font-black text-slate-700">업무 흐름: </span>{compact(flowSummary)}</p>
         <p><span className="font-black text-slate-700">막힘 신호: </span>{compact(state.bottleneckSignal)}</p>
         <p><span className="font-black text-slate-700">중간 확인 질문: </span>{compact(state.midCheckQuestion)}</p>
       </div>
