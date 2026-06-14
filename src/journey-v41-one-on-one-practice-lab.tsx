@@ -3,9 +3,8 @@ import { useStored } from './journey-storage';
 
 const V41_ONE_ON_ONE_MARKERS = [
   'V41OneOnOnePracticeLab',
-  'v41 one-on-one practice lab cloned',
-  'v41 one-on-one copy refined',
   '1on1 첫 문장',
+  '9단계 1on1 준비 내용 확인',
   '첫 문장 만들기',
   '확인 질문 만들기',
   '작은 행동 합의하기',
@@ -47,12 +46,13 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
 export function V41OneOnOnePracticeLab() {
   const [state, setState] = useStored<PeopleState>(STORAGE_KEY, DEFAULT_STATE);
   const update = (patch: Partial<PeopleState>) => setState({ ...state, ...patch });
+  const hasPreparation = Boolean(state.selectedMemberId || state.observedFact || state.conversationPurpose || state.firstQuestionFocus);
 
   const makeDialogue = () => update({
     openingLine: state.openingLine || `최근 실행 흐름을 보면서 함께 확인하고 싶은 부분이 있어요. 먼저 제가 본 사실부터 말씀드리고, 실제로는 어땠는지 같이 맞춰보고 싶습니다.`,
     checkQuestionOne: state.checkQuestionOne || `제가 본 것은 ${compact(state.observedFact)}입니다. 이 상황을 본인은 어떻게 보고 있나요?`,
-    checkQuestionTwo: state.checkQuestionTwo || `다음 2주 동안 실행을 더 쉽게 하려면 어떤 지원이나 기준이 필요할까요?`,
-    actionAgreement: state.actionAgreement || '다음 2주 동안 바로 시도할 작은 행동 1개와 금요일 점검에서 볼 증거 1개를 합의한다.',
+    checkQuestionTwo: state.checkQuestionTwo || `이번 실행관리 주기 동안 실행을 더 쉽게 하려면 어떤 지원이나 기준이 필요할까요?`,
+    actionAgreement: state.actionAgreement || '이번 실행관리 주기 동안 바로 시도할 작은 행동 1개와 다음 점검에서 볼 증거 1개를 합의한다.',
     followUpMemo: state.followUpMemo || '성격이나 태도 평가가 아니라 관찰 사실, 실행 기준, 필요한 지원을 중심으로 대화를 마무리한다.',
   });
 
@@ -60,16 +60,18 @@ export function V41OneOnOnePracticeLab() {
     <section className="rounded-3xl border border-fuchsia-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-fuchsia-700">1on1 첫 문장</p>
       <h3 className="mt-1 text-xl font-black text-slate-950">첫 문장과 확인 질문을 준비합니다</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">Step 10에서 정리한 관찰 사실과 대화 목적을 바탕으로, 팀원이 방어하지 않고 말문을 열 수 있는 첫 문장을 만듭니다.</p>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">9단계에서 정리한 관찰 사실, 대화 목적, 피해야 할 말을 바탕으로 팀원이 방어하지 않고 말문을 열 수 있는 첫 문장을 만듭니다.</p>
     </section>
 
-    <Card title="이전 단계에서 넘어온 1on1 메모">
+    <Card title="9단계 1on1 준비 내용 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        <p><span className="font-black text-slate-700">준비 상태: </span>{hasPreparation ? '9단계 준비 내용 있음' : '9단계에서 먼저 팀원과 관찰 사실을 정리하세요'}</p>
         <p><span className="font-black text-slate-700">관찰 사실: </span>{compact(state.observedFact)}</p>
         <p><span className="font-black text-slate-700">해석 또는 추정: </span>{compact(state.interpretation)}</p>
         <p><span className="font-black text-slate-700">대화 목적: </span>{compact(state.conversationPurpose)}</p>
         <p><span className="font-black text-slate-700">피해야 할 말: </span>{compact(state.riskToAvoid)}</p>
         <p><span className="font-black text-slate-700">첫 질문 초점: </span>{compact(state.firstQuestionFocus)}</p>
+        <p><span className="font-black text-slate-700">다음 1on1 메모: </span>{compact(state.nextDialogueMemo)}</p>
       </div>
     </Card>
 
@@ -87,7 +89,7 @@ export function V41OneOnOnePracticeLab() {
 
     <Card title="작은 행동 합의하기">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder="다음 2주 동안 시도할 작은 행동 1개를 정합니다." />
+        <Field label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder="이번 실행관리 주기 동안 시도할 작은 행동 1개를 정합니다." />
         <Field label="대화 후 메모" value={state.followUpMemo ?? ''} onChange={(value) => update({ followUpMemo: value })} placeholder="대화 후 남길 메모와 후속 확인 기준을 씁니다." />
       </div>
     </Card>
