@@ -6,10 +6,34 @@ on:
       - main
       - master
       - feature/v37-preview-shell
+    paths:
+      - 'journey-v41-preview.html'
+      - 'src/journey-v41-*.tsx'
+      - 'src/journey-v41-*.ts'
+      - 'scripts/smoke-v41-static.mjs'
+      - 'docs/v41-manual-qa-checklist.md'
+      - 'docs/v41-manual-qa-run-log.md'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.v41-smoke.json'
+      - 'vite.config.ts'
+      - '.github/workflows/v41-smoke.yml'
   pull_request:
     branches:
       - main
       - master
+    paths:
+      - 'journey-v41-preview.html'
+      - 'src/journey-v41-*.tsx'
+      - 'src/journey-v41-*.ts'
+      - 'scripts/smoke-v41-static.mjs'
+      - 'docs/v41-manual-qa-checklist.md'
+      - 'docs/v41-manual-qa-run-log.md'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.v41-smoke.json'
+      - 'vite.config.ts'
+      - '.github/workflows/v41-smoke.yml'
   workflow_dispatch:
 
 jobs:
