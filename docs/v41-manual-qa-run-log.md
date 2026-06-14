@@ -13,9 +13,9 @@ Record actual QA runs for the isolated v41 preview lane.
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| v41 static smoke | Pending | Run `npm run smoke:v41:static` locally or in CI. |
-| v41 typecheck | Pending | Run `npm run typecheck:v41` locally or in CI. |
-| v41 full smoke | Pending | Run `npm run smoke:v41` locally or in CI. |
+| v41 static smoke | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed successfully. |
+| v41 typecheck | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed `npm run typecheck:v41` successfully. |
+| v41 full smoke | Pass | GitHub Actions `v41 Smoke` run `27514252366` completed `npm run smoke:v41` successfully. |
 | v41 route access | Pass | `/journey-v41-preview.html` opens after adding v41 to Vite build inputs. |
 | Browser QA | Partial | Route access, protected pilot routes, Step 1 gate, 10-screen navigation, and v41 reset were partially confirmed. Current Step 5~10 data flow still needs a fresh browser QA run. |
 | Existing pilot route check | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
@@ -105,6 +105,48 @@ Copy this block for each QA run.
 ```
 
 ## Stabilization baseline
+
+## QA Run 2026-06-15 — CI workflow confirmation
+
+- Tester: GitHub Actions
+- Device: `ubuntu-latest`
+- Browser: Not executed in browser
+- Route tested: Repository-level v41 smoke workflow
+- Commit SHA: `0b553346017e49e027bf45d3f3798cf170a0bdfa`
+- Workflow run: `v41 Smoke` / `27514252366`
+- Result: Partial
+
+### Automated checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| npm install | Pass | GitHub Actions job `Run v41 smoke checks` completed dependency install successfully. |
+| npm run smoke:v41:static | Pass | Static v41 route, marker, QA checklist, QA run log, and protected-route guards completed successfully in CI. |
+| npm run typecheck:v41 | Pass | v41 scoped TypeScript check completed successfully in CI. |
+| npm run build | Pass | Vite build completed successfully in CI. |
+| npm run smoke:v41 | Pass | Integrated v41 smoke command completed successfully in CI. |
+| workflow summary | Pass | v41 smoke summary step completed successfully and records protected route policy plus 10-screen v41 scope. |
+
+### Browser checks
+
+| Area | Result | Notes |
+| --- | --- | --- |
+| v41 route access | Not run | Requires fresh Vercel browser check after cache-key refresh. |
+| existing pilot route protection | Not run | Requires fresh browser check for `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html`. |
+| Step 5→10 data flow | Not run | Needs browser QA using the table above. |
+| Step 10 execution cycle reflection | Not run | Needs browser QA after selecting execution cycle in Step 6. |
+| storage isolation | Not run | Needs browser localStorage check. |
+
+### Issues found
+
+| Severity | Step | Issue | Action |
+| --- | --- | --- | --- |
+| Medium | Preview cache | v41 route script cache key still reflected the earlier smoke-fix marker. | Refreshed `/journey-v41-preview.html` cache key after CI smoke success. |
+
+### Decision
+
+- Ready for review: No
+- Follow-up needed: Complete fresh browser QA for the 10-screen flow, verify Step 5→10 data flow, confirm Step 10 reflects the Step 6 execution cycle, and record final browser pass.
 
 ## QA Run 2026-06-15
 
