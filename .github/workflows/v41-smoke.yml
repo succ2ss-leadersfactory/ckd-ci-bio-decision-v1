@@ -38,6 +38,9 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
+      - name: Run integrated v41 smoke check
+        run: npm run smoke:v41
+
       - name: Write v41 smoke summary
         if: always()
         run: |
@@ -50,6 +53,7 @@ jobs:
             echo "- npm run smoke:v41:static"
             echo "- npm run typecheck:v41"
             echo "- npm run build"
+            echo "- npm run smoke:v41"
             echo ""
             echo "## Protected route policy"
             echo ""
@@ -57,7 +61,7 @@ jobs:
             echo "- /journey-v39-preview.html remains protected."
             echo "- /ckd-ai-lab.html remains the existing v40-vNext pilot entry."
             echo "- /journey-v40-vnext-preview.html remains protected."
-            echo "- /journey-v41-preview.html is the only v41 development route."
+            echo "- /journey-v41-preview.html is the isolated v41 preview lane."
             echo ""
             echo "## v41 scope"
             echo ""
