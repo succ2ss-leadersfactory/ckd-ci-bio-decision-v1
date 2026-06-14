@@ -32,6 +32,7 @@ const files = {
   peopleSelectionLab: read('src/journey-v41-people-selection-lab.tsx'),
   oneOnOneLab: read('src/journey-v41-one-on-one-practice-lab.tsx'),
   qaChecklist: read('docs/v41-manual-qa-checklist.md'),
+  qaRunLog: read('docs/v41-manual-qa-run-log.md'),
   viteConfig: read('vite.config.ts'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
@@ -63,9 +64,11 @@ for (const marker of ['V40VNextOneOnOnePracticeLab', 'ckd.v40-vnext.peopleManage
 
 for (const marker of ['V41_VISIBLE_APP_STEPS', 'v41 field-friendly step labels', '1on1 첫 문장']) mustInclude(files.config, marker, 'v41 config');
 for (const marker of ['Step 11', '11단계', 'Steps 4~11', 'Step 4~11', 'Step 10~11']) {
-  mustNotInclude(files.qaChecklist, marker, 'old v41 QA step reference');
+  mustNotInclude(files.qaChecklist, marker, 'old v41 QA checklist step reference');
+  mustNotInclude(files.qaRunLog, marker, 'old v41 QA run log step reference');
 }
 for (const marker of ['| 10 | 1on1 첫 문장 |', 'Step 5~10 data flow is usable', 'Step 9~10 use `ckd.v41.peopleManagement.v2`']) mustInclude(files.qaChecklist, marker, 'current v41 QA checklist');
+for (const marker of ['The current v41 preview has 10 screens', 'Step 5~10 data-flow checks', 'Step 10 execution cycle reflection']) mustInclude(files.qaRunLog, marker, 'current v41 QA run log');
 for (const marker of ['V41FlowStrip', 'v41 field-friendly flow chips', '첫 문장']) mustInclude(files.ux, marker, 'v41 ux');
 for (const marker of ['V41ProgressCoachPanel', '지금 할 일']) mustInclude(files.progressCoach, marker, 'v41 progress');
 for (const marker of ['V41LabStorageScope', 'v41 inherited lab storage isolation']) mustInclude(files.storageScope, marker, 'v41 storage scope');
