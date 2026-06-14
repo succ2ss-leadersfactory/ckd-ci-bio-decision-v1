@@ -1,0 +1,81 @@
+name: v41 Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/v37-preview-shell
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v41:
+    name: Run v41 smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v41 static smoke check
+        run: npm run smoke:v41:static
+
+      - name: Run v41 scoped TypeScript check
+        run: npm run typecheck:v41
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Write v41 smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v41 Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v41:static"
+            echo "- npm run typecheck:v41"
+            echo "- npm run build"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains protected."
+            echo "- /journey-v39-preview.html remains protected."
+            echo "- /ckd-ai-lab.html remains the existing v40-vNext pilot entry."
+            echo "- /journey-v40-vnext-preview.html remains protected."
+            echo "- /journey-v41-preview.html is the only v41 development route."
+            echo ""
+            echo "## v41 scope"
+            echo ""
+            echo "- 10-screen v41 preview flow"
+            echo "- Step 5 team criteria selection"
+            echo "- Step 6 execution planning and execution cycle"
+            echo "- Step 7 priority/reduction flow"
+            echo "- Step 8 task boundary and people signal"
+            echo "- Step 9 direct 1on1 target selection"
+            echo "- Step 10 opening line and action agreement using execution cycle"
+            echo "- v41 manual QA checklist and run log marker guard"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Open /journey-v41-preview.html in the browser."
+            echo "2. Confirm Step 1 gate."
+            echo "3. Complete Step 5 to Step 10 data-flow QA."
+            echo "4. Confirm Step 10 reflects the execution cycle selected in Step 6."
+            echo "5. Confirm /ckd-ai-lab.html and /journey-v40-vnext-preview.html are unchanged."
+            echo "6. Record actual browser QA results in docs/v41-manual-qa-run-log.md."
+          } >> "$GITHUB_STEP_SUMMARY"
