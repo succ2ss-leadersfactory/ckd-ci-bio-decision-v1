@@ -1,4 +1,4 @@
-import { pharmaTitleOf, pharmaTopicOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
+import { pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
 const V41_PHARMA_RESEARCH_PROMPTS_MARKERS = [
   'v41 pharma research prompts cloned',
@@ -6,6 +6,9 @@ const V41_PHARMA_RESEARCH_PROMPTS_MARKERS = [
   'Perplexity 자료 찾기',
   'NotebookLM 소스 기반 정리',
   'LM Studio 산출물 요청',
+  '전사 전략과제 최신 정보 수집',
+  '전사 CSF KPI 선정 근거',
+  '팀 팀원 요청 제외',
 ].join('|');
 void V41_PHARMA_RESEARCH_PROMPTS_MARKERS;
 
@@ -13,42 +16,39 @@ export function pharmaSafeRule() {
   return '실제 고객명·기관명·의료진명·제품명·내부 수치·개인정보는 제외하고, 단정적 비교·비방·허가 범위 밖 암시 표현은 피합니다.';
 }
 
-export function buildPerplexityPrompt(state: Pick<PharmaStrategyResearchState, 'selectedTopicId' | 'customTopic' | 'teamSituation' | 'leaderQuestion'>) {
-  return `2026년 현재 제약·바이오 산업에서 중요한 전략 과제인 "${pharmaTitleOf(state)}"에 대해 최신 공개자료를 찾아주세요.
+export function buildPerplexityPrompt(state: Pick<PharmaStrategyResearchState, 'selectedTopicId' | 'customTopic'>) {
+  return `2026년 현재 제약·바이오 산업에서 전사 전략과제로 검토할 "${pharmaTitleOf(state)}"와 관련된 최신 공개자료를 찾아주세요.
 
 목적:
-C1바이오 영업팀장 교육 실습에서 NotebookLM에 넣을 신뢰 가능한 소스 자료를 수집하려고 합니다.
+선택한 전사 전략과제의 시장 환경, 정책·규제 변화, 경쟁 구도, 기술·제품 흐름을 확인하고 전사 관점 CSF와 KPI를 선정할 근거 자료를 모으려는 것입니다.
 
 중요:
-전략 제안이나 실행계획을 만들지 말고, 최신 자료와 출처 URL을 찾는 데 집중해 주세요. 영업팀 추진 과제, KPI, 2주 실행계획, 주의 표현은 나중에 NotebookLM에서 소스 기반으로 분석할 예정입니다.
-
-우리 팀 상황 참고:
-${state.teamSituation}
-
-영업팀 관점 참고 질문:
-${state.leaderQuestion || pharmaTopicOf(state.selectedTopicId).focus}
+- 실행계획, 영업팀 추진 과제, 팀원 행동, 2주 실행계획은 만들지 마세요.
+- 선택한 전략과제와 관련된 최신 정보와 출처 URL을 찾는 데만 집중해 주세요.
+- 의견이나 추정은 최소화하고, 공개자료에 근거한 사실 중심으로 정리해 주세요.
 
 찾아야 할 자료:
 1. 2025~2026년 제약·바이오 산업 전망 자료
-2. 선택한 전략 과제와 관련된 산업 리포트, 정책·규제 자료, 협회 자료, 신뢰 가능한 기사
+2. 선택한 전사 전략과제와 직접 관련된 산업 리포트, 정책·규제 자료, 협회 자료, 신뢰 가능한 기사
 3. FDA, EMA, MFDS, KHIDI, 보건산업 관련 기관, 제약·바이오 협회, 컨설팅사 자료
-4. 영업팀이 고객 질문과 실행관리 기준을 만들 때 참고할 수 있는 자료
+4. 시장 규모, 성장성, 정책 변화, 경쟁 변화, 기술·제품 변화, 고객·의료 현장 변화와 관련된 자료
+5. 전사 CSF와 KPI를 판단하는 데 참고할 수 있는 객관 자료
 
 출력 형식:
-아래 형식으로만 정리해 주세요. 전략 요약, 추진 과제, 실행 리스크, KPI는 작성하지 마세요.
+아래 형식으로만 정리해 주세요. 전략 제안, 팀 실행계획, 팀원 행동, KPI 설계안은 작성하지 마세요.
 
 [자료 1]
 - 제목:
 - 발행기관/매체:
 - 발행일 또는 최근성:
-- 핵심 내용 2줄:
+- 이 자료가 전략과제와 관련되는 이유 2줄:
 - URL:
 
 [자료 2]
 - 제목:
 - 발행기관/매체:
 - 발행일 또는 최근성:
-- 핵심 내용 2줄:
+- 이 자료가 전략과제와 관련되는 이유 2줄:
 - URL:
 
 [자료 3]
@@ -65,47 +65,43 @@ ${state.leaderQuestion || pharmaTopicOf(state.selectedTopicId).focus}
 export function buildNotebookAnalysisPrompt(state: Pick<PharmaStrategyResearchState, 'selectedTopicId' | 'customTopic'>) {
   return `업로드한 소스만 근거로 분석해 주세요.
 
-나는 C1바이오 영업팀장입니다. 2026년 제약업계 전략 과제 "${pharmaTitleOf(state)}"를 영업팀 추진계획으로 바꾸려고 합니다.
+주제는 2026년 제약업계 전사 전략과제 "${pharmaTitleOf(state)}"입니다.
 
 요청:
 1. 소스에 근거한 핵심 변화 신호를 3개로 정리해 주세요.
-2. 이 전략 과제가 영업팀의 고객 대화, 실행관리, 팀원 코칭에 주는 영향을 설명해 주세요.
-3. 영업팀 추진 과제 3개로 압축해 주세요.
-4. 각 추진 과제를 2주 실행관리 질문과 KPI 후보로 바꿔 주세요.
-5. 고객 의도 단정, 처방 유도, 경쟁사 비방, 허가 외 사용 암시처럼 조심할 표현을 따로 표시해 주세요.
+2. 이 전략과제가 전사 차원에서 왜 중요한지 설명해 주세요.
+3. 전사 관점 CSF 후보 3개를 정리해 주세요. CSF는 핵심 성공 요인이므로, 성공하려면 반드시 갖춰져야 할 조건으로 써 주세요.
+4. 전사 관점 KPI 후보 4개를 정리해 주세요. KPI는 측정 가능한 지표이므로, 비율·건수·금액·기간·달성률 등 측정 단위가 보이게 써 주세요.
+5. 다음 단계에서 팀 방향으로 내릴 때 확인해야 할 질문을 3개만 정리해 주세요.
+6. 고객 의도 단정, 처방 유도, 경쟁사 비방, 허가 외 사용 암시처럼 조심할 표현을 따로 표시해 주세요.
 
 출력 형식:
 [핵심 변화 신호]
 [출처/근거 요약]
-[영업팀 추진 과제 1]
-[영업팀 추진 과제 2]
-[영업팀 추진 과제 3]
-[우리 팀 실행 영향]
-[2주 실행관리 질문]
-[KPI 후보]
+[전사 CSF 후보]
+[전사 KPI 후보]
+[팀 방향 전환 질문]
 [주의해야 할 표현]`;
 }
 
-export function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: Pick<PharmaStrategyResearchState, 'selectedTopicId' | 'customTopic' | 'teamSituation'>) {
+export function buildStudioPrompt(kind: '보고서' | '슬라이드' | '인포그래픽', state: Pick<PharmaStrategyResearchState, 'selectedTopicId' | 'customTopic'>) {
   const common = `LM Studio ${kind} 생성 요청
 
 역할:
-당신은 제약영업 전략회의 자료를 만드는 편집자이자 비주얼 커뮤니케이션 전문가입니다.
+당신은 제약·바이오 전사 전략회의 자료를 만드는 편집자이자 비주얼 커뮤니케이션 전문가입니다.
 
 입력자료:
 - 업로드한 소스와 3단계 정리 결과를 근거로 작성합니다.
-- 3단계 정리 결과에는 전략 과제, 핵심 변화 신호, 영업팀 추진 과제, 우리 팀 실행 영향, 2주 실행관리 질문, KPI 후보, 주의 표현이 포함되어 있습니다.
-- 아래 주제와 맥락을 기준으로 자료를 재구성하되, 입력 내용을 길게 반복하지 말고 최종 산출물 형식에 맞게 압축합니다.
+- 3단계 정리 결과에는 전사 전략과제, 핵심 변화 신호, 전사 CSF 후보, 전사 KPI 후보, 팀 방향 전환 질문, 주의 표현이 포함되어 있습니다.
+- 아래 주제를 기준으로 자료를 재구성하되, 입력 내용을 길게 반복하지 말고 최종 산출물 형식에 맞게 압축합니다.
 
 주제:
 ${pharmaTitleOf(state)}
 
-우리 팀 상황:
-${state.teamSituation}
-
 작성 기준:
 - 공개자료와 업로드한 소스를 근거로 작성합니다.
-- 교육용 전략회의 자료처럼 명확하고 간결하게 작성합니다.
+- 전사 전략회의 자료처럼 명확하고 간결하게 작성합니다.
+- 팀 실행과제, 팀원 행동, 2주 실행계획은 만들지 않습니다.
 - 실제 고객명, 기관명, 의료진명, 제품명, 내부 수치, 개인정보는 쓰지 않습니다.
 - 처방 유도, 경쟁사 비방, 비교 우위 단정, 허가 외 사용 암시 표현은 피합니다.
 - 산출물 형식만 지시받은 대로 작성하고, 불필요한 설명은 덧붙이지 않습니다.`;
@@ -113,16 +109,16 @@ ${state.teamSituation}
   if (kind === '보고서') return `${common}
 
 요청 산출물:
-1~2페이지 분량의 전략회의 보고서 초안을 작성해 주세요.
+1~2페이지 분량의 전사 전략회의 보고서 초안을 작성해 주세요.
 
 출력 형식:
 1. 제목
 2. 한 줄 요약
 3. 배경과 변화 신호
-4. 영업팀 추진 과제 3개
-5. 우리 팀 실행 영향
-6. 2주 실행관리 질문
-7. KPI 후보
+4. 전사 전략과제의 의미
+5. 전사 CSF 후보 3개
+6. 전사 KPI 후보 4개
+7. 팀 방향으로 내릴 때 확인할 질문 3개
 8. 주의해야 할 표현
 9. 회의에서 던질 토의 질문 3개`;
 
@@ -143,12 +139,12 @@ ${state.teamSituation}
 권장 흐름:
 1. 왜 이 전략 과제가 중요한가
 2. 시장 변화 신호
-3. 고객 접점에서 달라지는 질문
-4. 영업팀 추진 과제 3개
-5. 2주 실행관리 질문
-6. KPI 후보
-7. 주의해야 할 표현
-8. 팀장 실행 메시지`;
+3. 정책·경쟁·기술 변화 포인트
+4. 전사 CSF 후보
+5. 전사 KPI 후보
+6. 주요 리스크와 주의 표현
+7. 팀 방향으로 내릴 때 확인할 질문
+8. 전략회의 토의 질문`;
 
   return `${common}
 
@@ -159,9 +155,9 @@ ${state.teamSituation}
 1. 인포그래픽 제목
 2. 상단 핵심 메시지 1개
 3. 가운데 핵심 변화 신호 3개
-4. 하단 영업팀 추진 과제 3개
-5. 오른쪽 박스: 2주 실행관리 질문
-6. 왼쪽 박스: KPI 후보
+4. 오른쪽 박스: 전사 CSF 후보
+5. 왼쪽 박스: 전사 KPI 후보
+6. 하단 박스: 팀 방향 전환 질문
 7. 하단 주의 표현 3개
 8. 아이콘/도식/레이아웃 제안`;
 }
