@@ -16,8 +16,8 @@ const V41_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '전사 추진 초점',
   '전사 관점 CSF',
   '전사 관점 KPI',
-  '성공하려면 꼭 챙겨야 할 일',
-  '잘 되고 있는지 볼 확인 신호',
+  '핵심 성공 요인',
+  '측정 가능한 지표',
   'ckd.v41.pharmaStrategyResearch.v1',
 ].join('|');
 void V41_PHARMA_STRATEGY_RESEARCH_MARKERS;
@@ -77,12 +77,12 @@ export function V41PharmaStrategyResearchLab() {
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl bg-white p-3">
             <p className="font-black text-emerald-900">전사 관점 CSF</p>
-            <p className="mt-1 text-emerald-800">성공하려면 꼭 챙겨야 할 일</p>
+            <p className="mt-1 text-emerald-800">핵심 성공 요인</p>
             <ul className="mt-2 space-y-1">{topic.csfs.map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
           <div className="rounded-2xl bg-white p-3">
             <p className="font-black text-emerald-900">전사 관점 KPI</p>
-            <p className="mt-1 text-emerald-800">잘 되고 있는지 볼 확인 신호</p>
+            <p className="mt-1 text-emerald-800">측정 가능한 지표</p>
             <ul className="mt-2 space-y-1">{topic.kpis.map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
         </div>
