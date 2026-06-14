@@ -3,9 +3,8 @@ import { useStored } from './journey-storage';
 
 const V41_PEOPLE_SELECTION_MARKERS = [
   'V41PeopleSelectionLab',
-  'v41 people selection lab cloned',
-  'v41 people selection copy refined',
   '1on1 대상 고르기',
+  '8단계 업무 경계와 사람관리 신호 확인',
   '먼저 이야기할 팀원 고르기',
   '관찰과 해석 나누기',
   '첫 대화 방향 정하기',
@@ -16,10 +15,13 @@ const V41_PEOPLE_SELECTION_MARKERS = [
 void V41_PEOPLE_SELECTION_MARKERS;
 
 type TaskState = Record<string, any> & {
+  executionCycle?: string;
   peopleSignal?: string;
   boundaryDeclaration?: string;
   memberTasks?: string;
   leaderCheckTasks?: string;
+  bottleneckSignal?: string;
+  midCheckQuestion?: string;
 };
 
 type PeopleState = {
@@ -45,17 +47,17 @@ const TASK_STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const PEOPLE_STORAGE_KEY = 'ckd.v41.peopleManagement.v2';
 
 const MEMBER_OPTIONS: MemberOption[] = [
-  { id: 'kim-jaeho', name: '김재호 차장', role: '경험 많은 선임 영업 담당', signal: '기록 방식이 개인화되어 팀 기준과 다를 수 있습니다.', suggestedFact: '최근 기록에서 고객 반응은 남아 있지만 다음 행동 표현이 팀 기준과 다르게 적힌 사례가 있다.', suggestedPurpose: '경험을 존중하면서 팀 공통 기록 기준에 맞출 방법을 함께 정한다.' },
-  { id: 'kim-munho', name: '김문호 차장', role: '안정적 실행형 담당', signal: '기본 활동은 꾸준하지만 새로운 기준 전환은 느릴 수 있습니다.', suggestedFact: '기본 방문과 기록은 꾸준하지만 새 기준으로 바뀐 완료 조건 적용이 늦다.', suggestedPurpose: '새 기준이 왜 필요한지 확인하고 2주 동안 적용할 최소 기준을 합의한다.' },
+  { id: 'kim-jaeho', name: '김재호 차장', role: '경험 많은 선임 영업 담당', signal: '좋은 방식은 많지만 팀 공통 기준으로 공유되지 않을 수 있습니다.', suggestedFact: '좋은 고객 반응 기록은 있으나, 후배가 따라 할 수 있는 형태로 공유된 사례가 부족하다.', suggestedPurpose: '경험을 존중하면서 팀 기준으로 공유할 수 있는 사례를 함께 정한다.' },
+  { id: 'kim-munho', name: '김문호 차장', role: '안정적 실행형 담당', signal: '기본 활동은 안정적이나 새로운 기준 전환 속도는 늦을 수 있습니다.', suggestedFact: '기본 방문과 기록은 꾸준하지만 새 기준으로 바뀐 완료 조건 적용이 늦다.', suggestedPurpose: '새 기준이 왜 필요한지 확인하고 이번 실행관리 주기 동안 적용할 최소 기준을 합의한다.' },
   { id: 'yoo-heegwan', name: '유희관 과장', role: '관계 기반 영업 담당', signal: '고객 관계는 좋지만 후속 실행 증거가 약할 수 있습니다.', suggestedFact: '고객 관계 메모는 많지만 후속 확인 일정과 담당자가 비어 있는 기록이 있다.', suggestedPurpose: '관계 강점을 후속 실행으로 연결하는 방법을 정한다.' },
   { id: 'lee-daeun', name: '이대은 대리', role: '활동량 높은 실행형 담당', signal: '움직임은 빠르지만 우선순위와 기록 품질 점검이 필요합니다.', suggestedFact: '활동량은 높지만 먼저 볼 고객군과 잠시 줄일 일이 명확하지 않은 기록이 보인다.', suggestedPurpose: '속도는 유지하되 우선순위와 완료 기준을 맞춘다.' },
   { id: 'shin-jaeyoung', name: '신재영 대리', role: '분석적이고 신중한 담당', signal: '판단은 세밀하지만 실행 속도와 대화 타이밍을 살펴야 합니다.', suggestedFact: '확인해야 할 사항을 꼼꼼히 적지만 다음 행동 결정이 늦어지는 경우가 있다.', suggestedPurpose: '충분히 확인할 것과 바로 움직일 것을 구분한다.' },
   { id: 'park-jaeuk', name: '박재욱 사원', role: '성장형 담당', signal: '업무 기준과 고객 대화의 안전선을 구체적으로 알려줘야 합니다.', suggestedFact: '기록과 고객 대화에서 어디까지 말해도 되는지 확인 요청이 반복된다.', suggestedPurpose: '안전선과 완료 기준을 구체적으로 알려 주고 첫 실행을 돕는다.' },
-  { id: 'moon-gyowon', name: '문교원 사원', role: '새로운 방식에 빠르게 적응하는 담당', signal: '도구 활용은 빠르지만 현장 언어로 바꾸는 코칭이 필요합니다.', suggestedFact: 'AI 초안 활용은 빠르지만 팀원이 실제 고객 대화 문장으로 바꾸는 데 수정이 필요하다.', suggestedPurpose: 'AI 초안을 현장 언어로 바꾸는 기준을 함께 잡는다.' },
+  { id: 'moon-gyowon', name: '문교원 사원', role: '새로운 방식에 빠르게 적응하는 담당', signal: '도구 활용은 빠르지만 현장 언어로 바꾸는 코칭이 필요합니다.', suggestedFact: 'AI 초안 활용은 빠르지만 실제 고객 대화 문장으로 바꾸는 데 수정이 필요하다.', suggestedPurpose: 'AI 초안을 현장 언어로 바꾸는 기준을 함께 잡는다.' },
 ];
 
 const DEFAULT_PEOPLE_STATE: PeopleState = {
-  selectedMemberId: MEMBER_OPTIONS[2].id,
+  selectedMemberId: '',
   observedFact: '',
   interpretation: '',
   conversationPurpose: '',
@@ -66,7 +68,7 @@ const DEFAULT_PEOPLE_STATE: PeopleState = {
 const DEFAULT_TASK_STATE: TaskState = {};
 
 function memberOf(id: string) {
-  return MEMBER_OPTIONS.find((member) => member.id === id) ?? MEMBER_OPTIONS[2];
+  return MEMBER_OPTIONS.find((member) => member.id === id) ?? null;
 }
 
 function compact(value?: string) {
@@ -86,6 +88,7 @@ export function V41PeopleSelectionLab() {
   const [state, setState] = useStored<PeopleState>(PEOPLE_STORAGE_KEY, DEFAULT_PEOPLE_STATE);
   const update = (patch: Partial<PeopleState>) => setState({ ...state, ...patch });
   const member = memberOf(state.selectedMemberId);
+  const executionCycle = taskState.executionCycle || '선택한 실행관리 주기';
 
   const useSuggestedMember = (option: MemberOption) => {
     setState({
@@ -96,27 +99,31 @@ export function V41PeopleSelectionLab() {
       conversationPurpose: option.suggestedPurpose,
       riskToAvoid: '성격이나 태도를 단정하지 않고, 기록·행동·상황을 기준으로 이야기한다.',
       firstQuestionFocus: '최근 실행 흐름에서 막힌 지점과 필요한 지원을 확인한다.',
-      nextDialogueMemo: `${option.name}와 1on1에서 관찰 사실을 확인하고, 다음 2주 동안 적용할 작은 행동 1개를 합의한다.`,
+      nextDialogueMemo: `${option.name}와 1on1에서 관찰 사실을 확인하고, ${executionCycle} 동안 적용할 작은 행동 1개를 합의한다.`,
     });
   };
 
   return <section className="space-y-4">
     <section className="rounded-3xl border border-violet-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-violet-700">1on1 대상 고르기</p>
-      <h3 className="mt-1 text-xl font-black text-slate-950">먼저 이야기할 팀원을 고릅니다</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">Step 9에서 넘긴 사람관리 신호를 보고, 지금 1on1이 필요한 팀원을 고릅니다. 평가는 뒤로 미루고 관찰과 해석을 나눕니다.</p>
+      <h3 className="mt-1 text-xl font-black text-slate-950">업무 신호를 보고 먼저 이야기할 팀원을 고릅니다</h3>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">8단계에서 정리한 업무 경계와 사람관리 신호를 보고, 지금 1on1이 필요한 팀원을 고릅니다. 평가는 뒤로 미루고 관찰과 해석을 나눕니다.</p>
     </section>
 
-    <Card title="업무 경계에서 넘어온 사람관리 신호">
+    <Card title="8단계 업무 경계와 사람관리 신호 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        <p><span className="font-black text-slate-700">실행관리 주기: </span>{executionCycle}</p>
         <p><span className="font-black text-slate-700">경계 선언문: </span>{compact(taskState.boundaryDeclaration)}</p>
         <p><span className="font-black text-slate-700">팀원이 할 일: </span>{compact(taskState.memberTasks)}</p>
         <p><span className="font-black text-slate-700">팀장이 확인할 일: </span>{compact(taskState.leaderCheckTasks)}</p>
+        <p><span className="font-black text-slate-700">막힘 신호: </span>{compact(taskState.bottleneckSignal)}</p>
+        <p><span className="font-black text-slate-700">중간 확인 질문: </span>{compact(taskState.midCheckQuestion)}</p>
         <p><span className="font-black text-slate-700">사람관리 신호: </span>{compact(taskState.peopleSignal)}</p>
       </div>
     </Card>
 
     <Card title="먼저 이야기할 팀원 고르기">
+      <p className="text-xs font-bold leading-5 text-slate-500">자동 선택 없이 시작합니다. 업무 경계와 사람관리 신호를 보고 팀장이 직접 선택합니다.</p>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {MEMBER_OPTIONS.map((option) => {
           const selected = state.selectedMemberId === option.id;
@@ -130,7 +137,7 @@ export function V41PeopleSelectionLab() {
     </Card>
 
     <Card title="관찰과 해석 나누기">
-      <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-sm font-bold leading-6 text-violet-950">선택한 팀원: {member.name} · {member.role}</div>
+      {member ? <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-sm font-bold leading-6 text-violet-950">선택한 팀원: {member.name} · {member.role}</div> : <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-bold leading-6 text-slate-500">먼저 이야기할 팀원을 선택하면 관찰 사실과 대화 목적 초안이 채워집니다.</div>}
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="관찰 사실" value={state.observedFact} onChange={(value) => update({ observedFact: value })} placeholder="기록, 행동, 일정, 대화처럼 실제로 본 것을 씁니다." />
         <Field label="해석 또는 추정" value={state.interpretation} onChange={(value) => update({ interpretation: value })} placeholder="왜 그랬는지에 대한 추정은 사실과 분리해서 씁니다." />
