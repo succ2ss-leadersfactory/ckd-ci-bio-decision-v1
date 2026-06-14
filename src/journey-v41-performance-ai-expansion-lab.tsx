@@ -3,6 +3,8 @@ import { useStored } from './journey-storage';
 import { DEFAULT_PHARMA_RESEARCH_STATE, PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
 type CascadeState = {
+  selectedTeamTaskId?: string;
+  selectedCsfId?: string;
   selectedTeamTask?: string;
   customTeamTask?: string;
   selectedCsf?: string;
@@ -47,6 +49,25 @@ function hideLegacyStep5PlanElements() {
   if (legacyPlanSection) legacyPlanSection.setAttribute('style', 'display:none!important');
 }
 
+function clearRadiosInContainer(labelText: string) {
+  const container = Array.from(document.querySelectorAll('section,label')).find((item) => item.textContent?.includes(labelText));
+  container?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((input) => {
+    input.checked = false;
+    input.removeAttribute('checked');
+  });
+}
+
+function clearDefaultLookingSelections(cascade: CascadeState) {
+  const hasTeamTask = Boolean(cascade.selectedTeamTaskId || cascade.selectedTeamTask || cascade.customTeamTask);
+  const hasCsf = Boolean(cascade.selectedCsfId || cascade.selectedCsf);
+  const hasKpi = Boolean(cascade.selectedKpi);
+  const hasInitiative = Boolean(cascade.selectedInitiative);
+  if (!hasTeamTask) clearRadiosInContainer('팀 전략과제 보기 4개');
+  if (!hasCsf) clearRadiosInContainer('팀 CSF 선택');
+  if (!hasKpi) clearRadiosInContainer('선택한 CSF를 측정할 팀 KPI');
+  if (!hasInitiative) clearRadiosInContainer('선택한 CSF를 실행할 세부 추진과제');
+}
+
 export function V41PerformanceAiExpansionLab() {
   const [ai, setAi] = useStored<AiExpansionState>(AI_KEY, DEFAULT_AI);
   const [cascade, setCascade] = useStored<CascadeState>(CASCADE_KEY, DEFAULT_CASCADE);
@@ -54,10 +75,14 @@ export function V41PerformanceAiExpansionLab() {
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    hideLegacyStep5PlanElements();
-    const timer = window.setInterval(hideLegacyStep5PlanElements, 500);
+    const stabilize = () => {
+      hideLegacyStep5PlanElements();
+      clearDefaultLookingSelections(cascade);
+    };
+    stabilize();
+    const timer = window.setInterval(stabilize, 500);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [cascade.selectedTeamTaskId, cascade.selectedTeamTask, cascade.customTeamTask, cascade.selectedCsfId, cascade.selectedCsf, cascade.selectedKpi, cascade.selectedInitiative]);
 
   const buildPrompt = () => {
     const base = [
@@ -77,11 +102,15 @@ export function V41PerformanceAiExpansionLab() {
   };
 
   const applyToTeamStandard = () => {
+    const teamTask = (cascade.customTeamTask || cascade.selectedTeamTask || '').trim();
+    const selectedCsf = (cascade.selectedCsf || '').trim();
+    const selectedKpi = (cascade.selectedKpi || '').trim();
+    const selectedInitiative = (cascade.selectedInitiative || '').trim();
+    if (!teamTask || !selectedCsf || !selectedKpi || !selectedInitiative) {
+      window.alert('먼저 팀 전략과제, CSF, KPI, 세부 추진과제를 직접 선택해 주세요. 자동 선택값은 팀 기준으로 확정하지 않습니다.');
+      return;
+    }
     const source = [ai.result.trim(), ai.review.trim()].filter(Boolean).join('\n\n[사람 검토 보완]\n') || 'AI 확장 결과를 붙여넣고, 우리 팀에 맞는 전략과제·CSF·KPI를 선택해 보완합니다.';
-    const teamTask = (cascade.customTeamTask || cascade.selectedTeamTask || '선택한 팀 전략과제').trim();
-    const selectedCsf = (cascade.selectedCsf || '선택한 팀 CSF').trim();
-    const selectedKpi = (cascade.selectedKpi || '선택한 팀 KPI').trim();
-    const selectedInitiative = (cascade.selectedInitiative || '선택한 세부 추진과제').trim();
     setCascade({
       ...cascade,
       teamStandard: `[5단계 최종 팀 성과기준]\n전사 전략과제: ${enterpriseTitle}\n팀 전략과제: ${teamTask}\n팀 CSF: ${selectedCsf}\n팀 KPI: ${selectedKpi}\n세부 추진과제 후보: ${selectedInitiative}\n\n[AI 확장 실습 및 사람 검토 반영]\n${source}`,
