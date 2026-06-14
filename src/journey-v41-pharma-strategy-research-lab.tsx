@@ -14,7 +14,10 @@ const V41_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '소스 기반으로 정리하기',
   '전략회의 초안 만들기',
   '전사 추진 초점',
-  '다음 단계에서 팀 추진 과제로 전환',
+  '전사 관점 CSF',
+  '전사 관점 KPI',
+  '성공하려면 꼭 챙겨야 할 일',
+  '잘 되고 있는지 볼 확인 신호',
   'ckd.v41.pharmaStrategyResearch.v1',
 ].join('|');
 void V41_PHARMA_STRATEGY_RESEARCH_MARKERS;
@@ -69,7 +72,21 @@ export function V41PharmaStrategyResearchLab() {
   return <section className="space-y-4">
     <Section title="1단계: Perplexity로 자료 찾기">
       <Field label="전략 과제 선택"><select className="w-full rounded-xl border px-3 py-2" value={state.selectedTopicId} onChange={(event) => update({ selectedTopicId: event.target.value })}>{PHARMA_RESEARCH_TOPICS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950"><p className="font-black">전사 추진 초점</p><p className="mt-1">{topic.focus}</p><p className="mt-1">전사 관점 KPI 후보: {topic.kpis.join(' · ')}</p><p className="mt-2 text-emerald-800">이 단계에서는 전사 전략의 방향을 먼저 확인합니다. 팀 추진 과제와 2주 실행 기준은 다음 단계에서 따로 전환합니다.</p></div>
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">
+        <p className="font-black">전사 추진 초점</p>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl bg-white p-3">
+            <p className="font-black text-emerald-900">전사 관점 CSF</p>
+            <p className="mt-1 text-emerald-800">성공하려면 꼭 챙겨야 할 일</p>
+            <ul className="mt-2 space-y-1">{topic.csfs.map((item) => <li key={item}>- {item}</li>)}</ul>
+          </div>
+          <div className="rounded-2xl bg-white p-3">
+            <p className="font-black text-emerald-900">전사 관점 KPI</p>
+            <p className="mt-1 text-emerald-800">잘 되고 있는지 볼 확인 신호</p>
+            <ul className="mt-2 space-y-1">{topic.kpis.map((item) => <li key={item}>- {item}</li>)}</ul>
+          </div>
+        </div>
+      </div>
       <Field label="전략 과제 직접 입력"><input className="w-full rounded-xl border px-3 py-2" value={state.customTopic} onChange={(event) => update({ customTopic: event.target.value })} placeholder="예: GLP-1 비만·대사질환 포트폴리오 실행 기반 구축" /></Field>
       <Field label="우리 팀 상황"><TextArea value={state.teamSituation} onChange={(value) => update({ teamSituation: value })} /></Field>
       <Field label="팀장 관점 질문"><TextArea value={state.leaderQuestion} onChange={(value) => update({ leaderQuestion: value })} placeholder="예: 이 전사 전략 과제를 다음 단계에서 우리 팀 실행 기준으로 어떻게 바꿀 수 있을까?" /></Field>
