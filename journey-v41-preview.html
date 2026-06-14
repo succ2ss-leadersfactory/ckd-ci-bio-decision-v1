@@ -11,7 +11,7 @@
       display: none !important;
     }
     body::before {
-      content: 'v41 통합 확인 버전 · CSF별 KPI 연동 + AI 확장 실습 적용';
+      content: 'v41 통합 확인 버전 · React AI 확장 실습 정식 연결';
       display: block;
       position: sticky;
       top: 0;
@@ -23,89 +23,13 @@
       font-weight: 900;
       letter-spacing: -0.02em;
     }
-    .v41-ai-expansion-panel {
-      margin: 16px auto 24px;
-      max-width: 1120px;
-      border: 1px solid #ddd6fe;
-      border-radius: 24px;
-      background: #f5f3ff;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    .v41-ai-expansion-panel h3 { margin: 4px 0 8px; font-size: 20px; font-weight: 900; color: #0f172a; }
-    .v41-ai-expansion-panel p { margin: 0; color: #475569; font-size: 14px; font-weight: 700; line-height: 1.7; }
-    .v41-ai-expansion-panel .eyebrow { color: #6d28d9; font-size: 12px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
-    .v41-ai-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
-    .v41-ai-box { border: 1px solid #e2e8f0; border-radius: 18px; background: #fff; padding: 14px; }
-    .v41-ai-box label { display: block; font-size: 13px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
-    .v41-ai-box textarea { width: 100%; min-height: 150px; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; font-size: 13px; line-height: 1.6; box-sizing: border-box; }
-    .v41-ai-expansion-panel button { margin-top: 14px; border: 0; border-radius: 14px; background: #6d28d9; color: #fff; padding: 10px 16px; font-size: 13px; font-weight: 900; cursor: pointer; }
-    .v41-ai-checklist { border: 1px solid #ddd6fe; border-radius: 18px; background: #fff; padding: 14px; font-size: 13px; font-weight: 800; line-height: 1.7; color: #475569; }
-    .v41-ai-checklist b { color: #5b21b6; }
-    @media (max-width: 760px) { .v41-ai-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div id="journey-root"></div>
   <script>
-    window.__V41_PREVIEW_PROTECTION_MARKERS = 'v41 isolated preview route|v41 merged version badge|CSF별 KPI 연동 구조 적용|AI 추가 팀 전략과제 발굴 실습|pilot URLs preserved|ckd-ai-lab.html 보호|journey-v40-vnext-preview.html 보호|v40 parity scaffold|journey-v41-preview.html';
-
-    function createAiExpansionPrompt() {
-      const rootText = (document.getElementById('journey-root')?.innerText || '').slice(0, 6000);
-      return [
-        '당신은 전략컨설턴트이자 성과관리 전문가입니다.',
-        '',
-        '[현재 화면 맥락]',
-        rootText,
-        '',
-        '[요청]',
-        '현재 제공된 팀 전략과제-팀 CSF-팀 KPI 구조는 유지하되, 추가 팀 전략과제 후보 3개를 발굴해 주세요.',
-        '각 추가 팀 전략과제마다 CSF 3개를 만들고, 각 CSF마다 KPI 2개씩 제안해 주세요.',
-        'KPI에는 관리 주기, 확인 기준/증거, 담당/확인을 반드시 붙여 주세요.',
-        '',
-        '[출력 형식]',
-        '1. 추가 팀 전략과제 후보 3개',
-        '2. 각 전략과제별 CSF 3개',
-        '3. 각 CSF별 KPI 2개',
-        '4. 성과관리 관점의 주의점',
-        '5. 사람이 반드시 검토해야 할 질문',
-        '',
-        '[검토 기준]',
-        '- 팀 전략과제가 전사 추진과제에 기여하는가?',
-        '- CSF는 단순 활동이 아니라 성공조건인가?',
-        '- KPI는 해당 CSF를 직접 측정하는가?',
-        '- KPI에 관리 주기와 확인 증거가 있는가?'
-      ].join('\n');
-    }
-
-    function installV41AiExpansionPanel() {
-      const root = document.getElementById('journey-root');
-      if (!root || document.getElementById('v41-ai-expansion-panel')) return;
-      const text = root.innerText || '';
-      if (!text.includes('팀 기준 만들기')) return;
-      const panel = document.createElement('section');
-      panel.id = 'v41-ai-expansion-panel';
-      panel.className = 'v41-ai-expansion-panel';
-      panel.innerHTML = `
-        <div class="eyebrow">AI 확장 실습</div>
-        <h3>AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
-        <p>기본 보기만 고르는 데서 끝내지 않고, AI에게 추가 전략과제 후보와 CSF/KPI 구조를 만들게 한 뒤 사람이 검토합니다.</p>
-        <button type="button" id="v41-ai-prompt-button">AI 실습 프롬프트 만들기</button>
-        <div class="v41-ai-grid">
-          <div class="v41-ai-box"><label>AI에게 입력할 프롬프트</label><textarea id="v41-ai-prompt" placeholder="버튼을 누르면 현재 화면 맥락을 반영한 프롬프트가 생성됩니다."></textarea></div>
-          <div class="v41-ai-box"><label>AI 결과 붙여넣기</label><textarea id="v41-ai-result" placeholder="AI가 만든 추가 팀 전략과제, CSF, KPI를 붙여넣습니다."></textarea></div>
-          <div class="v41-ai-box"><label>사람이 검토한 최종 보완</label><textarea id="v41-ai-review" placeholder="AI 결과 중 유지할 것, 수정할 것, 제외할 것을 적습니다."></textarea></div>
-          <div class="v41-ai-checklist"><b>검토 기준</b><br/>1. 팀 전략과제가 전사 추진과제에 기여하는가?<br/>2. CSF는 성공조건인가, 단순 활동인가?<br/>3. KPI는 해당 CSF를 직접 측정하는가?<br/>4. KPI에 관리 주기와 확인 증거가 있는가?<br/>5. 6단계 업무지시로 내려갈 수 있는가?</div>
-        </div>`;
-      root.appendChild(panel);
-      document.getElementById('v41-ai-prompt-button')?.addEventListener('click', function () {
-        const prompt = document.getElementById('v41-ai-prompt');
-        if (prompt) prompt.value = createAiExpansionPrompt();
-      });
-    }
-    window.setInterval(installV41AiExpansionPanel, 800);
+    window.__V41_PREVIEW_PROTECTION_MARKERS = 'v41 isolated preview route|React AI 확장 실습 정식 연결|CSF별 KPI 연동 구조 적용|pilot URLs preserved|ckd-ai-lab.html 보호|journey-v40-vnext-preview.html 보호|journey-v41-preview.html';
   </script>
-  <script type="module" src="/src/journey-v41-app-preview.tsx?v=ai-expansion-practice-2414277"></script>
+  <script type="module" src="/src/journey-v41-app-preview.tsx?v=react-ai-expansion-d0331ce"></script>
 </body>
 </html>
