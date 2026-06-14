@@ -11,7 +11,7 @@ const V41_CONFIG_SMOKE_MARKERS = [
   '질문 다듬기',
   '시장 변화 읽기',
   '팀 기준 만들기',
-  '업무지시 만들기',
+  '업무관리 실행계획 만들기',
   '할 일·줄일 일',
   '업무 경계 나누기',
   '1on1 대상 고르기',
@@ -43,12 +43,12 @@ export const V41_VISIBLE_APP_STEPS: JourneyStep[] = [
   {
     id: 'dashboard-analysis',
     title: '팀 기준 만들기',
-    description: '전사전략을 우리 팀 기준, 지표, 2주 기준으로 바꿉니다.',
+    description: '전사전략을 우리 팀 전략과제, CSF, KPI 기준으로 바꿉니다.',
   },
   {
     id: 'task-execution-design',
-    title: '업무지시 만들기',
-    description: '성과 기준을 팀원이 실행할 업무지시로 바꿉니다.',
+    title: '업무관리 실행계획 만들기',
+    description: '팀 성과기준을 실행관리 주기, 실행과제, 담당, 증거, 점검 질문으로 바꿉니다.',
   },
   {
     id: 'task-priority-flow',
