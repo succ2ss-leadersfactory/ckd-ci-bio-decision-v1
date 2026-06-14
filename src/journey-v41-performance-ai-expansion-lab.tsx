@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useStored } from './journey-storage';
 import { DEFAULT_PHARMA_RESEARCH_STATE, PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
@@ -36,9 +36,26 @@ function Box({ label, help, children }: { label: string; help?: string; children
   return <label className="block rounded-2xl border border-violet-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
+async function copyTextToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', 'true');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+}
+
 export function V41PerformanceAiExpansionLab() {
   const [ai, setAi] = useStored<AiExpansionState>(AI_KEY, DEFAULT_AI);
   const [cascade, setCascade] = useStored<CascadeState>(CASCADE_KEY, DEFAULT_CASCADE);
+  const [copied, setCopied] = useState(false);
   const [research] = useStored<PharmaStrategyResearchState>(PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, DEFAULT_PHARMA_RESEARCH_STATE);
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
@@ -56,7 +73,23 @@ export function V41PerformanceAiExpansionLab() {
       '',
       '김박사 추천 검토 기준: 구체성, 맥락, 실행 가능성, 팀장 언어, 확인 가능성을 기준으로 스스로 점검한 뒤 답변해 주세요.',
     ].join('\n');
+    setCopied(false);
     setAi({ ...ai, prompt: base });
+  };
+
+  const copyPrompt = async () => {
+    const prompt = ai.prompt.trim();
+    if (!prompt) {
+      window.alert('먼저 AI 실습 프롬프트를 만들어 주세요.');
+      return;
+    }
+    try {
+      await copyTextToClipboard(prompt);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      window.alert('자동 복사가 되지 않았습니다. 프롬프트 영역의 내용을 직접 선택해 복사해 주세요.');
+    }
   };
 
   const applyToTeamStandard = () => {
@@ -84,10 +117,13 @@ export function V41PerformanceAiExpansionLab() {
     <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
     <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토해 최종 팀 성과기준을 확정합니다. 실행계획은 6단계에서 수립합니다.</p>
     <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-violet-800"><span className="rounded-full bg-white px-3 py-1">역할</span><span className="rounded-full bg-white px-3 py-1">상황/맥락</span><span className="rounded-full bg-white px-3 py-1">과제/요청</span><span className="rounded-full bg-white px-3 py-1">출력형식</span><span className="rounded-full bg-white px-3 py-1">제약/조건</span></div>
-    <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
+    <div className="mt-4 flex flex-wrap gap-2">
+      <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
+      <button type="button" className="rounded-xl bg-white px-4 py-2 text-sm font-black text-violet-800 ring-1 ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50" onClick={copyPrompt} disabled={!ai.prompt.trim()}>{copied ? '복사 완료' : '프롬프트 복사'}</button>
+    </div>
     <div className="mt-4 grid gap-3 md:grid-cols-2">
-      <Box label="AI에게 입력할 프롬프트" help="3단계 김박사 추천 기준을 반영해 자동 생성합니다."><TextArea value={ai.prompt} onChange={(prompt) => setAi({ ...ai, prompt })} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
-      <Box label="AI 결과 붙여넣기" help="AI가 만든 추가 팀 전략과제, CSF, KPI를 붙여넣습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
+      <Box label="AI에게 입력할 프롬프트" help="프롬프트를 만든 뒤 ‘프롬프트 복사’를 눌러 GPT에 붙여넣습니다."><TextArea value={ai.prompt} onChange={(prompt) => { setCopied(false); setAi({ ...ai, prompt }); }} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
+      <Box label="AI 결과 붙여넣기" help="GPT가 생성한 추가 팀 전략과제, CSF, KPI를 이곳에 붙여넣습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
       <Box label="사람이 검토한 최종 보완" help="유지할 것, 수정할 것, 제외할 것을 정리합니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder="사람의 판단으로 최종 보완 내용을 적습니다." /></Box>
       <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 6단계에서 실행관리 계획으로 전환할 수 있는가?</p><button type="button" className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white" onClick={applyToTeamStandard}>AI 결과 반영해 팀 기준 확정</button></div>
     </div>
