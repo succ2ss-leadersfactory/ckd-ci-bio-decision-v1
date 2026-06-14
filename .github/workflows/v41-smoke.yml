@@ -29,15 +29,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run v41 static smoke check
-        run: npm run smoke:v41:static
-
-      - name: Run v41 scoped TypeScript check
-        run: npm run typecheck:v41
-
-      - name: Build Vite app
-        run: npm run build
-
       - name: Run integrated v41 smoke check
         run: npm run smoke:v41
 
@@ -50,10 +41,14 @@ jobs:
             echo "## Commands covered"
             echo ""
             echo "- npm install"
-            echo "- npm run smoke:v41:static"
-            echo "- npm run typecheck:v41"
-            echo "- npm run build"
             echo "- npm run smoke:v41"
+            echo "  - includes npm run smoke:v41:static"
+            echo "  - includes npm run typecheck:v41"
+            echo "  - includes npm run build"
+            echo ""
+            echo "## Optimization note"
+            echo ""
+            echo "- The workflow runs the aggregate v41 smoke command once to avoid repeating static smoke, typecheck, and build twice."
             echo ""
             echo "## Protected route policy"
             echo ""
