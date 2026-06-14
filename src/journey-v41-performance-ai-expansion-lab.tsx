@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useStored } from './journey-storage';
 import { DEFAULT_PHARMA_RESEARCH_STATE, PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
@@ -34,36 +34,36 @@ function Box({ label, help, children }: { label: string; help?: string; children
   return <label className="block rounded-2xl border border-violet-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
-function findPlanningSection() {
+function findOriginalPlanningSection() {
   const heading = Array.from(document.querySelectorAll('h3')).find((item) => item.textContent?.trim() === '팀 기준과 2주 실행계획');
   return heading?.closest('section') ?? null;
 }
 
-function hideOriginalPlanButton() {
+function hideOriginalPlanElements() {
   const buttons = Array.from(document.querySelectorAll('button'));
   const button = buttons.find((item) => item.textContent?.trim() === 'CSF 기반 2주 실행계획 만들기');
   if (button) button.setAttribute('style', 'display:none!important');
+  const originalPlan = findOriginalPlanningSection();
+  if (originalPlan) originalPlan.setAttribute('style', 'display:none!important');
+}
+
+function PlanBox({ label, help, children }: { label: string; help?: string; children: React.ReactNode }) {
+  return <label className="block rounded-2xl border border-emerald-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
 export function V41PerformanceAiExpansionLab() {
-  const sectionRef = useRef<HTMLElement | null>(null);
   const [ai, setAi] = useStored<AiExpansionState>(AI_KEY, DEFAULT_AI);
   const [cascade, setCascade] = useStored<CascadeState>(CASCADE_KEY, DEFAULT_CASCADE);
   const [research] = useStored<PharmaStrategyResearchState>(PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, DEFAULT_PHARMA_RESEARCH_STATE);
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    const positionAndClean = () => {
-      hideOriginalPlanButton();
-      const current = sectionRef.current;
-      const plan = findPlanningSection();
-      if (!current || !plan || current.nextElementSibling === plan) return;
-      plan.parentElement?.insertBefore(current, plan);
-    };
-    positionAndClean();
-    const timer = window.setInterval(positionAndClean, 500);
+    hideOriginalPlanElements();
+    const timer = window.setInterval(hideOriginalPlanElements, 500);
     return () => window.clearInterval(timer);
   }, []);
+
+  const updateCascade = (patch: Partial<CascadeState>) => setCascade({ ...cascade, ...patch });
 
   const buildPrompt = () => {
     const base = [
@@ -98,17 +98,31 @@ export function V41PerformanceAiExpansionLab() {
     });
   };
 
-  return <section ref={sectionRef} className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5" data-v41-ai-expansion-position="before-team-standard-plan">
-    <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 확장 실습 · 김박사 추천 프롬프팅 기준</p>
-    <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
-    <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토한 다음 2주 실행계획을 수립합니다.</p>
-    <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-violet-800"><span className="rounded-full bg-white px-3 py-1">역할</span><span className="rounded-full bg-white px-3 py-1">상황/맥락</span><span className="rounded-full bg-white px-3 py-1">과제/요청</span><span className="rounded-full bg-white px-3 py-1">출력형식</span><span className="rounded-full bg-white px-3 py-1">제약/조건</span></div>
-    <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
-    <div className="mt-4 grid gap-3 md:grid-cols-2">
-      <Box label="AI에게 입력할 프롬프트" help="3단계 김박사 추천 기준을 반영해 자동 생성합니다."><TextArea value={ai.prompt} onChange={(prompt) => setAi({ ...ai, prompt })} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
-      <Box label="AI 결과 붙여넣기" help="AI가 만든 추가 팀 전략과제, CSF, KPI를 붙여넣습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
-      <Box label="사람이 검토한 최종 보완" help="유지할 것, 수정할 것, 제외할 것을 정리합니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder="사람의 판단으로 최종 보완 내용을 적습니다." /></Box>
-      <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 팀장 언어와 2주 실행으로 바꿀 수 있는가?</p><button type="button" className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white" onClick={applyToPlan}>AI 결과 반영해 2주 실행계획 수립</button></div>
-    </div>
-  </section>;
+  return <>
+    <section className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5" data-v41-ai-expansion-position="before-team-standard-plan">
+      <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 확장 실습 · 김박사 추천 프롬프팅 기준</p>
+      <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토한 다음 2주 실행계획을 수립합니다.</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-violet-800"><span className="rounded-full bg-white px-3 py-1">역할</span><span className="rounded-full bg-white px-3 py-1">상황/맥락</span><span className="rounded-full bg-white px-3 py-1">과제/요청</span><span className="rounded-full bg-white px-3 py-1">출력형식</span><span className="rounded-full bg-white px-3 py-1">제약/조건</span></div>
+      <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <Box label="AI에게 입력할 프롬프트" help="3단계 김박사 추천 기준을 반영해 자동 생성합니다."><TextArea value={ai.prompt} onChange={(prompt) => setAi({ ...ai, prompt })} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
+        <Box label="AI 결과 붙여넣기" help="AI가 만든 추가 팀 전략과제, CSF, KPI를 붙여넣습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
+        <Box label="사람이 검토한 최종 보완" help="유지할 것, 수정할 것, 제외할 것을 정리합니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder="사람의 판단으로 최종 보완 내용을 적습니다." /></Box>
+        <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 팀장 언어와 2주 실행으로 바꿀 수 있는가?</p><button type="button" className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white" onClick={applyToPlan}>AI 결과 반영해 2주 실행계획 수립</button></div>
+      </div>
+    </section>
+
+    <section className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm md:p-5" data-v41-ai-plan-section="true">
+      <h3 className="text-lg font-black text-slate-950">팀 기준과 2주 실행계획</h3>
+      <p className="mt-1 text-xs font-bold leading-5 text-slate-500">AI 결과와 사람 검토 내용을 반영해 최종 실행 기준을 정리합니다.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <PlanBox label="팀 기준 초안"><TextArea value={cascade.teamStandard || ''} onChange={(teamStandard) => updateCascade({ teamStandard })} placeholder="AI 결과 반영 버튼을 누르면 팀 기준 초안이 생성됩니다." /></PlanBox>
+        <PlanBox label="2주 실행계획"><TextArea value={cascade.twoWeekFirstAction || ''} onChange={(twoWeekFirstAction) => updateCascade({ twoWeekFirstAction })} placeholder="AI 결과 반영 버튼을 누르면 2주 실행계획이 생성됩니다." /></PlanBox>
+        <PlanBox label="이번 2주 동안 잠시 줄일 일"><TextArea value={cascade.pauseActivity || ''} onChange={(pauseActivity) => updateCascade({ pauseActivity })} placeholder="전략과제, CSF, KPI와 연결되지 않는 일을 줄입니다." /></PlanBox>
+        <PlanBox label="팀장이 중간에 물어볼 확인 질문"><TextArea value={cascade.midCheckQuestion || ''} onChange={(midCheckQuestion) => updateCascade({ midCheckQuestion })} placeholder="AI가 제안한 KPI를 점검하는 질문을 적습니다." /></PlanBox>
+        <PlanBox label="다음 단계에서 업무지시로 바꿀 기준"><TextArea value={cascade.finalExecutionStandard || ''} onChange={(finalExecutionStandard) => updateCascade({ finalExecutionStandard })} placeholder="6단계 업무지시에 반영할 기준을 적습니다." /></PlanBox>
+      </div>
+    </section>
+  </>;
 }
