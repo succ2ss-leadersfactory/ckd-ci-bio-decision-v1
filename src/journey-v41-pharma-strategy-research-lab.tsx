@@ -14,13 +14,12 @@ const V41_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   '소스 기반으로 정리하기',
   '전략회의 초안 만들기',
   '전사 추진 초점',
-  '전사 관점 CSF',
-  '전사 관점 KPI',
-  '핵심 성공 요인',
-  '측정 가능한 지표',
+  '전사 추진과제 후보',
+  '추진과제별 CSF 후보',
+  '추진과제별 KPI 후보',
+  '전사전략과제 추진계획',
   '우리 팀 상황 제거',
   '팀장 관점 질문 제거',
-  '전사 전략과제 최신 정보 수집',
   'ckd.v41.pharmaStrategyResearch.v1',
 ].join('|');
 void V41_PHARMA_STRATEGY_RESEARCH_MARKERS;
@@ -65,7 +64,7 @@ export function V41PharmaStrategyResearchLab() {
     const parsed = parseNotebookAnswer(state.notebookAnswer);
     const hasParsedValue = Object.values(parsed).some((value) => Boolean(value?.trim()));
     if (!hasParsedValue) {
-      setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [전사 CSF 후보], [전사 KPI 후보], [팀 방향 전환 질문], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
+      setCopyMessage('NotebookLM 결과에서 인식 가능한 항목 제목을 찾지 못했습니다. [전사 추진과제 후보], [추진과제별 CSF 후보], [추진과제별 KPI 후보], [추진계획 수립 쟁점], [주의해야 할 표현] 형태가 있는지 확인해 주세요.');
       return;
     }
     setState((current) => ({ ...current, issueOne: parsed.issueOne || current.issueOne, issueTwo: parsed.issueTwo || current.issueTwo, issueThree: parsed.issueThree || current.issueThree, teamImpact: parsed.teamImpact || current.teamImpact, metricQuestions: parsed.metricQuestions || current.metricQuestions, caution: parsed.caution || current.caution }));
@@ -91,7 +90,7 @@ export function V41PharmaStrategyResearchLab() {
         </div>
       </div>
       <Field label="전략 과제 직접 입력"><input className="w-full rounded-xl border px-3 py-2" value={state.customTopic} onChange={(event) => update({ customTopic: event.target.value })} placeholder="예: GLP-1 비만·대사질환 포트폴리오 실행 기반 구축" /></Field>
-      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">Perplexity에는 선택한 전사 전략과제와 관련된 최신 공개자료만 찾게 합니다. 팀 실행계획, 팀원 행동, 2주 실행관리는 다음 단계에서 다룹니다.</div>
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">Perplexity에는 선택한 전사 전략과제와 관련된 최신 공개자료만 찾게 합니다. 추진과제, CSF, KPI, 추진계획은 소스 기반 정리와 LM Studio 단계에서 만듭니다.</div>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(pPrompt, 'Perplexity 자료 찾기 프롬프트')}>Perplexity 프롬프트 복사</button>
       {copyMessage ? <p className="text-sm font-black text-cyan-700">{copyMessage}</p> : null}
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{pPrompt}</pre>
@@ -105,21 +104,21 @@ export function V41PharmaStrategyResearchLab() {
       <Field label="분리된 URL"><TextArea value={webSourceUrls} readOnly /></Field>
     </Section>
 
-    <Section title="3단계: 소스 기반으로 정리하기">
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">분리한 URL을 NotebookLM 웹 소스로 등록한 뒤, 아래 프롬프트로 전사 전략과제의 변화 신호, 전사 CSF, 전사 KPI를 정리합니다.</div>
+    <Section title="3단계: 소스 기반으로 추진과제·CSF·KPI 정리하기">
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-950">분리한 URL을 NotebookLM 웹 소스로 등록한 뒤, 아래 프롬프트로 전사 추진과제 후보, 추진과제별 CSF, 추진과제별 KPI를 정리합니다.</div>
       <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(analysisPrompt, 'NotebookLM 분석 질문')}>NotebookLM 프롬프트 복사</button>
       <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-900 p-4 text-xs leading-5 text-slate-100">{analysisPrompt}</pre>
       <Field label="NotebookLM 결과 붙여넣기"><TextArea value={state.notebookAnswer} onChange={(value) => update({ notebookAnswer: value })} /></Field>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={structureNotebookAnswer}>결과 항목별 정리</button>
-      <div className="grid gap-3 md:grid-cols-2"><Field label="핵심 변화 신호"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="전사 CSF 후보"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="전사 KPI 후보"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="근거 요약"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
-      <Field label="팀 방향 전환 질문"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
+      <div className="grid gap-3 md:grid-cols-2"><Field label="핵심 변화 신호"><TextArea value={state.issueOne} onChange={(value) => update({ issueOne: value })} /></Field><Field label="전사 추진과제 후보"><TextArea value={state.issueTwo} onChange={(value) => update({ issueTwo: value })} /></Field><Field label="추진과제별 CSF 후보"><TextArea value={state.issueThree} onChange={(value) => update({ issueThree: value })} /></Field><Field label="근거 요약"><TextArea value={state.teamImpact} onChange={(value) => update({ teamImpact: value })} /></Field></div>
+      <Field label="추진과제별 KPI 후보와 추진계획 수립 쟁점"><TextArea value={state.metricQuestions} onChange={(value) => update({ metricQuestions: value })} /></Field>
       <Field label="주의해야 할 표현"><TextArea value={state.caution} onChange={(value) => update({ caution: value })} /></Field>
     </Section>
 
-    <Section title="4단계: 전략회의 초안 만들기">
-      <Field label="보고서 요청문"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, '보고서 요청문')}>보고서 요청문 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
-      <Field label="슬라이드 요청문"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, '슬라이드 요청문')}>슬라이드 요청문 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
-      <Field label="인포그래픽 요청문"><TextArea value={infographic} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, '인포그래픽 요청문')}>인포그래픽 요청문 복사</button><TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
+    <Section title="4단계: 전사전략과제 추진계획 초안 만들기">
+      <Field label="보고서용 프롬프트"><TextArea value={report} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(report, '보고서용 프롬프트')}>보고서용 프롬프트 복사</button><TextArea value={state.reportDraft} onChange={(value) => update({ reportDraft: value })} placeholder="LM Studio에서 생성한 보고서 초안을 붙여넣으세요." />
+      <Field label="슬라이드용 프롬프트"><TextArea value={slides} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(slides, '슬라이드용 프롬프트')}>슬라이드용 프롬프트 복사</button><TextArea value={state.slideDraft} onChange={(value) => update({ slideDraft: value })} placeholder="LM Studio에서 생성한 슬라이드 구성안을 붙여넣으세요." />
+      <Field label="인포그래픽용 프롬프트"><TextArea value={infographic} readOnly /></Field><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => copyText(infographic, '인포그래픽용 프롬프트')}>인포그래픽용 프롬프트 복사</button><TextArea value={state.infographicDraft} onChange={(value) => update({ infographicDraft: value })} placeholder="LM Studio에서 생성한 인포그래픽 초안을 붙여넣으세요." />
       <Field label="전략회의 메모"><TextArea value={state.meetingMemo} onChange={(value) => update({ meetingMemo: value })} /></Field>
       <Field label="예상 질문"><TextArea value={state.expectedQuestions} onChange={(value) => update({ expectedQuestions: value })} /></Field>
     </Section>
