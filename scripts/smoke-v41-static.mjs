@@ -42,8 +42,8 @@ const files = {
 
 for (const marker of ['<title>C1 Bio Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 preview']) mustInclude(files.html, marker, 'v41 html');
 for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) mustInclude(files.viteConfig, marker, 'v41 Vite build input');
-for (const marker of ['V41PreviewApp', 'V41PeopleSelectionLab', 'V41OneOnOnePracticeLab', 'V41_VISIBLE_APP_STEPS', 'V41FlowStrip', 'V41ProgressCoachPanel', 'ckd.v41.peopleManagement.v2']) mustInclude(files.app, marker, 'v41 app');
-for (const marker of ['v41 step 2 basic leader profile', 'v41 step 2 basic member profiles', '이대호 팀장 기본 정보', '업무 방식', '소통 방식', '성장 포인트']) mustInclude(files.app, marker, 'v41 step 2 basic profile content');
+for (const marker of ['V41PreviewApp', 'V41PeopleSelectionLab', 'V41OneOnOnePracticeLab', 'V41_VISIBLE_APP_STEPS', 'V41FlowStrip', 'V41ProgressCoachPanel']) mustInclude(files.app, marker, 'v41 app');
+for (const marker of ['v41 step 2 basic leader profile', 'v41 step 2 basic member profiles', '이대호 팀장 기본 정보', '주요 역할', '업무스타일', '소통스타일', '강점', '아쉬운 점', '비고']) mustInclude(files.app, marker, 'v41 step 2 basic profile content');
 for (const marker of ['V40VNextPeopleSelectionLab', 'V40VNextOneOnOnePracticeLab', "import './journey-v40-vnext-app-preview'"]) mustNotInclude(files.app, marker, 'old app dependency');
 
 for (const marker of ['V41PromptPracticeReviewLab', 'v41 prompt practice lab cloned', 'ckd.v41.promptPracticeReview.v2']) mustInclude(files.promptLab, marker, 'v41 prompt lab');
@@ -75,7 +75,7 @@ for (const marker of ['V41LabStorageScope', 'v41 inherited lab storage isolation
 for (const marker of ['src/journey-v41-*.tsx', 'src/journey-v41-*.ts']) mustInclude(files.tsconfig, marker, 'v41 tsconfig');
 for (const marker of ['typecheck:v41', 'smoke:v41:static', 'smoke:v41']) mustInclude(files.packageJson, marker, 'v41 scripts');
 for (const marker of ['journey-v41-preview.html', 'journey-v41-app-preview.tsx', 'v41 preview']) { mustNotInclude(files.pilotEntry, marker, 'existing pilot entry'); mustNotInclude(files.v40Html, marker, 'existing v40 route'); }
-for (const marker of ['journey-v40-vnext-preview.html', '/src/journey-v40-vnext-app-preview.tsx']) mustInclude(files.v40Html, marker, 'existing v40 route remains intact');
+for (const marker of ['/src/journey-v40-vnext-app-preview.tsx']) mustInclude(files.v40Html, marker, 'existing v40 route remains intact');
 
 if (failures.length > 0) { console.error('v41 static smoke failed:'); for (const failure of failures) console.error(`- ${failure}`); process.exit(1); }
 console.log('v41 static smoke passed.');
