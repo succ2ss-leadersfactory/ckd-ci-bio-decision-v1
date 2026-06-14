@@ -13,10 +13,14 @@ Verify the isolated v41 preview lane without changing the existing pilot route.
 Run locally when a checkout is available.
 
 ```bash
-npm run smoke:v41:static
-npm run typecheck:v41
 npm run smoke:v41
 ```
+
+`npm run smoke:v41` includes:
+
+- `npm run smoke:v41:static`
+- `npm run typecheck:v41`
+- `npm run build`
 
 Expected result:
 
