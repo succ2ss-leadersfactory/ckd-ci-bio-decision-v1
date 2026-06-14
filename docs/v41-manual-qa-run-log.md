@@ -104,6 +104,47 @@ Copy this block for each QA run.
 - Follow-up needed:
 ```
 
+## Stabilization baseline
+
+## QA Run 2026-06-15
+
+- Tester: ChatGPT code stabilization pass
+- Device: Repository-level file review
+- Browser: Not executed in browser
+- Route tested: `/journey-v41-preview.html`
+- Commit SHA: `cd27687e97d6f0bde1e88244ffc7ffc260664a5e`
+- Result: Partial
+
+### Automated checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| npm run smoke:v41:static | Not run | Static smoke script was aligned with the current 10-screen flow and QA markers, but local/CI execution is still needed. |
+| npm run typecheck:v41 | Not run | TypeScript check still needs local or CI execution. |
+| npm run smoke:v41 | Not run | Full smoke still needs local or CI execution. |
+
+### Browser checks
+
+| Area | Result | Notes |
+| --- | --- | --- |
+| v41 route access | Not run | Vercel deployment status was checked, but browser interaction was not executed in this pass. |
+| existing pilot route protection | Not run | Protected-route browser recheck still needed. |
+| Step 1 gate | Not run | Fresh 10-screen browser QA still needed. |
+| Step 5→10 data flow | Not run | Needs browser QA using the table above. |
+| Step 10 execution cycle reflection | Not run | Needs browser QA after selecting execution cycle in Step 6. |
+| storage isolation | Not run | Needs browser localStorage check. |
+
+### Issues found
+
+| Severity | Step | Issue | Action |
+| --- | --- | --- | --- |
+| Medium | QA automation | Static smoke could fail if QA marker text drifted from the checklist/run log. | Added run log and QA checklist marker checks to `scripts/smoke-v41-static.mjs`; final execution still required. |
+
+### Decision
+
+- Ready for review: No
+- Follow-up needed: Run `npm run smoke:v41:static`, `npm run typecheck:v41`, and browser QA for Step 5→10 data flow.
+
 ## Initial run
 
 ## QA Run 2026-06-13
