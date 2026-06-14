@@ -4,7 +4,8 @@ import { useStored } from './journey-storage';
 const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   'V41TaskExecutionBridgeLab',
   '업무관리 실행계획 만들기',
-  '5단계 팀 성과기준 확인',
+  '5단계에서 선택한 팀 기준 재료',
+  '6단계에서 팀 성과기준 확정',
   '실행관리 주기 선택',
   'AI로 실행계획 초안 만들기',
   'AI 결과 검토 후 최종 실행계획 확정',
@@ -15,16 +16,19 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
 void V41_TASK_EXECUTION_BRIDGE_MARKERS;
 
 type PerformanceState = Record<string, any> & {
+  selectedTeamTask?: string;
+  customTeamTask?: string;
+  selectedCsf?: string;
+  selectedKpi?: string;
+  selectedInitiative?: string;
   teamStandard?: string;
-  twoWeekFirstAction?: string;
-  pauseActivity?: string;
-  midCheckQuestion?: string;
   finalExecutionStandard?: string;
 };
 
 type ExecutionCycle = '1주' | '2주' | '4주' | '월간' | '분기';
 
 type TaskExecutionState = {
+  confirmedTeamStandard: string;
   executionCycle: ExecutionCycle;
   executionTaskOne: string;
   executionTaskTwo: string;
@@ -50,6 +54,7 @@ const TASK_STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const DEFAULT_PERFORMANCE_STATE: PerformanceState = {};
 const EXECUTION_CYCLES: ExecutionCycle[] = ['1주', '2주', '4주', '월간', '분기'];
 const DEFAULT_TASK_STATE: TaskExecutionState = {
+  confirmedTeamStandard: '',
   executionCycle: '2주',
   executionTaskOne: '',
   executionTaskTwo: '',
@@ -107,17 +112,40 @@ export function V41TaskExecutionBridgeLab() {
   const [state, setState] = useStored<TaskExecutionState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
   const update = (patch: Partial<TaskExecutionState>) => setState({ ...state, ...patch });
 
-  const sourceSummary = useMemo(() => {
-    return [
-      textOrEmpty(performanceState.teamStandard),
-      textOrEmpty(performanceState.twoWeekFirstAction),
-      textOrEmpty(performanceState.pauseActivity),
-      textOrEmpty(performanceState.midCheckQuestion),
-      textOrEmpty(performanceState.finalExecutionStandard),
-    ].filter(Boolean).join('\n');
-  }, [performanceState.teamStandard, performanceState.twoWeekFirstAction, performanceState.pauseActivity, performanceState.midCheckQuestion, performanceState.finalExecutionStandard]);
+  const teamTask = textOrEmpty(performanceState.customTeamTask) || textOrEmpty(performanceState.selectedTeamTask) || '5단계에서 선택한 팀 전략과제';
+  const selectedCsf = textOrEmpty(performanceState.selectedCsf) || '5단계에서 선택한 팀 CSF';
+  const selectedKpi = textOrEmpty(performanceState.selectedKpi) || '5단계에서 선택한 팀 KPI';
+  const selectedInitiative = textOrEmpty(performanceState.selectedInitiative) || '5단계에서 선택한 세부 추진과제 후보';
+  const aiReviewMaterial = textOrEmpty(performanceState.teamStandard);
+  const transferStandard = textOrEmpty(performanceState.finalExecutionStandard);
 
-  const sourceEvidence = textOrEmpty(performanceState.finalExecutionStandard) || textOrEmpty(performanceState.twoWeekFirstAction) || '5단계에서 정한 팀 기준과 KPI 확인 증거를 기준으로 삼습니다.';
+  const criteriaMaterial = useMemo(() => {
+    return [
+      `팀 전략과제: ${teamTask}`,
+      `팀 CSF: ${selectedCsf}`,
+      `팀 KPI: ${selectedKpi}`,
+      `세부 추진과제 후보: ${selectedInitiative}`,
+      aiReviewMaterial ? `[AI 확장/사람 검토 재료]\n${aiReviewMaterial}` : '',
+      transferStandard ? `[6단계 전환 기준]\n${transferStandard}` : '',
+    ].filter(Boolean).join('\n');
+  }, [teamTask, selectedCsf, selectedKpi, selectedInitiative, aiReviewMaterial, transferStandard]);
+
+  const suggestedTeamStandard = useMemo(() => {
+    return [
+      '[6단계 확정 팀 성과기준]',
+      `팀 전략과제: ${teamTask}`,
+      `팀 CSF: ${selectedCsf}`,
+      `팀 KPI: ${selectedKpi}`,
+      `세부 추진과제 후보: ${selectedInitiative}`,
+      aiReviewMaterial ? '[AI 확장/사람 검토 반영]\n5단계 AI 확장 결과 중 우리 팀에 맞는 항목만 반영한다.' : '',
+      '확정 기준: CSF와 KPI의 연결이 끊기지 않고, 6단계에서 실행관리 주기·담당·증거·점검 질문으로 전환할 수 있어야 한다.',
+    ].filter(Boolean).join('\n');
+  }, [teamTask, selectedCsf, selectedKpi, selectedInitiative, aiReviewMaterial]);
+
+  const confirmedTeamStandard = textOrEmpty(state.confirmedTeamStandard) || suggestedTeamStandard;
+  const sourceEvidence = textOrEmpty(state.evidenceToCheck) || selectedKpi || '선택한 KPI를 확인할 증거를 6단계에서 정합니다.';
+
+  const buildTeamStandard = () => update({ confirmedTeamStandard: suggestedTeamStandard });
 
   const buildAiPrompt = () => {
     update({
@@ -125,12 +153,16 @@ export function V41TaskExecutionBridgeLab() {
         '역할: 당신은 제약영업팀장의 업무관리 실행계획 수립을 돕는 성과관리 전문가이자 업무관리 코치입니다.',
         '',
         '[상황/맥락]',
-        sourceSummary || '5단계 팀 성과기준이 아직 충분히 작성되지 않았습니다. 사용자가 선택한 팀 전략과제, CSF, KPI를 기준으로 실행계획을 만들어야 합니다.',
+        '아래는 5단계에서 선택·검토한 팀 기준 재료입니다. 아직 최종 실행계획은 아닙니다.',
+        criteriaMaterial,
+        '',
+        '[6단계에서 확정한 팀 성과기준]',
+        confirmedTeamStandard,
         '',
         `[선택한 실행관리 주기]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
         '',
         '[과제/요청]',
-        '위 기준을 바탕으로 실행관리 계획을 만들어 주세요. 단순 할 일 목록이 아니라 실행과제, 담당자 역할, 팀장 확인 방식, 확인 증거, 중간 점검 질문, 잠시 줄일 일, 리스크 대응까지 포함해 주세요.',
+        '위 팀 성과기준을 바탕으로 업무관리 실행계획을 만들어 주세요. 단순 할 일 목록이 아니라 실행과제, 담당자 역할, 팀장 확인 방식, 확인 증거, 중간 점검 질문, 잠시 줄일 일, 리스크 대응까지 포함해 주세요.',
         '',
         '[출력형식]',
         '1. 실행관리 주기',
@@ -158,20 +190,20 @@ export function V41TaskExecutionBridgeLab() {
   };
 
   const makeExecutionPlan = () => {
-    const taskOne = textOrEmpty(state.executionTaskOne) || '선택한 KPI와 연결되는 핵심 고객 반응 기록 기준을 맞춘다.';
-    const taskTwo = textOrEmpty(state.executionTaskTwo) || 'Follow-up 예정일과 완료 상태를 확인 가능한 기록으로 남긴다.';
-    const taskThree = textOrEmpty(state.executionTaskThree) || '팀장이 중간 점검에서 지연·지원 필요 항목을 확인한다.';
+    const taskOne = textOrEmpty(state.executionTaskOne) || `${selectedKpi}를 확인할 수 있도록 관련 고객 반응과 다음 행동을 정해진 기준으로 기록한다.`;
+    const taskTwo = textOrEmpty(state.executionTaskTwo) || `${selectedInitiative} 실행 과정에서 담당자별 진행상태와 Follow-up 지연 여부를 확인한다.`;
+    const taskThree = textOrEmpty(state.executionTaskThree) || '팀장이 중간 점검에서 지연·지원 필요 항목을 확인하고 우선순위를 조정한다.';
     const memberTasks = textOrEmpty(state.memberTasks) || '팀원은 고객 반응, 다음 행동, Follow-up 상태를 정해진 기준으로 기록한다.';
     const leaderCheckTasks = textOrEmpty(state.leaderCheckTasks) || '팀장은 기록 샘플, 지연 항목, 지원 필요 고객군을 확인한다.';
     const leaderSupportTasks = textOrEmpty(state.leaderSupportTasks) || '팀장은 좋은 기록 예시와 우선순위 조정 기준을 제공한다.';
-    const evidence = textOrEmpty(state.evidenceToCheck) || sourceEvidence;
-    const questions = textOrEmpty(state.midCheckQuestions) || '이번 주 실행에서 KPI가 보이는 증거는 무엇인가요? 막힌 고객군이나 지원이 필요한 담당자는 누구인가요?';
-    const pause = textOrEmpty(state.pauseActivities) || textOrEmpty(performanceState.pauseActivity) || '전략과제, CSF, KPI와 연결되지 않는 단순 활동량 늘리기와 장문 보고는 줄인다.';
+    const evidence = textOrEmpty(state.evidenceToCheck) || `${selectedKpi}와 연결된 CRM 기록, 고객 반응 기록, Follow-up 완료 여부`;
+    const questions = textOrEmpty(state.midCheckQuestions) || `이번 실행에서 ${selectedKpi}가 보이는 증거는 무엇인가요? 막힌 고객군이나 지원이 필요한 담당자는 누구인가요?`;
+    const pause = textOrEmpty(state.pauseActivities) || '팀 성과기준, CSF, KPI와 연결되지 않는 단순 활동량 늘리기와 장문 보고는 줄인다.';
     const risks = textOrEmpty(state.expectedRisks) || 'KPI가 활동량 지표로만 해석되거나, 확인 증거 없이 완료로 판단될 수 있다.';
     const aiReview = [textOrEmpty(state.aiResult), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
     const finalPlan = [
+      `[확정한 팀 성과기준]\n${confirmedTeamStandard}`,
       `[실행관리 주기]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
-      `[5단계 팀 성과기준]\n${sourceSummary || '5단계 기준 미작성'}`,
       `[핵심 실행과제]\n1. ${taskOne}\n2. ${taskTwo}\n3. ${taskThree}`,
       `[역할 배분]\n팀원이 할 일: ${memberTasks}\n팀장이 확인할 일: ${leaderCheckTasks}\n팀장이 지원할 일: ${leaderSupportTasks}`,
       `[확인 증거]\n${evidence}`,
@@ -181,6 +213,7 @@ export function V41TaskExecutionBridgeLab() {
       aiReview ? `[AI 결과 및 사람 검토 반영]\n${aiReview}` : '',
     ].filter(Boolean).join('\n\n');
     update({
+      confirmedTeamStandard,
       executionTaskOne: taskOne,
       executionTaskTwo: taskTwo,
       executionTaskThree: taskThree,
@@ -203,18 +236,25 @@ export function V41TaskExecutionBridgeLab() {
   return <section className="space-y-4">
     <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-cyan-700">업무관리 실행계획 만들기</p>
-      <h3 className="mt-1 text-xl font-black text-slate-950">팀 성과기준을 업무관리 계획으로 바꾸기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계에서 만든 전략과제·CSF·KPI를 팀원이 움직일 수 있는 실행과제, 담당, 증거, 점검 질문으로 전환합니다.</p>
+      <h3 className="mt-1 text-xl font-black text-slate-950">팀 기준 재료를 성과기준과 실행계획으로 확정하기</h3>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계에서 고른 전략과제·CSF·KPI는 아직 완성된 실행계획이 아닙니다. 이 단계에서 팀 성과기준을 확정하고 실행관리 주기, 실행과제, 담당, 증거, 점검 질문으로 전환합니다.</p>
     </section>
 
-    <Card title="5단계에서 넘어온 팀 성과기준" tone="cyan">
+    <Card title="5단계에서 선택한 팀 기준 재료" tone="cyan">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-        {line('팀 기준 초안', performanceState.teamStandard)}
-        {line('5단계 실행 기준', performanceState.twoWeekFirstAction)}
-        {line('잠시 줄일 활동', performanceState.pauseActivity)}
-        {line('팀장 중간 점검 질문', performanceState.midCheckQuestion)}
-        {line('업무관리로 넘길 기준', performanceState.finalExecutionStandard)}
+        {line('팀 전략과제 후보', teamTask)}
+        {line('팀 CSF 후보', selectedCsf)}
+        {line('팀 KPI 후보', selectedKpi)}
+        {line('세부 추진과제 후보', selectedInitiative)}
+        {line('AI 확장/사람 검토 재료', aiReviewMaterial)}
+        {line('6단계 전환 기준', transferStandard)}
       </div>
+    </Card>
+
+    <Card title="팀 성과기준 확정" tone="emerald">
+      <p className="text-sm font-bold leading-6 text-slate-600">5단계 재료를 그대로 복사하지 말고, 팀장이 실제로 관리할 수 있는 성과기준 문장으로 확정합니다.</p>
+      <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={buildTeamStandard}>5단계 재료로 팀 성과기준 초안 만들기</button>
+      <Field label="확정할 팀 성과기준" help="6단계 실행계획의 기준이 되는 문장입니다. 전략과제, CSF, KPI, 확인 증거가 보이게 정리합니다." value={state.confirmedTeamStandard || suggestedTeamStandard} onChange={(value) => update({ confirmedTeamStandard: value })} placeholder="팀 성과기준을 확정하세요." minHeight="min-h-48" />
     </Card>
 
     <Card title="실행관리 주기 선택" tone="emerald">
