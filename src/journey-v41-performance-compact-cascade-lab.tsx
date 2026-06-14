@@ -9,6 +9,7 @@ const V41_PERFORMANCE_COMPACT_MARKERS = [
   '팀 기준 만들기',
   '4단계 전사전략과제에서 시작',
   '전사전략을 팀 전략과제로 바꾸기',
+  '팀 전략과제 보기 4개',
   '팀 CSF와 팀 KPI 고르기',
   '세부 추진과제와 2주 실행계획 수립',
   'ckd.v41.performanceCascade.v1',
@@ -19,6 +20,7 @@ void V41_PERFORMANCE_COMPACT_MARKERS;
 type TeamCascadeOption = {
   id: string;
   teamTask: string;
+  teamTasks: string[];
   csfs: string[];
   kpis: string[];
   initiatives: string[];
@@ -27,6 +29,7 @@ type TeamCascadeOption = {
 
 type PerformanceCascadeState = {
   selectedStrategyId: string;
+  selectedTeamTask: string;
   customTeamTask: string;
   selectedCsf: string;
   selectedKpi: string;
@@ -44,6 +47,12 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
   {
     id: 'ckd-glp1-obesity-metabolic',
     teamTask: '비만·대사질환 핵심 고객군의 관심, 우려, 질문을 구조적으로 수집하고 초기 시장 인사이트를 만든다.',
+    teamTasks: [
+      '비만·대사질환 핵심 고객군의 관심, 우려, 질문을 구조적으로 수집하고 초기 시장 인사이트를 만든다.',
+      '핵심 고객군별 미충족 니즈와 치료제 선택 기준을 파악해 제품 가치 근거 준비에 기여한다.',
+      '의료진 질문과 자료 요청 흐름을 정리해 GLP-1 포트폴리오 출시 준비 상태를 현장에서 검증한다.',
+      '경쟁 제품, 제형 변화, 환자 편의성 관련 고객 반응을 수집해 전사 시장 진입 전략에 반영한다.',
+    ],
     csfs: [
       '핵심 고객군 선별: 먼저 반응을 봐야 할 의료진과 병원이 정해져 있어야 한다',
       '질문 수집 기준 통일: 의료진 질문과 우려를 같은 기준으로 남겨야 한다',
@@ -66,6 +75,12 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
   {
     id: 'ckd-core-product-value',
     teamTask: '주력 제품을 계속 선택하는 이유와 흔들리는 신호를 고객별로 확인해 시장 방어 실행 기준을 만든다.',
+    teamTasks: [
+      '주력 제품을 계속 선택하는 이유와 흔들리는 신호를 고객별로 확인해 시장 방어 실행 기준을 만든다.',
+      '핵심 고객별 제품 가치 인식과 경쟁 제품 언급 신호를 수집해 고객가치 메시지 재정립에 기여한다.',
+      '처방 감소 가능성이 있는 고객군을 조기에 파악하고 재접점 우선순위를 정한다.',
+      '경쟁 질문과 고객 이탈 신호를 팀 단위로 공유해 주력 제품 시장 방어 활동을 정교화한다.',
+    ],
     csfs: [
       '주요 고객별 가치 이유 확인: 고객이 제품을 계속 쓰는 이유가 정리되어 있어야 한다',
       '처방 감소 신호 기록: 처방이 줄어들거나 대체 가능성이 보이는 신호가 남아야 한다',
@@ -88,6 +103,12 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
   {
     id: 'ckd-rnd-bio-pipeline-story',
     teamTask: '핵심 파이프라인과 미래 성장 스토리에 대해 고객이 궁금해하는 주제를 수집하고 승인된 범위 안에서 설명 기준을 정리한다.',
+    teamTasks: [
+      '핵심 파이프라인과 미래 성장 스토리에 대해 고객이 궁금해하는 주제를 수집하고 승인된 범위 안에서 설명 기준을 정리한다.',
+      '고객이 묻는 파이프라인 관심 주제를 분류해 전사 커뮤니케이션 메시지 고도화에 기여한다.',
+      '설명 가능한 내용과 내부 확인이 필요한 질문을 구분해 허용된 대외 커뮤니케이션 기준을 지킨다.',
+      '신약·바이오 성장 스토리에 대한 고객 반응을 수집해 사업화 연결 가능성을 현장 관점에서 보완한다.',
+    ],
     csfs: [
       '설명 가능 범위 확인: 고객에게 말할 수 있는 내용과 확인이 필요한 내용이 구분되어야 한다',
       '고객 관심 주제 수집: 고객이 궁금해하는 연구·바이오 주제가 기록되어야 한다',
@@ -110,6 +131,12 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
   {
     id: 'ckd-data-based-field-execution',
     teamTask: '고객 반응, 다음 행동, Follow-up 상태를 같은 기준으로 남겨 팀 실행관리와 의사결정에 활용한다.',
+    teamTasks: [
+      '고객 반응, 다음 행동, Follow-up 상태를 같은 기준으로 남겨 팀 실행관리와 의사결정에 활용한다.',
+      '영업 현장의 고객 접점 데이터를 표준화해 전사 고객 인사이트 축적에 기여한다.',
+      '고객 반응과 실행 지연 신호를 조기에 확인해 팀 단위 실행관리 품질을 높인다.',
+      '방문 기록을 단순 활동 기록이 아니라 다음 행동과 전략 인사이트로 연결한다.',
+    ],
     csfs: [
       '기록 기준 통일: 고객 반응과 다음 행동을 남기는 기준이 같아야 한다',
       '후속 상태 가시화: 자료 제공과 Follow-up 상태가 팀장에게 보이도록 관리되어야 한다',
@@ -132,6 +159,12 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
   {
     id: 'ckd-quality-supply-compliance',
     teamTask: '품질·공급·컴플라이언스 관련 고객 문의를 사실 중심으로 기록하고, 확인 전 단정 답변을 줄인다.',
+    teamTasks: [
+      '품질·공급·컴플라이언스 관련 고객 문의를 사실 중심으로 기록하고, 확인 전 단정 답변을 줄인다.',
+      '품질·공급 문의를 내부 확인 흐름과 연결해 고객 신뢰 리스크를 조기에 관리한다.',
+      '고객 커뮤니케이션에서 위험 표현을 줄이고 승인된 표현 기준을 팀 단위로 정착시킨다.',
+      '반복되는 고객 문의 유형을 수집해 전사 품질·공급·컴플라이언스 대응 기준 개선에 기여한다.',
+    ],
     csfs: [
       '문의 사실 기록: 고객 문의를 해석하지 않고 사실 중심으로 남겨야 한다',
       '확인 전 답변 제한: 내부 확인이 필요한 내용은 즉시 단정하지 않아야 한다',
@@ -155,6 +188,7 @@ const TEAM_CASCADE_OPTIONS: TeamCascadeOption[] = [
 
 const DEFAULT_STATE: PerformanceCascadeState = {
   selectedStrategyId: '',
+  selectedTeamTask: '',
   customTeamTask: '',
   selectedCsf: '',
   selectedKpi: '',
@@ -191,7 +225,8 @@ export function V41PerformanceCompactCascadeLab() {
   const enterpriseTopic = useMemo(() => pharmaTopicOf(researchState.selectedTopicId), [researchState.selectedTopicId]);
   const enterpriseTitle = useMemo(() => pharmaTitleOf(researchState), [researchState.selectedTopicId, researchState.customTopic]);
   const cascade = useMemo(() => teamCascadeOf(researchState.selectedTopicId), [researchState.selectedTopicId]);
-  const teamTask = state.customTeamTask.trim() || cascade.teamTask;
+  const selectedTeamTask = state.selectedTeamTask || cascade.teamTasks[0] || cascade.teamTask;
+  const teamTask = state.customTeamTask.trim() || selectedTeamTask;
 
   const makeDraft = () => {
     const csf = state.selectedCsf || cascade.csfs[0];
@@ -230,11 +265,11 @@ export function V41PerformanceCompactCascadeLab() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-2">
-        <Field label="우리 팀 전략과제" help="전사 전략과제에 우리 팀이 어떻게 기여할지 한 문장으로 씁니다.">
-          <TextArea value={state.customTeamTask} onChange={(value) => update({ customTeamTask: value })} placeholder={cascade.teamTask} />
+        <Field label="팀 전략과제 보기 4개" help="전사 전략과제를 수행하기 위해 우리 팀이 맡을 수 있는 전략과제 중 하나를 고릅니다.">
+          <div className="space-y-2">{cascade.teamTasks.map((teamTaskOption) => <label key={teamTaskOption} className="flex gap-2 rounded-xl bg-white p-2 text-sm font-bold"><input type="radio" checked={selectedTeamTask === teamTaskOption && !state.customTeamTask.trim()} onChange={() => update({ selectedTeamTask: teamTaskOption, customTeamTask: '' })} />{teamTaskOption}</label>)}</div>
         </Field>
-        <Field label="세부 추진과제" help="팀 전략과제를 실제로 시작하기 위한 추진과제를 고릅니다.">
-          <div className="space-y-2">{cascade.initiatives.map((initiative) => <label key={initiative} className="flex gap-2 rounded-xl bg-white p-2 text-sm font-bold"><input type="radio" checked={(state.selectedInitiative || cascade.initiatives[0]) === initiative} onChange={() => update({ selectedInitiative: initiative })} />{initiative}</label>)}</div>
+        <Field label="우리 팀 전략과제 직접 수정" help="선택한 보기 문장을 우리 팀 언어로 다듬어도 됩니다.">
+          <TextArea value={state.customTeamTask} onChange={(value) => update({ customTeamTask: value })} placeholder={selectedTeamTask} />
         </Field>
       </section>
 
@@ -248,6 +283,13 @@ export function V41PerformanceCompactCascadeLab() {
             <div className="space-y-2">{cascade.kpis.map((kpi) => <label key={kpi} className="flex gap-2 rounded-xl bg-white p-2 text-sm font-bold"><input type="radio" checked={(state.selectedKpi || cascade.kpis[0]) === kpi} onChange={() => update({ selectedKpi: kpi })} />{kpi}</label>)}</div>
           </Field>
         </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+        <h3 className="text-lg font-black text-slate-950">세부 추진과제 고르기</h3>
+        <Field label="세부 추진과제" help="팀 전략과제를 실제로 시작하기 위한 추진과제를 고릅니다.">
+          <div className="space-y-2">{cascade.initiatives.map((initiative) => <label key={initiative} className="flex gap-2 rounded-xl bg-white p-2 text-sm font-bold"><input type="radio" checked={(state.selectedInitiative || cascade.initiatives[0]) === initiative} onChange={() => update({ selectedInitiative: initiative })} />{initiative}</label>)}</div>
+        </Field>
         <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">주의: {cascade.caution}</div>
         <button type="button" className="mt-4 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={makeDraft}>팀 기준과 2주 실행계획 만들기</button>
       </section>
