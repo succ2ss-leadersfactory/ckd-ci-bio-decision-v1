@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useStored } from './journey-storage';
 import { DEFAULT_PHARMA_RESEARCH_STATE, PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
@@ -29,11 +29,28 @@ function Box({ label, help, children }: { label: string; help?: string; children
   return <label className="block rounded-2xl border border-violet-100 bg-white p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<div className="mt-3">{children}</div></label>;
 }
 
+function findPlanningSection() {
+  return Array.from(document.querySelectorAll('section')).find((section) => section.textContent?.includes('팀 기준과 2주 실행계획')) ?? null;
+}
+
 export function V41PerformanceAiExpansionLab() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [ai, setAi] = useStored<AiExpansionState>(AI_KEY, DEFAULT_AI);
   const [cascade, setCascade] = useStored<CascadeState>(CASCADE_KEY, DEFAULT_CASCADE);
   const [research] = useStored<PharmaStrategyResearchState>(PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, DEFAULT_PHARMA_RESEARCH_STATE);
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
+
+  useEffect(() => {
+    const moveBeforePlan = () => {
+      const current = sectionRef.current;
+      const plan = findPlanningSection();
+      if (!current || !plan || current.nextElementSibling === plan) return;
+      plan.parentElement?.insertBefore(current, plan);
+    };
+    moveBeforePlan();
+    const timer = window.setInterval(moveBeforePlan, 500);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const buildPrompt = () => {
     const base = [
@@ -45,7 +62,7 @@ export function V41PerformanceAiExpansionLab() {
       '',
       '출력형식: 1) 추가 팀 전략과제 후보 3개 2) 각 전략과제별 CSF 3개 3) 각 CSF별 KPI 2개 4) KPI별 관리 주기, 확인 기준/증거, 담당/확인 5) 사람이 검토해야 할 질문 순서로 작성해 주세요.',
       '',
-      '제약/조건: CSF는 단순 활동이 아니라 성공조건으로 작성해 주세요. KPI는 해당 CSF를 직접 측정해야 합니다. 실제 병원명, 의료진명, 고객명은 쓰지 마세요. 경쟁 제품 비방, 처방 유도, 허가 전 표현은 피하세요. 팀장이 현장에서 쓸 수 있는 말로 작성해 주세요.',
+      '제약/조건: CSF는 단순 활동이 아니라 성공조건으로 작성해 주세요. KPI는 해당 CSF를 직접 측정해야 합니다. 실제 병원명, 의료진명, 고객명은 쓰지 마세요. 검토되지 않은 표현이나 컴플라이언스 위험이 있는 문장은 피하세요. 팀장이 현장에서 쓸 수 있는 말로 작성해 주세요.',
       '',
       '김박사 추천 검토 기준: 구체성, 맥락, 실행 가능성, 팀장 언어, 확인 가능성을 기준으로 스스로 점검한 뒤 답변해 주세요.',
     ].join('\n');
@@ -64,7 +81,7 @@ export function V41PerformanceAiExpansionLab() {
     });
   };
 
-  return <section className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5">
+  return <section ref={sectionRef} className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5" data-v41-ai-expansion-position="before-team-standard-plan">
     <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 확장 실습 · 김박사 추천 프롬프팅 기준</p>
     <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
     <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토해 팀 기준과 2주 실행계획에 반영합니다.</p>
