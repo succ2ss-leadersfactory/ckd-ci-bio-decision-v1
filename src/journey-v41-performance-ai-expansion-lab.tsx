@@ -3,6 +3,11 @@ import { useStored } from './journey-storage';
 import { DEFAULT_PHARMA_RESEARCH_STATE, PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, pharmaTitleOf, type PharmaStrategyResearchState } from './journey-v41-pharma-research-data';
 
 type CascadeState = {
+  selectedTeamTask?: string;
+  customTeamTask?: string;
+  selectedCsf?: string;
+  selectedKpi?: string;
+  selectedInitiative?: string;
   teamStandard?: string;
   twoWeekFirstAction?: string;
   pauseActivity?: string;
@@ -30,9 +35,14 @@ function Box({ label, help, children }: { label: string; help?: string; children
 }
 
 function findPlanningSection() {
-  const headings = Array.from(document.querySelectorAll('h3'));
-  const heading = headings.find((item) => item.textContent?.trim() === '팀 기준과 2주 실행계획');
+  const heading = Array.from(document.querySelectorAll('h3')).find((item) => item.textContent?.trim() === '팀 기준과 2주 실행계획');
   return heading?.closest('section') ?? null;
+}
+
+function hideOriginalPlanButton() {
+  const buttons = Array.from(document.querySelectorAll('button'));
+  const button = buttons.find((item) => item.textContent?.trim() === 'CSF 기반 2주 실행계획 만들기');
+  if (button) button.setAttribute('style', 'display:none!important');
 }
 
 export function V41PerformanceAiExpansionLab() {
@@ -43,14 +53,15 @@ export function V41PerformanceAiExpansionLab() {
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    const moveBeforePlan = () => {
+    const positionAndClean = () => {
+      hideOriginalPlanButton();
       const current = sectionRef.current;
       const plan = findPlanningSection();
       if (!current || !plan || current.nextElementSibling === plan) return;
       plan.parentElement?.insertBefore(current, plan);
     };
-    moveBeforePlan();
-    const timer = window.setInterval(moveBeforePlan, 500);
+    positionAndClean();
+    const timer = window.setInterval(positionAndClean, 500);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -72,28 +83,32 @@ export function V41PerformanceAiExpansionLab() {
   };
 
   const applyToPlan = () => {
-    const source = [ai.result.trim(), ai.review.trim()].filter(Boolean).join('\n\n[사람 검토 보완]\n');
-    if (!source) return;
+    const source = [ai.result.trim(), ai.review.trim()].filter(Boolean).join('\n\n[사람 검토 보완]\n') || 'AI 확장 결과를 붙여넣고, 우리 팀에 맞는 전략과제·CSF·KPI를 선택해 보완합니다.';
+    const teamTask = (cascade.customTeamTask || cascade.selectedTeamTask || '선택한 팀 전략과제').trim();
+    const selectedCsf = (cascade.selectedCsf || '선택한 팀 CSF').trim();
+    const selectedKpi = (cascade.selectedKpi || '선택한 팀 KPI').trim();
+    const selectedInitiative = (cascade.selectedInitiative || '선택한 세부 추진과제').trim();
     setCascade({
       ...cascade,
-      teamStandard: `${cascade.teamStandard || ''}\n\n[AI 확장 실습 반영]\n${source}`.trim(),
-      twoWeekFirstAction: `${cascade.twoWeekFirstAction || ''}\n\n[AI 결과 기반 보완 실행]\n1주차: AI가 제안한 추가 팀 전략과제 중 우리 팀에 맞는 1개를 고르고, 해당 CSF와 KPI를 팀 기준에 맞게 수정한다.\n2주차: 수정한 KPI의 확인 기준/증거를 실제 기록으로 점검한다.`.trim(),
-      midCheckQuestion: `${cascade.midCheckQuestion || ''}\n\nAI가 제안한 KPI는 선택한 CSF를 직접 측정하고 있나요? 확인 가능한 증거는 무엇인가요?`.trim(),
-      finalExecutionStandard: `${cascade.finalExecutionStandard || ''}\n\nAI 결과를 반영할 때는 전략과제→CSF→KPI→업무지시 연결이 끊기지 않는 항목만 다음 단계로 넘긴다.`.trim(),
+      teamStandard: `[AI 결과 반영 팀 기준]\n전사 전략과제: ${enterpriseTitle}\n팀 전략과제: ${teamTask}\n팀 CSF: ${selectedCsf}\n팀 KPI: ${selectedKpi}\n세부 추진과제: ${selectedInitiative}\n\n[AI 확장 실습 반영]\n${source}`,
+      twoWeekFirstAction: `[AI 결과 기반 2주 실행계획]\n1주차: AI가 제안한 추가 팀 전략과제·CSF·KPI 중 우리 팀에 맞는 항목을 고르고, 현재 선택한 CSF/KPI와 충돌하지 않게 정리한다.\n2주차: 선택한 KPI의 확인 기준/증거를 실제 고객 반응 기록과 Follow-up 상태로 점검한다.\n담당: 팀장/담당자\n증거: KPI별 관리 주기, 확인 기준, 고객 반응 기록, Follow-up 완료 여부`,
+      pauseActivity: `${cascade.pauseActivity || ''}\n\n[AI 검토 후 잠시 줄일 일]\n전략과제, CSF, KPI와 연결되지 않는 단순 활동량 늘리기와 장문 보고는 줄인다.`.trim(),
+      midCheckQuestion: `AI가 제안한 KPI는 선택한 CSF를 직접 측정하고 있나요? 확인 가능한 증거는 무엇이며, 2주 안에 실제로 볼 수 있나요?`,
+      finalExecutionStandard: `다음 단계 업무지시는 AI가 제안한 내용 중 전략과제→CSF→KPI→세부 실행의 연결이 분명한 항목만 사용한다.`,
     });
   };
 
   return <section ref={sectionRef} className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5" data-v41-ai-expansion-position="before-team-standard-plan">
     <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 확장 실습 · 김박사 추천 프롬프팅 기준</p>
     <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
-    <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토해 팀 기준과 2주 실행계획에 반영합니다.</p>
+    <p className="mt-2 text-sm font-bold leading-6 text-slate-600">기본 선택형 구조를 유지한 뒤, AI에게 추가 전략과제와 CSF/KPI를 만들게 하고 사람이 검토한 다음 2주 실행계획을 수립합니다.</p>
     <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-violet-800"><span className="rounded-full bg-white px-3 py-1">역할</span><span className="rounded-full bg-white px-3 py-1">상황/맥락</span><span className="rounded-full bg-white px-3 py-1">과제/요청</span><span className="rounded-full bg-white px-3 py-1">출력형식</span><span className="rounded-full bg-white px-3 py-1">제약/조건</span></div>
     <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
     <div className="mt-4 grid gap-3 md:grid-cols-2">
       <Box label="AI에게 입력할 프롬프트" help="3단계 김박사 추천 기준을 반영해 자동 생성합니다."><TextArea value={ai.prompt} onChange={(prompt) => setAi({ ...ai, prompt })} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
       <Box label="AI 결과 붙여넣기" help="AI가 만든 추가 팀 전략과제, CSF, KPI를 붙여넣습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
       <Box label="사람이 검토한 최종 보완" help="유지할 것, 수정할 것, 제외할 것을 정리합니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder="사람의 판단으로 최종 보완 내용을 적습니다." /></Box>
-      <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 팀장 언어와 2주 실행으로 바꿀 수 있는가?</p><button type="button" className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white" onClick={applyToPlan}>AI 결과를 팀 기준·2주 계획에 반영</button></div>
+      <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 팀장 언어와 2주 실행으로 바꿀 수 있는가?</p><button type="button" className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white" onClick={applyToPlan}>AI 결과 반영해 2주 실행계획 수립</button></div>
     </div>
   </section>;
 }
