@@ -13,14 +13,40 @@ Record actual QA runs for the isolated v41 preview lane.
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| v41 static smoke | Pending | Run `npm run smoke:v41:static` locally. |
-| v41 typecheck | Pending | Run `npm run typecheck:v41` locally. |
-| v41 full smoke | Pending | Run `npm run smoke:v41` locally. |
-| v41 route access | Pass | `/journey-v41-preview.html` confirmed after adding v41 to Vite build inputs. |
-| Browser QA | Partial | Route access, protected pilot routes, Step 1 gate, Step 4~11 navigation, and v41 reset confirmed. Content/function parity with v40 still needs audit. |
+| v41 static smoke | Pending | Run `npm run smoke:v41:static` locally or in CI. |
+| v41 typecheck | Pending | Run `npm run typecheck:v41` locally or in CI. |
+| v41 full smoke | Pending | Run `npm run smoke:v41` locally or in CI. |
+| v41 route access | Pass | `/journey-v41-preview.html` opens after adding v41 to Vite build inputs. |
+| Browser QA | Partial | Route access, protected pilot routes, Step 1 gate, 10-screen navigation, and v41 reset were partially confirmed. Current Step 5~10 data flow still needs a fresh browser QA run. |
 | Existing pilot route check | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
 | v40→v41 content/function parity | Gap found | User confirmed v41 does not yet carry over all v40 content depth and feature behavior. Needs dedicated parity audit before review readiness. |
-| Preview redeploy | Requested | Triggered a fresh Vercel preview deployment after Step 3/4 merge and prompt-practice redesign updates. |
+| Preview redeploy | Requested | Triggered fresh Vercel preview deployments during v41 route and flow stabilization. |
+
+## Current v41 browser QA scope
+
+The current v41 preview has 10 screens:
+
+1. 시작하기
+2. 팀원 보기
+3. 질문 다듬기
+4. 시장 변화 읽기
+5. 팀 기준 만들기
+6. 업무관리 실행계획 만들기
+7. 할 일·줄일 일
+8. 업무 경계 나누기
+9. 1on1 대상 고르기
+10. 1on1 첫 문장
+
+## Step 5~10 data-flow checks
+
+| Flow | Expected result |
+| --- | --- |
+| Step 5 → Step 6 | Selected team strategy task, CSF, KPI, and initiative appear in the execution-planning screen. |
+| Step 6 → Step 7 | Execution cycle, final execution plan, evidence, and check questions appear in the priority/reduction screen. |
+| Step 7 → Step 8 | Priority tasks, reduced tasks, 3-step flow, bottleneck signal, and mid-check question appear in the boundary screen. |
+| Step 8 → Step 9 | Boundary declaration, member tasks, leader checks, bottleneck signal, and people signal appear in the 1on1 target screen. |
+| Step 9 → Step 10 | Selected member preparation, observed fact, interpretation, purpose, risk to avoid, and first question focus appear in the opening-line screen. |
+| Step 6 → Step 10 | Execution cycle selected in Step 6 appears in Step 10 question/action-agreement generation. |
 
 ## Run log template
 
@@ -51,14 +77,17 @@ Copy this block for each QA run.
 | v41 route access |  |  |
 | existing pilot route protection |  |  |
 | Step 1 gate |  |  |
-| Step 4 question refinement |  |  |
-| Step 5 market research |  |  |
-| Step 6 team standard |  |  |
-| Step 7 task instruction |  |  |
-| Step 8 priority flow |  |  |
-| Step 9 task boundary |  |  |
-| Step 10 people selection |  |  |
-| Step 11 one-on-one opening |  |  |
+| Step 2 team profile view |  |  |
+| Step 3 question refinement |  |  |
+| Step 4 market research |  |  |
+| Step 5 team criteria selection |  |  |
+| Step 6 execution planning |  |  |
+| Step 7 priority/reduction flow |  |  |
+| Step 8 task boundary |  |  |
+| Step 9 1on1 target selection |  |  |
+| Step 10 one-on-one opening |  |  |
+| Step 5→10 data flow |  |  |
+| Step 10 execution cycle reflection |  |  |
 | v41 reset |  |  |
 | storage isolation |  |  |
 | tablet/mobile readability |  |  |
@@ -90,9 +119,9 @@ Copy this block for each QA run.
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| npm run smoke:v41:static | Pending | Local checkout execution still needed. |
-| npm run typecheck:v41 | Pending | Local checkout execution still needed. |
-| npm run smoke:v41 | Pending | Local checkout execution still needed. |
+| npm run smoke:v41:static | Pending | Local checkout or CI execution still needed. |
+| npm run typecheck:v41 | Pending | Local checkout or CI execution still needed. |
+| npm run smoke:v41 | Pending | Local checkout or CI execution still needed. |
 
 ### Browser checks
 
@@ -101,7 +130,7 @@ Copy this block for each QA run.
 | v41 route access | Pass | `/journey-v41-preview.html` opens after Vite build input fix. |
 | existing pilot route protection | Pass | `/ckd-ai-lab.html` and `/journey-v40-vnext-preview.html` confirmed by user browser check. |
 | Step 1 gate | Pass | User confirmed Step 1 gate behavior. |
-| Step 4~11 navigation | Pass | User confirmed Step 4~11 이동 확인 완료. |
+| v41 navigation | Pass | User confirmed preview navigation after route stabilization. |
 | v41 reset | Pass | User confirmed v41 입력 초기화 확인 완료. |
 | content/function parity with v40 | Gap found | User noted v40 content has not fully migrated and v41 has reduced content depth and functional differences. |
 
@@ -115,4 +144,4 @@ Copy this block for each QA run.
 ### Decision
 
 - Ready for review: No
-- Follow-up needed: Run local `npm run smoke:v41`, create v40→v41 content/function parity audit, migrate missing depth/features, and record final pass.
+- Follow-up needed: Run local or CI `npm run smoke:v41`, complete fresh browser QA for the 10-screen flow, verify Step 5→10 data flow, create v40→v41 content/function parity audit, and record final pass.
