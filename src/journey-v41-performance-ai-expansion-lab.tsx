@@ -30,7 +30,9 @@ function Box({ label, help, children }: { label: string; help?: string; children
 }
 
 function findPlanningSection() {
-  return Array.from(document.querySelectorAll('section')).find((section) => section.textContent?.includes('팀 기준과 2주 실행계획')) ?? null;
+  const headings = Array.from(document.querySelectorAll('h3'));
+  const heading = headings.find((item) => item.textContent?.trim() === '팀 기준과 2주 실행계획');
+  return heading?.closest('section') ?? null;
 }
 
 export function V41PerformanceAiExpansionLab() {
