@@ -3,22 +3,26 @@ import { useStored } from './journey-storage';
 
 const V41_TASK_PRIORITY_FLOW_MARKERS = [
   'V41TaskPriorityFlowLab',
-  'v41 task priority flow lab cloned',
-  'v41 task priority flow copy refined',
   '할 일·줄일 일',
+  '6단계 실행계획 확인',
   '먼저 할 일 고르기',
   '잠시 줄일 일 고르기',
   '업무 흐름 3단계 만들기',
-  '30초 실행 선언문',
+  '실행 선언문',
   'ckd.v41.taskManagement.v10',
 ].join('|');
 void V41_TASK_PRIORITY_FLOW_MARKERS;
 
+type ExecutionCycle = '1주' | '2주' | '4주' | '월간' | '분기';
+
 type TaskState = Record<string, any> & {
-  revisedInstruction?: string;
-  completionCriteria?: string;
-  leaderSupport?: string;
-  nextTaskMemo?: string;
+  executionCycle?: ExecutionCycle;
+  confirmedTeamStandard?: string;
+  finalExecutionPlan?: string;
+  taskInstructionDraft?: string;
+  pauseActivities?: string;
+  evidenceToCheck?: string;
+  midCheckQuestions?: string;
   selectedPriorityTasks?: string[];
   selectedReduceTasks?: string[];
   priorityReason?: string;
@@ -35,21 +39,21 @@ const STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const DEFAULT_TASK_STATE: TaskState = {};
 
 const PRIORITY_TASKS = [
-  '고객 반응과 다음 행동이 보이는 기록 3건 확인하기',
-  '후속조치가 끊긴 고객군 1개 찾기',
-  '기록에 반드시 남길 항목 3개 정하기',
-  '팀원별 막힌 지점 1개씩 확인하기',
-  '금요일 점검에서 볼 샘플 기록 정하기',
-  '지원이 필요한 자료·확인사항 분리하기',
+  '6단계 실행계획에서 가장 먼저 확인할 실행과제 1개 고르기',
+  '고객 반응과 다음 행동이 보이는 기록 샘플 확인하기',
+  'Follow-up 지연 또는 누락 항목 먼저 확인하기',
+  '팀원이 실행 중 막힌 지점 1개씩 확인하기',
+  '확인 증거가 남지 않는 활동을 실행계획에서 제외하기',
+  '지원이 필요한 자료·확인사항을 팀장 확인 항목으로 분리하기',
 ];
 
 const REDUCE_TASKS = [
-  '방문 건수만 늘리는 활동',
-  '다음 행동 없는 장문 기록',
-  '목적 없는 보고자료 정리',
-  '모든 고객군을 동일하게 챙기기',
-  '확인 없이 자료를 새로 만드는 일',
+  '실행계획과 연결되지 않는 방문 건수 늘리기',
+  '다음 행동 없는 장문 기록 작성',
+  '확인 증거 없이 완료로 처리하기',
+  '모든 고객군을 동일한 우선순위로 관리하기',
   '회의에서 기록을 다시 설명하는 시간',
+  '새 자료를 만들기 전에 기존 자료 확인 없이 움직이기',
 ];
 
 function toggle(list: string[] = [], value: string, max = 2) {
@@ -75,10 +79,11 @@ export function V41TaskPriorityFlowLab() {
   const update = (patch: Partial<TaskState>) => setState({ ...state, ...patch });
   const selectedPriority = state.selectedPriorityTasks ?? [];
   const selectedReduce = state.selectedReduceTasks ?? [];
+  const executionCycle = state.executionCycle ?? '2주';
 
   const suggestedFlow = useMemo(() => {
-    const first = selectedPriority[0] || '기록과 고객 반응을 먼저 확인한다.';
-    const second = selectedPriority[1] || '후속 행동이 끊긴 지점을 찾는다.';
+    const first = selectedPriority[0] || '6단계 실행계획에서 가장 먼저 확인할 실행과제를 정한다.';
+    const second = selectedPriority[1] || '확인 증거와 중간 점검 질문을 기준으로 실행 상태를 본다.';
     const reduce = selectedReduce[0] || '성과 기준과 직접 연결되지 않는 활동을 잠시 줄인다.';
     return { first, second, reduce };
   }, [selectedPriority, selectedReduce]);
@@ -86,31 +91,32 @@ export function V41TaskPriorityFlowLab() {
   const makeFlow = () => update({
     flowStepOne: suggestedFlow.first,
     flowStepTwo: suggestedFlow.second,
-    flowStepThree: '금요일 점검에서 막힌 지점과 지원 요청을 공유한다.',
-    bottleneckSignal: '고객 반응은 있는데 다음 행동, 담당자, 확인 시점이 비어 있으면 막힘 신호로 본다.',
-    midCheckQuestion: '이번 주 기록에서 다음 행동으로 이어진 것과 아직 막힌 것은 무엇인가요?',
-    executionDeclaration: `이번 2주 동안 ${suggestedFlow.first} 그리고 ${suggestedFlow.reduce}`,
+    flowStepThree: `${executionCycle} 실행관리 주기 안에서 막힌 지점과 지원 요청을 공유한다.`,
+    bottleneckSignal: '확인 증거가 없거나, 다음 행동·담당자·확인 시점이 비어 있으면 막힘 신호로 본다.',
+    midCheckQuestion: state.midCheckQuestions || '이번 실행관리 주기에서 실행 증거가 보이는 것과 아직 막힌 것은 무엇인가요?',
+    executionDeclaration: `이번 ${executionCycle} 동안 ${suggestedFlow.first} 그리고 ${suggestedFlow.reduce}`,
   });
 
   return <section className="space-y-4">
     <section className="rounded-3xl border border-amber-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-amber-700">할 일·줄일 일</p>
-      <h3 className="mt-1 text-xl font-black text-slate-950">업무지시를 2주 실행 흐름으로 바꾸기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">Step 7에서 만든 업무지시를 기준으로 먼저 할 일, 잠시 줄일 일, 업무 흐름 3단계를 정합니다.</p>
+      <h3 className="mt-1 text-xl font-black text-slate-950">6단계 실행계획을 할 일과 줄일 일로 정리하기</h3>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">6단계에서 만든 실행계획을 기준으로 먼저 할 일, 잠시 줄일 일, 업무 흐름 3단계를 정합니다.</p>
     </section>
 
-    <Card title="이전 단계에서 넘어온 업무지시">
+    <Card title="6단계 실행계획 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-        <p><span className="font-black text-slate-700">업무지시문: </span>{compact(state.revisedInstruction)}</p>
-        <p><span className="font-black text-slate-700">완료 기준: </span>{compact(state.completionCriteria)}</p>
-        <p><span className="font-black text-slate-700">팀장 지원 기준: </span>{compact(state.leaderSupport)}</p>
-        <p><span className="font-black text-slate-700">다음 실행 과제: </span>{compact(state.nextTaskMemo)}</p>
+        <p><span className="font-black text-slate-700">실행관리 주기: </span>{executionCycle}</p>
+        <p><span className="font-black text-slate-700">확정한 팀 성과기준: </span>{compact(state.confirmedTeamStandard)}</p>
+        <p><span className="font-black text-slate-700">최종 실행계획: </span>{compact(state.finalExecutionPlan)}</p>
+        <p><span className="font-black text-slate-700">7단계로 넘길 초안: </span>{compact(state.taskInstructionDraft)}</p>
+        <p><span className="font-black text-slate-700">확인 증거: </span>{compact(state.evidenceToCheck)}</p>
       </div>
     </Card>
 
     <section className="grid gap-3 md:grid-cols-2">
       <Card title="먼저 할 일 고르기">
-        <p className="text-xs font-bold leading-5 text-slate-500">최대 2개까지 선택합니다.</p>
+        <p className="text-xs font-bold leading-5 text-slate-500">6단계 실행계획을 실행으로 옮기기 위해 최대 2개까지 선택합니다.</p>
         {PRIORITY_TASKS.map((task) => <label key={task} className="flex gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-bold"><input type="checkbox" checked={selectedPriority.includes(task)} onChange={() => update({ selectedPriorityTasks: toggle(selectedPriority, task) })} />{task}</label>)}
         <Field label="선택 이유" value={state.priorityReason ?? ''} onChange={(value) => update({ priorityReason: value })} placeholder="왜 이 일을 먼저 해야 하나요?" />
       </Card>
@@ -132,7 +138,7 @@ export function V41TaskPriorityFlowLab() {
         <Field label="막힘 신호" value={state.bottleneckSignal ?? ''} onChange={(value) => update({ bottleneckSignal: value })} placeholder="어떤 신호가 보이면 팀장이 개입해야 하나요?" />
         <Field label="중간 확인 질문" value={state.midCheckQuestion ?? ''} onChange={(value) => update({ midCheckQuestion: value })} placeholder="중간 점검 때 무엇을 물어볼까요?" />
       </div>
-      <Field label="30초 실행 선언문" value={state.executionDeclaration ?? ''} onChange={(value) => update({ executionDeclaration: value })} placeholder="팀원에게 30초 안에 말할 실행 선언문을 씁니다." />
+      <Field label="실행 선언문" value={state.executionDeclaration ?? ''} onChange={(value) => update({ executionDeclaration: value })} placeholder="팀원에게 짧게 말할 실행 선언문을 씁니다." />
     </Card>
   </section>;
 }
