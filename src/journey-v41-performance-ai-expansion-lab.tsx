@@ -57,7 +57,7 @@ function clearRadiosInContainer(labelText: string) {
   });
 }
 
-function clearDefaultLookingSelections(cascade: CascadeState) {
+function clearDefaultLookingSelectionsOnce(cascade: CascadeState) {
   const hasTeamTask = Boolean(cascade.selectedTeamTaskId || cascade.selectedTeamTask || cascade.customTeamTask);
   const hasCsf = Boolean(cascade.selectedCsfId || cascade.selectedCsf);
   const hasKpi = Boolean(cascade.selectedKpi);
@@ -75,14 +75,12 @@ export function V41PerformanceAiExpansionLab() {
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
 
   useEffect(() => {
-    const stabilize = () => {
+    hideLegacyStep5PlanElements();
+    window.setTimeout(() => {
       hideLegacyStep5PlanElements();
-      clearDefaultLookingSelections(cascade);
-    };
-    stabilize();
-    const timer = window.setInterval(stabilize, 500);
-    return () => window.clearInterval(timer);
-  }, [cascade.selectedTeamTaskId, cascade.selectedTeamTask, cascade.customTeamTask, cascade.selectedCsfId, cascade.selectedCsf, cascade.selectedKpi, cascade.selectedInitiative]);
+      clearDefaultLookingSelectionsOnce(cascade);
+    }, 0);
+  }, []);
 
   const buildPrompt = () => {
     const base = [
