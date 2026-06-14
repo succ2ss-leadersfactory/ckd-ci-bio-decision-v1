@@ -12,16 +12,18 @@ const V41_PHARMA_RESEARCH_PARSER_MARKERS = [
   'NOTEBOOK_SECTION_ALIASES',
   'parseNotebookAnswer',
   '시장 변화 읽기 parser',
+  '전사 CSF 후보',
+  '전사 KPI 후보',
+  '팀 방향 전환 질문',
 ].join('|');
 void V41_PHARMA_RESEARCH_PARSER_MARKERS;
 
 export const NOTEBOOK_SECTION_ALIASES: Array<{ key: string; labels: string[] }> = [
-  { key: 'issueOne', labels: ['영업팀 추진 과제 1', '영업팀 추진과제 1', '추진 과제 1', '추진과제 1', '과제 1'] },
-  { key: 'issueTwo', labels: ['영업팀 추진 과제 2', '영업팀 추진과제 2', '추진 과제 2', '추진과제 2', '과제 2'] },
-  { key: 'issueThree', labels: ['영업팀 추진 과제 3', '영업팀 추진과제 3', '추진 과제 3', '추진과제 3', '과제 3'] },
-  { key: 'teamImpact', labels: ['우리 팀 실행 영향', '팀 실행 영향', '영업팀 실행 영향', '실행 영향'] },
-  { key: 'questions', labels: ['2주 실행관리 질문', '2주 실행 관리 질문', '실행관리 질문', '실행 질문'] },
-  { key: 'kpis', labels: ['KPI 후보', '관리 지표 후보', '지표 후보'] },
+  { key: 'issueOne', labels: ['핵심 변화 신호', '변화 신호', '시장 변화 신호'] },
+  { key: 'teamImpact', labels: ['출처/근거 요약', '근거 요약', '소스 근거 요약'] },
+  { key: 'issueTwo', labels: ['전사 CSF 후보', '전사CSF 후보', '전사 관점 CSF', 'CSF 후보', '핵심 성공 요인'] },
+  { key: 'issueThree', labels: ['전사 KPI 후보', '전사KPI 후보', '전사 관점 KPI', 'KPI 후보', '측정 가능한 지표'] },
+  { key: 'questions', labels: ['팀 방향 전환 질문', '팀 방향으로 내릴 때 확인할 질문', '케스케이딩 질문', '팀 전환 질문'] },
   { key: 'caution', labels: ['주의해야 할 표현', '주의 표현', '위험 표현', '컴플라이언스 주의 표현'] },
 ];
 
@@ -66,15 +68,13 @@ export function parseNotebookAnswer(answer: string): ParsedNotebookSections {
   }
 
   const questions = cleanParsedText(buckets.questions?.join('\n'));
-  const kpis = cleanParsedText(buckets.kpis?.join('\n'));
-  const metricQuestions = [questions ? `[2주 실행관리 질문]\n${questions}` : '', kpis ? `[KPI 후보]\n${kpis}` : ''].filter(Boolean).join('\n\n');
 
   return {
     issueOne: cleanParsedText(buckets.issueOne?.join('\n')),
     issueTwo: cleanParsedText(buckets.issueTwo?.join('\n')),
     issueThree: cleanParsedText(buckets.issueThree?.join('\n')),
     teamImpact: cleanParsedText(buckets.teamImpact?.join('\n')),
-    metricQuestions,
+    metricQuestions: questions ? `[팀 방향 전환 질문]\n${questions}` : '',
     caution: cleanParsedText(buckets.caution?.join('\n')),
   };
 }
