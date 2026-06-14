@@ -12,18 +12,20 @@ const V41_PHARMA_RESEARCH_PARSER_MARKERS = [
   'NOTEBOOK_SECTION_ALIASES',
   'parseNotebookAnswer',
   '시장 변화 읽기 parser',
-  '전사 CSF 후보',
-  '전사 KPI 후보',
-  '팀 방향 전환 질문',
+  '전사 추진과제 후보',
+  '추진과제별 CSF 후보',
+  '추진과제별 KPI 후보',
+  '추진계획 수립 쟁점',
 ].join('|');
 void V41_PHARMA_RESEARCH_PARSER_MARKERS;
 
 export const NOTEBOOK_SECTION_ALIASES: Array<{ key: string; labels: string[] }> = [
   { key: 'issueOne', labels: ['핵심 변화 신호', '변화 신호', '시장 변화 신호'] },
   { key: 'teamImpact', labels: ['출처/근거 요약', '근거 요약', '소스 근거 요약'] },
-  { key: 'issueTwo', labels: ['전사 CSF 후보', '전사CSF 후보', '전사 관점 CSF', 'CSF 후보', '핵심 성공 요인'] },
-  { key: 'issueThree', labels: ['전사 KPI 후보', '전사KPI 후보', '전사 관점 KPI', 'KPI 후보', '측정 가능한 지표'] },
-  { key: 'questions', labels: ['팀 방향 전환 질문', '팀 방향으로 내릴 때 확인할 질문', '케스케이딩 질문', '팀 전환 질문'] },
+  { key: 'issueTwo', labels: ['전사 추진과제 후보', '전사 추진 과제 후보', '전사 추진과제', '전사 추진 과제', '추진과제 후보', '추진 과제 후보'] },
+  { key: 'issueThree', labels: ['추진과제별 CSF 후보', '추진 과제별 CSF 후보', '전사 CSF 후보', '전사 관점 CSF', 'CSF 후보', '핵심 성공 요인'] },
+  { key: 'questions', labels: ['추진과제별 KPI 후보', '추진 과제별 KPI 후보', '전사 KPI 후보', '전사 관점 KPI', 'KPI 후보', '측정 가능한 지표'] },
+  { key: 'planning', labels: ['추진계획 수립 쟁점', '추진 계획 수립 쟁점', '계획수립 쟁점', '계획 수립 쟁점', '추진계획 쟁점'] },
   { key: 'caution', labels: ['주의해야 할 표현', '주의 표현', '위험 표현', '컴플라이언스 주의 표현'] },
 ];
 
@@ -67,14 +69,16 @@ export function parseNotebookAnswer(answer: string): ParsedNotebookSections {
     if (currentKey) buckets[currentKey].push(line);
   }
 
-  const questions = cleanParsedText(buckets.questions?.join('\n'));
+  const kpis = cleanParsedText(buckets.questions?.join('\n'));
+  const planning = cleanParsedText(buckets.planning?.join('\n'));
+  const metricQuestions = [kpis ? `[추진과제별 KPI 후보]\n${kpis}` : '', planning ? `[추진계획 수립 쟁점]\n${planning}` : ''].filter(Boolean).join('\n\n');
 
   return {
     issueOne: cleanParsedText(buckets.issueOne?.join('\n')),
     issueTwo: cleanParsedText(buckets.issueTwo?.join('\n')),
     issueThree: cleanParsedText(buckets.issueThree?.join('\n')),
     teamImpact: cleanParsedText(buckets.teamImpact?.join('\n')),
-    metricQuestions: questions ? `[팀 방향 전환 질문]\n${questions}` : '',
+    metricQuestions,
     caution: cleanParsedText(buckets.caution?.join('\n')),
   };
 }
