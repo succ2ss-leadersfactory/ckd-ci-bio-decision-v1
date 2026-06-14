@@ -33,6 +33,8 @@ const files = {
   oneOnOneLab: read('src/journey-v41-one-on-one-practice-lab.tsx'),
   qaChecklist: read('docs/v41-manual-qa-checklist.md'),
   qaRunLog: read('docs/v41-manual-qa-run-log.md'),
+  ciOptimizationStatus: read('docs/v41-ci-optimization-status.md'),
+  v41Workflow: read('.github/workflows/v41-smoke.yml'),
   viteConfig: read('vite.config.ts'),
   tsconfig: read('tsconfig.v41-smoke.json'),
   packageJson: read('package.json'),
@@ -69,6 +71,9 @@ for (const marker of ['Step 11', '11단계', 'Steps 4~11', 'Step 4~11', 'Step 10
 }
 for (const marker of ['| 10 | 1on1 첫 문장 |', 'Step 5~10 data flow is usable', 'Step 9~10 use `ckd.v41.peopleManagement.v2`']) mustInclude(files.qaChecklist, marker, 'current v41 QA checklist');
 for (const marker of ['The current v41 preview has 10 screens', 'Step 5~10 data-flow checks', 'Step 10 execution cycle reflection']) mustInclude(files.qaRunLog, marker, 'current v41 QA run log');
+for (const marker of ['V41 CI Optimization Status', 'npm run smoke:v41', 'Automated checks are green, but browser QA is still required']) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization status');
+for (const marker of ["paths:", "'journey-v41-preview.html'", "'src/journey-v41-*.tsx'", "'scripts/smoke-v41-static.mjs'", 'run: npm run smoke:v41']) mustInclude(files.v41Workflow, marker, 'v41 optimized workflow');
+for (const marker of ['Run v41 static smoke check', 'Run v41 scoped TypeScript check', 'Build Vite app']) mustNotInclude(files.v41Workflow, marker, 'old duplicate v41 workflow steps');
 for (const marker of ['V41FlowStrip', 'v41 field-friendly flow chips', '첫 문장']) mustInclude(files.ux, marker, 'v41 ux');
 for (const marker of ['V41ProgressCoachPanel', '지금 할 일']) mustInclude(files.progressCoach, marker, 'v41 progress');
 for (const marker of ['V41LabStorageScope', 'v41 inherited lab storage isolation']) mustInclude(files.storageScope, marker, 'v41 storage scope');
