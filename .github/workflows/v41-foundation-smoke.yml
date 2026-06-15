@@ -3,8 +3,11 @@ name: v41 Foundation Smoke
 on:
   pull_request:
     paths:
+      - 'journey-v41-preview.html'
+      - 'vite.config.ts'
       - 'package.json'
       - 'scripts/smoke-v41-foundation.mjs'
+      - 'scripts/smoke-v41-mount-guard.mjs'
       - 'src/journey-shell.tsx'
       - 'src/journey-storage.ts'
       - 'src/journey-v41-*.ts'
