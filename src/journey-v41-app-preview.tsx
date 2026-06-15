@@ -10,6 +10,7 @@ import { V41OneOnOnePracticeLab, type V41OneOnOneSnapshot } from './journey-v41-
 import { V41FlowStrip, V41StepHero } from './journey-v41-ux-components';
 import {
   V41_ONE_ON_ONE_STORAGE_KEY,
+  V41_PARTICIPANT_STORAGE_KEY,
   V41_PEOPLE_SELECTION_STORAGE_KEY,
   V41_PREVIEW_ROUTE,
   V41_TASK_EXECUTION_STORAGE_KEY,
@@ -23,10 +24,16 @@ const V41_APP_PREVIEW_MARKERS = [
   'v41 preview app shell',
   'V41_PREVIEW_ROUTE',
   'V41_VISIBLE_APP_STEPS',
+  'V41_PARTICIPANT_STORAGE_KEY',
   'V41_TASK_EXECUTION_STORAGE_KEY',
   'V41_PEOPLE_SELECTION_STORAGE_KEY',
   'V41_ONE_ON_ONE_STORAGE_KEY',
   'useStored',
+  'V41ParticipantGate',
+  'teamName',
+  'participantName',
+  '팀명',
+  '이름',
   'V41TaskExecutionBridgeLab',
   'V41PeopleSelectionLab',
   'V41OneOnOnePracticeLab',
@@ -41,6 +48,12 @@ const steps: JourneyStep[] = V41_VISIBLE_STEP_LABELS.map((label, index) => ({
   description: `${index + 1}단계 / ${V41_VISIBLE_APP_STEPS}단계`,
 }));
 
+type V41ParticipantIdentity = {
+  teamName: string;
+  participantName: string;
+  savedAt: string;
+};
+
 type V41TaskExecutionState = Partial<Record<V41TaskExecutionStage, V41TaskExecutionSnapshot>>;
 
 type V41PeopleSelectionSnapshot = {
@@ -49,6 +62,101 @@ type V41PeopleSelectionSnapshot = {
   firstQuestionFocus: string;
   savedAt: string;
 };
+
+function hasParticipantIdentity(participant: V41ParticipantIdentity | null) {
+  return Boolean(participant?.teamName.trim() && participant?.participantName.trim());
+}
+
+function V41ParticipantGate({
+  initialParticipant,
+  onSave,
+}: {
+  initialParticipant: V41ParticipantIdentity | null;
+  onSave: (participant: V41ParticipantIdentity) => void;
+}) {
+  const [teamName, setTeamName] = useState(initialParticipant?.teamName ?? '');
+  const [participantName, setParticipantName] = useState(initialParticipant?.participantName ?? '');
+  const canStart = Boolean(teamName.trim() && participantName.trim());
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
+      <div className="mx-auto max-w-5xl space-y-4">
+        <header className="rounded-2xl bg-slate-900 p-5 text-white shadow-sm">
+          <p className="text-sm text-cyan-100">AI Leadership Lab Journey</p>
+          <h1 className="mt-1 text-2xl font-bold">C1 Bio Journey v41 Preview</h1>
+          <p className="mt-2 text-sm text-slate-200">팀명과 이름을 입력한 뒤 실습 Journey를 시작합니다.</p>
+        </header>
+
+        <section className="rounded-3xl border border-cyan-100 bg-white p-6 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v41 participant entry · ckd.v41.participant.v1</p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">팀과 이름을 입력해 주세요</h2>
+          <p className="mt-3 text-sm font-bold leading-6 text-slate-600">
+            입력한 정보는 이 브라우저에만 저장되며, Step 6~10 실습 저장 흐름과 분리된 v41 전용 key로 관리됩니다.
+          </p>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-black text-slate-700">팀명</span>
+              <input
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold outline-none focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100"
+                placeholder="예: C1바이오 영업팀"
+                value={teamName}
+                onChange={(event) => setTeamName(event.target.value)}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-black text-slate-700">이름</span>
+              <input
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold outline-none focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100"
+                placeholder="예: 김팀장"
+                value={participantName}
+                onChange={(event) => setParticipantName(event.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 rounded-2xl bg-slate-50 p-4 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm font-bold leading-6 text-slate-600">
+              팀명과 이름이 저장되면 다음 접속부터 바로 Journey 화면으로 이어집니다.
+            </p>
+            <button
+              type="button"
+              className="rounded-xl bg-cyan-700 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={!canStart}
+              onClick={() => onSave({ teamName: teamName.trim(), participantName: participantName.trim(), savedAt: new Date().toISOString() })}
+            >
+              Journey 시작하기
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function V41ParticipantSummary({
+  participant,
+  onEdit,
+}: {
+  participant: V41ParticipantIdentity;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">참가자 정보 · ckd.v41.participant.v1</p>
+          <p className="mt-1 text-sm font-bold text-slate-700">
+            팀명: <span className="text-slate-950">{participant.teamName}</span> · 이름: <span className="text-slate-950">{participant.participantName}</span>
+          </p>
+        </div>
+        <button type="button" className="rounded-xl border px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-50" onClick={onEdit}>
+          정보 수정
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function getRecommendedCandidate() {
   return [...V41_PEOPLE_CANDIDATES].sort((a, b) => b.urgency - a.urgency)[0] ?? V41_PEOPLE_CANDIDATES[0];
@@ -109,7 +217,7 @@ function V41PlaceholderStep({ currentStep }: { currentStep: number }) {
       <p className="text-xs font-black uppercase tracking-wide text-slate-500">v41 clean preview shell</p>
       <h3 className="mt-2 text-xl font-black text-slate-950">{oneBasedStep}. {label}</h3>
       <p className="mt-3 text-sm font-bold leading-6 text-slate-600">
-        이 화면은 v41 route/app/lab 연결 전, v41 전용 Shell·FlowStrip·Hero·Config가 함께 typecheck되는지 확인하는 깨끗한 preview app shell입니다.
+        이 화면은 아직 v41 전용 실습 콘텐츠 연결 전 상태입니다. 기존 Journey 흐름과 맞추기 위해 단계별 화면을 순차적으로 복구합니다.
       </p>
       <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs font-bold text-slate-500">
         Route marker: {V41_PREVIEW_ROUTE}
@@ -154,10 +262,24 @@ function V41StepBody({
 
 export function V41AppPreview() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isEditingParticipant, setIsEditingParticipant] = useState(false);
+  const [participant, setParticipant] = useStored<V41ParticipantIdentity | null>(V41_PARTICIPANT_STORAGE_KEY, null);
   const [taskExecutionState, setTaskExecutionState] = useStored<V41TaskExecutionState>(V41_TASK_EXECUTION_STORAGE_KEY, {});
   const [peopleSelectionState, setPeopleSelectionState] = useStored<V41PeopleSelectionSnapshot | null>(V41_PEOPLE_SELECTION_STORAGE_KEY, null);
   const [oneOnOneState, setOneOnOneState] = useStored<V41OneOnOneSnapshot | null>(V41_ONE_ON_ONE_STORAGE_KEY, null);
   const safeStep = Math.min(Math.max(currentStep, 0), V41_VISIBLE_APP_STEPS - 1);
+
+  if (!hasParticipantIdentity(participant) || isEditingParticipant) {
+    return (
+      <V41ParticipantGate
+        initialParticipant={participant}
+        onSave={(nextParticipant) => {
+          setParticipant(nextParticipant);
+          setIsEditingParticipant(false);
+        }}
+      />
+    );
+  }
 
   return (
     <JourneyShell
@@ -171,6 +293,7 @@ export function V41AppPreview() {
       hideStepOverview
     >
       <div className="space-y-4">
+        <V41ParticipantSummary participant={participant} onEdit={() => setIsEditingParticipant(true)} />
         <V41FlowStrip currentStep={safeStep + 1} onStepSelect={(stepNumber) => setCurrentStep(stepNumber - 1)} />
         <V41StepHero
           eyebrow={`v41 preview · step ${safeStep + 1}`}
