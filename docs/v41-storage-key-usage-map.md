@@ -13,7 +13,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 - Repository: `succ2ss-leadersfactory/ckd-ci-bio-decision-v1`
 - Working branch: `feature/v37-preview-shell`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
-- Current AI-expansion handoff update head: `5119ff67844a0dcbc1baf15a7d45f68fe665bc2e`
+- Current AI-expansion funnel update head: `39f354c0a86f164fb3036806f5e0a0fc18f93531`
 - Baseline route: `/journey-v41-preview.html`
 - Shared helper: `src/journey-storage.ts`
 - Storage isolation helper: `src/journey-v41-lab-storage-scope.tsx`
@@ -27,7 +27,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 | `ckd.v41.promptPracticeReview.v2` | `src/journey-v41-prompt-practice-review-lab.tsx` | Same lab; optional inherited storage scope bridge | Step 3 질문 다듬기 | Stores selected situation, basic/model prompt outputs, memo, prompt parts, checks, and caution rewrite. |
 | `ckd.v41.pharmaStrategyResearch.v1` | `src/journey-v41-pharma-research-data.ts`, `src/journey-v41-pharma-strategy-research-lab.tsx` | `src/journey-v41-research-strategy-trimmed-lab.tsx`, `src/journey-v41-performance-compact-cascade-lab.tsx`, `src/journey-v41-performance-ai-expansion-lab.tsx` | Step 4 시장 변화 읽기 → Step 5 팀 기준 만들기 | Feeds market/research topic into Step 5 team strategy, CSF, KPI, and AI expansion work. |
 | `ckd.v41.performanceCascade.v1` | `src/journey-v41-performance-compact-cascade-lab.tsx` | `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 → Step 6 | Stores selected team strategy task, CSF, KPI, initiative, and execution standard fields. It is the main Step 5 confirmed handoff key. |
-| `ckd.v41.performanceCascade.aiExpansion.v1` | `src/journey-v41-performance-ai-expansion-lab.tsx` | `src/journey-v41-performance-ai-expansion-lab.tsx`, `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 AI expansion → Step 6 reviewed handoff | Stores AI prompt, AI result, and human review summary. Step 6 reads raw AI result as reference only; human review summary is required before creating a Step 6 application note. |
+| `ckd.v41.performanceCascade.aiExpansion.v1` | `src/journey-v41-performance-ai-expansion-lab.tsx` | `src/journey-v41-performance-ai-expansion-lab.tsx`, `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 AI expansion → Step 6 reviewed handoff | Keeps the same v1 key but now stores a staged AI expansion funnel: team-task prompt/result/selection, CSF prompt/result/selection, KPI prompt/result/selection/evidence/cycle, and final human review summary. Step 6 reads raw AI result as reference only; final human review summary is required before creating a Step 6 application note. |
 | `ckd.v41.taskManagement.v10` | `src/journey-v41-task-execution-bridge-lab.tsx`, `src/journey-v41-task-priority-flow-lab.tsx`, `src/journey-v41-task-boundary-coordination-lab.tsx` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Step 6~8 → Step 9~10 | Main execution-management continuity key. Stores execution cycle, AI expansion applied note, final execution plan, priority/reduction flow, boundary declaration, bottleneck signal, and people signal. |
 | `ckd.v41.peopleManagement.v2` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Same two labs | Step 9~10 | Stores selected 1on1 member, observed fact, interpretation, conversation purpose, opening line, check questions, action agreement, and follow-up memo. |
 | `ckd.v41.finalExecutionMemo.v1` | No active Step 1~10 owner confirmed in the current map | No active Step 1~10 reader confirmed in the current map | Reserved / inherited scope only | Defined in `V41_STORAGE_SCOPE_KEYS` as a v40-vNext scoped bridge. Do not remove or rename without a parity audit. |
@@ -54,9 +54,29 @@ The current storage continuity is:
 3. `ckd.v41.promptPracticeReview.v2` supports Step 3 prompt practice.
 4. `ckd.v41.pharmaStrategyResearch.v1` captures Step 4 market/research context.
 5. `ckd.v41.performanceCascade.v1` converts Step 4 context into Step 5 confirmed team strategy/CSF/KPI/initiative selections.
-6. `ckd.v41.performanceCascade.aiExpansion.v1` stores Step 5 AI-generated candidate strategy/CSF/KPI material and human review summary.
+6. `ckd.v41.performanceCascade.aiExpansion.v1` stores the staged Step 5 AI expansion funnel and final human review summary.
 7. `ckd.v41.taskManagement.v10` converts Step 5 confirmed standards plus Step 6 reviewed AI-expansion application notes into Step 6~8 execution, priority, reduction, and boundary decisions.
 8. `ckd.v41.peopleManagement.v2` converts Step 8 signals into Step 9~10 1on1 target, first sentence, questions, and action agreement.
+
+## Step 5 AI expansion funnel
+
+Step 5 AI expansion is now a three-stage judgment funnel inside the existing `ckd.v41.performanceCascade.aiExpansion.v1` key.
+
+```text
+Stage 1: additional team strategy task candidates
+→ human selects selectedAiTeamTask
+Stage 2: CSF candidates for selectedAiTeamTask
+→ human selects selectedAiCsf
+Stage 3: KPI candidates for selectedAiCsf
+→ human selects selectedAiKpi, selectedAiEvidence, selectedAiCycle
+→ finalAiExpansionReview / review for Step 6
+```
+
+Compatibility rule:
+
+- The existing `prompt`, `result`, and `review` fields remain for Step 6 compatibility.
+- The latest stage prompt/result may still mirror into `prompt` and `result`.
+- Step 6 must use `review` as the human-reviewed handoff summary.
 
 ## Step 6 AI expansion handoff rule
 
@@ -66,7 +86,7 @@ Approved rule:
 
 ```text
 AI-generated additional strategy/CSF/KPI candidates
-→ Step 5 human review summary
+→ Step 5 staged human selections and final review summary
 → Step 6 user review and application note
 → ckd.v41.taskManagement.v10 final execution plan
 ```
