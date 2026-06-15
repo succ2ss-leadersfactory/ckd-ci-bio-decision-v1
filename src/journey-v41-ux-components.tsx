@@ -128,7 +128,9 @@ function v41ParticipantIdentityReady() {
 function guardV41StepSelect(targetStepNumber: number) {
   if (targetStepNumber <= 1) return true;
   if (v41ParticipantIdentityReady()) return true;
-  window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+  if (typeof window !== 'undefined') {
+    window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+  }
   return false;
 }
 
