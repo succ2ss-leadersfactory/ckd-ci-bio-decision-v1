@@ -10,6 +10,10 @@ const read = (relativePath) => {
 };
 const mustInclude = (source, marker, label) => { if (!source.includes(marker)) failures.push(`Missing ${label}: ${marker}`); };
 const mustNotInclude = (source, marker, label) => { if (source.includes(marker)) failures.push(`Unexpected ${label}: ${marker}`); };
+const collectV41StorageKeys = (...sources) => {
+  const keyPattern = /\bckd\.v41\.[A-Za-z0-9.-]+\b/g;
+  return [...new Set(sources.flatMap((source) => source.match(keyPattern) ?? []))].sort();
+};
 
 const files = {
   html: read('journey-v41-preview.html'),
@@ -34,6 +38,7 @@ const files = {
   qaChecklist: read('docs/v41-manual-qa-checklist.md'),
   qaRunLog: read('docs/v41-manual-qa-run-log.md'),
   ciOptimizationStatus: read('docs/v41-ci-optimization-status.md'),
+  storageKeyUsageMap: read('docs/v41-storage-key-usage-map.md'),
   baselineFreeze: read('docs/v41-pre-optimization-baseline-freeze.md'),
   browserQaConfirmation: read('docs/v41-baseline-browser-qa-confirmation.md'),
   ciOptimizationGuard: read('src/journey-v41-ci-optimization-guard.ts'),
@@ -66,6 +71,23 @@ const continuityMarkers = [
   'Step 9 selects the 1on1 target from boundary and people signals.',
   'Step 10 creates opening line, check questions, and action agreement using the execution cycle.',
 ];
+
+const storageKeyCodeSources = [
+  files.app,
+  files.storageScope,
+  files.promptLab,
+  files.researchWrapper,
+  files.researchLab,
+  files.researchData,
+  files.performanceLab,
+  files.performanceAiLab,
+  files.taskExecutionLab,
+  files.taskPriorityLab,
+  files.taskBoundaryLab,
+  files.peopleSelectionLab,
+  files.oneOnOneLab,
+];
+const storageKeysUsedInCode = collectV41StorageKeys(...storageKeyCodeSources);
 
 for (const marker of ['<title>C1 Bio Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 preview']) mustInclude(files.html, marker, 'v41 html');
 for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) mustInclude(files.viteConfig, marker, 'v41 Vite build input');
@@ -100,6 +122,11 @@ for (const marker of ['V41TaskBoundaryCoordinationLab', 'ckd.v41.taskManagement.
 for (const marker of ['V41PeopleSelectionLab', 'ckd.v41.peopleManagement.v2', '8단계 업무 경계와 사람관리 신호 확인', '자동 선택 없이 시작합니다']) mustInclude(files.peopleSelectionLab, marker, 'v41 people selection lab');
 for (const marker of ['V41OneOnOnePracticeLab', 'ckd.v41.peopleManagement.v2', 'ckd.v41.taskManagement.v10', '9단계 1on1 준비 내용 확인', '실행관리 주기 반영']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one lab');
 for (const marker of ['V40VNextOneOnOnePracticeLab', 'ckd.v40-vnext.peopleManagement.v2']) mustNotInclude(files.oneOnOneLab, marker, 'old one-on-one dependency');
+
+for (const storageKey of storageKeysUsedInCode) {
+  mustInclude(files.storageKeyUsageMap, storageKey, 'v41 storage key usage map entry');
+}
+for (const marker of ['This is a documentation-only checkpoint', 'Do not rename any `ckd.v41.*` key without a migration', 'ckd.v41.taskManagement.v10', 'ckd.v41.peopleManagement.v2']) mustInclude(files.storageKeyUsageMap, marker, 'v41 storage key usage map rule');
 
 for (const marker of ['V41_VISIBLE_APP_STEPS', 'v41 field-friendly step labels', '1on1 첫 문장']) mustInclude(files.config, marker, 'v41 config');
 for (const marker of ['Step 11', '11단계', 'Steps 4~11', 'Step 4~11', 'Step 10~11']) {
