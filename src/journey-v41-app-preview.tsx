@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import './index.css';
 
 import { JourneyShell, type JourneyStep } from './journey-shell';
 import { V41FlowStrip, V41StepHero } from './journey-v41-ux-components';
