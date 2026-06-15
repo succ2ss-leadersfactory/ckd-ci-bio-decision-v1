@@ -32,6 +32,9 @@ const checks = [
       'V41_VISIBLE_STEP_LABELS',
       'ckd.v41.participant.v1',
       'ckd.v41.progress.v1',
+      'ckd.v41.taskExecutionBridge.v1',
+      'ckd.v41.peopleSelection.v1',
+      'ckd.v41.oneOnOnePractice.v1',
     ],
   },
   {
@@ -39,7 +42,10 @@ const checks = [
     includes: [
       'V41TaskExecutionBridgeLab',
       'V41TaskExecutionStage',
+      'V41TaskExecutionSnapshot',
+      'buildV41TaskExecutionSnapshot',
       'ckd.v41.taskExecutionBridge.v1',
+      'savedAt',
       '업무관리 실행계획 만들기',
       '할 일·줄일 일',
       '업무 경계 나누기',
@@ -66,8 +72,11 @@ const checks = [
     file: 'src/journey-v41-one-on-one-practice-lab.tsx',
     includes: [
       'V41OneOnOnePracticeLab',
+      'V41OneOnOneSnapshot',
       'buildV41OneOnOneScript',
+      'buildV41OneOnOneSnapshot',
       'ckd.v41.oneOnOnePractice.v1',
+      'savedAt',
       '1on1 첫 문장',
     ],
     excludes: [
@@ -81,11 +90,14 @@ const checks = [
       "import './index.css';",
       'V41AppPreview',
       'JourneyShell',
+      'useStored',
       'V41FlowStrip',
       'V41StepHero',
       'V41TaskExecutionBridgeLab',
       'V41PeopleSelectionLab',
       'V41OneOnOnePracticeLab',
+      'V41_TASK_EXECUTION_STORAGE_KEY',
+      'V41_ONE_ON_ONE_STORAGE_KEY',
       'V41_PREVIEW_ROUTE',
       'V41_VISIBLE_APP_STEPS',
     ],
@@ -113,6 +125,7 @@ const checks = [
     includes: [
       'removeStoredPrefix',
       'getLocalStorage',
+      'useStored',
     ],
   },
   {
