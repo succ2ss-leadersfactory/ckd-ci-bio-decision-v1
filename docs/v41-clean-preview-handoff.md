@@ -41,12 +41,15 @@ Completed:
   - `src/journey-v41-people-selection-lab.tsx`
   - `src/journey-v41-one-on-one-practice-lab.tsx`
 - `src/journey-v41-app-preview.tsx` connects steps 6~10 to v41-owned lab components and keeps steps 1~5 as safe placeholders.
-- `scripts/smoke-v41-foundation.mjs` guards the route HTML, Vite input, app shell, lab files, config, UX components, storage guard, and tsconfig scope.
+- Step 6~8 task execution snapshots persist under `ckd.v41.taskExecutionBridge.v1`.
+- Step 10 one-on-one script snapshots persist under `ckd.v41.oneOnOnePractice.v1`.
+- Step 9 selection remains display-only for now. A full selection-persistence patch was not applied after a connector safety block; split that work into a smaller follow-up patch.
+- `scripts/smoke-v41-foundation.mjs` guards the route HTML, Vite input, app shell, lab files, persistence markers, config, UX components, storage guard, and tsconfig scope.
 - `.github/workflows/v41-foundation-smoke.yml` runs when the v41 route, Vite input, mount guard, app/config/UX/lab files, or foundation smoke script change.
 
 ## Latest verified validation
 
-As of head `4d8178dd123971ca66812a28ee069022dd07a3f8`, before the later lab commits:
+As of head `75a5668cbb594ad31be2dca976c1d32b3a369a9d`, before the later persistence commits:
 
 - `v41 Typecheck`: success
 - `v41 Foundation Smoke`: success
@@ -82,15 +85,23 @@ The v41 clean lane must use v41-owned files only.
 - Step 9: `V41PeopleSelectionLab`
 - Step 10: `V41OneOnOnePracticeLab`
 
+## Current storage coverage
+
+- `ckd.v41.participant.v1`: configured for participant identity guard.
+- `ckd.v41.progress.v1`: configured for future progress tracking.
+- `ckd.v41.taskExecutionBridge.v1`: active, stores Step 6~8 snapshots by stage.
+- `ckd.v41.peopleSelection.v1`: configured but not yet active in the UI.
+- `ckd.v41.oneOnOnePractice.v1`: active, stores Step 10 script snapshot.
+
 ## Next safe commit order
 
 ### 1. Re-check latest CI
 
 Before adding more behavior, verify the latest head SHA workflow runs.
 
-### 2. Add state persistence only after CI is green
+### 2. Add Step 9 selection persistence in a smaller patch
 
-Use `ckd.v41.*` storage keys only. Avoid touching v39/v40 state files.
+Use `ckd.v41.peopleSelection.v1` only. Avoid a full-file rewrite if connector safety blocks again.
 
 ### 3. Replace steps 1~5 placeholders later
 
