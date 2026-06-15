@@ -25,7 +25,7 @@ This checkpoint records the clean v41 foundation state after adding the v41 prev
 
 ## Current validation
 
-As of head `75a5668cbb594ad31be2dca976c1d32b3a369a9d`, before the later persistence commits:
+As of head `6a7b08c3c7dc967d73c825fdfa17acc4aa1509cb`, before the later Step 9 persistence commits:
 
 - `v41 Typecheck`: success
 - `v41 Foundation Smoke`: success
@@ -56,14 +56,14 @@ The app shell must continue to use v41-owned UX/config/lab files and must not im
 - Step 6: `V41TaskExecutionBridgeLab stage="plan"`
 - Step 7: `V41TaskExecutionBridgeLab stage="priority"`
 - Step 8: `V41TaskExecutionBridgeLab stage="boundary"`
-- Step 9: `V41PeopleSelectionLab`
-- Step 10: `V41OneOnOnePracticeLab`
+- Step 9: `V41PeopleSelectionLab` plus app-shell save box for the recommended candidate
+- Step 10: `V41OneOnOnePracticeLab` using the saved Step 9 candidate when available
 
 ## Persistence status
 
 - Step 6~8 snapshots are saved through `useStored` under `ckd.v41.taskExecutionBridge.v1`.
+- Step 9 recommended candidate snapshot is saved through `useStored` under `ckd.v41.peopleSelection.v1`.
 - Step 10 script snapshot is saved through `useStored` under `ckd.v41.oneOnOnePractice.v1`.
-- `ckd.v41.peopleSelection.v1` is configured but not yet active in Step 9 UI because the larger Step 9 patch was blocked by the connector safety check.
 - All active persistence uses `journey-storage.ts` safe localStorage helpers.
 
 ## Stabilization guards now covered
@@ -73,13 +73,14 @@ The app shell must continue to use v41-owned UX/config/lab files and must not im
 - `src/journey-v41-app-preview.tsx` must import `./index.css` so the standalone preview entry keeps Tailwind styling.
 - `src/journey-v41-app-preview.tsx` must wire the three v41 lab components.
 - `src/journey-v41-app-preview.tsx` must use `useStored` with v41-owned storage keys.
+- `src/journey-v41-app-preview.tsx` must include `V41PeopleSelectionSaveBox` and `selectedCandidateId` markers.
 - The v41 lab files must contain their v41 storage markers and must not import v39/v40 files.
 - Protected route files must not contain v41 preview app markers.
 
 ## Next safe order
 
 1. Confirm latest CI on the current head SHA.
-2. Add Step 9 selection persistence as a smaller patch under `ckd.v41.peopleSelection.v1`.
+2. Improve Step 9 selectable UI later if needed.
 3. Replace steps 1~5 placeholders with v41-owned components later.
 4. Add static smoke and full `smoke:v41` only after route, app, config, labs, and static smoke script are stable.
 
