@@ -15,7 +15,7 @@ const V41_ONE_ON_ONE_MARKERS = [
 ].join('|');
 void V41_ONE_ON_ONE_MARKERS;
 
-type PeopleState = Record<string, any> & {
+type PeopleState = Record<string, unknown> & {
   selectedMemberId?: string;
   observedFact?: string;
   interpretation?: string;
@@ -30,7 +30,7 @@ type PeopleState = Record<string, any> & {
   followUpMemo?: string;
 };
 
-type TaskState = Record<string, any> & {
+type TaskState = Record<string, unknown> & {
   executionCycle?: string;
   boundaryDeclaration?: string;
   peopleSignal?: string;
