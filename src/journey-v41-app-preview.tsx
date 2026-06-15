@@ -63,7 +63,7 @@ type V41PeopleSelectionSnapshot = {
   savedAt: string;
 };
 
-function hasParticipantIdentity(participant: V41ParticipantIdentity | null) {
+function hasParticipantIdentity(participant: V41ParticipantIdentity | null): participant is V41ParticipantIdentity {
   return Boolean(participant?.teamName.trim() && participant?.participantName.trim());
 }
 
@@ -268,8 +268,9 @@ export function V41AppPreview() {
   const [peopleSelectionState, setPeopleSelectionState] = useStored<V41PeopleSelectionSnapshot | null>(V41_PEOPLE_SELECTION_STORAGE_KEY, null);
   const [oneOnOneState, setOneOnOneState] = useStored<V41OneOnOneSnapshot | null>(V41_ONE_ON_ONE_STORAGE_KEY, null);
   const safeStep = Math.min(Math.max(currentStep, 0), V41_VISIBLE_APP_STEPS - 1);
+  const savedParticipant = hasParticipantIdentity(participant) ? participant : null;
 
-  if (!hasParticipantIdentity(participant) || isEditingParticipant) {
+  if (!savedParticipant || isEditingParticipant) {
     return (
       <V41ParticipantGate
         initialParticipant={participant}
@@ -293,7 +294,7 @@ export function V41AppPreview() {
       hideStepOverview
     >
       <div className="space-y-4">
-        <V41ParticipantSummary participant={participant} onEdit={() => setIsEditingParticipant(true)} />
+        <V41ParticipantSummary participant={savedParticipant} onEdit={() => setIsEditingParticipant(true)} />
         <V41FlowStrip currentStep={safeStep + 1} onStepSelect={(stepNumber) => setCurrentStep(stepNumber - 1)} />
         <V41StepHero
           eyebrow={`v41 preview · step ${safeStep + 1}`}
