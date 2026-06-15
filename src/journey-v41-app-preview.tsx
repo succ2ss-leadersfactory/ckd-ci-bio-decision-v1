@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 
 import { JourneyShell, type JourneyStep } from './journey-shell';
+import { V41TaskExecutionBridgeLab } from './journey-v41-task-execution-bridge-lab';
+import { V41PeopleSelectionLab } from './journey-v41-people-selection-lab';
+import { V41OneOnOnePracticeLab } from './journey-v41-one-on-one-practice-lab';
 import { V41FlowStrip, V41StepHero } from './journey-v41-ux-components';
 import { V41_PREVIEW_ROUTE, V41_VISIBLE_APP_STEPS, V41_VISIBLE_STEP_LABELS } from './journey-v41-preview-config';
 
@@ -12,6 +15,9 @@ const V41_APP_PREVIEW_MARKERS = [
   'v41 preview app shell',
   'V41_PREVIEW_ROUTE',
   'V41_VISIBLE_APP_STEPS',
+  'V41TaskExecutionBridgeLab',
+  'V41PeopleSelectionLab',
+  'V41OneOnOnePracticeLab',
   'typeof document !== undefined',
 ].join('|');
 void V41_APP_PREVIEW_MARKERS;
@@ -38,6 +44,15 @@ function V41PlaceholderStep({ currentStep }: { currentStep: number }) {
       </p>
     </div>
   );
+}
+
+function V41StepBody({ currentStep }: { currentStep: number }) {
+  if (currentStep === 5) return <V41TaskExecutionBridgeLab stage="plan" />;
+  if (currentStep === 6) return <V41TaskExecutionBridgeLab stage="priority" />;
+  if (currentStep === 7) return <V41TaskExecutionBridgeLab stage="boundary" />;
+  if (currentStep === 8) return <V41PeopleSelectionLab />;
+  if (currentStep === 9) return <V41OneOnOnePracticeLab />;
+  return <V41PlaceholderStep currentStep={currentStep} />;
 }
 
 export function V41AppPreview() {
@@ -69,7 +84,7 @@ export function V41AppPreview() {
             { label: 'Scope', value: 'v41 only', tone: 'emerald', icon: '🛡️' },
           ]}
         />
-        <V41PlaceholderStep currentStep={safeStep} />
+        <V41StepBody currentStep={safeStep} />
       </div>
     </JourneyShell>
   );
