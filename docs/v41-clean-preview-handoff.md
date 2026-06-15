@@ -97,6 +97,22 @@ The v41 clean lane must use v41-owned files only.
 - `ckd.v41.peopleSelection.v1`: active, stores the Step 9 recommended candidate snapshot.
 - `ckd.v41.oneOnOnePractice.v1`: active, stores Step 10 script snapshot.
 
+## Browser QA checklist, not yet executed
+
+No browser QA is claimed yet. Before marking this PR ready for review, verify the v41 preview route manually:
+
+- Open `/journey-v41-preview.html` directly.
+- Confirm the route mounts the v41 app and does not show only the static fallback marker.
+- Confirm Step 1~4 still show the intentional placeholder shell.
+- Confirm Step 5 still shows the placeholder shell because `V41TeamStandardLab` is not wired yet.
+- Confirm Step 6~8 render the task execution bridge stages in order.
+- Confirm saving Step 6~8 snapshots shows a saved timestamp and survives page refresh.
+- Confirm Step 9 renders people selection plus the recommended-candidate save box.
+- Confirm saving Step 9 then moving to Step 10 uses the saved candidate.
+- Confirm Step 10 script save shows a saved timestamp and survives page refresh.
+- Confirm browser console has no runtime errors during step navigation and save actions.
+- Confirm `/journey.html`, `/journey-v39-preview.html`, and `/journey-v40-vnext-preview.html` still open independently.
+
 ## Next safe commit order
 
 ### 1. Re-check latest CI
