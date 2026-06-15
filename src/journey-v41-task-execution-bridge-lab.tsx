@@ -8,10 +8,20 @@ export type V41StrategyInput = {
   cycle: string;
 };
 
+export type V41TaskExecutionSnapshot = {
+  stage: V41TaskExecutionStage;
+  title: string;
+  executionSentence: string;
+  savedAt: string;
+  items: string[];
+};
+
 const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   'journey-v41-task-execution-bridge-lab.tsx',
   'V41TaskExecutionBridgeLab',
   'V41TaskExecutionStage',
+  'V41TaskExecutionSnapshot',
+  'buildV41TaskExecutionSnapshot',
   'ckd.v41.taskExecutionBridge.v1',
   '업무관리 실행계획 만들기',
   '할 일·줄일 일',
@@ -55,6 +65,28 @@ function createExecutionSentence(input: V41StrategyInput) {
   return `${input.cycle} 동안 ${input.csf}는 기준으로 삼고, ${input.kpi}를 확인하며, ${input.initiative}을 반복한다.`;
 }
 
+function getStageTitle(stage: V41TaskExecutionStage) {
+  if (stage === 'plan') return '업무관리 실행계획 만들기';
+  if (stage === 'priority') return '할 일·줄일 일';
+  return '업무 경계 나누기';
+}
+
+function getStageItems(stage: V41TaskExecutionStage, input: V41StrategyInput) {
+  if (stage === 'plan') return [input.strategicTask, input.csf, input.kpi, input.initiative];
+  if (stage === 'priority') return [...doItems, ...reduceItems];
+  return [...managerBoundaryItems, ...memberBoundaryItems];
+}
+
+export function buildV41TaskExecutionSnapshot(stage: V41TaskExecutionStage, input: V41StrategyInput = V41_DEFAULT_STRATEGY_INPUT): V41TaskExecutionSnapshot {
+  return {
+    stage,
+    title: getStageTitle(stage),
+    executionSentence: createExecutionSentence(input),
+    savedAt: new Date().toISOString(),
+    items: getStageItems(stage, input),
+  };
+}
+
 function StageCard({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -74,18 +106,36 @@ function StageCard({ title, items }: { title: string; items: string[] }) {
 export function V41TaskExecutionBridgeLab({
   stage = 'plan',
   input = V41_DEFAULT_STRATEGY_INPUT,
+  savedAt,
+  onSaveSnapshot,
 }: {
   stage?: V41TaskExecutionStage;
   input?: V41StrategyInput;
+  savedAt?: string;
+  onSaveSnapshot?: (snapshot: V41TaskExecutionSnapshot) => void;
 }) {
   const executionSentence = createExecutionSentence(input);
+  const title = getStageTitle(stage);
 
   return (
     <section className="rounded-3xl border border-cyan-100 bg-white p-5 shadow-sm">
-      <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v41 task execution bridge · ckd.v41.taskExecutionBridge.v1</p>
-      <h3 className="mt-2 text-xl font-black text-slate-950">
-        {stage === 'plan' ? '업무관리 실행계획 만들기' : stage === 'priority' ? '할 일·줄일 일' : '업무 경계 나누기'}
-      </h3>
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-cyan-700">v41 task execution bridge · ckd.v41.taskExecutionBridge.v1</p>
+          <h3 className="mt-2 text-xl font-black text-slate-950">{title}</h3>
+        </div>
+        <div className="flex flex-col items-start gap-2 md:items-end">
+          <button
+            type="button"
+            className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-cyan-800"
+            onClick={() => onSaveSnapshot?.(buildV41TaskExecutionSnapshot(stage, input))}
+          >
+            이 단계 저장
+          </button>
+          {savedAt ? <p className="text-xs font-bold text-cyan-700">저장됨: {new Date(savedAt).toLocaleString('ko-KR')}</p> : null}
+        </div>
+      </div>
+
       <p className="mt-3 rounded-2xl bg-cyan-50 p-4 text-sm font-bold leading-6 text-cyan-950">{executionSentence}</p>
 
       {stage === 'plan' ? (
