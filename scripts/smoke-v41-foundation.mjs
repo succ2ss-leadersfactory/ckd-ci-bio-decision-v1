@@ -5,6 +5,26 @@ const root = process.cwd();
 
 const checks = [
   {
+    file: 'journey-v41-preview.html',
+    includes: [
+      'C1 Bio Journey v41 Preview',
+      'id="root"',
+      'v41 preview · CI smoke verified',
+      '/src/journey-v41-app-preview.tsx?v=v41-ci-0b553346',
+    ],
+    excludes: [
+      'journey-v39-app-preview',
+      'journey-v40-vnext-app-preview',
+    ],
+  },
+  {
+    file: 'vite.config.ts',
+    includes: [
+      'journeyV41Preview',
+      "resolve(__dirname, 'journey-v41-preview.html')",
+    ],
+  },
+  {
     file: 'src/journey-v41-preview-config.ts',
     includes: [
       'V41_PREVIEW_ROUTE',
@@ -17,6 +37,7 @@ const checks = [
   {
     file: 'src/journey-v41-app-preview.tsx',
     includes: [
+      "import './index.css';",
       'V41AppPreview',
       'JourneyShell',
       'V41FlowStrip',
