@@ -19,7 +19,10 @@ Current changed files:
 - `src/journey-shell.tsx`
 - `src/journey-storage.ts`
 - `src/journey-v41-app-preview.tsx`
+- `src/journey-v41-one-on-one-practice-lab.tsx`
+- `src/journey-v41-people-selection-lab.tsx`
 - `src/journey-v41-preview-config.ts`
+- `src/journey-v41-task-execution-bridge-lab.tsx`
 - `src/journey-v41-ux-components.tsx`
 - `tsconfig.v41-smoke.json`
 - `vite.config.ts`
@@ -33,12 +36,17 @@ Completed:
 - v41 app shell is present and uses `JourneyShell`, `V41FlowStrip`, and `V41StepHero`.
 - `journey-v41-preview.html` exists with the v41 marker and app script entry.
 - `vite.config.ts` now includes the v41 preview input.
-- `scripts/smoke-v41-foundation.mjs` guards the route HTML, Vite input, app shell, config, UX components, storage guard, and tsconfig scope.
-- `.github/workflows/v41-foundation-smoke.yml` now runs when the v41 route, Vite input, mount guard, app/config/UX files, or foundation smoke script change.
+- v41 lab files are present:
+  - `src/journey-v41-task-execution-bridge-lab.tsx`
+  - `src/journey-v41-people-selection-lab.tsx`
+  - `src/journey-v41-one-on-one-practice-lab.tsx`
+- `src/journey-v41-app-preview.tsx` connects steps 6~10 to v41-owned lab components and keeps steps 1~5 as safe placeholders.
+- `scripts/smoke-v41-foundation.mjs` guards the route HTML, Vite input, app shell, lab files, config, UX components, storage guard, and tsconfig scope.
+- `.github/workflows/v41-foundation-smoke.yml` runs when the v41 route, Vite input, mount guard, app/config/UX/lab files, or foundation smoke script change.
 
 ## Latest verified validation
 
-As of head `0f3d283bf96da432a979966cba5e7fdd87eabbb7`, before the later guard/documentation commits:
+As of head `4d8178dd123971ca66812a28ee069022dd07a3f8`, before the later lab commits:
 
 - `v41 Typecheck`: success
 - `v41 Foundation Smoke`: success
@@ -65,31 +73,32 @@ Do not modify the following protected routes or files in this clean PR:
 
 The v41 clean lane must use v41-owned files only.
 
+## Current step coverage
+
+- Steps 1~5: placeholder shell remains intentionally narrow.
+- Step 6: `V41TaskExecutionBridgeLab stage="plan"`
+- Step 7: `V41TaskExecutionBridgeLab stage="priority"`
+- Step 8: `V41TaskExecutionBridgeLab stage="boundary"`
+- Step 9: `V41PeopleSelectionLab`
+- Step 10: `V41OneOnOnePracticeLab`
+
 ## Next safe commit order
 
 ### 1. Re-check latest CI
 
-Before adding labs, verify the latest head SHA workflow runs.
+Before adding more behavior, verify the latest head SHA workflow runs.
 
-### 2. Add v41 labs
+### 2. Add state persistence only after CI is green
 
-Add only v41-owned files:
+Use `ckd.v41.*` storage keys only. Avoid touching v39/v40 state files.
 
-- `src/journey-v41-task-execution-bridge-lab.tsx`
-- `src/journey-v41-people-selection-lab.tsx`
-- `src/journey-v41-one-on-one-practice-lab.tsx`
+### 3. Replace steps 1~5 placeholders later
 
-Storage keys must remain under `ckd.v41.*`.
-
-### 3. Connect the app shell to the real 10-step flow
-
-Replace placeholder step rendering in `src/journey-v41-app-preview.tsx` with v41-only step components.
-
-Do not import `src/journey-v39-*` or `src/journey-v40-vnext-*` files.
+Add v41-owned components for steps 1~5 only after the step 6~10 lab wiring remains green.
 
 ### 4. Add full smoke workflow
 
-Only after route, app, config, labs, and static smoke script exist, add:
+Only after route, app, config, labs, and static smoke script are stable, add:
 
 - `scripts/smoke-v41-static.mjs`
 - `.github/workflows/v41-smoke.yml`
