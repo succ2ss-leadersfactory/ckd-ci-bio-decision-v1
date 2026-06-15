@@ -93,7 +93,7 @@ export function V41StepHero({
           </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:w-[34rem] xl:grid-cols-3">
-          {badges.map((badge) => <V41StatusBadge key={`${badge.label}-${String(badge.value)}`} {...badge} />)}
+          {badges.map((badge, index) => <V41StatusBadge key={`${badge.label}-${index}`} {...badge} />)}
         </div>
       </div>
     </section>
