@@ -176,11 +176,14 @@ export function V41TaskExecutionBridgeLab() {
 
   const draftAiExpansionNote = () => {
     const review = textOrEmpty(aiExpansion.review);
-    const result = textOrEmpty(aiExpansion.result);
+    if (!review) {
+      window.alert('5단계에서 “6단계로 가져갈 AI 후보 검토 요약”을 먼저 작성해야 실행계획 반영 메모를 만들 수 있습니다. AI 원문은 참고용이며 자동 반영되지 않습니다.');
+      return;
+    }
     update({
       aiExpansionAppliedNote: [
         '[반영할 AI 후보]',
-        review || result || '5단계 AI 추가 후보 중 이번 실행관리 주기에 반영할 전략과제·CSF·KPI를 직접 적습니다.',
+        review,
         '',
         '[수정할 표현]',
         '컴플라이언스 위험 표현, 실제 병원명·의료진명·고객명, 확인 불가능한 KPI는 수정한다.',
@@ -320,7 +323,8 @@ export function V41TaskExecutionBridgeLab() {
           <p>3. KPI는 확인 가능한 증거와 연결되는가?</p>
           <p>4. 팀원이 이번 실행관리 주기 안에 실행할 수 있는가?</p>
           <p>5. 실제 병원명·의료진명·고객명 또는 컴플라이언스 위험 표현이 없는가?</p>
-          <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={draftAiExpansionNote}>사람 검토 내용으로 반영 메모 초안 만들기</button>
+          {!hasAiExpansionReview ? <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-amber-900">5단계에서 사람이 검토한 요약이 있어야 6단계 실행계획에 반영할 수 있습니다. AI 원문은 참고용입니다.</p> : null}
+          <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50" onClick={draftAiExpansionNote} disabled={!hasAiExpansionReview}>5단계 사람 검토 요약으로 반영 메모 만들기</button>
         </div>
       </div>
       <Field label="이번 실행계획에 반영할 AI 후보와 판단 이유" help="반영할 후보, 수정할 표현, 제외할 후보, 반영 이유를 구분해 씁니다. 이 내용만 6단계 성과기준·실행계획·AI 프롬프트에 반영됩니다." value={state.aiExpansionAppliedNote ?? ''} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[반영할 AI 후보]\n[수정할 표현]\n[제외할 후보]\n[반영 이유]'} minHeight="min-h-48" />
