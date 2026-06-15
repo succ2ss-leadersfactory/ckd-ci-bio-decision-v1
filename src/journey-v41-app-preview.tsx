@@ -39,7 +39,7 @@ function V41PlaceholderStep({ currentStep }: { currentStep: number }) {
   );
 }
 
-function V41AppPreview() {
+export function V41AppPreview() {
   const [currentStep, setCurrentStep] = useState(0);
   const safeStep = Math.min(Math.max(currentStep, 0), V41_VISIBLE_APP_STEPS - 1);
 
