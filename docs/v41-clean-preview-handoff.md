@@ -8,6 +8,8 @@ PR #4 is a clean foundation PR. It intentionally avoids importing the broad hist
 
 Current changed files:
 
+- `.github/workflows/v41-typecheck.yml`
+- `docs/v41-clean-preview-handoff.md`
 - `package.json`
 - `src/journey-shell.tsx`
 - `src/journey-storage.ts`
@@ -16,6 +18,7 @@ Current changed files:
 
 ## Current validation
 
+- `v41 Typecheck`: success
 - `C1Bio MVP CI`: success
 - `v35 Smoke`: success
 - `typecheck:v41` script is available for scoped v41 type checking
@@ -33,19 +36,7 @@ Do not modify the following protected routes or files in this clean PR:
 
 ## Next safe commit order
 
-### 1. Add v41 typecheck workflow
-
-Add `.github/workflows/v41-typecheck.yml` locally or through the GitHub web editor.
-
-It should run only:
-
-```bash
-npm run typecheck:v41
-```
-
-Do not add `vite.config.ts` v41 input in this step.
-
-### 2. Add route and config together
+### 1. Add route and config together
 
 Add these files in the same follow-up commit:
 
@@ -54,7 +45,7 @@ Add these files in the same follow-up commit:
 
 Only after `journey-v41-preview.html` exists should `vite.config.ts` add the v41 preview input.
 
-### 3. Add app shell
+### 2. Add app shell
 
 Add `src/journey-v41-app-preview.tsx`.
 
@@ -66,7 +57,7 @@ The app shell must use:
 
 It must not import `src/journey-v39-*` files.
 
-### 4. Add v41 labs
+### 3. Add v41 labs
 
 Add only v41-owned files:
 
@@ -75,7 +66,7 @@ Add only v41-owned files:
 
 Storage keys must remain under `ckd.v41.*`.
 
-### 5. Add full smoke workflow
+### 4. Add full smoke workflow
 
 Only after route, app, config, labs, and static smoke script exist, add:
 
