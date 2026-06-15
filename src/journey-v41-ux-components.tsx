@@ -1,5 +1,4 @@
 import { useContext, type ReactNode, createContext } from 'react';
-import { V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
 
 type V41Tone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 'rose' | 'slate';
 type V41StepNavigator = (stepNumber: number) => void;
@@ -136,7 +135,7 @@ function guardV41StepSelect(targetStepNumber: number) {
 export function V41FlowStrip({ currentStep, onStepSelect }: { currentStep: number; onStepSelect?: V41StepNavigator }) {
   const contextStepSelect = useContext(V41StepNavigationContext);
   const handleStepSelect = onStepSelect ?? contextStepSelect;
-  const total = V41_VISIBLE_APP_STEPS.length;
+  const total = v41FlowItems.length;
   const safeCurrent = Math.min(Math.max(currentStep, 1), total);
 
   return (
