@@ -11,6 +11,7 @@ const V41_APP_PREVIEW_MARKERS = [
   'v41 preview app shell',
   'V41_PREVIEW_ROUTE',
   'V41_VISIBLE_APP_STEPS',
+  'typeof document !== undefined',
 ].join('|');
 void V41_APP_PREVIEW_MARKERS;
 
@@ -73,7 +74,9 @@ function V41AppPreview() {
   );
 }
 
-const rootElement = document.getElementById('root');
+const rootElement = typeof document !== 'undefined'
+  ? document.getElementById('root')
+  : null;
 
 if (rootElement) {
   createRoot(rootElement).render(<V41AppPreview />);
