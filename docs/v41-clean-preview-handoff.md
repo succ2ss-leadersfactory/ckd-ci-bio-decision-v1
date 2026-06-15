@@ -52,7 +52,7 @@ Completed:
 
 ## Latest verified validation
 
-As of code-bearing head `98f2fcb7524c290be4e1b7a01109078651ac6121`:
+As of latest verified head `4dd7ab382be8aec30d66ae8c9999a33716d1a361`:
 
 - `v41 Typecheck`: success
 - `v41 Foundation Smoke`: success
@@ -60,7 +60,7 @@ As of code-bearing head `98f2fcb7524c290be4e1b7a01109078651ac6121`:
 - `v35 Smoke`: success
 - `typecheck:v41` script is available for scoped v41 type checking
 
-This document may receive documentation-only updates after that head. After each new commit, re-check workflow runs for the latest head SHA before claiming validation.
+After each new commit, re-check workflow runs for the latest head SHA before claiming validation.
 
 ## Guardrails
 
