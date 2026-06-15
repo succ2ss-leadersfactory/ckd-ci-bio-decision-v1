@@ -21,6 +21,7 @@ const files = {
   config: read('src/journey-v41-preview-config.ts'),
   ux: read('src/journey-v41-ux-components.tsx'),
   progressCoach: read('src/journey-v41-progress-coach-panel.tsx'),
+  sharedUi: read('src/journey-v41-shared-ui.tsx'),
   storageScope: read('src/journey-v41-lab-storage-scope.tsx'),
   promptLab: read('src/journey-v41-prompt-practice-review-lab.tsx'),
   researchWrapper: read('src/journey-v41-research-strategy-trimmed-lab.tsx'),
@@ -40,6 +41,7 @@ const files = {
   ciOptimizationStatus: read('docs/v41-ci-optimization-status.md'),
   storageKeyUsageMap: read('docs/v41-storage-key-usage-map.md'),
   storageScopeAudit: read('docs/v41-storage-scope-audit.md'),
+  stepComponentMap: read('docs/v41-step-component-map.md'),
   baselineFreeze: read('docs/v41-pre-optimization-baseline-freeze.md'),
   browserQaConfirmation: read('docs/v41-baseline-browser-qa-confirmation.md'),
   ciOptimizationGuard: read('src/journey-v41-ci-optimization-guard.ts'),
@@ -82,6 +84,26 @@ const v40VNextBridgeKeys = [
   'ckd.v40-vnext.finalExecutionMemo.v1',
 ];
 
+const stepComponentMapMarkers = [
+  'Current 10-step mapping',
+  'EntryStep',
+  'RoleTeamIntroStep',
+  'V41PromptPracticeReviewLab',
+  'V41ResearchStrategyTrimmedLab',
+  'V41PerformanceCompactCascadeLab',
+  'V41PerformanceAiExpansionLab',
+  'V41TaskExecutionBridgeLab',
+  'V41TaskPriorityFlowLab',
+  'V41TaskBoundaryCoordinationLab',
+  'V41PeopleSelectionLab',
+  'V41OneOnOnePracticeLab',
+  'ckd.v41.pharmaStrategyResearch.v1',
+  'ckd.v41.performanceCascade.v1',
+  'ckd.v41.taskManagement.v10',
+  'ckd.v41.peopleManagement.v2',
+  'Not allowed:',
+];
+
 const storageKeyCodeSources = [
   files.app,
   files.storageScope,
@@ -109,6 +131,7 @@ for (const marker of preservedStepLabels) {
   mustInclude(files.config, marker, 'preserved v41 step label in config');
   mustInclude(files.baselineFreeze, marker, 'preserved v41 step label in baseline freeze');
   mustInclude(files.browserQaConfirmation, marker, 'preserved v41 step label in browser QA confirmation');
+  mustInclude(files.stepComponentMap, marker, 'preserved v41 step label in step-component map');
 }
 for (const marker of ['participant entry experience', '10-step journey flow', 'No optimization commit may replace the v41 journey with a placeholder or clean shell']) mustInclude(files.baselineFreeze, marker, 'v41 baseline preservation rule');
 for (const marker of ['confirmed by user', 'pre-optimization normal version', 'Before changing v41 code, add or strengthen a v41 preservation smoke guard']) mustInclude(files.browserQaConfirmation, marker, 'v41 browser QA confirmation');
@@ -116,6 +139,7 @@ for (const marker of continuityMarkers) {
   mustInclude(files.baselineFreeze, marker, 'v41 baseline Step 5~10 continuity marker');
   mustInclude(files.browserQaConfirmation, marker, 'v41 browser QA Step 5~10 continuity marker');
 }
+for (const marker of stepComponentMapMarkers) mustInclude(files.stepComponentMap, marker, 'v41 step-component map marker');
 
 for (const marker of ['V41PromptPracticeReviewLab', 'v41 prompt practice lab cloned', 'ckd.v41.promptPracticeReview.v2']) mustInclude(files.promptLab, marker, 'v41 prompt lab');
 for (const marker of ['V41ResearchStrategyTrimmedLab', 'V41PharmaStrategyResearchLab', 'v41 research strategy wrapper cloned']) mustInclude(files.researchWrapper, marker, 'v41 research wrapper');
@@ -132,6 +156,10 @@ for (const marker of ['V41TaskBoundaryCoordinationLab', 'ckd.v41.taskManagement.
 for (const marker of ['V41PeopleSelectionLab', 'ckd.v41.peopleManagement.v2', '8단계 업무 경계와 사람관리 신호 확인', '자동 선택 없이 시작합니다']) mustInclude(files.peopleSelectionLab, marker, 'v41 people selection lab');
 for (const marker of ['V41OneOnOnePracticeLab', 'ckd.v41.peopleManagement.v2', 'ckd.v41.taskManagement.v10', '9단계 1on1 준비 내용 확인', '실행관리 주기 반영']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one lab');
 for (const marker of ['V40VNextOneOnOnePracticeLab', 'ckd.v40-vnext.peopleManagement.v2']) mustNotInclude(files.oneOnOneLab, marker, 'old one-on-one dependency');
+
+for (const marker of ['v41 shared ui helpers', 'V41Card', 'V41TextAreaField', 'compactV41Text']) mustInclude(files.sharedUi, marker, 'v41 shared UI helper marker');
+for (const marker of ["import { compactV41Text, V41Card, V41TextAreaField } from './journey-v41-shared-ui';", 'compactV41Text(state.observedFact)', '<V41Card title="9단계 1on1 준비 내용 확인">']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one shared helper usage');
+for (const marker of ['function Card({ title, children }', 'function Field({ label, value, onChange, placeholder }', 'function compact(value?: string)']) mustNotInclude(files.oneOnOneLab, marker, 'old local one-on-one helper');
 
 for (const storageKey of storageKeysUsedInCode) {
   mustInclude(files.storageKeyUsageMap, storageKey, 'v41 storage key usage map entry');
