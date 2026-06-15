@@ -83,6 +83,7 @@ export function JourneyShell({
 
         <nav className="fixed inset-x-3 bottom-3 z-30 mx-auto flex max-w-6xl items-center justify-between rounded-2xl border bg-white/95 p-4 shadow-lg backdrop-blur">
           <button
+            type="button"
             className="rounded-xl border px-4 py-2 disabled:opacity-40"
             disabled={safeStep <= 0}
             onClick={onPrev}
@@ -90,6 +91,7 @@ export function JourneyShell({
             Previous
           </button>
           <button
+            type="button"
             className="rounded-xl bg-cyan-700 px-4 py-2 text-white disabled:opacity-40"
             disabled={safeStep >= steps.length - 1}
             onClick={onNext}
