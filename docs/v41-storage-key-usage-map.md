@@ -13,7 +13,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 - Repository: `succ2ss-leadersfactory/ckd-ci-bio-decision-v1`
 - Working branch: `feature/v37-preview-shell`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
-- Current AI-expansion funnel update head: `39f354c0a86f164fb3036806f5e0a0fc18f93531`
+- Current AI-expansion context-weight update head: `e1939908acc29a8795d138d628073bad56c3f458`
 - Baseline route: `/journey-v41-preview.html`
 - Shared helper: `src/journey-storage.ts`
 - Storage isolation helper: `src/journey-v41-lab-storage-scope.tsx`
@@ -25,7 +25,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 | `ckd.v41.participant.v1` | `src/journey-v41-app-preview.tsx` | `src/journey-v41-app-preview.tsx`, navigation/entry checks | Step 1 entry gate | Stores team/name or equivalent participant identity fields and representative situation. Must not be merged with lab state. |
 | `ckd.v41.progress.v1` | `src/journey-v41-app-preview.tsx` | `src/journey-v41-app-preview.tsx`, journey shell progress flow | Current step progress | Stores current step index. Must remain lightweight and independent from participant/lab data. |
 | `ckd.v41.promptPracticeReview.v2` | `src/journey-v41-prompt-practice-review-lab.tsx` | Same lab; optional inherited storage scope bridge | Step 3 질문 다듬기 | Stores selected situation, basic/model prompt outputs, memo, prompt parts, checks, and caution rewrite. |
-| `ckd.v41.pharmaStrategyResearch.v1` | `src/journey-v41-pharma-research-data.ts`, `src/journey-v41-pharma-strategy-research-lab.tsx` | `src/journey-v41-research-strategy-trimmed-lab.tsx`, `src/journey-v41-performance-compact-cascade-lab.tsx`, `src/journey-v41-performance-ai-expansion-lab.tsx` | Step 4 시장 변화 읽기 → Step 5 팀 기준 만들기 | Feeds market/research topic into Step 5 team strategy, CSF, KPI, and AI expansion work. |
+| `ckd.v41.pharmaStrategyResearch.v1` | `src/journey-v41-pharma-research-data.ts`, `src/journey-v41-pharma-strategy-research-lab.tsx` | `src/journey-v41-research-strategy-trimmed-lab.tsx`, `src/journey-v41-performance-compact-cascade-lab.tsx`, `src/journey-v41-performance-ai-expansion-lab.tsx` | Step 4 시장 변화 읽기 → Step 5 팀 기준 만들기 | Feeds market/research topic into Step 5 as reference context only. It should guide direction, not become the main generation criterion for CSF/KPI. |
 | `ckd.v41.performanceCascade.v1` | `src/journey-v41-performance-compact-cascade-lab.tsx` | `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 → Step 6 | Stores selected team strategy task, CSF, KPI, initiative, and execution standard fields. It is the main Step 5 confirmed handoff key. |
 | `ckd.v41.performanceCascade.aiExpansion.v1` | `src/journey-v41-performance-ai-expansion-lab.tsx` | `src/journey-v41-performance-ai-expansion-lab.tsx`, `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 AI expansion → Step 6 reviewed handoff | Keeps the same v1 key but now stores a staged AI expansion funnel: team-task prompt/result/selection, CSF prompt/result/selection, KPI prompt/result/selection/evidence/cycle, and final human review summary. Step 6 reads raw AI result as reference only; final human review summary is required before creating a Step 6 application note. |
 | `ckd.v41.taskManagement.v10` | `src/journey-v41-task-execution-bridge-lab.tsx`, `src/journey-v41-task-priority-flow-lab.tsx`, `src/journey-v41-task-boundary-coordination-lab.tsx` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Step 6~8 → Step 9~10 | Main execution-management continuity key. Stores execution cycle, AI expansion applied note, final execution plan, priority/reduction flow, boundary declaration, bottleneck signal, and people signal. |
@@ -71,6 +71,13 @@ Stage 3: KPI candidates for selectedAiCsf
 → human selects selectedAiKpi, selectedAiEvidence, selectedAiCycle
 → finalAiExpansionReview / review for Step 6
 ```
+
+Step 4 context-weight rule:
+
+- Step 4 market/research context is a reference compass, not the main generation criterion.
+- Stage 1 may use Step 4 context to keep direction, but it should prioritize team-level execution and confirmation.
+- Stage 2 should prioritize the selected additional team strategy task over repeating enterprise wording.
+- Stage 3 should prioritize the selected CSF, field evidence, and 2~4 week manageability over enterprise-level outcome metrics.
 
 Compatibility rule:
 
