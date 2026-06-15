@@ -34,6 +34,8 @@ const files = {
   qaChecklist: read('docs/v41-manual-qa-checklist.md'),
   qaRunLog: read('docs/v41-manual-qa-run-log.md'),
   ciOptimizationStatus: read('docs/v41-ci-optimization-status.md'),
+  baselineFreeze: read('docs/v41-pre-optimization-baseline-freeze.md'),
+  browserQaConfirmation: read('docs/v41-baseline-browser-qa-confirmation.md'),
   ciOptimizationGuard: read('src/journey-v41-ci-optimization-guard.ts'),
   v41Workflow: read('.github/workflows/v41-smoke.yml'),
   viteConfig: read('vite.config.ts'),
@@ -43,11 +45,45 @@ const files = {
   v40Html: read('journey-v40-vnext-preview.html'),
 };
 
+const preservedStepLabels = [
+  '시작하기',
+  '팀원 보기',
+  '질문 다듬기',
+  '시장 변화 읽기',
+  '팀 기준 만들기',
+  '업무관리 실행계획 만들기',
+  '할 일·줄일 일',
+  '업무 경계 나누기',
+  '1on1 대상 고르기',
+  '1on1 첫 문장',
+];
+
+const continuityMarkers = [
+  'Step 5 selects team strategy task, CSF, KPI, and initiative candidate.',
+  'Step 6 creates the execution plan and execution cycle.',
+  'Step 7 converts the execution plan into priority',
+  'Step 8 converts the flow into task boundaries and people signals.',
+  'Step 9 selects the 1on1 target from boundary and people signals.',
+  'Step 10 creates opening line, check questions, and action agreement using the execution cycle.',
+];
+
 for (const marker of ['<title>C1 Bio Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 preview']) mustInclude(files.html, marker, 'v41 html');
 for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) mustInclude(files.viteConfig, marker, 'v41 Vite build input');
 for (const marker of ['V41PreviewApp', 'V41PeopleSelectionLab', 'V41OneOnOnePracticeLab', 'V41_VISIBLE_APP_STEPS', 'V41FlowStrip', 'V41ProgressCoachPanel']) mustInclude(files.app, marker, 'v41 app');
 for (const marker of ['v41 step 2 basic leader profile', 'v41 step 2 basic member profiles', '이대호 팀장 기본 정보', '주요 역할', '업무스타일', '소통스타일', '강점', '아쉬운 점', '비고']) mustInclude(files.app, marker, 'v41 step 2 basic profile content');
 for (const marker of ['V40VNextPeopleSelectionLab', 'V40VNextOneOnOnePracticeLab', "import './journey-v40-vnext-app-preview'"]) mustNotInclude(files.app, marker, 'old app dependency');
+
+for (const marker of preservedStepLabels) {
+  mustInclude(files.config, marker, 'preserved v41 step label in config');
+  mustInclude(files.baselineFreeze, marker, 'preserved v41 step label in baseline freeze');
+  mustInclude(files.browserQaConfirmation, marker, 'preserved v41 step label in browser QA confirmation');
+}
+for (const marker of ['participant entry experience', '10-step journey flow', 'No optimization commit may replace the v41 journey with a placeholder or clean shell']) mustInclude(files.baselineFreeze, marker, 'v41 baseline preservation rule');
+for (const marker of ['confirmed by user', 'pre-optimization normal version', 'Before changing v41 code, add or strengthen a v41 preservation smoke guard']) mustInclude(files.browserQaConfirmation, marker, 'v41 browser QA confirmation');
+for (const marker of continuityMarkers) {
+  mustInclude(files.baselineFreeze, marker, 'v41 baseline Step 5~10 continuity marker');
+  mustInclude(files.browserQaConfirmation, marker, 'v41 browser QA Step 5~10 continuity marker');
+}
 
 for (const marker of ['V41PromptPracticeReviewLab', 'v41 prompt practice lab cloned', 'ckd.v41.promptPracticeReview.v2']) mustInclude(files.promptLab, marker, 'v41 prompt lab');
 for (const marker of ['V41ResearchStrategyTrimmedLab', 'V41PharmaStrategyResearchLab', 'v41 research strategy wrapper cloned']) mustInclude(files.researchWrapper, marker, 'v41 research wrapper');
