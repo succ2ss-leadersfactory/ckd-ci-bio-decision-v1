@@ -8,20 +8,45 @@ PR #4 is a clean foundation PR. It intentionally avoids importing the broad hist
 
 Current changed files:
 
+- `.github/workflows/v41-foundation-smoke.yml`
 - `.github/workflows/v41-typecheck.yml`
 - `docs/v41-clean-preview-handoff.md`
+- `docs/v41-app-shell-checkpoint.md`
+- `journey-v41-preview.html`
 - `package.json`
+- `scripts/smoke-v41-foundation.mjs`
+- `scripts/smoke-v41-mount-guard.mjs`
 - `src/journey-shell.tsx`
 - `src/journey-storage.ts`
+- `src/journey-v41-app-preview.tsx`
+- `src/journey-v41-preview-config.ts`
 - `src/journey-v41-ux-components.tsx`
 - `tsconfig.v41-smoke.json`
+- `vite.config.ts`
 
-## Current validation
+## Current foundation status
+
+Completed:
+
+- v41-only UX components are present.
+- v41 preview config is present.
+- v41 app shell is present and uses `JourneyShell`, `V41FlowStrip`, and `V41StepHero`.
+- `journey-v41-preview.html` exists with the v41 marker and app script entry.
+- `vite.config.ts` now includes the v41 preview input.
+- `scripts/smoke-v41-foundation.mjs` guards the route HTML, Vite input, app shell, config, UX components, storage guard, and tsconfig scope.
+- `.github/workflows/v41-foundation-smoke.yml` now runs when the v41 route, Vite input, mount guard, app/config/UX files, or foundation smoke script change.
+
+## Latest verified validation
+
+As of head `0f3d283bf96da432a979966cba5e7fdd87eabbb7`, before the later guard/documentation commits:
 
 - `v41 Typecheck`: success
+- `v41 Foundation Smoke`: success
 - `C1Bio MVP CI`: success
 - `v35 Smoke`: success
 - `typecheck:v41` script is available for scoped v41 type checking
+
+After each new commit, re-check workflow runs for the latest head SHA before claiming validation.
 
 ## Guardrails
 
@@ -31,40 +56,36 @@ Do not modify the following protected routes or files in this clean PR:
 - `journey.html`
 - `journey-v39-preview.html`
 - `journey-v40-vnext-preview.html`
+- `src/journey-active.tsx`
+- `src/full-flow-journey-v34.tsx`
+- `src/full-flow-journey-v35.tsx`
+- `src/journey-v38-app-preview.tsx`
 - `src/journey-v39-*`
 - `src/journey-v40-vnext-*`
 
+The v41 clean lane must use v41-owned files only.
+
 ## Next safe commit order
 
-### 1. Add route and config together
+### 1. Re-check latest CI
 
-Add these files in the same follow-up commit:
+Before adding labs, verify the latest head SHA workflow runs.
 
-- `journey-v41-preview.html`
-- `src/journey-v41-preview-config.ts`
-
-Only after `journey-v41-preview.html` exists should `vite.config.ts` add the v41 preview input.
-
-### 2. Add app shell
-
-Add `src/journey-v41-app-preview.tsx`.
-
-The app shell must use:
-
-- `V41StepHero` from `src/journey-v41-ux-components.tsx`
-- `V41FlowStrip` from `src/journey-v41-ux-components.tsx`
-- `removeStoredPrefix('ckd.v41.')` from `src/journey-storage.ts`
-
-It must not import `src/journey-v39-*` files.
-
-### 3. Add v41 labs
+### 2. Add v41 labs
 
 Add only v41-owned files:
 
-- `src/journey-v41-*.tsx`
-- `src/journey-v41-*.ts`
+- `src/journey-v41-task-execution-bridge-lab.tsx`
+- `src/journey-v41-people-selection-lab.tsx`
+- `src/journey-v41-one-on-one-practice-lab.tsx`
 
 Storage keys must remain under `ckd.v41.*`.
+
+### 3. Connect the app shell to the real 10-step flow
+
+Replace placeholder step rendering in `src/journey-v41-app-preview.tsx` with v41-only step components.
+
+Do not import `src/journey-v39-*` or `src/journey-v40-vnext-*` files.
 
 ### 4. Add full smoke workflow
 
@@ -81,4 +102,4 @@ Before every commit, confirm the diff does not include:
 - protected route files
 - `src/journey-v39-*`
 - `src/journey-v40-vnext-*`
-- unrelated docs or workflow files
+- unrelated workflow changes
