@@ -1,5 +1,5 @@
-import { type ReactNode } from 'react';
 import { useStored } from './journey-storage';
+import { compactV41Text, V41Card, V41TextAreaField } from './journey-v41-shared-ui';
 
 const V41_ONE_ON_ONE_MARKERS = [
   'V41OneOnOnePracticeLab',
@@ -41,18 +41,6 @@ const TASK_STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const DEFAULT_PEOPLE_STATE: PeopleState = {};
 const DEFAULT_TASK_STATE: TaskState = {};
 
-function compact(value?: string) {
-  return value?.trim() || '미작성';
-}
-
-function Card({ title, children }: { title: string; children: ReactNode }) {
-  return <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5"><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-3">{children}</div></section>;
-}
-
-function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
-  return <label className="block rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-black text-slate-950">{label}</span><textarea className="mt-3 min-h-24 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 outline-none focus:border-fuchsia-700 focus:ring-2 focus:ring-fuchsia-100" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
-}
-
 export function V41OneOnOnePracticeLab() {
   const [state, setState] = useStored<PeopleState>(PEOPLE_STORAGE_KEY, DEFAULT_PEOPLE_STATE);
   const [taskState] = useStored<TaskState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
@@ -62,7 +50,7 @@ export function V41OneOnOnePracticeLab() {
 
   const makeDialogue = () => update({
     openingLine: state.openingLine || `최근 실행 흐름을 보면서 함께 확인하고 싶은 부분이 있어요. 먼저 제가 본 사실부터 말씀드리고, 실제로는 어땠는지 같이 맞춰보고 싶습니다.`,
-    checkQuestionOne: state.checkQuestionOne || `제가 본 것은 ${compact(state.observedFact)}입니다. 이 상황을 본인은 어떻게 보고 있나요?`,
+    checkQuestionOne: state.checkQuestionOne || `제가 본 것은 ${compactV41Text(state.observedFact)}입니다. 이 상황을 본인은 어떻게 보고 있나요?`,
     checkQuestionTwo: state.checkQuestionTwo || `${executionCycle} 동안 실행을 더 쉽게 하려면 어떤 지원이나 기준이 필요할까요?`,
     actionAgreement: state.actionAgreement || `${executionCycle} 동안 바로 시도할 작은 행동 1개와 다음 점검에서 볼 증거 1개를 합의한다.`,
     followUpMemo: state.followUpMemo || '성격이나 태도 평가가 아니라 관찰 사실, 실행 기준, 필요한 지원을 중심으로 대화를 마무리한다.',
@@ -75,38 +63,38 @@ export function V41OneOnOnePracticeLab() {
       <p className="mt-2 text-sm font-bold leading-6 text-slate-600">9단계에서 정리한 관찰 사실, 대화 목적, 피해야 할 말을 바탕으로 팀원이 방어하지 않고 말문을 열 수 있는 첫 문장을 만듭니다.</p>
     </section>
 
-    <Card title="9단계 1on1 준비 내용 확인">
+    <V41Card title="9단계 1on1 준비 내용 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
         <p><span className="font-black text-slate-700">준비 상태: </span>{hasPreparation ? '9단계 준비 내용 있음' : '9단계에서 먼저 팀원과 관찰 사실을 정리하세요'}</p>
         <p><span className="font-black text-slate-700">실행관리 주기: </span>{executionCycle}</p>
-        <p><span className="font-black text-slate-700">관찰 사실: </span>{compact(state.observedFact)}</p>
-        <p><span className="font-black text-slate-700">해석 또는 추정: </span>{compact(state.interpretation)}</p>
-        <p><span className="font-black text-slate-700">대화 목적: </span>{compact(state.conversationPurpose)}</p>
-        <p><span className="font-black text-slate-700">피해야 할 말: </span>{compact(state.riskToAvoid)}</p>
-        <p><span className="font-black text-slate-700">첫 질문 초점: </span>{compact(state.firstQuestionFocus)}</p>
-        <p><span className="font-black text-slate-700">다음 1on1 메모: </span>{compact(state.nextDialogueMemo)}</p>
-        <p><span className="font-black text-slate-700">업무 경계 선언문: </span>{compact(taskState.boundaryDeclaration)}</p>
-        <p><span className="font-black text-slate-700">사람관리 신호: </span>{compact(taskState.peopleSignal)}</p>
+        <p><span className="font-black text-slate-700">관찰 사실: </span>{compactV41Text(state.observedFact)}</p>
+        <p><span className="font-black text-slate-700">해석 또는 추정: </span>{compactV41Text(state.interpretation)}</p>
+        <p><span className="font-black text-slate-700">대화 목적: </span>{compactV41Text(state.conversationPurpose)}</p>
+        <p><span className="font-black text-slate-700">피해야 할 말: </span>{compactV41Text(state.riskToAvoid)}</p>
+        <p><span className="font-black text-slate-700">첫 질문 초점: </span>{compactV41Text(state.firstQuestionFocus)}</p>
+        <p><span className="font-black text-slate-700">다음 1on1 메모: </span>{compactV41Text(state.nextDialogueMemo)}</p>
+        <p><span className="font-black text-slate-700">업무 경계 선언문: </span>{compactV41Text(taskState.boundaryDeclaration)}</p>
+        <p><span className="font-black text-slate-700">사람관리 신호: </span>{compactV41Text(taskState.peopleSignal)}</p>
       </div>
-    </Card>
+    </V41Card>
 
-    <Card title="첫 문장 만들기">
+    <V41Card title="첫 문장 만들기">
       <button type="button" className="rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white" onClick={makeDialogue}>첫 문장 초안 만들기</button>
-      <Field label="첫 문장" value={state.openingLine ?? ''} onChange={(value) => update({ openingLine: value })} placeholder="비난이 아니라 관찰 사실을 함께 확인하는 문장으로 시작합니다." />
-    </Card>
+      <V41TextAreaField label="첫 문장" value={state.openingLine ?? ''} onChange={(value) => update({ openingLine: value })} placeholder="비난이 아니라 관찰 사실을 함께 확인하는 문장으로 시작합니다." />
+    </V41Card>
 
-    <Card title="확인 질문 만들기">
+    <V41Card title="확인 질문 만들기">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="확인 질문 1" value={state.checkQuestionOne ?? ''} onChange={(value) => update({ checkQuestionOne: value })} placeholder="본인이 상황을 어떻게 보고 있는지 확인합니다." />
-        <Field label="확인 질문 2" value={state.checkQuestionTwo ?? ''} onChange={(value) => update({ checkQuestionTwo: value })} placeholder="필요한 지원과 다음 행동을 확인합니다." />
+        <V41TextAreaField label="확인 질문 1" value={state.checkQuestionOne ?? ''} onChange={(value) => update({ checkQuestionOne: value })} placeholder="본인이 상황을 어떻게 보고 있는지 확인합니다." />
+        <V41TextAreaField label="확인 질문 2" value={state.checkQuestionTwo ?? ''} onChange={(value) => update({ checkQuestionTwo: value })} placeholder="필요한 지원과 다음 행동을 확인합니다." />
       </div>
-    </Card>
+    </V41Card>
 
-    <Card title="작은 행동 합의하기">
+    <V41Card title="작은 행동 합의하기">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder={`${executionCycle} 동안 시도할 작은 행동 1개를 정합니다.`} />
-        <Field label="대화 후 메모" value={state.followUpMemo ?? ''} onChange={(value) => update({ followUpMemo: value })} placeholder="대화 후 남길 메모와 후속 확인 기준을 씁니다." />
+        <V41TextAreaField label="작은 행동 합의" value={state.actionAgreement ?? ''} onChange={(value) => update({ actionAgreement: value })} placeholder={`${executionCycle} 동안 시도할 작은 행동 1개를 정합니다.`} />
+        <V41TextAreaField label="대화 후 메모" value={state.followUpMemo ?? ''} onChange={(value) => update({ followUpMemo: value })} placeholder="대화 후 남길 메모와 후속 확인 기준을 씁니다." />
       </div>
-    </Card>
+    </V41Card>
   </section>;
 }
