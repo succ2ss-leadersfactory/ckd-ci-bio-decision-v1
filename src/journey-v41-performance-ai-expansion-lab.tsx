@@ -40,7 +40,8 @@ export function V41PerformanceAiExpansionLab() {
   const [copied, setCopied] = useState(false);
   const [research] = useStored<PharmaStrategyResearchState>(PHARMA_STRATEGY_RESEARCH_STORAGE_KEY, DEFAULT_PHARMA_RESEARCH_STATE);
   const enterpriseTitle = useMemo(() => pharmaTitleOf(research), [research.selectedTopicId, research.customTopic]);
-  const hasAiReview = Boolean(ai.result.trim() || ai.review.trim());
+  const hasAiResult = Boolean(ai.result.trim());
+  const hasHumanReview = Boolean(ai.review.trim());
 
   const buildPrompt = () => {
     const base = [
@@ -78,7 +79,7 @@ export function V41PerformanceAiExpansionLab() {
   return <section className="rounded-3xl border border-violet-100 bg-violet-50 p-4 shadow-sm md:p-5" data-v41-ai-expansion-position="before-team-standard-confirmation">
     <p className="text-xs font-black uppercase tracking-wide text-violet-700">AI 확장 실습 · 김박사 추천 프롬프팅 기준</p>
     <h3 className="mt-1 text-lg font-black text-slate-950">AI로 추가 팀 전략과제·CSF·KPI 만들기</h3>
-    <p className="mt-2 text-sm font-bold leading-6 text-slate-600">AI에게 추가 전략과제와 CSF/KPI 후보를 만들게 하고 사람이 검토합니다. 이 단계에서는 AI 결과를 저장만 하며, 팀 성과기준 확정과 실행계획 수립은 6단계에서 진행합니다.</p>
+    <p className="mt-2 text-sm font-bold leading-6 text-slate-600">AI에게 추가 전략과제와 CSF/KPI 후보를 만들게 하고 사람이 검토합니다. AI 원문은 참고자료이고, 사람이 검토한 요약만 6단계에서 실행계획 후보로 가져갈 수 있습니다.</p>
     <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-violet-800"><span className="rounded-full bg-white px-3 py-1">역할</span><span className="rounded-full bg-white px-3 py-1">상황/맥락</span><span className="rounded-full bg-white px-3 py-1">과제/요청</span><span className="rounded-full bg-white px-3 py-1">출력형식</span><span className="rounded-full bg-white px-3 py-1">제약/조건</span></div>
     <div className="mt-4 flex flex-wrap gap-2">
       <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildPrompt}>AI 실습 프롬프트 만들기</button>
@@ -86,9 +87,9 @@ export function V41PerformanceAiExpansionLab() {
     </div>
     <div className="mt-4 grid gap-3 md:grid-cols-2">
       <Box label="AI에게 입력할 프롬프트" help="프롬프트를 만든 뒤 ‘프롬프트 복사’를 눌러 GPT에 붙여넣습니다."><TextArea value={ai.prompt} onChange={(prompt) => { setCopied(false); setAi({ ...ai, prompt }); }} placeholder="버튼을 누르면 프롬프트가 생성됩니다." minHeight="min-h-56" /></Box>
-      <Box label="AI 결과 붙여넣기" help="GPT가 생성한 추가 팀 전략과제, CSF, KPI를 이곳에 붙여넣습니다. 이 원문은 6단계 첫 블록에 길게 노출하지 않습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
-      <Box label="사람이 검토한 최종 보완" help="유지할 것, 수정할 것, 제외할 것을 정리합니다. 이 내용은 6단계에서 기준 확정 시 참고합니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder="사람의 판단으로 최종 보완 내용을 적습니다." /></Box>
-      <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 6단계에서 실행관리 계획으로 전환할 수 있는가?</p><p className="mt-3 rounded-xl bg-violet-50 px-3 py-2 text-violet-900">{hasAiReview ? 'AI 결과와 사람 검토 내용이 저장되었습니다. 6단계에서 선택 기준을 바탕으로 팀 성과기준을 확정하세요.' : 'AI 결과를 붙여넣고 사람 검토를 남기면 자동 저장됩니다.'}</p></div>
+      <Box label="AI 결과 붙여넣기" help="GPT가 생성한 추가 팀 전략과제, CSF, KPI를 이곳에 붙여넣습니다. 이 원문은 6단계에서 참고용으로만 보이며 자동 반영되지 않습니다."><TextArea value={ai.result} onChange={(result) => setAi({ ...ai, result })} placeholder="AI 결과를 붙여넣으세요." minHeight="min-h-56" /></Box>
+      <Box label="6단계로 가져갈 AI 후보 검토 요약" help="AI 결과 중 유지할 것, 수정할 것, 제외할 것을 정리합니다. 이 내용만 6단계에서 실행계획 후보로 검토됩니다."><TextArea value={ai.review} onChange={(review) => setAi({ ...ai, review })} placeholder={'[반영할 AI 후보]\n- \n\n[수정할 표현]\n- \n\n[제외할 후보]\n- \n\n[반영 이유]\n- \n\n[컴플라이언스 확인]\n- 실제 병원명/의료진명/고객명 없음\n- 확인 불가능한 KPI 없음\n- 표현상 위험 문구 없음'} /></Box>
+      <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600"><p className="font-black text-violet-800">검토 기준</p><p className="mt-2">1. 팀 전략과제가 전사 추진과제에 기여하는가?</p><p>2. CSF는 성공조건인가, 단순 활동인가?</p><p>3. KPI는 해당 CSF를 직접 측정하는가?</p><p>4. KPI에 관리 주기와 확인 증거가 있는가?</p><p>5. 6단계에서 실행관리 계획으로 전환할 수 있는가?</p><p className="mt-3 rounded-xl bg-violet-50 px-3 py-2 text-violet-900">{hasHumanReview ? '6단계로 가져갈 검토 요약이 저장되었습니다. 6단계에서 팀장이 반영할 항목만 실행계획에 포함하세요.' : hasAiResult ? 'AI 결과가 저장되었습니다. 6단계에서 활용하려면 사람이 검토한 요약을 반드시 작성하세요.' : 'AI 결과를 붙여넣고, 6단계로 가져갈 검토 요약을 작성하면 자동 저장됩니다.'}</p></div>
     </div>
   </section>;
 }
