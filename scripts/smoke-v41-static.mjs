@@ -39,6 +39,7 @@ const files = {
   qaRunLog: read('docs/v41-manual-qa-run-log.md'),
   ciOptimizationStatus: read('docs/v41-ci-optimization-status.md'),
   storageKeyUsageMap: read('docs/v41-storage-key-usage-map.md'),
+  storageScopeAudit: read('docs/v41-storage-scope-audit.md'),
   baselineFreeze: read('docs/v41-pre-optimization-baseline-freeze.md'),
   browserQaConfirmation: read('docs/v41-baseline-browser-qa-confirmation.md'),
   ciOptimizationGuard: read('src/journey-v41-ci-optimization-guard.ts'),
@@ -70,6 +71,15 @@ const continuityMarkers = [
   'Step 8 converts the flow into task boundaries and people signals.',
   'Step 9 selects the 1on1 target from boundary and people signals.',
   'Step 10 creates opening line, check questions, and action agreement using the execution cycle.',
+];
+
+const v40VNextBridgeKeys = [
+  'ckd.v40-vnext.promptPracticeReview.v2',
+  'ckd.v40-vnext.pharmaStrategyResearch.v1',
+  'ckd.v40-vnext.performanceCascade.v1',
+  'ckd.v40-vnext.taskManagement.v10',
+  'ckd.v40-vnext.peopleManagement.v2',
+  'ckd.v40-vnext.finalExecutionMemo.v1',
 ];
 
 const storageKeyCodeSources = [
@@ -127,6 +137,17 @@ for (const storageKey of storageKeysUsedInCode) {
   mustInclude(files.storageKeyUsageMap, storageKey, 'v41 storage key usage map entry');
 }
 for (const marker of ['This is a documentation-only checkpoint', 'Do not rename any `ckd.v41.*` key without a migration', 'ckd.v41.taskManagement.v10', 'ckd.v41.peopleManagement.v2']) mustInclude(files.storageKeyUsageMap, marker, 'v41 storage key usage map rule');
+
+for (const marker of ['Storage Scope Audit', 'No active mount confirmed in the visible 10-step v41 app', 'Reserved / bridge-only in the current visible v41 10-step flow', 'Keep it shared for now', 'test(v41): guard storage reset scope']) mustInclude(files.storageScopeAudit, marker, 'v41 storage scope audit decision');
+for (const marker of ['removeStoredPrefix(\'ckd.v41.\')', '`ckd.v40-vnext.*` keys survive a v41 reset', 'participant/progress keys are not mixed with lab-state keys']) mustInclude(files.storageScopeAudit, marker, 'v41 storage reset scope audit rule');
+for (const marker of ['const resetV41', "removeStoredPrefix('ckd.v41.')", 'v41 입력 초기화']) mustInclude(files.app, marker, 'v41 reset scope implementation');
+for (const marker of ["removeStoredPrefix('ckd.v40-vnext.')", "removeStoredPrefix('ckd.v40')", "removeStoredPrefix('ckd.')", 'ckd.v40-vnext.* 를 삭제']) mustNotInclude(files.app, marker, 'unsafe v41 reset scope');
+for (const marker of v40VNextBridgeKeys) {
+  mustInclude(files.storageScope, marker, 'v40-vNext bridge key retained in v41 storage scope helper');
+  mustInclude(files.storageKeyUsageMap, marker, 'v40-vNext bridge key retained in storage key usage map');
+  mustInclude(files.storageScopeAudit, marker, 'v40-vNext bridge key considered by storage scope audit');
+}
+for (const marker of ['ckd.v41.finalExecutionMemo.v1', 'Reserved / bridge-only', 'Do not merge it into `ckd.v41.peopleManagement.v2`']) mustInclude(files.storageScopeAudit, marker, 'v41 reserved final execution memo rule');
 
 for (const marker of ['V41_VISIBLE_APP_STEPS', 'v41 field-friendly step labels', '1on1 첫 문장']) mustInclude(files.config, marker, 'v41 config');
 for (const marker of ['Step 11', '11단계', 'Steps 4~11', 'Step 4~11', 'Step 10~11']) {
