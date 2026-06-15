@@ -23,6 +23,7 @@ Current changed files:
 - `src/journey-v41-people-selection-lab.tsx`
 - `src/journey-v41-preview-config.ts`
 - `src/journey-v41-task-execution-bridge-lab.tsx`
+- `src/journey-v41-team-standard-lab.tsx`
 - `src/journey-v41-ux-components.tsx`
 - `tsconfig.v41-smoke.json`
 - `vite.config.ts`
@@ -40,7 +41,9 @@ Completed:
   - `src/journey-v41-task-execution-bridge-lab.tsx`
   - `src/journey-v41-people-selection-lab.tsx`
   - `src/journey-v41-one-on-one-practice-lab.tsx`
+  - `src/journey-v41-team-standard-lab.tsx`
 - `src/journey-v41-app-preview.tsx` connects steps 6~10 to v41-owned lab components and keeps steps 1~5 as safe placeholders.
+- `src/journey-v41-team-standard-lab.tsx` is present and typechecked, but not yet wired into the app shell.
 - Step 6~8 task execution snapshots persist under `ckd.v41.taskExecutionBridge.v1`.
 - Step 9 recommended people selection persists under `ckd.v41.peopleSelection.v1`.
 - Step 10 one-on-one script snapshots persist under `ckd.v41.oneOnOnePractice.v1` and use the saved Step 9 candidate when available.
@@ -49,7 +52,7 @@ Completed:
 
 ## Latest verified validation
 
-As of head `6a7b08c3c7dc967d73c825fdfa17acc4aa1509cb`, before the later Step 9 persistence commits:
+As of code-bearing head `98f2fcb7524c290be4e1b7a01109078651ac6121`:
 
 - `v41 Typecheck`: success
 - `v41 Foundation Smoke`: success
@@ -57,7 +60,7 @@ As of head `6a7b08c3c7dc967d73c825fdfa17acc4aa1509cb`, before the later Step 9 p
 - `v35 Smoke`: success
 - `typecheck:v41` script is available for scoped v41 type checking
 
-After each new commit, re-check workflow runs for the latest head SHA before claiming validation.
+This document may receive documentation-only updates after that head. After each new commit, re-check workflow runs for the latest head SHA before claiming validation.
 
 ## Guardrails
 
@@ -78,7 +81,8 @@ The v41 clean lane must use v41-owned files only.
 
 ## Current step coverage
 
-- Steps 1~5: placeholder shell remains intentionally narrow.
+- Steps 1~4: placeholder shell remains intentionally narrow.
+- Step 5: label exists in config; `V41TeamStandardLab` file exists but is not yet wired into the app shell.
 - Step 6: `V41TaskExecutionBridgeLab stage="plan"`
 - Step 7: `V41TaskExecutionBridgeLab stage="priority"`
 - Step 8: `V41TaskExecutionBridgeLab stage="boundary"`
@@ -99,13 +103,13 @@ The v41 clean lane must use v41-owned files only.
 
 Before adding more behavior, verify the latest head SHA workflow runs.
 
-### 2. Improve Step 9 selectable UI later
+### 2. Wire Step 5 only with a minimal app-shell patch
 
-The current safe implementation stores the recommended candidate. A future patch can allow selecting among all candidates, but avoid a full-file rewrite if connector safety blocks again.
+If behavior changes resume, wire `V41TeamStandardLab` into Step 5 with the smallest possible app-shell diff.
 
-### 3. Replace steps 1~5 placeholders later
+### 3. Replace steps 1~4 placeholders later
 
-Add v41-owned components for steps 1~5 only after the step 6~10 lab wiring remains green.
+Add v41-owned components for steps 1~4 only after the step 5~10 lane remains green.
 
 ### 4. Add full smoke workflow
 
