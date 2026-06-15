@@ -4,6 +4,7 @@
     "build": "vite build",
     "typecheck": "npm run typecheck:v35",
     "typecheck:v35": "tsc -p tsconfig.v35-smoke.json --noEmit",
+    "typecheck:v41": "tsc -p tsconfig.v41-smoke.json --noEmit",
     "typecheck:full": "tsc --noEmit",
     "smoke:v34:static": "node scripts/smoke-v34-static.mjs",
     "smoke:v34": "npm run smoke:v34:static && npm run build",
