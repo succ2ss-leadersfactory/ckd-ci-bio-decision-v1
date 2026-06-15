@@ -8,34 +8,42 @@ export const STORAGE_KEYS = {
   state: 'c1bio_flow_state',
 };
 
-function canUseLocalStorage() {
-  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+function getLocalStorage() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
 export function getJson<T>(key: string, fallback: T): T {
-  if (!canUseLocalStorage()) return fallback;
+  const storage = getLocalStorage();
+  if (!storage) return fallback;
   try {
-    return JSON.parse(window.localStorage.getItem(key) || 'null') ?? fallback;
+    return JSON.parse(storage.getItem(key) || 'null') ?? fallback;
   } catch {
     return fallback;
   }
 }
 
 export function setJson<T>(key: string, value: T) {
-  if (!canUseLocalStorage()) return;
+  const storage = getLocalStorage();
+  if (!storage) return;
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    storage.setItem(key, JSON.stringify(value));
   } catch {
     // Storage quota, private-mode, or JSON serialization errors should not break the learning flow.
   }
 }
 
 export function removeStoredPrefix(prefix: string) {
-  if (!canUseLocalStorage()) return;
+  const storage = getLocalStorage();
+  if (!storage) return;
   try {
-    const keysToRemove = Array.from({ length: window.localStorage.length }, (_, index) => window.localStorage.key(index))
+    const keysToRemove = Array.from({ length: storage.length }, (_, index) => storage.key(index))
       .filter((key): key is string => Boolean(key && key.startsWith(prefix)));
-    keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+    keysToRemove.forEach((key) => storage.removeItem(key));
   } catch {
     // Ignore storage access errors so reset buttons never break the UI.
   }
