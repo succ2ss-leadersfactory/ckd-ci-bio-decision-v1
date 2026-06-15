@@ -3,11 +3,18 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 
 import { JourneyShell, type JourneyStep } from './journey-shell';
-import { V41TaskExecutionBridgeLab } from './journey-v41-task-execution-bridge-lab';
+import { useStored } from './journey-storage';
+import { V41TaskExecutionBridgeLab, type V41TaskExecutionSnapshot, type V41TaskExecutionStage } from './journey-v41-task-execution-bridge-lab';
 import { V41PeopleSelectionLab } from './journey-v41-people-selection-lab';
-import { V41OneOnOnePracticeLab } from './journey-v41-one-on-one-practice-lab';
+import { V41OneOnOnePracticeLab, type V41OneOnOneSnapshot } from './journey-v41-one-on-one-practice-lab';
 import { V41FlowStrip, V41StepHero } from './journey-v41-ux-components';
-import { V41_PREVIEW_ROUTE, V41_VISIBLE_APP_STEPS, V41_VISIBLE_STEP_LABELS } from './journey-v41-preview-config';
+import {
+  V41_ONE_ON_ONE_STORAGE_KEY,
+  V41_PREVIEW_ROUTE,
+  V41_TASK_EXECUTION_STORAGE_KEY,
+  V41_VISIBLE_APP_STEPS,
+  V41_VISIBLE_STEP_LABELS,
+} from './journey-v41-preview-config';
 
 const V41_APP_PREVIEW_MARKERS = [
   'V41AppPreview',
@@ -15,6 +22,9 @@ const V41_APP_PREVIEW_MARKERS = [
   'v41 preview app shell',
   'V41_PREVIEW_ROUTE',
   'V41_VISIBLE_APP_STEPS',
+  'V41_TASK_EXECUTION_STORAGE_KEY',
+  'V41_ONE_ON_ONE_STORAGE_KEY',
+  'useStored',
   'V41TaskExecutionBridgeLab',
   'V41PeopleSelectionLab',
   'V41OneOnOnePracticeLab',
@@ -27,6 +37,8 @@ const steps: JourneyStep[] = V41_VISIBLE_STEP_LABELS.map((label, index) => ({
   title: label,
   description: `${index + 1}단계 / ${V41_VISIBLE_APP_STEPS}단계`,
 }));
+
+type V41TaskExecutionState = Partial<Record<V41TaskExecutionStage, V41TaskExecutionSnapshot>>;
 
 function V41PlaceholderStep({ currentStep }: { currentStep: number }) {
   const label = V41_VISIBLE_STEP_LABELS[currentStep] ?? 'v41 preview';
@@ -46,17 +58,31 @@ function V41PlaceholderStep({ currentStep }: { currentStep: number }) {
   );
 }
 
-function V41StepBody({ currentStep }: { currentStep: number }) {
-  if (currentStep === 5) return <V41TaskExecutionBridgeLab stage="plan" />;
-  if (currentStep === 6) return <V41TaskExecutionBridgeLab stage="priority" />;
-  if (currentStep === 7) return <V41TaskExecutionBridgeLab stage="boundary" />;
+function V41StepBody({
+  currentStep,
+  taskExecutionState,
+  onSaveTaskExecution,
+  oneOnOneState,
+  onSaveOneOnOne,
+}: {
+  currentStep: number;
+  taskExecutionState: V41TaskExecutionState;
+  onSaveTaskExecution: (snapshot: V41TaskExecutionSnapshot) => void;
+  oneOnOneState: V41OneOnOneSnapshot | null;
+  onSaveOneOnOne: (snapshot: V41OneOnOneSnapshot) => void;
+}) {
+  if (currentStep === 5) return <V41TaskExecutionBridgeLab stage="plan" savedAt={taskExecutionState.plan?.savedAt} onSaveSnapshot={onSaveTaskExecution} />;
+  if (currentStep === 6) return <V41TaskExecutionBridgeLab stage="priority" savedAt={taskExecutionState.priority?.savedAt} onSaveSnapshot={onSaveTaskExecution} />;
+  if (currentStep === 7) return <V41TaskExecutionBridgeLab stage="boundary" savedAt={taskExecutionState.boundary?.savedAt} onSaveSnapshot={onSaveTaskExecution} />;
   if (currentStep === 8) return <V41PeopleSelectionLab />;
-  if (currentStep === 9) return <V41OneOnOnePracticeLab />;
+  if (currentStep === 9) return <V41OneOnOnePracticeLab savedAt={oneOnOneState?.savedAt} onSaveSnapshot={onSaveOneOnOne} />;
   return <V41PlaceholderStep currentStep={currentStep} />;
 }
 
 export function V41AppPreview() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [taskExecutionState, setTaskExecutionState] = useStored<V41TaskExecutionState>(V41_TASK_EXECUTION_STORAGE_KEY, {});
+  const [oneOnOneState, setOneOnOneState] = useStored<V41OneOnOneSnapshot | null>(V41_ONE_ON_ONE_STORAGE_KEY, null);
   const safeStep = Math.min(Math.max(currentStep, 0), V41_VISIBLE_APP_STEPS - 1);
 
   return (
@@ -84,7 +110,13 @@ export function V41AppPreview() {
             { label: 'Scope', value: 'v41 only', tone: 'emerald', icon: '🛡️' },
           ]}
         />
-        <V41StepBody currentStep={safeStep} />
+        <V41StepBody
+          currentStep={safeStep}
+          taskExecutionState={taskExecutionState}
+          onSaveTaskExecution={(snapshot) => setTaskExecutionState((current) => ({ ...current, [snapshot.stage]: snapshot }))}
+          oneOnOneState={oneOnOneState}
+          onSaveOneOnOne={setOneOnOneState}
+        />
       </div>
     </JourneyShell>
   );
