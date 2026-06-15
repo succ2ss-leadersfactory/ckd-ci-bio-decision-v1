@@ -33,6 +33,19 @@ This is a documentation-only checkpoint. It does not change component code, rout
 - `src/journey-v41-one-on-one-practice-lab.tsx`
 - `scripts/smoke-v41-static.mjs`
 
+## v40-vNext bridge key inventory
+
+The current storage-scope helper retains the following v40-vNext source keys as inherited bridge keys. A v41 reset must not delete these source keys.
+
+| v40-vNext source key | v41 scoped key | Current audit decision |
+|---|---|---|
+| `ckd.v40-vnext.promptPracticeReview.v2` | `ckd.v41.promptPracticeReview.v2` | Retain as inherited bridge key; not active reset target |
+| `ckd.v40-vnext.pharmaStrategyResearch.v1` | `ckd.v41.pharmaStrategyResearch.v1` | Retain as inherited bridge key; not active reset target |
+| `ckd.v40-vnext.performanceCascade.v1` | `ckd.v41.performanceCascade.v1` | Retain as inherited bridge key; not active reset target |
+| `ckd.v40-vnext.taskManagement.v10` | `ckd.v41.taskManagement.v10` | Retain as inherited bridge key; not active reset target |
+| `ckd.v40-vnext.peopleManagement.v2` | `ckd.v41.peopleManagement.v2` | Retain as inherited bridge key; not active reset target |
+| `ckd.v40-vnext.finalExecutionMemo.v1` | `ckd.v41.finalExecutionMemo.v1` | Reserved / bridge-only; not active reset target |
+
 ## Audit questions and decisions
 
 ### 1. Is `V41LabStorageScope` mounted in the visible v41 flow?
