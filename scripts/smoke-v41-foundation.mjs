@@ -85,6 +85,20 @@ const checks = [
     ],
   },
   {
+    file: 'src/journey-v41-team-standard-lab.tsx',
+    includes: [
+      'journey-v41-team-standard-lab.tsx',
+      'V41TeamStandardLab',
+      'ckd.v41.teamStandard.v1',
+      '팀 기준 만들기',
+      '실행계획으로 넘길 기준',
+    ],
+    excludes: [
+      'journey-v39',
+      'journey-v40',
+    ],
+  },
+  {
     file: 'src/journey-v41-app-preview.tsx',
     includes: [
       "import './index.css';",
