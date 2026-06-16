@@ -4,22 +4,24 @@ import { useStored } from './journey-storage';
 const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   'V41TaskExecutionBridgeLab',
   '업무관리 실행계획 만들기',
-  '5단계에서 선택된 기준 정리',
-  '5단계 AI 추가 후보 검토',
-  'AI 후보를 자동 확정하지 않고 팀장이 검토 후 반영',
-  '6단계에서 팀 성과기준 확정',
-  'AI 원문 요약 블록 미노출',
-  '실행관리 주기 선택',
-  'AI로 실행계획 초안 만들기',
-  'AI 결과 검토 후 최종 실행계획 확정',
+  '6단계: 업무산출물과 업무분해',
+  '5단계 기준은 입력값으로만 사용',
+  '성과기준 재평가 금지',
+  '사람관리 판단 금지',
+  '업무산출물 정의',
+  '업무분해 후보 만들기',
+  '산출물-KPI 연결 확인',
+  'CSF 반영 확인',
   '7단계 업무지시로 넘기기',
+  '실행관리 주기',
+  '최종 실행계획',
   'ckd.v41.performanceCascade.v1',
   'ckd.v41.performanceCascade.aiExpansion.v1',
   'ckd.v41.taskManagement.v10',
 ].join('|');
 void V41_TASK_EXECUTION_BRIDGE_MARKERS;
 
-type PerformanceState = Record<string, any> & {
+type PerformanceState = Record<string, unknown> & {
   selectedTeamTask?: string;
   customTeamTask?: string;
   selectedCsf?: string;
@@ -38,6 +40,21 @@ type ExecutionCycle = '1주' | '2주' | '4주' | '월간' | '분기';
 type TaskExecutionState = {
   confirmedTeamStandard: string;
   executionCycle: ExecutionCycle;
+  selectedOutput: string;
+  outputLocation: string;
+  completionStandard: string;
+  outputKpiConnection: string;
+  outputCsfConnection: string;
+  workBreakdownDraft: string;
+  selectedWorkItems: string;
+  workItemCompletionCriteria: string;
+  step6HandoffToStep7: string;
+  aiPrompt: string;
+  aiResult: string;
+  humanReview: string;
+  aiExpansionAppliedNote: string;
+  finalExecutionPlan: string;
+  taskInstructionDraft: string;
   executionTaskOne: string;
   executionTaskTwo: string;
   executionTaskThree: string;
@@ -48,12 +65,6 @@ type TaskExecutionState = {
   midCheckQuestions: string;
   pauseActivities: string;
   expectedRisks: string;
-  aiPrompt: string;
-  aiResult: string;
-  humanReview: string;
-  aiExpansionAppliedNote: string;
-  finalExecutionPlan: string;
-  taskInstructionDraft: string;
   peopleSignal: string;
   boundaryDeclaration: string;
 };
@@ -67,6 +78,21 @@ const EXECUTION_CYCLES: ExecutionCycle[] = ['1주', '2주', '4주', '월간', '�
 const DEFAULT_TASK_STATE: TaskExecutionState = {
   confirmedTeamStandard: '',
   executionCycle: '2주',
+  selectedOutput: '',
+  outputLocation: '',
+  completionStandard: '',
+  outputKpiConnection: '',
+  outputCsfConnection: '',
+  workBreakdownDraft: '',
+  selectedWorkItems: '',
+  workItemCompletionCriteria: '',
+  step6HandoffToStep7: '',
+  aiPrompt: '',
+  aiResult: '',
+  humanReview: '',
+  aiExpansionAppliedNote: '',
+  finalExecutionPlan: '',
+  taskInstructionDraft: '',
   executionTaskOne: '',
   executionTaskTwo: '',
   executionTaskThree: '',
@@ -77,12 +103,6 @@ const DEFAULT_TASK_STATE: TaskExecutionState = {
   midCheckQuestions: '',
   pauseActivities: '',
   expectedRisks: '',
-  aiPrompt: '',
-  aiResult: '',
-  humanReview: '',
-  aiExpansionAppliedNote: '',
-  finalExecutionPlan: '',
-  taskInstructionDraft: '',
   peopleSignal: '',
   boundaryDeclaration: '',
 };
@@ -94,15 +114,23 @@ function textOrEmpty(value?: string) {
 function compact(value?: string) {
   const text = textOrEmpty(value);
   if (!text) return '미작성';
-  return text.length > 240 ? `${text.slice(0, 240)}…` : text;
+  return text.length > 260 ? `${text.slice(0, 260)}…` : text;
+}
+
+function splitLines(value: string) {
+  return value.split(/\r?\n/).map((line) => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean);
+}
+
+function firstLines(value: string, count = 3) {
+  return splitLines(value).slice(0, count);
 }
 
 function line(label: string, value?: string) {
   return <p><span className="font-black text-slate-700">{label}: </span><span>{textOrEmpty(value) || '미작성'}</span></p>;
 }
 
-function Card({ title, children, tone = 'slate' }: { title: string; children: ReactNode; tone?: 'slate' | 'cyan' | 'emerald' | 'violet' }) {
-  const toneClass = tone === 'cyan' ? 'border-cyan-100' : tone === 'emerald' ? 'border-emerald-100' : tone === 'violet' ? 'border-violet-100' : 'border-slate-200';
+function Card({ title, children, tone = 'slate' }: { title: string; children: ReactNode; tone?: 'slate' | 'cyan' | 'emerald' | 'violet' | 'amber' }) {
+  const toneClass = tone === 'cyan' ? 'border-cyan-100' : tone === 'emerald' ? 'border-emerald-100' : tone === 'violet' ? 'border-violet-100' : tone === 'amber' ? 'border-amber-100' : 'border-slate-200';
   return <section className={`rounded-3xl border ${toneClass} bg-white p-4 shadow-sm md:p-5`}><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-3">{children}</div></section>;
 }
 
@@ -112,30 +140,26 @@ function Field({ label, help, value, onChange, placeholder, minHeight = 'min-h-2
 
 function cycleHelp(cycle: ExecutionCycle) {
   const map: Record<ExecutionCycle, string> = {
-    '1주': '바로 확인할 기록, Follow-up 지연, 이번 주 행동 기준에 적합합니다.',
-    '2주': '첫 실행 신호와 보완 지점을 확인하는 기본 실습 주기입니다.',
-    '4주': '반복 실행 패턴과 팀원별 편차를 확인하기 좋습니다.',
-    '월간': '고객 반응 변화, 메시지 개선, 인사이트 축적을 보기 좋습니다.',
-    '분기': '전략과제 기여도와 방향 수정 여부를 판단할 때 적합합니다.',
+    '1주': '짧은 기록 정리, 누락 확인, 바로잡을 업무 단위에 적합합니다.',
+    '2주': '업무산출물과 업무분해를 실행흐름으로 넘기기 좋은 기본 실습 주기입니다.',
+    '4주': '반복 업무와 정리 산출물을 만들기 좋습니다.',
+    '월간': '월간 회의·보고 산출물로 정리하기 좋습니다.',
+    '분기': '분기 단위 과제의 업무 묶음과 산출물을 정의할 때 적합합니다.',
   };
   return map[cycle];
-}
-
-function splitPlanLines(value: string) {
-  return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
 export function V41TaskExecutionBridgeLab() {
   const [performanceState] = useStored<PerformanceState>(PERFORMANCE_STORAGE_KEY, DEFAULT_PERFORMANCE_STATE);
   const [aiExpansion] = useStored<AiExpansionState>(AI_EXPANSION_STORAGE_KEY, DEFAULT_AI_EXPANSION_STATE);
-  const [state, setState] = useStored<TaskExecutionState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
+  const [rawState, setState] = useStored<TaskExecutionState>(TASK_STORAGE_KEY, DEFAULT_TASK_STATE);
+  const state = { ...DEFAULT_TASK_STATE, ...rawState };
   const update = (patch: Partial<TaskExecutionState>) => setState({ ...state, ...patch });
 
   const teamTask = textOrEmpty(performanceState.customTeamTask) || textOrEmpty(performanceState.selectedTeamTask) || '5단계에서 선택한 팀 전략과제';
   const selectedCsf = textOrEmpty(performanceState.selectedCsf) || '5단계에서 선택한 팀 CSF';
   const selectedKpi = textOrEmpty(performanceState.selectedKpi) || '5단계에서 선택한 팀 KPI';
   const selectedInitiative = textOrEmpty(performanceState.selectedInitiative) || '5단계에서 선택한 세부 추진과제 후보';
-  const hasAiExpansionResult = Boolean(textOrEmpty(aiExpansion.result));
   const hasAiExpansionReview = Boolean(textOrEmpty(aiExpansion.review));
   const aiExpansionAppliedNote = textOrEmpty(state.aiExpansionAppliedNote);
 
@@ -148,51 +172,40 @@ export function V41TaskExecutionBridgeLab() {
     ].join('\n');
   }, [teamTask, selectedCsf, selectedKpi, selectedInitiative]);
 
-  const aiExpansionMaterial = useMemo(() => {
-    return [
-      '[5단계 AI 추가 후보 상태]',
-      `AI 결과: ${hasAiExpansionResult ? '있음' : '없음'}`,
-      `사람 검토: ${hasAiExpansionReview ? '있음' : '없음'}`,
-      hasAiExpansionReview ? `[사람 검토 내용]\n${textOrEmpty(aiExpansion.review)}` : '',
-      aiExpansionAppliedNote ? `[6단계에서 반영하기로 한 내용]\n${aiExpansionAppliedNote}` : '',
-    ].filter(Boolean).join('\n');
-  }, [aiExpansion.review, aiExpansionAppliedNote, hasAiExpansionResult, hasAiExpansionReview]);
+  const suggestedOutput = `${selectedKpi} 확인에 필요한 업무산출물`;
+  const suggestedLocation = 'CRM 기록, 팀 공유 시트, 주간 업무관리 메모 중 하나로 통일';
+  const suggestedCompletion = `${selectedKpi}를 확인할 수 있는 기록 또는 결과물이 정해진 위치에 남아 있고, 누락 여부를 확인할 수 있어야 한다.`;
+  const suggestedKpiConnection = `이 산출물은 ${selectedKpi} 확인에 필요한 기록 또는 결과물이어야 한다.`;
+  const suggestedCsfConnection = `업무분해 과정에서 ${selectedCsf}를 놓치지 않도록 필수 항목과 완료 기준을 정한다.`;
 
-  const suggestedTeamStandard = useMemo(() => {
-    return [
-      '[6단계 확정 팀 성과기준]',
-      `팀 전략과제: ${teamTask}`,
-      `팀 CSF: ${selectedCsf}`,
-      `팀 KPI: ${selectedKpi}`,
-      `세부 추진과제 후보: ${selectedInitiative}`,
-      aiExpansionAppliedNote ? `[5단계 AI 추가 후보 중 반영할 내용]\n${aiExpansionAppliedNote}` : '',
-      '확정 기준: 이 기준은 실행관리 주기, 담당자 역할, 확인 증거, 점검 질문으로 전환 가능해야 한다.',
-    ].filter(Boolean).join('\n');
-  }, [teamTask, selectedCsf, selectedKpi, selectedInitiative, aiExpansionAppliedNote]);
+  const defaultWorkItems = [
+    '업무산출물에 반드시 들어갈 항목을 정한다.',
+    '기존 기록·자료 중 활용할 수 있는 것을 확인한다.',
+    '산출물을 남길 위치와 입력 기준을 정한다.',
+    '실행 후 산출물을 작성한다.',
+    '완료 기준에 맞게 누락 여부를 확인한다.',
+  ].join('\n');
 
-  const confirmedTeamStandard = textOrEmpty(state.confirmedTeamStandard) || suggestedTeamStandard;
+  const defaultWorkCriteria = [
+    '필수 항목이 빠지지 않았다.',
+    '정해진 위치에 산출물이 남았다.',
+    '5단계 KPI 확인에 필요한 흔적이 보인다.',
+    '7단계에서 순서·역할·일정으로 바꿀 수 있을 만큼 업무 단위가 분명하다.',
+  ].join('\n');
 
-  const buildTeamStandard = () => update({ confirmedTeamStandard: suggestedTeamStandard });
-
-  const draftAiExpansionNote = () => {
+  const bringAiExpansionReview = () => {
     const review = textOrEmpty(aiExpansion.review);
     if (!review) {
-      window.alert('5단계에서 “6단계로 가져갈 AI 후보 검토 요약”을 먼저 작성해야 실행계획 반영 메모를 만들 수 있습니다. AI 원문은 참고용이며 자동 반영되지 않습니다.');
+      window.alert('5단계에서 “6단계로 가져갈 AI 후보 검토 요약”을 먼저 작성해야 합니다. AI 원문은 6단계 업무분해에 자동 반영되지 않습니다.');
       return;
     }
     update({
       aiExpansionAppliedNote: [
-        '[반영할 AI 후보]',
+        '[5단계 사람 검토 요약 중 업무분해에 참고할 내용]',
         review,
         '',
-        '[수정할 표현]',
-        '컴플라이언스 위험 표현, 실제 병원명·의료진명·고객명, 확인 불가능한 KPI는 수정한다.',
-        '',
-        '[제외할 후보]',
-        '이번 실행관리 주기에서 확인 증거가 없거나 팀원이 바로 실행하기 어려운 후보는 제외한다.',
-        '',
-        '[반영 이유]',
-        `${selectedKpi}와 연결되는 실행 증거를 만들기 위해 반영한다.`,
+        '[6단계 적용 원칙]',
+        '성과기준을 새로 만들지 않고, 업무산출물과 업무 단위로 바꿀 때만 참고한다.',
       ].join('\n'),
     });
   };
@@ -200,186 +213,187 @@ export function V41TaskExecutionBridgeLab() {
   const buildAiPrompt = () => {
     update({
       aiPrompt: [
-        '역할: 당신은 제약영업팀장의 업무관리 실행계획 수립을 돕는 성과관리 전문가이자 업무관리 코치입니다.',
+        '역할: 당신은 제약영업팀장의 순수 업무관리 설계를 돕는 업무분해 전문가입니다.',
         '',
         '[상황/맥락]',
-        '아래는 5단계에서 선택된 기준 정리입니다. 아직 최종 실행계획은 아닙니다.',
+        '아래 5단계 기준은 입력값입니다. 이 기준을 다시 평가하거나 수정하지 마세요.',
         criteriaMaterial,
         '',
-        '[5단계 AI 추가 후보 및 사람 검토]',
-        aiExpansionMaterial,
+        aiExpansionAppliedNote ? `[5단계 AI 추가 후보 중 사람이 검토해 참고하기로 한 내용]\n${aiExpansionAppliedNote}` : '[5단계 AI 추가 후보 참고 내용]\n없음',
         '',
-        '[6단계에서 확정한 팀 성과기준]',
-        confirmedTeamStandard,
-        '',
-        `[선택한 실행관리 주기]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
+        `[실행관리 주기]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
         '',
         '[과제/요청]',
-        '위 팀 성과기준을 바탕으로 업무관리 실행계획을 만들어 주세요. 단순 할 일 목록이 아니라 실행과제, 담당자 역할, 팀장 확인 방식, 확인 증거, 중간 점검 질문, 잠시 줄일 일, 리스크 대응까지 포함해 주세요. 5단계 AI 추가 후보는 자동 반영하지 말고, 6단계에서 팀장이 반영하기로 적은 내용만 실행계획에 포함해 주세요.',
+        '이번 단계는 성과관리나 사람관리가 아니라 업무관리입니다. 위 기준을 바탕으로 이번 실행관리 주기 끝에 남길 업무산출물 후보와 그 산출물을 만들기 위한 업무 단위 후보를 제안해 주세요.',
+        '',
+        '[반드시 지킬 원칙]',
+        '1. 전략과제·CSF·KPI를 다시 평가하거나 새로 만들지 마세요.',
+        '2. 팀원의 역량·태도·동기·코칭 필요 여부를 판단하지 마세요.',
+        '3. 업무 순서, 역할, 일정, 업무량 조정, 병목 대응은 깊게 다루지 마세요. 이것은 7~8단계에서 다룹니다.',
+        '4. 오직 업무산출물, 기록 위치, 완료 기준, 업무분해, 각 업무의 완료 조건만 제안하세요.',
+        '5. 실제 병원명, 의료진명, 고객명은 쓰지 마세요.',
         '',
         '[출력형식]',
-        '1. 실행관리 주기',
-        '2. 핵심 실행과제 3개',
-        '3. 팀원이 할 일',
-        '4. 팀장이 확인할 일',
-        '5. 팀장이 지원할 일',
-        '6. 확인 증거',
-        '7. 중간 점검 질문',
-        '8. 잠시 줄일 일',
-        '9. 예상 리스크',
-        '10. 다음 단계 업무지시 초안',
-        '',
-        '[제약/조건]',
-        'CSF와 KPI의 연결이 끊기지 않게 작성해 주세요.',
-        '실행계획은 팀원이 바로 이해할 수 있는 말로 작성해 주세요.',
-        '확인 가능한 증거가 없는 계획은 제외해 주세요.',
-        '실제 병원명, 의료진명, 고객명은 쓰지 마세요.',
-        '검토되지 않은 표현이나 컴플라이언스 위험이 있는 문장은 피하세요.',
-        'AI가 제안한 표현이라도 팀장이 검토하지 않은 내용은 확정 계획에 넣지 마세요.',
-        '',
-        '[검토 기준]',
-        '구체성, 맥락, 실행 가능성, 팀장 언어, 확인 가능성을 기준으로 스스로 점검해 주세요.',
+        '1. 추천 업무산출물 후보 3개',
+        '2. 각 산출물이 5단계 KPI 확인에 어떻게 연결되는지 한 줄',
+        '3. 각 산출물이 5단계 CSF를 놓치지 않게 하는 이유 한 줄',
+        '4. 최종 추천 산출물 1개',
+        '5. 최종 추천 산출물을 만들기 위한 업무 단위 5~7개',
+        '6. 각 업무 단위의 시작 조건과 완료 조건',
+        '7. 제외해도 되는 업무 후보와 제외 이유',
       ].join('\n'),
     });
   };
 
-  const makeExecutionPlan = () => {
-    const taskOne = textOrEmpty(state.executionTaskOne) || `${selectedKpi}를 확인할 수 있도록 관련 고객 반응과 다음 행동을 정해진 기준으로 기록한다.`;
-    const taskTwo = textOrEmpty(state.executionTaskTwo) || `${selectedInitiative} 실행 과정에서 담당자별 진행상태와 Follow-up 지연 여부를 확인한다.`;
-    const taskThree = textOrEmpty(state.executionTaskThree) || '팀장이 중간 점검에서 지연·지원 필요 항목을 확인하고 우선순위를 조정한다.';
-    const memberTasks = textOrEmpty(state.memberTasks) || '팀원은 고객 반응, 다음 행동, Follow-up 상태를 정해진 기준으로 기록한다.';
-    const leaderCheckTasks = textOrEmpty(state.leaderCheckTasks) || '팀장은 기록 샘플, 지연 항목, 지원 필요 고객군을 확인한다.';
-    const leaderSupportTasks = textOrEmpty(state.leaderSupportTasks) || '팀장은 좋은 기록 예시와 우선순위 조정 기준을 제공한다.';
-    const evidence = textOrEmpty(state.evidenceToCheck) || `${selectedKpi}와 연결된 CRM 기록, 고객 반응 기록, Follow-up 완료 여부`;
-    const questions = textOrEmpty(state.midCheckQuestions) || `이번 실행에서 ${selectedKpi}가 보이는 증거는 무엇인가요? 막힌 고객군이나 지원이 필요한 담당자는 누구인가요?`;
-    const pause = textOrEmpty(state.pauseActivities) || '팀 성과기준, CSF, KPI와 연결되지 않는 단순 활동량 늘리기와 장문 보고는 줄인다.';
-    const risks = textOrEmpty(state.expectedRisks) || 'KPI가 활동량 지표로만 해석되거나, 확인 증거 없이 완료로 판단될 수 있다.';
+  const makeWorkBreakdownHandoff = () => {
+    const selectedOutput = textOrEmpty(state.selectedOutput) || suggestedOutput;
+    const outputLocation = textOrEmpty(state.outputLocation) || suggestedLocation;
+    const completionStandard = textOrEmpty(state.completionStandard) || suggestedCompletion;
+    const outputKpiConnection = textOrEmpty(state.outputKpiConnection) || suggestedKpiConnection;
+    const outputCsfConnection = textOrEmpty(state.outputCsfConnection) || suggestedCsfConnection;
+    const selectedWorkItems = textOrEmpty(state.selectedWorkItems) || textOrEmpty(state.workBreakdownDraft) || defaultWorkItems;
+    const workItemCompletionCriteria = textOrEmpty(state.workItemCompletionCriteria) || defaultWorkCriteria;
     const aiReview = [textOrEmpty(state.aiResult), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
+    const workItems = firstLines(selectedWorkItems, 3);
+    const step6HandoffToStep7 = [
+      '[6단계 전달 메모]',
+      `업무산출물: ${selectedOutput}`,
+      `기록 위치: ${outputLocation}`,
+      `완료 기준: ${completionStandard}`,
+      '',
+      '[업무분해]',
+      selectedWorkItems,
+      '',
+      '[업무별 완료 기준]',
+      workItemCompletionCriteria,
+    ].join('\n');
     const finalPlan = [
-      `[확정한 팀 성과기준]\n${confirmedTeamStandard}`,
-      aiExpansionAppliedNote ? `[5단계 AI 추가 후보 중 실행계획 반영 내용]\n${aiExpansionAppliedNote}` : '',
-      `[실행관리 주기]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
-      `[핵심 실행과제]\n1. ${taskOne}\n2. ${taskTwo}\n3. ${taskThree}`,
-      `[역할 배분]\n팀원이 할 일: ${memberTasks}\n팀장이 확인할 일: ${leaderCheckTasks}\n팀장이 지원할 일: ${leaderSupportTasks}`,
-      `[확인 증거]\n${evidence}`,
-      `[중간 점검 질문]\n${questions}`,
-      `[잠시 줄일 일]\n${pause}`,
-      `[예상 리스크]\n${risks}`,
-      aiReview ? `[AI 결과 및 사람 검토 반영]\n${aiReview}` : '',
-    ].filter(Boolean).join('\n\n');
+      '[5단계 입력 기준]',
+      criteriaMaterial,
+      '',
+      '[6단계 업무산출물]',
+      `산출물: ${selectedOutput}`,
+      `기록 위치: ${outputLocation}`,
+      `완료 기준: ${completionStandard}`,
+      '',
+      '[산출물-KPI 연결 확인]',
+      outputKpiConnection,
+      '',
+      '[CSF 반영 확인]',
+      outputCsfConnection,
+      '',
+      '[업무분해]',
+      selectedWorkItems,
+      '',
+      '[업무별 완료 기준]',
+      workItemCompletionCriteria,
+      aiExpansionAppliedNote ? `\n[5단계 AI 후보 중 업무분해 참고 내용]\n${aiExpansionAppliedNote}` : '',
+      aiReview ? `\n[AI 업무분해 초안 및 사람 검토]\n${aiReview}` : '',
+    ].filter(Boolean).join('\n');
     update({
-      confirmedTeamStandard,
-      executionTaskOne: taskOne,
-      executionTaskTwo: taskTwo,
-      executionTaskThree: taskThree,
-      memberTasks,
-      leaderCheckTasks,
-      leaderSupportTasks,
-      evidenceToCheck: evidence,
-      midCheckQuestions: questions,
-      pauseActivities: pause,
-      expectedRisks: risks,
+      confirmedTeamStandard: criteriaMaterial,
+      selectedOutput,
+      outputLocation,
+      completionStandard,
+      outputKpiConnection,
+      outputCsfConnection,
+      selectedWorkItems,
+      workItemCompletionCriteria,
+      step6HandoffToStep7,
       finalExecutionPlan: finalPlan,
-      taskInstructionDraft: `${memberTasks}\n\nAI 추가 후보 반영: ${aiExpansionAppliedNote || '반영 내용 없음'}\n완료 기준: ${evidence}\n중간 확인: ${questions}`,
-      peopleSignal: '실행 지연, 기록 품질 편차, Follow-up 누락, 지원 필요 고객군을 사람관리 신호로 본다.',
-      boundaryDeclaration: `이번 업무는 ${state.executionCycle} 실행관리 주기 안에서 KPI 확인 증거가 남는 범위까지 관리한다. AI 추가 후보는 팀장이 검토해 반영하기로 한 내용만 포함한다.`,
+      taskInstructionDraft: step6HandoffToStep7,
+      executionTaskOne: workItems[0] || '',
+      executionTaskTwo: workItems[1] || '',
+      executionTaskThree: workItems[2] || '',
+      evidenceToCheck: `${selectedOutput} / ${outputLocation} / ${completionStandard}`,
     });
   };
 
-  const planLineCount = splitPlanLines(state.finalExecutionPlan).length;
+  const planLineCount = splitLines(state.finalExecutionPlan).length;
 
   return <section className="space-y-4">
     <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-cyan-700">업무관리 실행계획 만들기</p>
-      <h3 className="mt-1 text-xl font-black text-slate-950">선택된 기준을 성과기준과 실행계획으로 확정하기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계에서 고른 전략과제·CSF·KPI와 AI가 추가한 후보를 구분해 검토합니다. AI 후보는 자동 확정하지 않고, 팀장이 반영하기로 정리한 내용만 실행관리 주기, 실행과제, 담당, 증거, 점검 질문으로 전환합니다.</p>
+      <h3 className="mt-1 text-xl font-black text-slate-950">6단계: 업무산출물과 업무분해</h3>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계에서 정한 팀 전략과제·CSF·KPI는 입력값으로만 사용합니다. 6단계에서는 성과기준을 다시 평가하지 않고, 이번 실행관리 주기 끝에 남길 업무산출물과 그것을 만들기 위한 업무 단위만 정합니다.</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-cyan-800"><span className="rounded-full bg-cyan-50 px-3 py-1">성과기준 재평가 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">업무산출물</span><span className="rounded-full bg-cyan-50 px-3 py-1">업무분해</span><span className="rounded-full bg-cyan-50 px-3 py-1">7단계 전달</span></div>
     </section>
 
-    <Card title="5단계에서 선택된 기준 정리" tone="cyan">
+    <Card title="5단계 기준 확인" tone="cyan">
+      <p className="text-sm font-bold leading-6 text-slate-600">이 내용은 업무산출물과 업무분해를 만들기 위한 입력값입니다. 이 화면에서는 전략과제·CSF·KPI를 새로 만들거나 평가하지 않습니다.</p>
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
         {line('팀 전략과제', teamTask)}
         {line('팀 CSF', selectedCsf)}
         {line('팀 KPI', selectedKpi)}
         {line('세부 추진과제 후보', selectedInitiative)}
       </div>
+      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-900">
+        <p className="font-black">6단계 경계</p>
+        <p className="mt-2">- 성과기준 재평가, KPI 해석, CSF 재정의는 5단계 영역입니다.</p>
+        <p>- 역할·일정·업무량 조정은 7단계에서 다룹니다.</p>
+        <p>- 업무 경계·병목·에스컬레이션은 8단계에서 다룹니다.</p>
+        <p>- 팀원 역량·태도·동기·코칭 판단은 사람관리 단계에서 다룹니다.</p>
+      </div>
     </Card>
 
-    <Card title="5단계 AI 추가 후보 검토" tone="violet">
-      <p className="text-sm font-bold leading-6 text-slate-600">5단계에서 AI가 만든 추가 전략과제·CSF·KPI는 참고 후보입니다. 이 화면에서는 AI 결과를 그대로 확정하지 않고, 이번 실행계획에 반영할 것과 제외할 것을 팀장 판단으로 정리합니다.</p>
+    <Card title="5단계 AI 추가 후보 참고" tone="violet">
+      <p className="text-sm font-bold leading-6 text-slate-600">5단계 AI 추가 후보는 사람이 검토한 요약만 참고합니다. AI 원문은 자동 반영하지 않습니다.</p>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-xs font-bold leading-5 text-violet-950">
-          <p className="font-black">AI 추가 후보 상태</p>
-          <p className="mt-2">AI 결과: {hasAiExpansionResult ? '있음' : '없음'}</p>
-          <p>사람 검토: {hasAiExpansionReview ? '있음' : '없음'}</p>
-          <p className="mt-3 font-black">사람 검토 내용</p>
-          <p className="mt-1 whitespace-pre-wrap rounded-xl bg-white px-3 py-2 text-slate-600">{compact(aiExpansion.review)}</p>
-          <p className="mt-3 font-black">AI 결과 원문 요약</p>
-          <p className="mt-1 whitespace-pre-wrap rounded-xl bg-white px-3 py-2 text-slate-600">{compact(aiExpansion.result)}</p>
+          <p className="font-black">5단계 사람 검토 요약</p>
+          <p className="mt-2 whitespace-pre-wrap rounded-xl bg-white px-3 py-2 text-slate-600">{compact(aiExpansion.review)}</p>
+          {!hasAiExpansionReview ? <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-amber-900">검토 요약이 없으면 5단계 AI 후보는 6단계 업무분해에 반영하지 않습니다.</p> : null}
         </div>
         <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600">
-          <p className="font-black text-violet-800">반영 전 검토 기준</p>
-          <p className="mt-2">1. 전사 전략과제와 5단계 선택 기준에 기여하는가?</p>
-          <p>2. CSF는 성공조건인가, 단순 활동인가?</p>
-          <p>3. KPI는 확인 가능한 증거와 연결되는가?</p>
-          <p>4. 팀원이 이번 실행관리 주기 안에 실행할 수 있는가?</p>
-          <p>5. 실제 병원명·의료진명·고객명 또는 컴플라이언스 위험 표현이 없는가?</p>
-          {!hasAiExpansionReview ? <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-amber-900">5단계에서 사람이 검토한 요약이 있어야 6단계 실행계획에 반영할 수 있습니다. AI 원문은 참고용입니다.</p> : null}
-          <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50" onClick={draftAiExpansionNote} disabled={!hasAiExpansionReview}>5단계 사람 검토 요약으로 반영 메모 만들기</button>
+          <p className="font-black text-violet-800">반영 원칙</p>
+          <p className="mt-2">1. 업무산출물과 업무 단위로 바꿀 수 있는 내용만 참고합니다.</p>
+          <p>2. 성과기준을 새로 만들거나 KPI를 다시 해석하지 않습니다.</p>
+          <p>3. 사람관리, 코칭, 1on1 판단은 만들지 않습니다.</p>
+          <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50" onClick={bringAiExpansionReview} disabled={!hasAiExpansionReview}>5단계 검토 요약 가져오기</button>
         </div>
       </div>
-      <Field label="이번 실행계획에 반영할 AI 후보와 판단 이유" help="반영할 후보, 수정할 표현, 제외할 후보, 반영 이유를 구분해 씁니다. 이 내용만 6단계 성과기준·실행계획·AI 프롬프트에 반영됩니다." value={state.aiExpansionAppliedNote ?? ''} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[반영할 AI 후보]\n[수정할 표현]\n[제외할 후보]\n[반영 이유]'} minHeight="min-h-48" />
+      <Field label="업무분해에 참고할 5단계 AI 후보" help="5단계에서 사람이 검토한 내용 중 업무산출물과 업무 단위로 바꿀 수 있는 내용만 남깁니다." value={state.aiExpansionAppliedNote} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[5단계 사람 검토 요약 중 업무분해에 참고할 내용]\n\n[6단계 적용 원칙]'} minHeight="min-h-40" />
     </Card>
 
-    <Card title="팀 성과기준 확정" tone="emerald">
-      <p className="text-sm font-bold leading-6 text-slate-600">5단계에서 선택된 기준과 6단계에서 검토한 AI 추가 후보를 바탕으로, 팀장이 실제로 관리할 수 있는 성과기준 문장으로 확정합니다. 5단계 AI 결과 원문은 이 화면에 길게 노출하지 않고, 팀장이 반영하기로 쓴 내용만 포함합니다.</p>
-      <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={buildTeamStandard}>5단계 선택 기준과 AI 검토 내용으로 팀 성과기준 초안 만들기</button>
-      <Field label="확정할 팀 성과기준" help="6단계 실행계획의 기준이 되는 문장입니다. 전략과제, CSF, KPI, 확인 증거, AI 후보 반영 여부가 보이게 정리합니다." value={state.confirmedTeamStandard || suggestedTeamStandard} onChange={(value) => update({ confirmedTeamStandard: value })} placeholder="팀 성과기준을 확정하세요." minHeight="min-h-48" />
-    </Card>
-
-    <Card title="실행관리 주기 선택" tone="emerald">
+    <Card title="실행관리 주기와 업무산출물 정의" tone="emerald">
       <div className="grid gap-2 md:grid-cols-5">
         {EXECUTION_CYCLES.map((cycle) => <label key={cycle} className={`rounded-2xl border p-3 text-sm font-black ${state.executionCycle === cycle ? 'border-emerald-300 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50 text-slate-700'}`}><input className="mr-2" type="radio" checked={state.executionCycle === cycle} onChange={() => update({ executionCycle: cycle })} />{cycle}<span className="mt-2 block text-xs font-bold leading-5 text-slate-500">{cycleHelp(cycle)}</span></label>)}
       </div>
-    </Card>
-
-    <Card title="핵심 실행과제와 역할 설정" tone="slate">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="핵심 실행과제 1" value={state.executionTaskOne} onChange={(value) => update({ executionTaskOne: value })} placeholder="예: 핵심 고객 반응 기록 기준을 맞춘다." />
-        <Field label="핵심 실행과제 2" value={state.executionTaskTwo} onChange={(value) => update({ executionTaskTwo: value })} placeholder="예: Follow-up 예정일과 완료 상태를 입력한다." />
-        <Field label="핵심 실행과제 3" value={state.executionTaskThree} onChange={(value) => update({ executionTaskThree: value })} placeholder="예: 팀장이 지연·지원 필요 항목을 확인한다." />
-        <Field label="팀원이 할 일" value={state.memberTasks} onChange={(value) => update({ memberTasks: value })} placeholder="팀원이 실제로 해야 할 행동을 씁니다." />
-        <Field label="팀장이 확인할 일" value={state.leaderCheckTasks} onChange={(value) => update({ leaderCheckTasks: value })} placeholder="팀장이 확인할 기록, 지연, 지원 필요를 씁니다." />
-        <Field label="팀장이 지원할 일" value={state.leaderSupportTasks} onChange={(value) => update({ leaderSupportTasks: value })} placeholder="좋은 예시, 우선순위 조정, 자료 확인 등 지원 기준을 씁니다." />
+        <Field label="이번 주기 업무산출물" help="이번 실행관리 주기 끝에 실제로 남아야 할 결과물입니다." value={state.selectedOutput} onChange={(value) => update({ selectedOutput: value })} placeholder={suggestedOutput} />
+        <Field label="기록 위치" help="산출물이 어디에 남아야 하는지 정합니다." value={state.outputLocation} onChange={(value) => update({ outputLocation: value })} placeholder={suggestedLocation} />
+        <Field label="완료 기준" help="산출물이 완료되었다고 볼 수 있는 최소 기준입니다." value={state.completionStandard} onChange={(value) => update({ completionStandard: value })} placeholder={suggestedCompletion} minHeight="min-h-32" />
+        <Field label="산출물-KPI 연결 확인" help="KPI를 다시 평가하지 않고, 산출물이 KPI 확인에 필요한 기록인지 확인합니다." value={state.outputKpiConnection} onChange={(value) => update({ outputKpiConnection: value })} placeholder={suggestedKpiConnection} minHeight="min-h-32" />
+        <Field label="CSF 반영 확인" help="CSF를 재정의하지 않고, 업무산출물이 CSF를 놓치지 않도록 확인합니다." value={state.outputCsfConnection} onChange={(value) => update({ outputCsfConnection: value })} placeholder={suggestedCsfConnection} minHeight="min-h-32" />
       </div>
     </Card>
 
-    <Card title="확인 증거와 점검 방식" tone="slate">
+    <Card title="AI로 업무산출물과 업무분해 후보 만들기" tone="violet">
+      <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="확인 증거" value={state.evidenceToCheck} onChange={(value) => update({ evidenceToCheck: value })} placeholder="CRM 기록, 고객 반응 기록, Follow-up 완료 여부 등" />
-        <Field label="중간 점검 질문" value={state.midCheckQuestions} onChange={(value) => update({ midCheckQuestions: value })} placeholder="팀장이 중간에 물어볼 질문을 씁니다." />
-        <Field label="잠시 줄일 일" value={state.pauseActivities} onChange={(value) => update({ pauseActivities: value })} placeholder="전략과 연결되지 않는 활동을 줄입니다." />
-        <Field label="예상 리스크" value={state.expectedRisks} onChange={(value) => update({ expectedRisks: value })} placeholder="측정 불가, 업무 과부하, 기록 품질 편차 등" />
+        <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 업무산출물과 업무분해 전용 프롬프트가 생성됩니다." minHeight="min-h-64" />
+        <Field label="AI 결과 붙여넣기" value={state.aiResult} onChange={(value) => update({ aiResult: value })} placeholder="AI가 제안한 업무산출물 후보와 업무분해 후보를 붙여넣습니다." minHeight="min-h-64" />
+        <Field label="사람 검토 보완" help="유지할 업무, 제외할 업무, 현장 표현으로 수정할 내용을 정리합니다." value={state.humanReview} onChange={(value) => update({ humanReview: value })} placeholder="AI 결과 중 실제로 사용할 내용과 제외할 내용을 씁니다." minHeight="min-h-40" />
+        <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-xs font-bold leading-5 text-violet-950"><p className="font-black">검토 기준</p><p className="mt-2">업무산출물이 명확한가?</p><p>기록 위치와 완료 기준이 있는가?</p><p>5단계 KPI 확인에 필요한 흔적이 남는가?</p><p>CSF를 놓치지 않도록 업무 단위가 나뉘었는가?</p><p>역할·일정·병목·코칭 내용이 섞이지 않았는가?</p></div>
       </div>
     </Card>
 
-    <Card title="AI로 업무관리 실행계획 초안 만들기" tone="violet">
-      <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 실행계획 프롬프트 만들기</button>
+    <Card title="최종 업무분해 선택" tone="slate">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 5단계 선택 기준과 6단계 AI 후보 검토 내용이 반영된 프롬프트가 생성됩니다." minHeight="min-h-56" />
-        <Field label="AI 결과 붙여넣기" value={state.aiResult} onChange={(value) => update({ aiResult: value })} placeholder="AI가 만든 실행관리 계획 초안을 붙여넣습니다." minHeight="min-h-56" />
-        <Field label="사람 검토 보완" value={state.humanReview} onChange={(value) => update({ humanReview: value })} placeholder="AI 결과 중 유지할 것, 수정할 것, 제외할 것을 씁니다." />
-        <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-xs font-bold leading-5 text-violet-950"><p className="font-black">검토 기준</p><p className="mt-2">CSF와 KPI 연결이 유지되는가?</p><p>팀원이 바로 실행할 수 있는가?</p><p>확인 가능한 증거가 있는가?</p><p>업무량이 과도하지 않은가?</p><p>컴플라이언스 위험 표현이 없는가?</p><p>팀장이 반영하기로 한 AI 추가 후보만 포함되었는가?</p></div>
+        <Field label="AI 업무분해 초안" help="AI 결과 중 업무 단위 후보만 옮겨 적거나 수정합니다." value={state.workBreakdownDraft} onChange={(value) => update({ workBreakdownDraft: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
+        <Field label="최종 선택한 업무 단위 3~5개" help="7단계에서 순서·역할·일정으로 바꿀 업무 단위만 남깁니다." value={state.selectedWorkItems} onChange={(value) => update({ selectedWorkItems: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
+        <Field label="업무별 완료 기준" help="각 업무가 어디까지 되면 완료인지 정합니다." value={state.workItemCompletionCriteria} onChange={(value) => update({ workItemCompletionCriteria: value })} placeholder={defaultWorkCriteria} minHeight="min-h-48" />
       </div>
-      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={makeExecutionPlan}>AI 결과 반영해 실행계획 만들기</button>
+      <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={makeWorkBreakdownHandoff}>업무산출물과 업무분해 확정하기</button>
     </Card>
 
     <Card title="최종 실행계획과 7단계 업무지시 초안" tone="emerald">
+      <p className="text-sm font-bold leading-6 text-slate-600">6단계의 최종 실행계획은 업무산출물과 업무분해 요약입니다. 7단계에서는 이 내용을 받아 업무 순서, 역할과 책임, 일정과 체크포인트, 업무량 조정, 업무지시 초안을 만듭니다.</p>
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-black text-emerald-900">최종 실행계획 줄 수: {planLineCount}</div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="최종 실행계획" value={state.finalExecutionPlan} onChange={(value) => update({ finalExecutionPlan: value })} placeholder="AI 결과 반영 버튼을 누르면 실행계획이 생성됩니다." minHeight="min-h-64" />
-        <Field label="7단계 업무지시 초안" value={state.taskInstructionDraft} onChange={(value) => update({ taskInstructionDraft: value })} placeholder="7단계에서 업무지시 문장으로 다듬을 초안입니다." minHeight="min-h-64" />
-        <Field label="사람관리 신호" value={state.peopleSignal} onChange={(value) => update({ peopleSignal: value })} placeholder="이 실행계획에서 사람관리로 이어질 신호를 적습니다." />
-        <Field label="업무 경계 선언문" value={state.boundaryDeclaration} onChange={(value) => update({ boundaryDeclaration: value })} placeholder="이 업무의 범위와 확인 기준을 선언합니다." />
+        <Field label="최종 실행계획" value={state.finalExecutionPlan} onChange={(value) => update({ finalExecutionPlan: value })} placeholder="업무산출물과 업무분해 확정 버튼을 누르면 생성됩니다." minHeight="min-h-64" />
+        <Field label="7단계 업무지시 초안" value={state.taskInstructionDraft} onChange={(value) => update({ taskInstructionDraft: value })} placeholder="7단계로 넘길 업무산출물과 업무분해 요약입니다." minHeight="min-h-64" />
+        <Field label="7단계 전달 메모" value={state.step6HandoffToStep7} onChange={(value) => update({ step6HandoffToStep7: value })} placeholder="7단계에서 업무 실행흐름으로 바꿀 입력값입니다." minHeight="min-h-56" />
       </div>
     </Card>
   </section>;
