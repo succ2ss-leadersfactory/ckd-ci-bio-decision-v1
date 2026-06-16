@@ -18,6 +18,8 @@ const V41_CONFIG_SMOKE_MARKERS = [
   '업무 경계·병목 대응',
   '1on1 대상 고르기',
   '1on1 첫 문장',
+  '사람관리 1: 대상 선택',
+  '사람관리 2: 1on1 실천',
 ].join('|');
 void V41_CONFIG_SMOKE_MARKERS;
 
@@ -64,13 +66,13 @@ export const V41_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'member-role',
-    title: '1on1 대상 고르기',
-    description: '먼저 이야기할 팀원을 고르고 관찰과 해석을 나눕니다.',
+    title: '사람관리 1: 대상 선택',
+    description: 'v40-vNext 사람관리 1단계를 계승해 팀원별 실행 신호를 보고 먼저 이야기할 팀원과 1on1 초점을 고릅니다.',
   },
   {
     id: 'people-dialogue',
-    title: '1on1 첫 문장',
-    description: '지적이 아니라 확인으로 시작하는 첫 문장을 준비합니다.',
+    title: '사람관리 2: 1on1 실천',
+    description: 'v40-vNext 사람관리 2단계를 계승해 첫 문장, 확인 질문, 행동 합의, AI 역할극, 사람관리 결과 메모를 완성합니다.',
   },
 ];
 
