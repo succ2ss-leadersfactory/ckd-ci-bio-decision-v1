@@ -15,6 +15,7 @@ This is a documentation-only checkpoint. It does not change component code, layo
 - App entry: `src/journey-v41-app-preview.tsx`
 - Step labels: `src/journey-v41-preview-config.ts`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
+- Current Step 7 decision-led update head: `3d9c6b1b6bd313574fa1bb369eab28922472c56e`
 - Current Step 8 boundary-bottleneck update head: `2778a56c40a0a723031bad35181899ebae91f00c`
 
 ## Protected routes and files
@@ -51,7 +52,7 @@ src/journey-v40-vnext-*
 | 4 | 시장 변화 읽기 | `V41ResearchStrategyTrimmedLab` → `V41PharmaStrategyResearchLab` | `ckd.v41.pharmaStrategyResearch.v1` | Market/research context source for Step 5. |
 | 5 | 팀 기준 만들기 | `V41PerformanceCompactCascadeLab` + `V41PerformanceAiExpansionLab` | `ckd.v41.performanceCascade.v1`, `ckd.v41.performanceCascade.aiExpansion.v1` | Confirmed cascade and optional AI expansion remain separate. |
 | 6 | 업무관리 실행계획 만들기 | `V41TaskExecutionBridgeLab` | reads `ckd.v41.performanceCascade.v1` and reviewed `ckd.v41.performanceCascade.aiExpansion.v1`; writes `ckd.v41.taskManagement.v10` | Pure task-management bridge: converts Step 5 criteria into work output, output location, completion standard, KPI connection check, CSF reflection check, work breakdown, and Step 7 handoff. |
-| 7 | 업무 순서·업무지시 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Converts Step 6 work units into execution sequence, responsibility, checkpoints, workload adjustment, AI-assisted work-instruction draft, and Step 8 handoff. Legacy smoke marker retained: `할 일·줄일 일`. |
+| 7 | 업무 순서·업무지시 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Converts Step 6 work units into a decision-led sequence, role/responsibility matrix, checkpoints, workload adjustment, AI-assisted work-instruction draft, review checklist, and Step 8 handoff. Legacy smoke marker retained: `할 일·줄일 일`. |
 | 8 | 업무 경계·병목 대응 | `V41TaskBoundaryCoordinationLab` | `ckd.v41.taskManagement.v10` | Converts Step 7 work instruction and handoff into task boundaries, process bottleneck signals, escalation criteria, leader intervention criteria, and observation-only Step 9 handoff. Legacy smoke marker retained: `업무 경계 나누기`. |
 | 9 | 1on1 대상 고르기 | `V41PeopleSelectionLab` | reads `ckd.v41.taskManagement.v10`; writes `ckd.v41.peopleManagement.v2` | Starts the people-management layer after the task-management work is complete. |
 | 10 | 1on1 첫 문장 | `V41OneOnOnePracticeLab` | reads `ckd.v41.taskManagement.v10`; reads/writes `ckd.v41.peopleManagement.v2` | Creates opening line, check questions, action agreement, and follow-up memo using the execution cycle. |
@@ -185,14 +186,21 @@ Not allowed:
 Allowed later:
 
 - convert Step 6 work units into execution sequence,
-- add responsibility/checkpoint/workload adjustment fields,
-- generate a work-instruction draft for Step 8 handoff.
+- let participants choose execution sequence criteria instead of free-writing a full sequence,
+- use a role/responsibility matrix for 주 실행, 팀장 확인, 협업 방식,
+- let participants choose checkpoint timing, evidence, and questions,
+- let participants choose workload reductions instead of writing all reductions manually,
+- generate a work-instruction draft from selected decisions,
+- use a review checklist before finalizing the instruction,
+- prepare only Step 8 handoff candidates for boundary and bottleneck review.
 
 Not allowed:
 
 - redoing Step 6 work-output/work-breakdown,
 - re-evaluating Step 5 performance criteria,
-- generating people-management or coaching content.
+- generating people-management or coaching content,
+- turning Step 7 bottleneck candidates into final escalation criteria,
+- making free writing the primary learner action.
 
 ### Step 8: `V41TaskBoundaryCoordinationLab`
 
