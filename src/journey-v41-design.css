@@ -159,6 +159,112 @@ body:has(#journey-root) {
   line-height: 1.55;
 }
 
+#journey-root .v41-domain-flow {
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.88)),
+    radial-gradient(circle at 0% 0%, rgba(6, 182, 212, 0.13), transparent 34rem);
+  padding: 1rem;
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.07);
+}
+
+@media (min-width: 768px) {
+  #journey-root .v41-domain-flow {
+    padding: 1.25rem;
+  }
+}
+
+#journey-root .v41-domain-flow-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.95rem;
+}
+
+#journey-root .v41-domain-flow-eyebrow {
+  color: #0891b2;
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#journey-root .v41-domain-flow-title {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 820;
+  line-height: 1.35;
+  letter-spacing: -0.04em;
+}
+
+#journey-root .v41-domain-flow-description {
+  max-width: 62rem;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 560;
+  line-height: 1.62;
+}
+
+#journey-root .v41-domain-flow-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 768px) {
+  #journey-root .v41-domain-flow-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+#journey-root .v41-domain-node {
+  position: relative;
+  min-height: 7.25rem;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.78rem;
+}
+
+#journey-root .v41-domain-node::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 4px;
+  background: #0891b2;
+}
+
+#journey-root .v41-domain-node.work::before {
+  background: linear-gradient(90deg, #0f766e, #06b6d4);
+}
+
+#journey-root .v41-domain-node.people::before {
+  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+}
+
+#journey-root .v41-domain-node-icon {
+  font-size: 1.15rem;
+}
+
+#journey-root .v41-domain-node-title {
+  margin-top: 0.45rem;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+#journey-root .v41-domain-node-text {
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.73rem;
+  font-weight: 560;
+  line-height: 1.5;
+}
+
 #journey-root details > summary::-webkit-details-marker {
   display: none;
 }
