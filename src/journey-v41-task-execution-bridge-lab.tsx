@@ -23,7 +23,7 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   '선택 사항 · 5단계 AI 검토 요약 참고하기',
   '산출물-KPI 연결 확인',
   'CSF 반영 확인',
-  '7단계 업무지시로 넘기기',
+  '7단계 전달 메모로 넘기기',
   '실행관리 주기',
   '최종 실행계획',
   'ckd.v41.performanceCascade.v1',
@@ -587,13 +587,12 @@ export function V41TaskExecutionBridgeLab() {
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={makeWorkBreakdownHandoff}>관리할 업무과제와 업무분해 확정하기</button>
     </Card>
 
-    <Card title="최종 실행계획과 7단계 업무지시 초안" tone="emerald">
-      <p className="text-sm font-bold leading-6 text-slate-600">6단계의 최종 실행계획은 관리할 업무과제, 업무산출물, 업무분해 요약입니다. 7단계에서는 이 내용을 받아 업무 순서, 역할과 책임, 일정과 체크포인트, 업무량 조정, 업무지시 초안을 만듭니다.</p>
+    <Card title="최종 실행계획과 7단계 전달 메모" tone="emerald">
+      <p className="text-sm font-bold leading-6 text-slate-600">6단계는 관리할 업무과제, 업무산출물, 업무분해를 최종 실행계획으로 마무리합니다. 실제 업무 순서, 역할과 책임, 일정과 체크포인트, 업무량 조정, 업무지시 초안은 7단계에서 만듭니다.</p>
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-black text-emerald-900">최종 실행계획 줄 수: {planLineCount}</div>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="최종 실행계획" value={state.finalExecutionPlan} onChange={(value) => update({ finalExecutionPlan: value })} placeholder="관리할 업무과제와 업무분해 확정 버튼을 누르면 생성됩니다." minHeight="min-h-64" />
-        <Field label="7단계 업무지시 초안" value={state.taskInstructionDraft} onChange={(value) => update({ taskInstructionDraft: value })} placeholder="7단계로 넘길 업무과제와 업무분해 요약입니다." minHeight="min-h-64" />
-        <Field label="7단계 전달 메모" value={state.step6HandoffToStep7} onChange={(value) => update({ step6HandoffToStep7: value })} placeholder="7단계에서 업무 실행흐름으로 바꿀 입력값입니다." minHeight="min-h-56" />
+        <Field label="7단계 전달 메모" value={state.step6HandoffToStep7} onChange={(value) => update({ step6HandoffToStep7: value })} placeholder="7단계에서 업무 순서·역할·일정·업무지시 초안으로 바꿀 입력값입니다." minHeight="min-h-64" />
       </div>
     </Card>
   </section>;
