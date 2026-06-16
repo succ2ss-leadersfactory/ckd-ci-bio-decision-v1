@@ -225,6 +225,7 @@ body:has(#journey-root) {
   border: 1px solid rgba(148, 163, 184, 0.22);
   background: rgba(255, 255, 255, 0.9);
   padding: 0.78rem;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 #journey-root .v41-domain-node::before {
@@ -245,6 +246,27 @@ body:has(#journey-root) {
   background: linear-gradient(90deg, #4f46e5, #8b5cf6);
 }
 
+#journey-root .v41-domain-node.active {
+  transform: translateY(-2px);
+  border-color: rgba(8, 145, 178, 0.5);
+  background: linear-gradient(180deg, #ffffff, rgba(236, 254, 255, 0.88));
+  box-shadow: 0 16px 32px rgba(8, 145, 178, 0.13);
+}
+
+#journey-root .v41-domain-node.people.active {
+  border-color: rgba(79, 70, 229, 0.5);
+  background: linear-gradient(180deg, #ffffff, rgba(238, 242, 255, 0.92));
+  box-shadow: 0 16px 32px rgba(79, 70, 229, 0.13);
+}
+
+#journey-root .v41-domain-node.active .v41-domain-node-title {
+  color: #075985;
+}
+
+#journey-root .v41-domain-node.people.active .v41-domain-node-title {
+  color: #4338ca;
+}
+
 #journey-root .v41-domain-node-icon {
   font-size: 1.15rem;
 }
@@ -263,6 +285,70 @@ body:has(#journey-root) {
   font-size: 0.73rem;
   font-weight: 560;
   line-height: 1.5;
+}
+
+#journey-root .v41-handoff-card {
+  border-radius: 28px;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(236, 253, 245, 0.9)),
+    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.13), transparent 26rem);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.065);
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  #journey-root .v41-handoff-card {
+    padding: 1.25rem;
+  }
+}
+
+#journey-root .v41-handoff-eyebrow {
+  color: #047857;
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#journey-root .v41-handoff-title {
+  margin-top: 0.35rem;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 820;
+  letter-spacing: -0.04em;
+}
+
+#journey-root .v41-handoff-list {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  #journey-root .v41-handoff-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+#journey-root .v41-handoff-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(16, 185, 129, 0.13);
+  padding: 0.7rem 0.8rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+#journey-root .v41-handoff-item::before {
+  content: "→";
+  color: #059669;
+  font-weight: 900;
 }
 
 #journey-root details > summary::-webkit-details-marker {
