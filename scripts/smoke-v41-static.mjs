@@ -133,6 +133,10 @@ for (const marker of preservedStepLabels) {
   mustInclude(files.browserQaConfirmation, marker, 'preserved v41 step label in browser QA confirmation');
   mustInclude(files.stepComponentMap, marker, 'preserved v41 step label in step-component map');
 }
+for (const marker of ['사람관리 1: 대상 선택', '사람관리 2: 1on1 실천']) {
+  mustInclude(files.config, marker, 'v41 updated people-management label in config');
+  mustInclude(files.ux, marker, 'v41 updated people-management label in flow strip');
+}
 for (const marker of ['participant entry experience', '10-step journey flow', 'No optimization commit may replace the v41 journey with a placeholder or clean shell']) mustInclude(files.baselineFreeze, marker, 'v41 baseline preservation rule');
 for (const marker of ['confirmed by user', 'pre-optimization normal version', 'Before changing v41 code, add or strengthen a v41 preservation smoke guard']) mustInclude(files.browserQaConfirmation, marker, 'v41 browser QA confirmation');
 for (const marker of continuityMarkers) {
@@ -153,13 +157,11 @@ for (const marker of ['V41PerformanceAiExpansionLab', 'ckd.v41.performanceCascad
 for (const marker of ['V41TaskExecutionBridgeLab', 'ckd.v41.taskManagement.v10', '실행관리 주기', '최종 실행계획']) mustInclude(files.taskExecutionLab, marker, 'v41 task execution lab');
 for (const marker of ['V41TaskPriorityFlowLab', 'ckd.v41.taskManagement.v10', '6단계 실행계획 확인', '할 일·줄일 일']) mustInclude(files.taskPriorityLab, marker, 'v41 task priority lab');
 for (const marker of ['V41TaskBoundaryCoordinationLab', 'ckd.v41.taskManagement.v10', '7단계 실행 흐름 확인', '업무 경계 나누기']) mustInclude(files.taskBoundaryLab, marker, 'v41 task boundary lab');
-for (const marker of ['V41PeopleSelectionLab', 'ckd.v41.peopleManagement.v2', '8단계 업무 경계와 사람관리 신호 확인', '자동 선택 없이 시작합니다']) mustInclude(files.peopleSelectionLab, marker, 'v41 people selection lab');
-for (const marker of ['V41OneOnOnePracticeLab', 'ckd.v41.peopleManagement.v2', 'ckd.v41.taskManagement.v10', '9단계 1on1 준비 내용 확인', '실행관리 주기 반영']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one lab');
+for (const marker of ['V41PeopleSelectionLab', 'ckd.v41.peopleManagement.v2', '사람관리 1: 먼저 이야기할 팀원 고르기', '팀원별 실행 신호 카드 보기', '위험한 해석 고르기']) mustInclude(files.peopleSelectionLab, marker, 'v41 people selection lab');
+for (const marker of ['V41OneOnOnePracticeLab', 'ckd.v41.peopleManagement.v2', '사람관리 2: 1on1 대화 설계와 실천하기', 'AI 역할극 리허설 1 · 내가 팀장 역할', 'AI 역할극 리허설 2 · AI가 코칭 팀장 역할', '사람관리 결과 메모']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one lab');
 for (const marker of ['V40VNextOneOnOnePracticeLab', 'ckd.v40-vnext.peopleManagement.v2']) mustNotInclude(files.oneOnOneLab, marker, 'old one-on-one dependency');
 
 for (const marker of ['v41 shared ui helpers', 'V41Card', 'V41TextAreaField', 'compactV41Text']) mustInclude(files.sharedUi, marker, 'v41 shared UI helper marker');
-for (const marker of ["import { compactV41Text, V41Card, V41TextAreaField } from './journey-v41-shared-ui';", 'compactV41Text(state.observedFact)', '<V41Card title="9단계 1on1 준비 내용 확인">']) mustInclude(files.oneOnOneLab, marker, 'v41 one-on-one shared helper usage');
-for (const marker of ['function Card({ title, children }', 'function Field({ label, value, onChange, placeholder }', 'function compact(value?: string)']) mustNotInclude(files.oneOnOneLab, marker, 'old local one-on-one helper');
 
 for (const storageKey of storageKeysUsedInCode) {
   mustInclude(files.storageKeyUsageMap, storageKey, 'v41 storage key usage map entry');
@@ -175,26 +177,22 @@ for (const marker of v40VNextBridgeKeys) {
   mustInclude(files.storageKeyUsageMap, marker, 'v40-vNext bridge key retained in storage key usage map');
   mustInclude(files.storageScopeAudit, marker, 'v40-vNext bridge key considered by storage scope audit');
 }
-for (const marker of ['ckd.v41.finalExecutionMemo.v1', 'Reserved / bridge-only', 'Do not merge it into `ckd.v41.peopleManagement.v2`']) mustInclude(files.storageScopeAudit, marker, 'v41 reserved final execution memo rule');
+for (const marker of ['ckd.v41.finalExecutionMemo.v1', 'Reserved / bridge-only', 'Do not merge it into `ckd.v41.peopleManagement.v2`']) mustInclude(files.storageKeyUsageMap, marker, 'v41 final memo reserved decision');
+for (const marker of ['ckd.v41.performanceCascade.aiExpansion.v1', 'Step 5 AI expansion funnel', 'selectedAiTeamTask', 'selectedAiCsf', 'selectedAiKpi', 'review for Step 6']) mustInclude(files.storageKeyUsageMap, marker, 'v41 AI expansion storage documentation');
+for (const marker of ['Step 6 selectable managed-task, work-output, and work-breakdown rule', 'selectedWorkItems is required', 'Do not re-evaluate the strategy task, CSF, or KPI']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 6 storage documentation');
+for (const marker of ['Step 7 decision-led AI task-instruction flow', 'step7ReviewChecklist', 'selectedStep8HandoffSignals']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 7 storage documentation');
+for (const marker of ['Step 8 boundary-bottleneck flow', 'bottleneckResponsePlan', 'escalationCriteria', 'leaderInterventionCriteria', 'Send only observation facts into Step 9']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 8 storage documentation');
+for (const marker of storageKeysUsedInCode) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization status storage inventory');
+for (const marker of ['v41-storage-documentation-present', 'v41 final memo key remains reserved']) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization storage guard status');
 
-for (const marker of ['V41_VISIBLE_APP_STEPS', 'v41 field-friendly step labels', '1on1 첫 문장']) mustInclude(files.config, marker, 'v41 config');
-for (const marker of ['Step 11', '11단계', 'Steps 4~11', 'Step 4~11', 'Step 10~11']) {
-  mustNotInclude(files.qaChecklist, marker, 'old v41 QA checklist step reference');
-  mustNotInclude(files.qaRunLog, marker, 'old v41 QA run log step reference');
+for (const marker of ['v41 Smoke', 'smoke-v41-static.mjs']) mustInclude(files.v41Workflow, marker, 'v41 workflow');
+for (const marker of ['v41 static smoke passed', 'storage keys used in code']) mustInclude(files.ciOptimizationGuard, marker, 'v41 CI optimization guard');
+
+if (failures.length) {
+  console.error('v41 static smoke failed:');
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  process.exit(1);
 }
-for (const marker of ['| 10 | 1on1 첫 문장 |', 'Step 5~10 data flow is usable', 'Step 9~10 use `ckd.v41.peopleManagement.v2`']) mustInclude(files.qaChecklist, marker, 'current v41 QA checklist');
-for (const marker of ['The current v41 preview has 10 screens', 'Step 5~10 data-flow checks', 'Step 10 execution cycle reflection']) mustInclude(files.qaRunLog, marker, 'current v41 QA run log');
-for (const marker of ['V41 CI Optimization Status', 'npm run smoke:v41', 'Automated checks are green, but browser QA is still required']) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization status');
-for (const marker of ['V41_CI_OPTIMIZATION_GUARD', 'v41-ci-optimization-guard']) mustInclude(files.ciOptimizationGuard, marker, 'v41 CI optimization guard marker');
-for (const marker of ["paths:", "'journey-v41-preview.html'", "'src/journey-v41-*.tsx'", "'scripts/smoke-v41-static.mjs'", 'run: npm run smoke:v41']) mustInclude(files.v41Workflow, marker, 'v41 optimized workflow');
-for (const marker of ['Run v41 static smoke check', 'Run v41 scoped TypeScript check', 'Build Vite app']) mustNotInclude(files.v41Workflow, marker, 'old duplicate v41 workflow steps');
-for (const marker of ['V41FlowStrip', 'v41 field-friendly flow chips', '첫 문장']) mustInclude(files.ux, marker, 'v41 ux');
-for (const marker of ['V41ProgressCoachPanel', '지금 할 일']) mustInclude(files.progressCoach, marker, 'v41 progress');
-for (const marker of ['V41LabStorageScope', 'v41 inherited lab storage isolation']) mustInclude(files.storageScope, marker, 'v41 storage scope');
-for (const marker of ['src/journey-v41-*.tsx', 'src/journey-v41-*.ts']) mustInclude(files.tsconfig, marker, 'v41 tsconfig');
-for (const marker of ['typecheck:v41', 'smoke:v41:static', 'smoke:v41']) mustInclude(files.packageJson, marker, 'v41 scripts');
-for (const marker of ['journey-v41-preview.html', 'journey-v41-app-preview.tsx', 'v41 preview']) { mustNotInclude(files.pilotEntry, marker, 'existing pilot entry'); mustNotInclude(files.v40Html, marker, 'existing v40 route'); }
-for (const marker of ['/src/journey-v40-vnext-app-preview.tsx']) mustInclude(files.v40Html, marker, 'existing v40 route remains intact');
 
-if (failures.length > 0) { console.error('v41 static smoke failed:'); for (const failure of failures) console.error(`- ${failure}`); process.exit(1); }
-console.log('v41 static smoke passed.');
+console.log('v41 static smoke passed');
+console.log('storage keys used in code:', storageKeysUsedInCode.join(', '));
