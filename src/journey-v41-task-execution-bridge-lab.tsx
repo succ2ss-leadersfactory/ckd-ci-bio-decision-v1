@@ -21,6 +21,8 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   '업무산출물 정의',
   '업무분해 후보 만들기',
   '프롬프트 복사하기',
+  'AI 결과에서 업무분해 초안 만들기',
+  '최종 선택한 업무 단위 필수',
   '선택 사항 · 5단계 AI 검토 요약 참고하기',
   '산출물-KPI 연결 확인',
   'CSF 반영 확인',
@@ -396,7 +398,21 @@ export function V41TaskExecutionBridgeLab() {
     }
   };
 
+  const moveAiResultToWorkBreakdownDraft = () => {
+    const result = textOrEmpty(state.aiResult);
+    if (!result) {
+      window.alert('먼저 AI 결과 붙여넣기 영역에 내용을 붙여넣어 주세요.');
+      return;
+    }
+    update({ workBreakdownDraft: result });
+  };
+
   const makeWorkBreakdownHandoff = () => {
+    const selectedWorkItems = textOrEmpty(state.selectedWorkItems);
+    if (!selectedWorkItems) {
+      window.alert('최종 선택한 업무 단위 3~5개를 먼저 작성해 주세요. AI 결과를 붙여넣었다면 “AI 결과에서 업무분해 초안 만들기”를 누른 뒤, 실제로 사용할 업무 단위만 최종 선택 영역에 남겨 주세요.');
+      return;
+    }
     const managementTaskType = selectedType;
     const managementTaskValue = textOrEmpty(state.managementTask) || suggestedManagementTask;
     const managementTaskReason = textOrEmpty(state.managementTaskReason) || suggestedManagementReason;
@@ -407,7 +423,6 @@ export function V41TaskExecutionBridgeLab() {
     const completionStandard = textOrEmpty(state.completionStandard) || suggestedCompletion;
     const outputKpiConnection = textOrEmpty(state.outputKpiConnection) || suggestedKpiConnection;
     const outputCsfConnection = textOrEmpty(state.outputCsfConnection) || suggestedCsfConnection;
-    const selectedWorkItems = textOrEmpty(state.selectedWorkItems) || textOrEmpty(state.workBreakdownDraft) || defaultWorkItems;
     const workItemCompletionCriteria = textOrEmpty(state.workItemCompletionCriteria) || defaultWorkCriteria;
     const excludedWorkItems = textOrEmpty(state.excludedWorkItems) || '7단계에서 다룰 업무 순서·역할·일정, 8단계에서 다룰 병목·에스컬레이션, 9단계 이후 사람관리 판단은 6단계 업무분해에서 제외한다. 확인 체계의 세부 체크포인트 설계는 7단계에서 다룬다.';
     const aiReview = [textOrEmpty(state.aiResult), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
@@ -586,6 +601,7 @@ export function V41TaskExecutionBridgeLab() {
       <div className="flex flex-wrap gap-2">
         <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
         <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={copyAiPrompt} disabled={!textOrEmpty(state.aiPrompt)}>프롬프트 복사하기</button>
+        <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={moveAiResultToWorkBreakdownDraft} disabled={!textOrEmpty(state.aiResult)}>AI 결과에서 업무분해 초안 만들기</button>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 관리할 업무과제와 업무산출물 기반 업무분해 프롬프트가 생성됩니다." minHeight="min-h-64" />
@@ -598,7 +614,7 @@ export function V41TaskExecutionBridgeLab() {
     <Card title="최종 업무분해 선택" tone="slate">
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="AI 업무분해 초안" help="AI 결과 중 업무 단위 후보만 옮겨 적거나 수정합니다." value={state.workBreakdownDraft} onChange={(value) => update({ workBreakdownDraft: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
-        <Field label="최종 선택한 업무 단위 3~5개" help="7단계에서 순서·역할·일정으로 바꿀 업무 단위만 남깁니다." value={state.selectedWorkItems} onChange={(value) => update({ selectedWorkItems: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
+        <Field label="최종 선택한 업무 단위 3~5개" help="7단계에서 순서·역할·일정으로 바꿀 업무 단위만 남깁니다. 이 칸이 비어 있으면 6단계를 확정할 수 없습니다." value={state.selectedWorkItems} onChange={(value) => update({ selectedWorkItems: value })} placeholder="AI 업무분해 초안에서 실제로 사용할 업무 단위 3~5개만 남겨 주세요." minHeight="min-h-48" />
         <Field label="업무별 완료 기준" help="각 업무가 어디까지 되면 완료인지 정합니다." value={state.workItemCompletionCriteria} onChange={(value) => update({ workItemCompletionCriteria: value })} placeholder={defaultWorkCriteria} minHeight="min-h-48" />
         <Field label="6단계에서 제외한 업무" help="7~8단계나 사람관리에서 다룰 내용은 여기서 제외했다고 명시합니다." value={state.excludedWorkItems} onChange={(value) => update({ excludedWorkItems: value })} placeholder="업무 순서·역할·일정, 병목·에스컬레이션, 사람관리 판단은 6단계에서 제외한다. 체크포인트 세부 설계는 7단계에서 다룬다." minHeight="min-h-48" />
       </div>
