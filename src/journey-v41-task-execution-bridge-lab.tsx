@@ -21,7 +21,10 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   '업무산출물 정의',
   '업무분해 후보 만들기',
   '프롬프트 복사하기',
-  'AI 결과에서 업무분해 초안 만들기',
+  'AI 결과에서 필요한 항목 추출하기',
+  '업무 단위 후보만 추출',
+  '업무별 완료 기준 분리',
+  '제외 업무 분리',
   '최종 선택한 업무 단위 필수',
   '선택 사항 · 5단계 AI 검토 요약 참고하기',
   '산출물-KPI 연결 확인',
@@ -161,6 +164,76 @@ function firstLines(value: string, count = 3) {
   return splitLines(value).slice(0, count);
 }
 
+function cleanMarkdown(value: string) {
+  return value
+    .replace(/\*\*/g, '')
+    .replace(/^#{1,6}\s*/, '')
+    .replace(/^[-•]\s*/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/`/g, '')
+    .trim();
+}
+
+function uniqueLines(lines: string[]) {
+  return Array.from(new Set(lines.map((line) => cleanMarkdown(line)).filter(Boolean)));
+}
+
+function extractTopLevelSection(source: string, keywords: string[]) {
+  const lines = source.split(/\r?\n/);
+  const startIndex = lines.findIndex((line) => {
+    const normalized = cleanMarkdown(line).replace(/\s+/g, '');
+    return line.trim().startsWith('#') && keywords.some((keyword) => normalized.includes(keyword.replace(/\s+/g, '')));
+  });
+  if (startIndex < 0) return '';
+  const nextIndex = lines.findIndex((line, index) => index > startIndex && /^##\s*\d*\.?\s*/.test(line.trim()));
+  return lines.slice(startIndex + 1, nextIndex > startIndex ? nextIndex : undefined).join('\n').trim();
+}
+
+function parseTaskCandidates(section: string) {
+  const lines = section.split(/\r?\n/);
+  const boldItems = lines
+    .map((line) => line.match(/\*\*(.+?)\*\*/)?.[1] || '')
+    .filter((line) => line && !/^업무\s*\d+$/i.test(line.trim()));
+  if (boldItems.length > 0) return uniqueLines(boldItems).join('\n');
+
+  const tableItems = lines
+    .filter((line) => line.trim().startsWith('|') && !line.includes('---'))
+    .map((line) => line.split('|').map((cell) => cleanMarkdown(cell)).filter(Boolean)[0] || '')
+    .filter((line) => line && !line.includes('업무'));
+  if (tableItems.length > 0) return uniqueLines(tableItems).join('\n');
+
+  const bulletItems = lines
+    .map((line) => cleanMarkdown(line))
+    .filter((line) => line && !/^업무\s*\d+$/i.test(line) && !line.includes('시작 조건') && !line.includes('완료 조건'));
+  return uniqueLines(bulletItems).join('\n');
+}
+
+function parseTwoColumnTableOrLines(section: string) {
+  const lines = section.split(/\r?\n/);
+  const tableRows = lines
+    .filter((line) => line.trim().startsWith('|') && !line.includes('---'))
+    .map((line) => line.split('|').map((cell) => cleanMarkdown(cell)).filter(Boolean))
+    .filter((cells) => cells.length >= 2 && !cells[0].includes('업무') && !cells[1].includes('조건') && !cells[0].includes('제외 업무'))
+    .map((cells) => `${cells[0]}: ${cells.slice(1).join(' / ')}`);
+  if (tableRows.length > 0) return uniqueLines(tableRows).join('\n');
+
+  const simpleLines = lines
+    .map((line) => cleanMarkdown(line))
+    .filter((line) => line && !line.includes('---') && !line.includes('업무 |') && !line.includes('조건 |'));
+  return uniqueLines(simpleLines).join('\n');
+}
+
+function extractStep6FieldsFromAiResult(source: string) {
+  const taskSection = extractTopLevelSection(source, ['업무단위후보', '업무단위']);
+  const completionSection = extractTopLevelSection(source, ['각업무의완료조건', '완료조건']);
+  const excludedSection = extractTopLevelSection(source, ['제외해도되는업무', '제외업무', '제외이유']);
+  return {
+    workBreakdownDraft: parseTaskCandidates(taskSection),
+    workItemCompletionCriteria: parseTwoColumnTableOrLines(completionSection),
+    excludedWorkItems: parseTwoColumnTableOrLines(excludedSection),
+  };
+}
+
 function line(label: string, value?: string) {
   return <p><span className="font-black text-slate-700">{label}: </span><span>{textOrEmpty(value) || '미작성'}</span></p>;
 }
@@ -276,14 +349,6 @@ export function V41TaskExecutionBridgeLab() {
   const suggestedKpiConnection = `이 산출물은 ${selectedKpi} 확인에 필요한 기록 또는 결과물이어야 한다.`;
   const suggestedCsfConnection = `업무분해 과정에서 ${selectedCsf}를 놓치지 않도록 필수 항목과 완료 기준을 정한다.`;
 
-  const defaultWorkItems = [
-    '업무산출물에 반드시 들어갈 항목을 정한다.',
-    '기존 기록·자료 중 활용할 수 있는 것을 확인한다.',
-    '산출물을 남길 위치와 입력 기준을 정한다.',
-    '실행 후 산출물을 작성하거나 기존 기록을 보완한다.',
-    '완료 기준에 맞게 누락 여부와 다음 행동 연결 여부를 확인한다.',
-  ].join('\n');
-
   const defaultWorkCriteria = [
     '필수 항목이 빠지지 않았다.',
     '정해진 위치에 산출물이 남았다.',
@@ -398,19 +463,28 @@ export function V41TaskExecutionBridgeLab() {
     }
   };
 
-  const moveAiResultToWorkBreakdownDraft = () => {
+  const extractAiResultIntoStep6Fields = () => {
     const result = textOrEmpty(state.aiResult);
     if (!result) {
       window.alert('먼저 AI 결과 붙여넣기 영역에 내용을 붙여넣어 주세요.');
       return;
     }
-    update({ workBreakdownDraft: result });
+    const extracted = extractStep6FieldsFromAiResult(result);
+    if (!extracted.workBreakdownDraft && !extracted.workItemCompletionCriteria && !extracted.excludedWorkItems) {
+      window.alert('AI 결과에서 업무 단위 후보, 완료 조건, 제외 업무 섹션을 찾지 못했습니다. AI 결과의 3번, 5번, 6번 영역을 확인해 주세요.');
+      return;
+    }
+    update({
+      workBreakdownDraft: extracted.workBreakdownDraft || state.workBreakdownDraft,
+      workItemCompletionCriteria: extracted.workItemCompletionCriteria || state.workItemCompletionCriteria,
+      excludedWorkItems: extracted.excludedWorkItems || state.excludedWorkItems,
+    });
   };
 
   const makeWorkBreakdownHandoff = () => {
     const selectedWorkItems = textOrEmpty(state.selectedWorkItems);
     if (!selectedWorkItems) {
-      window.alert('최종 선택한 업무 단위 3~5개를 먼저 작성해 주세요. AI 결과를 붙여넣었다면 “AI 결과에서 업무분해 초안 만들기”를 누른 뒤, 실제로 사용할 업무 단위만 최종 선택 영역에 남겨 주세요.');
+      window.alert('최종 선택한 업무 단위 3~5개를 먼저 작성해 주세요. AI 결과를 붙여넣었다면 “AI 결과에서 필요한 항목 추출하기”를 누른 뒤, 실제로 사용할 업무 단위만 최종 선택 영역에 남겨 주세요.');
       return;
     }
     const managementTaskType = selectedType;
@@ -425,7 +499,7 @@ export function V41TaskExecutionBridgeLab() {
     const outputCsfConnection = textOrEmpty(state.outputCsfConnection) || suggestedCsfConnection;
     const workItemCompletionCriteria = textOrEmpty(state.workItemCompletionCriteria) || defaultWorkCriteria;
     const excludedWorkItems = textOrEmpty(state.excludedWorkItems) || '7단계에서 다룰 업무 순서·역할·일정, 8단계에서 다룰 병목·에스컬레이션, 9단계 이후 사람관리 판단은 6단계 업무분해에서 제외한다. 확인 체계의 세부 체크포인트 설계는 7단계에서 다룬다.';
-    const aiReview = [textOrEmpty(state.aiResult), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
+    const aiReview = [textOrEmpty(state.workBreakdownDraft), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
     const workItems = firstLines(selectedWorkItems, 3);
     const step6HandoffToStep7 = [
       '[6단계 전달 메모]',
@@ -577,7 +651,7 @@ export function V41TaskExecutionBridgeLab() {
     </Card>
 
     <Card title="AI로 업무산출물과 업무분해 후보 만들기" tone="violet">
-      <p className="text-sm font-bold leading-6 text-slate-600">6단계의 AI 활용은 업무분해 후보 생성에 집중합니다. 5단계 AI 검토 요약은 필요한 경우에만 펼쳐서 선택 참고자료로 추가하세요.</p>
+      <p className="text-sm font-bold leading-6 text-slate-600">6단계의 AI 활용은 업무분해 후보 생성에 집중합니다. AI 결과 원문은 보관하고, 필요한 항목만 아래 입력칸으로 분리 추출합니다.</p>
       <details className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-sm leading-6 text-slate-700">
         <summary className="cursor-pointer text-sm font-black text-violet-900">선택 사항 · 5단계 AI 검토 요약 참고하기</summary>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -601,11 +675,15 @@ export function V41TaskExecutionBridgeLab() {
       <div className="flex flex-wrap gap-2">
         <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
         <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={copyAiPrompt} disabled={!textOrEmpty(state.aiPrompt)}>프롬프트 복사하기</button>
-        <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={moveAiResultToWorkBreakdownDraft} disabled={!textOrEmpty(state.aiResult)}>AI 결과에서 업무분해 초안 만들기</button>
+        <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={extractAiResultIntoStep6Fields} disabled={!textOrEmpty(state.aiResult)}>AI 결과에서 필요한 항목 추출하기</button>
+      </div>
+      <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-xs font-bold leading-5 text-violet-950">
+        <p className="font-black">추출 방식</p>
+        <p className="mt-1">AI 결과 원문 전체를 다시 보여주지 않습니다. 3번 업무 단위 후보는 AI 업무분해 초안으로, 5번 완료 조건은 업무별 완료 기준으로, 6번 제외 업무는 6단계 제외 업무로 나누어 넣습니다.</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 관리할 업무과제와 업무산출물 기반 업무분해 프롬프트가 생성됩니다." minHeight="min-h-64" />
-        <Field label="AI 결과 붙여넣기" value={state.aiResult} onChange={(value) => update({ aiResult: value })} placeholder="AI가 제안한 업무산출물 보완안과 업무분해 후보를 붙여넣습니다." minHeight="min-h-64" />
+        <Field label="AI 결과 붙여넣기 · 원문 보관" help="무료 GPT 결과 전체를 붙여넣는 원문 보관 영역입니다. 이 내용이 그대로 다시 표시되지 않고, 버튼을 누르면 필요한 부분만 아래 칸으로 분리됩니다." value={state.aiResult} onChange={(value) => update({ aiResult: value })} placeholder="AI가 제안한 업무산출물 보완안과 업무분해 후보 전체를 붙여넣습니다." minHeight="min-h-64" />
         <Field label="사람 검토 보완" help="유지할 업무, 제외할 업무, 현장 표현으로 수정할 내용을 정리합니다." value={state.humanReview} onChange={(value) => update({ humanReview: value })} placeholder="AI 결과 중 실제로 사용할 내용과 제외할 내용을 씁니다." minHeight="min-h-40" />
         <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-xs font-bold leading-5 text-violet-950"><p className="font-black">검토 기준</p><p className="mt-2">관리할 업무과제와 연결되는가?</p><p>업무산출물이 명확한가?</p><p>기록 위치와 완료 기준이 있는가?</p><p>5단계 KPI 확인에 필요한 흔적이 남는가?</p><p>CSF를 놓치지 않도록 업무 단위가 나뉘었는가?</p><p>역할·일정·병목·코칭 내용이 섞이지 않았는가?</p></div>
       </div>
@@ -613,10 +691,10 @@ export function V41TaskExecutionBridgeLab() {
 
     <Card title="최종 업무분해 선택" tone="slate">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="AI 업무분해 초안" help="AI 결과 중 업무 단위 후보만 옮겨 적거나 수정합니다." value={state.workBreakdownDraft} onChange={(value) => update({ workBreakdownDraft: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
+        <Field label="AI 업무분해 초안 · 업무 단위 후보만" help="AI 결과 원문 전체가 아니라 업무 단위 후보만 들어오는 칸입니다. 여기서 실제로 사용할 업무만 아래 최종 선택 칸에 옮깁니다." value={state.workBreakdownDraft} onChange={(value) => update({ workBreakdownDraft: value })} placeholder="AI 결과에서 추출한 업무 단위 후보가 여기에 들어옵니다." minHeight="min-h-48" />
         <Field label="최종 선택한 업무 단위 3~5개" help="7단계에서 순서·역할·일정으로 바꿀 업무 단위만 남깁니다. 이 칸이 비어 있으면 6단계를 확정할 수 없습니다." value={state.selectedWorkItems} onChange={(value) => update({ selectedWorkItems: value })} placeholder="AI 업무분해 초안에서 실제로 사용할 업무 단위 3~5개만 남겨 주세요." minHeight="min-h-48" />
-        <Field label="업무별 완료 기준" help="각 업무가 어디까지 되면 완료인지 정합니다." value={state.workItemCompletionCriteria} onChange={(value) => update({ workItemCompletionCriteria: value })} placeholder={defaultWorkCriteria} minHeight="min-h-48" />
-        <Field label="6단계에서 제외한 업무" help="7~8단계나 사람관리에서 다룰 내용은 여기서 제외했다고 명시합니다." value={state.excludedWorkItems} onChange={(value) => update({ excludedWorkItems: value })} placeholder="업무 순서·역할·일정, 병목·에스컬레이션, 사람관리 판단은 6단계에서 제외한다. 체크포인트 세부 설계는 7단계에서 다룬다." minHeight="min-h-48" />
+        <Field label="업무별 완료 기준" help="AI 결과의 완료 조건 섹션이 있으면 이 칸으로 분리됩니다. 각 업무가 어디까지 되면 완료인지 정합니다." value={state.workItemCompletionCriteria} onChange={(value) => update({ workItemCompletionCriteria: value })} placeholder={defaultWorkCriteria} minHeight="min-h-48" />
+        <Field label="6단계에서 제외한 업무" help="AI 결과의 제외 업무 섹션이 있으면 이 칸으로 분리됩니다. 7~8단계나 사람관리에서 다룰 내용은 여기서 제외했다고 명시합니다." value={state.excludedWorkItems} onChange={(value) => update({ excludedWorkItems: value })} placeholder="업무 순서·역할·일정, 병목·에스컬레이션, 사람관리 판단은 6단계에서 제외한다. 체크포인트 세부 설계는 7단계에서 다룬다." minHeight="min-h-48" />
       </div>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={makeWorkBreakdownHandoff}>관리할 업무과제와 업무분해 확정하기</button>
     </Card>
