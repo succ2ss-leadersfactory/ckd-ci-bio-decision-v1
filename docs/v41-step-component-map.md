@@ -15,7 +15,7 @@ This is a documentation-only checkpoint. It does not change component code, layo
 - App entry: `src/journey-v41-app-preview.tsx`
 - Step labels: `src/journey-v41-preview-config.ts`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
-- Current Step 6 work-breakdown update head: `7386cd5f2ca325643ef0a62ba0e02307c2bced05`
+- Current Step 8 boundary-bottleneck update head: `2778a56c40a0a723031bad35181899ebae91f00c`
 
 ## Protected routes and files
 
@@ -51,8 +51,8 @@ src/journey-v40-vnext-*
 | 4 | 시장 변화 읽기 | `V41ResearchStrategyTrimmedLab` → `V41PharmaStrategyResearchLab` | `ckd.v41.pharmaStrategyResearch.v1` | Market/research context source for Step 5. |
 | 5 | 팀 기준 만들기 | `V41PerformanceCompactCascadeLab` + `V41PerformanceAiExpansionLab` | `ckd.v41.performanceCascade.v1`, `ckd.v41.performanceCascade.aiExpansion.v1` | Confirmed cascade and optional AI expansion remain separate. |
 | 6 | 업무관리 실행계획 만들기 | `V41TaskExecutionBridgeLab` | reads `ckd.v41.performanceCascade.v1` and reviewed `ckd.v41.performanceCascade.aiExpansion.v1`; writes `ckd.v41.taskManagement.v10` | Pure task-management bridge: converts Step 5 criteria into work output, output location, completion standard, KPI connection check, CSF reflection check, work breakdown, and Step 7 handoff. |
-| 7 | 할 일·줄일 일 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Should convert Step 6 work units into execution sequence, responsibility, checkpoints, workload adjustment, and work-instruction draft. |
-| 8 | 업무 경계 나누기 | `V41TaskBoundaryCoordinationLab` | `ckd.v41.taskManagement.v10` | Should convert Step 7 execution flow into task boundaries, collaboration points, bottlenecks, and escalation criteria without people-management judgments. |
+| 7 | 업무 순서·업무지시 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Converts Step 6 work units into execution sequence, responsibility, checkpoints, workload adjustment, AI-assisted work-instruction draft, and Step 8 handoff. Legacy smoke marker retained: `할 일·줄일 일`. |
+| 8 | 업무 경계·병목 대응 | `V41TaskBoundaryCoordinationLab` | `ckd.v41.taskManagement.v10` | Converts Step 7 work instruction and handoff into task boundaries, process bottleneck signals, escalation criteria, leader intervention criteria, and observation-only Step 9 handoff. Legacy smoke marker retained: `업무 경계 나누기`. |
 | 9 | 1on1 대상 고르기 | `V41PeopleSelectionLab` | reads `ckd.v41.taskManagement.v10`; writes `ckd.v41.peopleManagement.v2` | Starts the people-management layer after the task-management work is complete. |
 | 10 | 1on1 첫 문장 | `V41OneOnOnePracticeLab` | reads `ckd.v41.taskManagement.v10`; reads/writes `ckd.v41.peopleManagement.v2` | Creates opening line, check questions, action agreement, and follow-up memo using the execution cycle. |
 
@@ -198,15 +198,19 @@ Not allowed:
 
 Allowed later:
 
-- convert Step 7 execution flow into task boundaries,
+- convert Step 7 execution flow and `step7HandoffToStep8` into task boundaries,
 - add process bottlenecks and escalation criteria,
-- keep bottleneck descriptions at the process/work level.
+- add team-leader intervention criteria,
+- separate task-management issues that should not be treated as people-management issues,
+- keep bottleneck descriptions at the process/work level,
+- send only observation facts into Step 9.
 
 Not allowed:
 
 - turning process bottlenecks into judgments about team-member attitude, motivation, or capability,
 - selecting 1on1 targets before Step 9,
-- generating coaching messages.
+- generating coaching messages,
+- redefining KPI, CSF, strategy task, or performance targets.
 
 ### Step 9: `V41PeopleSelectionLab`
 
@@ -218,16 +222,28 @@ Allowed later:
 Not allowed:
 
 - changing `ckd.v41.peopleManagement.v2` without migration,
-- auto-selecting a person without user confirmation.
+- auto-selecting a 1on1 target from Step 8 without user choice,
+- treating Step 8 process bottlenecks as personality, attitude, or motivation judgments.
 
 ### Step 10: `V41OneOnOnePracticeLab`
 
 Allowed later:
 
-- continue using shared v41 UI helpers,
-- use Step 9 selection as input.
+- refine opening-line phrasing,
+- keep execution cycle reflection,
+- keep shared helper extraction low-risk.
 
 Not allowed:
 
-- bypassing Step 9,
-- changing the 1on1 action agreement shape without a downstream audit.
+- removing Step 9 preparation inputs,
+- bypassing the action-agreement section,
+- writing final memo into `ckd.v41.finalExecutionMemo.v1` without an explicit storage migration.
+
+## Legacy smoke label note
+
+The current navigation labels have been refreshed for Step 7 and Step 8, but these older labels remain in marker text and historical QA docs so existing smoke guards can detect accidental removal of the inherited flow:
+
+```text
+할 일·줄일 일
+업무 경계 나누기
+```
