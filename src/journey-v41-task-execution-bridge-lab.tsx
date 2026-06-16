@@ -20,6 +20,7 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   '사람관리 판단 금지',
   '업무산출물 정의',
   '업무분해 후보 만들기',
+  '프롬프트 복사하기',
   '선택 사항 · 5단계 AI 검토 요약 참고하기',
   '산출물-KPI 연결 확인',
   'CSF 반영 확인',
@@ -381,6 +382,20 @@ export function V41TaskExecutionBridgeLab() {
     });
   };
 
+  const copyAiPrompt = async () => {
+    const prompt = textOrEmpty(state.aiPrompt);
+    if (!prompt) {
+      window.alert('먼저 “AI 업무분해 프롬프트 만들기”를 눌러 프롬프트를 생성해 주세요.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(prompt);
+      window.alert('AI 업무분해 프롬프트를 복사했습니다.');
+    } catch {
+      window.prompt('아래 프롬프트를 직접 복사해 주세요.', prompt);
+    }
+  };
+
   const makeWorkBreakdownHandoff = () => {
     const managementTaskType = selectedType;
     const managementTaskValue = textOrEmpty(state.managementTask) || suggestedManagementTask;
@@ -568,7 +583,10 @@ export function V41TaskExecutionBridgeLab() {
           <Field label="업무분해에 참고할 5단계 AI 후보" help="선택 사항입니다. 5단계에서 사람이 검토한 내용 중 업무과제·산출물·업무 단위로 바꿀 수 있는 내용만 남깁니다." value={state.aiExpansionAppliedNote} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[5단계 사람 검토 요약 중 업무분해에 참고할 내용]\n\n[6단계 적용 원칙]'} minHeight="min-h-32" />
         </div>
       </details>
-      <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
+        <button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800 disabled:cursor-not-allowed disabled:opacity-50" onClick={copyAiPrompt} disabled={!textOrEmpty(state.aiPrompt)}>프롬프트 복사하기</button>
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 관리할 업무과제와 업무산출물 기반 업무분해 프롬프트가 생성됩니다." minHeight="min-h-64" />
         <Field label="AI 결과 붙여넣기" value={state.aiResult} onChange={(value) => update({ aiResult: value })} placeholder="AI가 제안한 업무산출물 보완안과 업무분해 후보를 붙여넣습니다." minHeight="min-h-64" />
