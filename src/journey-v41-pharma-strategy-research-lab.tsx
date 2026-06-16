@@ -10,6 +10,7 @@ const V41_PHARMA_STRATEGY_RESEARCH_MARKERS = [
   'v41 research strategy copy refined',
   'v41 market stage business-first UX',
   'v41 inner flow uses activities not steps',
+  'v41 infographic flow cards',
   '시장 변화 읽기',
   '이번 단계에서는 전사 전략과제를 하나 선택하고',
   '활동 ① 전사 전략과제 선정',
@@ -47,16 +48,16 @@ function TextArea({ value, onChange, placeholder, readOnly = false }: { value: s
 
 function ProcessOverview() {
   const items = [
-    { title: '① 전사 전략과제 선정', text: '이번 실습에서 분석할 전사 전략과제를 선택합니다.' },
-    { title: '② 전략과제 관련 정보 수집', text: 'Perplexity로 공개자료를 찾고, 이후 분석에 쓸 출처 URL을 정리합니다.' },
-    { title: '③ 추진과제·CSF·KPI 정리', text: 'NotebookLM으로 수집 자료를 근거 기반 추진과제, CSF, KPI 후보로 정리합니다.' },
-    { title: '④ 전사 전략과제 추진계획 수립', text: '보고서·슬라이드·인포그래픽 초안으로 정리해 다음 단계에서 활용합니다.' },
+    { icon: '🎯', title: '전사 전략과제 선정', text: '이번 실습에서 분석할 전사 전략과제를 선택합니다.' },
+    { icon: '🔎', title: '전략과제 관련 정보 수집', text: 'Perplexity로 공개자료를 찾고, 이후 분석에 쓸 출처 URL을 정리합니다.' },
+    { icon: '📊', title: '추진과제·CSF·KPI 정리', text: 'NotebookLM으로 수집 자료를 근거 기반 추진과제, CSF, KPI 후보로 정리합니다.' },
+    { icon: '📝', title: '전사 전략과제 추진계획 수립', text: '보고서·슬라이드·인포그래픽 초안으로 정리해 다음 단계에서 활용합니다.' },
   ];
   return <section className="rounded-3xl border border-cyan-100 bg-white p-5 shadow-sm md:p-6">
     <p className="text-xs font-black uppercase tracking-wide text-cyan-700">진행 흐름</p>
     <h2 className="mt-2 text-xl font-black text-slate-950">전사 전략과제 선정부터 추진계획 수립까지 진행합니다</h2>
-    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      {items.map((item) => <div key={item.title} className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3"><p className="text-sm font-black text-cyan-950">{item.title}</p><p className="mt-1 text-xs font-bold leading-5 text-cyan-900">{item.text}</p></div>)}
+    <div className="v41-infographic-flow mt-4">
+      {items.map((item, index) => <div key={item.title} className="v41-flow-node"><span className="v41-flow-index">{index + 1}</span><p className="v41-flow-node-title"><span aria-hidden="true">{item.icon}</span> {item.title}</p><p className="v41-flow-node-text">{item.text}</p></div>)}
     </div>
     <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-900">도구 이름은 하위 기능으로만 사용합니다. 이 단계의 목적은 Perplexity 사용법이 아니라, 전사 전략과제를 근거 기반으로 해석하고 추진계획으로 정리하는 것입니다.</div>
   </section>;
