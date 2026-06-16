@@ -25,10 +25,11 @@ type Member = { id: string; name: string; title: string; career: string; role: s
 type V41HeroTone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 'rose' | 'slate';
 type V41StageOverviewSpec = { eyebrow: string; icon: string; tone: V41HeroTone; title: string; description: ReactNode; badges: V39InfoBadge[] };
 type V41DomainFlowKind = 'work' | 'people';
-type V41DomainFlowSpec = { eyebrow: string; title: string; description: string; kind: V41DomainFlowKind; items: { icon: string; title: string; text: string }[] };
+type V41DomainFlowSpec = { eyebrow: string; title: string; description: string; kind: V41DomainFlowKind; activeByStep: Record<number, string[]>; items: { icon: string; title: string; text: string }[] };
+type V41HandoffSpec = { title: string; items: string[] };
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','v41 preview-only design css','v41 업무관리 흐름 인포그래픽','v41 사람관리 흐름 인포그래픽','전략과제 → CSF → KPI → 업무과제 → 산출물 → 업무지시 → 경계·병목','관찰 사실 → 해석 분리 → 대화 초점 → 첫 문장 → 확인 질문 → 행동 합의 → 후속 확인','Pretendard','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
+const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','v41 preview-only design css','v41 업무관리 흐름 인포그래픽','v41 사람관리 흐름 인포그래픽','v41 domain flow active highlight','v41 next-step handoff card','다음 단계로 넘길 것','전략과제 → CSF → KPI → 업무과제 → 산출물 → 업무지시 → 경계·병목','관찰 사실 → 해석 분리 → 대화 초점 → 첫 문장 → 확인 질문 → 행동 합의 → 후속 확인','Pretendard','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
 void V41_PREVIEW_APP_MARKERS;
 
 const V41_STORAGE_KEYS = { participant: 'ckd.v41.participant.v1', progress: 'ckd.v41.progress.v1' };
@@ -57,7 +58,7 @@ const STAGE_OVERVIEWS: Record<number, V41StageOverviewSpec> = {
 };
 
 const DOMAIN_FLOWS: Record<string, V41DomainFlowSpec> = {
-  work: { eyebrow: '업무관리 연결 흐름', title: '성과 기준이 업무지시와 병목 대응으로 이어지는 흐름입니다', description: '6~8단계에서는 팀 기준을 실제 업무과제, 업무산출물, 업무지시, 경계·병목 대응 기준으로 바꿉니다.', kind: 'work', items: [
+  work: { eyebrow: '업무관리 연결 흐름', title: '성과 기준이 업무지시와 병목 대응으로 이어지는 흐름입니다', description: '6~8단계에서는 팀 기준을 실제 업무과제, 업무산출물, 업무지시, 경계·병목 대응 기준으로 바꿉니다.', kind: 'work', activeByStep: { 6: ['업무과제', '산출물'], 7: ['업무지시'], 8: ['경계·병목'] }, items: [
     { icon: '🎯', title: '전략과제', text: '팀이 집중할 방향' },
     { icon: '🔑', title: 'CSF', text: '성공을 좌우하는 조건' },
     { icon: '📊', title: 'KPI', text: '확인할 성과 지표' },
@@ -66,7 +67,7 @@ const DOMAIN_FLOWS: Record<string, V41DomainFlowSpec> = {
     { icon: '📝', title: '업무지시', text: '실행 가능한 말' },
     { icon: '🚦', title: '경계·병목', text: '막히는 지점 대응' },
   ] },
-  people: { eyebrow: '사람관리 대화 흐름', title: '관찰 사실을 1on1 대화와 행동 합의로 연결합니다', description: '9~10단계에서는 사람을 평가하기 전에 관찰과 해석을 분리하고, 첫 문장·확인 질문·행동 합의까지 연습합니다.', kind: 'people', items: [
+  people: { eyebrow: '사람관리 대화 흐름', title: '관찰 사실을 1on1 대화와 행동 합의로 연결합니다', description: '9~10단계에서는 사람을 평가하기 전에 관찰과 해석을 분리하고, 첫 문장·확인 질문·행동 합의까지 연습합니다.', kind: 'people', activeByStep: { 9: ['관찰 사실', '해석 분리', '대화 초점'], 10: ['첫 문장', '확인 질문', '행동 합의', '후속 확인'] }, items: [
     { icon: '👀', title: '관찰 사실', text: '실제로 본 행동' },
     { icon: '🧯', title: '해석 분리', text: '단정과 평가 줄이기' },
     { icon: '🎯', title: '대화 초점', text: '먼저 다룰 주제' },
@@ -75,6 +76,16 @@ const DOMAIN_FLOWS: Record<string, V41DomainFlowSpec> = {
     { icon: '🤝', title: '행동 합의', text: '2주 실행 약속' },
     { icon: '🔁', title: '후속 확인', text: '다시 점검하기' },
   ] },
+};
+
+const STEP_HANDOFFS: Record<number, V41HandoffSpec> = {
+  4: { title: '5단계 팀 기준 만들기로 넘길 것', items: ['전사 전략과제', '추진과제 후보', 'CSF 후보', 'KPI 후보'] },
+  5: { title: '6단계 업무관리 실행계획으로 넘길 것', items: ['팀 전략과제', '팀 CSF', '팀 KPI', '세부 추진과제 후보'] },
+  6: { title: '7단계 업무 순서·업무지시로 넘길 것', items: ['관리할 업무과제', '업무 단위 후보', '완료 기준', '잠시 제외할 업무'] },
+  7: { title: '8단계 업무 경계·병목 대응으로 넘길 것', items: ['업무 순서', '역할과 책임', '일정·체크포인트', '업무지시 초안'] },
+  8: { title: '9단계 사람관리 대상 선택으로 넘길 것', items: ['업무 경계', '병목 신호', '팀장 개입 기준', '관찰 사실 후보'] },
+  9: { title: '10단계 1on1 실천으로 넘길 것', items: ['선택한 팀원', '관찰한 행동', '위험한 해석', '1on1 대화 초점'] },
+  10: { title: '현업 실행으로 가져갈 것', items: ['첫 문장', '확인 질문', '2주 행동 합의', '후속 확인 질문'] },
 };
 
 function splitMemberLabel(label: string) { const [name, ...titleParts] = label.split(' '); return { name: name || label, title: titleParts.join(' ') }; }
@@ -86,7 +97,8 @@ function showV41EntryGateMessage() { window.alert('먼저 팀과 이름/닉네�
 function Box({ title, children }: { title: string; children: ReactNode }) { return <section className="rounded-2xl border bg-white p-5 shadow-sm"><h3 className="text-lg font-black text-slate-900">{title}</h3><div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">{children}</div></section>; }
 function StageOverview({ currentStep }: { currentStep: number }) { const overview = STAGE_OVERVIEWS[currentStep]; return overview ? <V39StepHero {...overview} /> : null; }
 function domainFlowOf(step: number) { if (step >= 6 && step <= 8) return DOMAIN_FLOWS.work; if (step >= 9 && step <= 10) return DOMAIN_FLOWS.people; return null; }
-function V41DomainFlowInfographic({ currentStep }: { currentStep: number }) { const flow = domainFlowOf(currentStep); if (!flow) return null; return <section className="v41-domain-flow"><div className="v41-domain-flow-header"><p className="v41-domain-flow-eyebrow">{flow.eyebrow}</p><h3 className="v41-domain-flow-title">{flow.title}</h3><p className="v41-domain-flow-description">{flow.description}</p></div><div className="v41-domain-flow-grid">{flow.items.map((item) => <div key={item.title} className={`v41-domain-node ${flow.kind}`}><div className="v41-domain-node-icon" aria-hidden="true">{item.icon}</div><p className="v41-domain-node-title">{item.title}</p><p className="v41-domain-node-text">{item.text}</p></div>)}</div></section>; }
+function V41DomainFlowInfographic({ currentStep }: { currentStep: number }) { const flow = domainFlowOf(currentStep); if (!flow) return null; const activeTitles = flow.activeByStep[currentStep] ?? []; return <section className="v41-domain-flow"><div className="v41-domain-flow-header"><p className="v41-domain-flow-eyebrow">{flow.eyebrow}</p><h3 className="v41-domain-flow-title">{flow.title}</h3><p className="v41-domain-flow-description">{flow.description}</p></div><div className="v41-domain-flow-grid">{flow.items.map((item) => <div key={item.title} className={`v41-domain-node ${flow.kind} ${activeTitles.includes(item.title) ? 'active' : ''}`}><div className="v41-domain-node-icon" aria-hidden="true">{item.icon}</div><p className="v41-domain-node-title">{item.title}</p><p className="v41-domain-node-text">{item.text}</p></div>)}</div></section>; }
+function V41StepHandoffCard({ currentStep }: { currentStep: number }) { const spec = STEP_HANDOFFS[currentStep]; if (!spec) return null; return <section className="v41-handoff-card"><p className="v41-handoff-eyebrow">다음 단계로 넘길 것</p><h3 className="v41-handoff-title">{spec.title}</h3><div className="v41-handoff-list">{spec.items.map((item) => <div key={item} className="v41-handoff-item">{item}</div>)}</div></section>; }
 
 function EntryStep({ participant, setParticipant }: { participant: V41Participant; setParticipant: (next: V41Participant) => void }) {
   const ready = isParticipantReady(participant);
@@ -100,7 +112,7 @@ function RoleTeamIntroStep() {
   </div>;
 }
 
-function LabStep({ currentStep, children }: { currentStep: number; children: ReactNode }) { return <div className="space-y-4"><V41FlowStrip currentStep={currentStep} /><StageOverview currentStep={currentStep} /><V41DomainFlowInfographic currentStep={currentStep} />{children}</div>; }
+function LabStep({ currentStep, children }: { currentStep: number; children: ReactNode }) { return <div className="space-y-4"><V41FlowStrip currentStep={currentStep} /><StageOverview currentStep={currentStep} /><V41DomainFlowInfographic currentStep={currentStep} />{children}<V41StepHandoffCard currentStep={currentStep} /></div>; }
 function PerformanceStep() { return <LabStep currentStep={5}><V41PerformanceCompactCascadeLab /><V41PerformanceAiExpansionLab /></LabStep>; }
 
 function V41PreviewApp() {
