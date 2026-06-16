@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import './journey-v41-design.css';
 import { JourneyShell } from './journey-shell';
 import { removeStoredPrefix, useStored } from './journey-storage';
 import { V39StepHero, type V39InfoBadge } from './journey-v39-ux-components';
@@ -25,7 +26,7 @@ type V41HeroTone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 
 type V41StageOverviewSpec = { eyebrow: string; icon: string; tone: V41HeroTone; title: string; description: ReactNode; badges: V39InfoBadge[] };
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
+const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','v41 preview-only design css','Pretendard','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
 void V41_PREVIEW_APP_MARKERS;
 
 const V41_STORAGE_KEYS = { participant: 'ckd.v41.participant.v1', progress: 'ckd.v41.progress.v1' };
