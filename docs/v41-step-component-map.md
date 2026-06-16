@@ -15,6 +15,7 @@ This is a documentation-only checkpoint. It does not change component code, layo
 - App entry: `src/journey-v41-app-preview.tsx`
 - Step labels: `src/journey-v41-preview-config.ts`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
+- Current Step 6 work-breakdown update head: `7386cd5f2ca325643ef0a62ba0e02307c2bced05`
 
 ## Protected routes and files
 
@@ -49,10 +50,10 @@ src/journey-v40-vnext-*
 | 3 | 질문 다듬기 | `V41PromptPracticeReviewLab` in `src/journey-v41-prompt-practice-review-lab.tsx` | `ckd.v41.promptPracticeReview.v2` | Prompt-practice lab. Keep current scenario and review structure. |
 | 4 | 시장 변화 읽기 | `V41ResearchStrategyTrimmedLab` → `V41PharmaStrategyResearchLab` | `ckd.v41.pharmaStrategyResearch.v1` | Market/research context source for Step 5. |
 | 5 | 팀 기준 만들기 | `V41PerformanceCompactCascadeLab` + `V41PerformanceAiExpansionLab` | `ckd.v41.performanceCascade.v1`, `ckd.v41.performanceCascade.aiExpansion.v1` | Confirmed cascade and optional AI expansion remain separate. |
-| 6 | 업무관리 실행계획 만들기 | `V41TaskExecutionBridgeLab` | reads `ckd.v41.performanceCascade.v1`; writes `ckd.v41.taskManagement.v10` | Creates confirmed team standard, execution cycle, final execution plan, task instruction draft, people signal, and boundary declaration. |
-| 7 | 할 일·줄일 일 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Extends the shared task-management state with priority/reduction choices and flow steps. |
-| 8 | 업무 경계 나누기 | `V41TaskBoundaryCoordinationLab` | `ckd.v41.taskManagement.v10` | Extends the shared task-management state with boundary, coordination, risk, and people-signal fields. |
-| 9 | 1on1 대상 고르기 | `V41PeopleSelectionLab` | reads `ckd.v41.taskManagement.v10`; writes `ckd.v41.peopleManagement.v2` | Selects 1on1 target from Step 8 boundary and people signal. |
+| 6 | 업무관리 실행계획 만들기 | `V41TaskExecutionBridgeLab` | reads `ckd.v41.performanceCascade.v1` and reviewed `ckd.v41.performanceCascade.aiExpansion.v1`; writes `ckd.v41.taskManagement.v10` | Pure task-management bridge: converts Step 5 criteria into work output, output location, completion standard, KPI connection check, CSF reflection check, work breakdown, and Step 7 handoff. |
+| 7 | 할 일·줄일 일 | `V41TaskPriorityFlowLab` | `ckd.v41.taskManagement.v10` | Should convert Step 6 work units into execution sequence, responsibility, checkpoints, workload adjustment, and work-instruction draft. |
+| 8 | 업무 경계 나누기 | `V41TaskBoundaryCoordinationLab` | `ckd.v41.taskManagement.v10` | Should convert Step 7 execution flow into task boundaries, collaboration points, bottlenecks, and escalation criteria without people-management judgments. |
+| 9 | 1on1 대상 고르기 | `V41PeopleSelectionLab` | reads `ckd.v41.taskManagement.v10`; writes `ckd.v41.peopleManagement.v2` | Starts the people-management layer after the task-management work is complete. |
 | 10 | 1on1 첫 문장 | `V41OneOnOnePracticeLab` | reads `ckd.v41.taskManagement.v10`; reads/writes `ckd.v41.peopleManagement.v2` | Creates opening line, check questions, action agreement, and follow-up memo using the execution cycle. |
 
 ## App-level mounting structure
@@ -165,74 +166,68 @@ Not allowed:
 
 Allowed later:
 
-- tidy local helper functions,
-- improve type names without changing fields,
-- keep Step 5 handoff readable.
+- keep Step 5 handoff readable,
+- keep Step 5 criteria as input only,
+- refine work-output and work-breakdown wording,
+- preserve downstream-compatible `ckd.v41.taskManagement.v10` handoff fields.
 
 Not allowed:
 
-- changing `ckd.v41.taskManagement.v10` field semantics,
+- re-evaluating or rewriting Step 5 team strategy task, CSF, or KPI,
+- creating new CSF/KPI candidates,
+- generating coaching questions, people-signal judgments, 1on1 targets, motivation messages, or team-member capability judgments,
+- designing detailed role assignment, schedule, workload adjustment, bottleneck response, or escalation criteria in Step 6; those belong to Step 7~8,
 - removing execution cycle,
-- removing final execution plan or task instruction draft,
-- removing people signal or boundary declaration outputs.
+- removing final execution plan or task instruction draft handoff.
 
 ### Step 7: `V41TaskPriorityFlowLab`
 
 Allowed later:
 
-- extract repeated checkbox/toggle helpers,
-- keep selected priority/reduction max behavior.
+- convert Step 6 work units into execution sequence,
+- add responsibility/checkpoint/workload adjustment fields,
+- generate a work-instruction draft for Step 8 handoff.
 
 Not allowed:
 
-- changing shared key `ckd.v41.taskManagement.v10`,
-- losing execution cycle,
-- removing bottleneck signal, mid-check question, or execution declaration.
+- redoing Step 6 work-output/work-breakdown,
+- re-evaluating Step 5 performance criteria,
+- generating people-management or coaching content.
 
 ### Step 8: `V41TaskBoundaryCoordinationLab`
 
 Allowed later:
 
-- extract option group/card helpers if visible copy is unchanged.
+- convert Step 7 execution flow into task boundaries,
+- add process bottlenecks and escalation criteria,
+- keep bottleneck descriptions at the process/work level.
 
 Not allowed:
 
-- dropping boundary declaration,
-- dropping people signal,
-- changing downstream Step 9 input semantics.
+- turning process bottlenecks into judgments about team-member attitude, motivation, or capability,
+- selecting 1on1 targets before Step 9,
+- generating coaching messages.
 
 ### Step 9: `V41PeopleSelectionLab`
 
 Allowed later:
 
-- tidy member option types,
-- extract member-option display helper if copy is unchanged.
+- read Step 8 task-boundary context,
+- explicitly transition from task-management facts to people-management preparation.
 
 Not allowed:
 
-- auto-selecting a member,
-- removing observation/interpretation separation,
-- changing `ckd.v41.peopleManagement.v2` semantics.
+- changing `ckd.v41.peopleManagement.v2` without migration,
+- auto-selecting a person without user confirmation.
 
 ### Step 10: `V41OneOnOnePracticeLab`
 
 Allowed later:
 
-- tidy field helper only,
-- preserve execution-cycle reflection.
+- continue using shared v41 UI helpers,
+- use Step 9 selection as input.
 
 Not allowed:
 
-- removing Step 9 preparation review,
-- removing execution-cycle use from questions/action agreement,
-- removing boundary/people-signal reference.
-
-## Next safe optimization phase
-
-Proceed only after this mapping is preserved:
-
-```text
-refactor(v41): extract low-risk shared helpers
-```
-
-That phase should stay limited to helper-level cleanup and must not rewrite Step components, visible layout, copy, storage keys, or state shape.
+- bypassing Step 9,
+- changing the 1on1 action agreement shape without a downstream audit.
