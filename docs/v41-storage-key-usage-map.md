@@ -13,6 +13,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 - Repository: `succ2ss-leadersfactory/ckd-ci-bio-decision-v1`
 - Working branch: `feature/v37-preview-shell`
 - Frozen visual baseline commit: `d4d52efc0b5071fc1ed2c70a21935b9e913ee347`
+- Current Step 7 decision-led flow head: `3d9c6b1b6bd313574fa1bb369eab28922472c56e`
 - Current Step 8 boundary-bottleneck flow head: `2778a56c40a0a723031bad35181899ebae91f00c`
 - Baseline route: `/journey-v41-preview.html`
 - Shared helper: `src/journey-storage.ts`
@@ -28,7 +29,7 @@ Future optimization must update this map before renaming, merging, removing, or 
 | `ckd.v41.pharmaStrategyResearch.v1` | `src/journey-v41-pharma-research-data.ts`, `src/journey-v41-pharma-strategy-research-lab.tsx` | Step 4~5 labs | Step 4 → Step 5 | Market/research context only. |
 | `ckd.v41.performanceCascade.v1` | `src/journey-v41-performance-compact-cascade-lab.tsx` | `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 → Step 6 | Confirmed team strategy task, CSF, KPI, and initiative. Step 6 reads it as input, not as a target to rewrite. |
 | `ckd.v41.performanceCascade.aiExpansion.v1` | `src/journey-v41-performance-ai-expansion-lab.tsx` | `src/journey-v41-task-execution-bridge-lab.tsx` | Step 5 AI expansion → Step 6 optional reference | Staged AI expansion funnel and final human review summary. Raw AI output remains reference-only. |
-| `ckd.v41.taskManagement.v10` | `src/journey-v41-task-execution-bridge-lab.tsx`, `src/journey-v41-task-priority-flow-lab.tsx`, `src/journey-v41-task-boundary-coordination-lab.tsx` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Step 6~8 → Step 9~10 | Main task-management continuity key. Step 6 writes managed task, work output, selected work items, completion criteria, excluded work, final execution plan, and Step 7 handoff. Step 7 writes `orderedWorkSteps`, `roleResponsibilityMap`, `scheduleCheckpoints`, `workloadAdjustments`, `step7AiPrompt`, `step7AiResult`, `step7HumanReview`, `taskInstructionDraft`, `finalTaskInstruction`, and `step7HandoffToStep8`. Step 8 writes task-boundary and bottleneck fields: `memberTasks`, `leaderCheckTasks`, `coordinationTasks`, `riskBoundary`, `bottleneckSignal`, `bottleneckResponsePlan`, `escalationCriteria`, `leaderInterventionCriteria`, `midCheckQuestion`, `taskIssueSeparation`, `boundaryDeclaration`, `peopleSignal`, and `step8TaskBoundaryMemo`. Step 8 keeps bottleneck and escalation at the work/process level and sends only observation facts into Step 9. |
+| `ckd.v41.taskManagement.v10` | `src/journey-v41-task-execution-bridge-lab.tsx`, `src/journey-v41-task-priority-flow-lab.tsx`, `src/journey-v41-task-boundary-coordination-lab.tsx` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Step 6~8 → Step 9~10 | Main task-management continuity key. Step 6 writes managed task, work output, selected work items, completion criteria, excluded work, final execution plan, and Step 7 handoff. Step 7 writes decision-led fields: `step7ExecutionPlanConfirmed`, `sequenceDecisionType`, `selectedSequenceOption`, `orderedWorkSteps`, `roleDecisionMatrix`, `roleResponsibilityMap`, `checkpointDecisionType`, `selectedCheckpointQuestions`, `selectedEvidenceChecks`, `scheduleCheckpoints`, `selectedReduceTasks`, `selectedWorkloadReductionReasons`, `workloadAdjustments`, `step7AiPrompt`, `step7AiResult`, `step7HumanReview`, `step7ReviewChecklist`, `step7InstructionTone`, `taskInstructionDraft`, `finalTaskInstruction`, `selectedStep8HandoffSignals`, and `step7HandoffToStep8`. Step 7 keeps the learner in a choose-and-decide flow and uses AI for the work-instruction draft. Step 8 writes task-boundary and bottleneck fields: `memberTasks`, `leaderCheckTasks`, `coordinationTasks`, `riskBoundary`, `bottleneckSignal`, `bottleneckResponsePlan`, `escalationCriteria`, `leaderInterventionCriteria`, `midCheckQuestion`, `taskIssueSeparation`, `boundaryDeclaration`, `peopleSignal`, and `step8TaskBoundaryMemo`. Step 8 keeps bottleneck and escalation at the work/process level and sends only observation facts into Step 9. |
 | `ckd.v41.peopleManagement.v2` | `src/journey-v41-people-selection-lab.tsx`, `src/journey-v41-one-on-one-practice-lab.tsx` | Same two labs | Step 9~10 | People-management and 1on1 preparation state. |
 | `ckd.v41.finalExecutionMemo.v1` | No active Step 1~10 owner confirmed | No active Step 1~10 reader confirmed | Reserved / bridge-only | `ckd.v41.finalExecutionMemo.v1` is Reserved / bridge-only. Do not merge it into `ckd.v41.peopleManagement.v2` without an explicit migration. |
 
@@ -55,7 +56,7 @@ The current storage continuity is:
 4. `ckd.v41.pharmaStrategyResearch.v1` captures Step 4 market/research context.
 5. `ckd.v41.performanceCascade.v1` converts Step 4 context into Step 5 confirmed team strategy/CSF/KPI/initiative selections.
 6. `ckd.v41.performanceCascade.aiExpansion.v1` stores optional staged Step 5 AI expansion and final human review summary.
-7. `ckd.v41.taskManagement.v10` carries the task-management chain: Step 6 managed task/work output/work breakdown → Step 7 sequence, role, checkpoint, workload adjustment, AI-assisted task-instruction draft, and Step 8 handoff → Step 8 task boundary, process bottleneck response, escalation criteria, leader intervention criteria, and work/process observations for Step 9.
+7. `ckd.v41.taskManagement.v10` carries the task-management chain: Step 6 managed task/work output/work breakdown → Step 7 decision-led sequence, role, checkpoint, workload adjustment, AI-assisted task-instruction draft, review checklist, and Step 8 handoff → Step 8 task boundary, process bottleneck response, escalation criteria, leader intervention criteria, and work/process observations for Step 9.
 8. `ckd.v41.peopleManagement.v2` converts later people-management state into Step 9~10 1on1 target, first sentence, questions, and action agreement.
 
 ## Step 5 AI expansion funnel
@@ -98,15 +99,15 @@ Step 6 boundaries:
 - Do not generate coaching questions, people-signal judgments, 1on1 targets, motivation messages, or team-member capability judgments.
 - Do not design detailed role assignment, schedule, workload adjustment, bottleneck response, or escalation criteria in Step 6; those belong to Step 7~8.
 
-## Step 7 AI task-instruction flow
+## Step 7 decision-led AI task-instruction flow
 
-Step 7 is no longer primarily a `할 일·줄일 일` selection screen. The legacy label may remain as a smoke marker, but the functional purpose is:
+Step 7 is no longer primarily a free-writing `할 일·줄일 일` selection screen. The legacy label may remain as a smoke marker, but the functional purpose is:
 
 ```text
 6단계 실행계획 확인
-→ 업무 순서 정하기
-→ 역할과 책임 정하기
-→ 일정과 체크포인트 정하기
+→ 실행 순서 결정하기
+→ 역할과 책임 결정하기
+→ 일정과 점검방식 결정하기
 → 업무량 조정: 이번 주기에는 잠시 줄일 일
 → AI로 업무지시 초안 만들기
 → 사람 검토 후 최종 업무지시 확정
@@ -115,15 +116,27 @@ Step 7 is no longer primarily a `할 일·줄일 일` selection screen. The lega
 
 Step 7 AI practice writes these fields under `ckd.v41.taskManagement.v10`:
 
+- `step7ExecutionPlanConfirmed`
+- `sequenceDecisionType`
+- `selectedSequenceOption`
 - `orderedWorkSteps`
+- `roleDecisionMatrix`
 - `roleResponsibilityMap`
+- `checkpointDecisionType`
+- `selectedCheckpointQuestions`
+- `selectedEvidenceChecks`
 - `scheduleCheckpoints`
+- `selectedReduceTasks`
+- `selectedWorkloadReductionReasons`
 - `workloadAdjustments`
 - `step7AiPrompt`
 - `step7AiResult`
 - `step7HumanReview`
+- `step7ReviewChecklist`
+- `step7InstructionTone`
 - `taskInstructionDraft`
 - `finalTaskInstruction`
+- `selectedStep8HandoffSignals`
 - `step7HandoffToStep8`
 
 Step 7 boundaries:
@@ -131,6 +144,7 @@ Step 7 boundaries:
 - Do not reinterpret KPI, CSF, or strategy task.
 - Do not judge team-member capability, attitude, motivation, or coaching need.
 - Do not deeply analyze bottleneck causes or define escalation ownership; Step 7 may only prepare `step7HandoffToStep8`.
+- The participant should primarily choose, compare, and confirm. Free writing is limited to AI result paste, optional human review, final instruction, and Step 8 handoff memo.
 - The final Step 7 output is a task-instruction draft that includes work background, work sequence, output, completion standard, role/responsibility, schedule/checkpoints, and temporarily reduced work.
 
 ## Step 8 boundary-bottleneck flow
