@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { JourneyShell } from './journey-shell';
 import { removeStoredPrefix, useStored } from './journey-storage';
-import { V39StepHero } from './journey-v39-ux-components';
+import { V39StepHero, type V39InfoBadge } from './journey-v39-ux-components';
 import { TEAM_MEMBER_PROFILES } from './journey-v39-team-seven-coaching-profiles';
 import { V41FlowStrip, V41StepNavigationProvider } from './journey-v41-ux-components';
 import { V41ProgressCoachPanel } from './journey-v41-progress-coach-panel';
@@ -21,9 +21,11 @@ import { V41OneOnOnePracticeLab } from './journey-v41-one-on-one-practice-lab';
 type V41Participant = { groupName: string; tableName: string; representativeSituation: string; roleAccepted: boolean };
 type V41Progress = { step: number };
 type Member = { id: string; name: string; title: string; career: string; role: string; workStyle: string; communicationStyle: string; strength: string; weakness: string; note: string };
+type V41HeroTone = 'emerald' | 'sky' | 'cyan' | 'violet' | 'indigo' | 'amber' | 'rose' | 'slate';
+type V41StageOverviewSpec = { eyebrow: string; icon: string; tone: V41HeroTone; title: string; description: ReactNode; badges: V39InfoBadge[] };
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
+const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
 void V41_PREVIEW_APP_MARKERS;
 
 const V41_STORAGE_KEYS = { participant: 'ckd.v41.participant.v1', progress: 'ckd.v41.progress.v1' };
@@ -40,31 +42,25 @@ const MEMBER_CAREERS: Record<string, string> = {
   'moon-gyowon': '신입사원 · 제약영업 기본기와 현장 기준을 배우는 단계',
 };
 
-function splitMemberLabel(label: string) {
-  const [name, ...titleParts] = label.split(' ');
-  return { name: name || label, title: titleParts.join(' ') };
-}
+const STAGE_OVERVIEWS: Record<number, V41StageOverviewSpec> = {
+  3: { eyebrow: '3단계 · 질문 다듬기', icon: '✍️', tone: 'violet', title: 'AI에게 던질 질문을 현업 상황에 맞게 다듬습니다', description: '짧은 질문을 바로 쓰지 않고, 역할·맥락·요청·출력 형식을 정리해 실제 업무에 쓸 수 있는 프롬프트로 바꿉니다.', badges: [{ label: '입력', value: '현업 질문', tone: 'violet', icon: '❓' }, { label: '결정', value: '질문 구조', tone: 'amber', icon: '🧭' }, { label: '산출물', value: '정리된 프롬프트', tone: 'emerald', icon: '📝' }] },
+  4: { eyebrow: '4단계 · 시장 변화 읽기', icon: '🔭', tone: 'cyan', title: '전사 전략과제를 근거 기반 추진계획으로 바꿉니다', description: '전사 전략과제를 하나 선택하고, 공개자료를 찾아 추진과제·CSF·KPI 후보를 정리한 뒤 보고서·슬라이드·인포그래픽 초안으로 연결합니다.', badges: [{ label: '입력', value: '전사 전략과제', tone: 'cyan', icon: '🎯' }, { label: '도구', value: '자료 수집·정리', tone: 'indigo', icon: '🧰' }, { label: '산출물', value: '추진계획 초안', tone: 'emerald', icon: '📄' }] },
+  5: { eyebrow: '5단계 · 팀 기준 만들기', icon: '🎯', tone: 'emerald', title: '전사 전략을 우리 팀의 성과관리 기준으로 바꿉니다', description: '전사 전략과제, CSF, KPI를 그대로 두지 않고 우리 팀 전략과제·팀 CSF·팀 KPI로 전환합니다.', badges: [{ label: '입력', value: '전사 전략', tone: 'emerald', icon: '📌' }, { label: '결정', value: '팀 CSF·KPI', tone: 'amber', icon: '✅' }, { label: '산출물', value: '팀 기준', tone: 'cyan', icon: '📊' }] },
+  6: { eyebrow: '6단계 · 업무관리 실행계획', icon: '🧩', tone: 'emerald', title: '팀 기준을 실제 관리할 업무과제로 바꿉니다', description: '성과기준을 실행관리 주기, 관리할 업무과제, 업무산출물, 완료 기준, 업무 단위로 나눕니다.', badges: [{ label: '입력', value: '팀 기준', tone: 'emerald', icon: '🎯' }, { label: '결정', value: '업무과제', tone: 'amber', icon: '🧩' }, { label: '산출물', value: '실행계획', tone: 'cyan', icon: '🗂️' }] },
+  7: { eyebrow: '7단계 · 업무 순서·업무지시', icon: '🧭', tone: 'violet', title: '실행계획을 팀원이 바로 움직일 업무지시로 바꿉니다', description: '업무 순서, 역할과 책임, 일정과 체크포인트, 잠시 줄일 일을 선택하고 AI로 업무지시 초안을 만듭니다.', badges: [{ label: '입력', value: '6단계 실행계획', tone: 'violet', icon: '📥' }, { label: '결정', value: '순서·역할·일정', tone: 'amber', icon: '✅' }, { label: '산출물', value: '업무지시 초안', tone: 'emerald', icon: '📝' }] },
+  8: { eyebrow: '8단계 · 업무 경계·병목 대응', icon: '🧱', tone: 'cyan', title: '업무 경계와 병목 대응 기준을 분리합니다', description: '팀원이 할 일, 팀장이 확인할 일, 협조 요청할 일, 병목 신호, 에스컬레이션 기준을 업무관리 관점에서 정리합니다.', badges: [{ label: '입력', value: '7단계 전달 메모', tone: 'cyan', icon: '📥' }, { label: '결정', value: '경계·병목', tone: 'amber', icon: '🚦' }, { label: '산출물', value: '8단계 메모', tone: 'emerald', icon: '🧾' }] },
+  9: { eyebrow: '9단계 · 사람관리 1', icon: '👤', tone: 'indigo', title: '업무 흐름에서 보이는 실행 신호를 사람관리 대화로 연결합니다', description: '팀원별 실행 신호를 보고 먼저 이야기할 팀원을 선택한 뒤, 관찰 행동과 위험한 해석을 구분하고 1on1 초점을 정합니다.', badges: [{ label: '입력', value: '8단계 관찰 후보', tone: 'indigo', icon: '🔎' }, { label: '결정', value: '대화 대상', tone: 'amber', icon: '👤' }, { label: '산출물', value: '1on1 초점', tone: 'emerald', icon: '💬' }] },
+  10: { eyebrow: '10단계 · 사람관리 2', icon: '💬', tone: 'emerald', title: '첫 문장에서 행동 합의까지 1on1을 연습합니다', description: '첫 문장, 확인 질문, 재질문, 2주 행동 합의를 만들고 AI 역할극으로 팀장 대화 방식을 리허설합니다.', badges: [{ label: '입력', value: '9단계 선택 결과', tone: 'emerald', icon: '📥' }, { label: '실습', value: 'AI 역할극', tone: 'violet', icon: '🤖' }, { label: '산출물', value: '사람관리 메모', tone: 'amber', icon: '🧾' }] },
+};
 
-const MEMBERS: Member[] = TEAM_MEMBER_PROFILES.map((profile) => {
-  const { name, title } = splitMemberLabel(profile.label);
-  return {
-    id: profile.id,
-    name,
-    title,
-    career: MEMBER_CAREERS[profile.id] ?? '제약영업 구성원',
-    role: profile.role,
-    workStyle: profile.workStyle,
-    communicationStyle: profile.customerStyle,
-    strength: profile.strength,
-    weakness: profile.risk,
-    note: `${profile.misreadRisk} ${profile.oneOnOneReason}`,
-  };
-});
+function splitMemberLabel(label: string) { const [name, ...titleParts] = label.split(' '); return { name: name || label, title: titleParts.join(' ') }; }
+const MEMBERS: Member[] = TEAM_MEMBER_PROFILES.map((profile) => { const { name, title } = splitMemberLabel(profile.label); return { id: profile.id, name, title, career: MEMBER_CAREERS[profile.id] ?? '제약영업 구성원', role: profile.role, workStyle: profile.workStyle, communicationStyle: profile.customerStyle, strength: profile.strength, weakness: profile.risk, note: `${profile.misreadRisk} ${profile.oneOnOneReason}` }; });
 
 function scrollV41ToTop() { window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' })); }
 function isParticipantReady(p: V41Participant) { return Boolean(p.groupName.trim() && p.tableName.trim()); }
 function showV41EntryGateMessage() { window.alert('먼저 팀과 이름/닉네임을 입력해 주세요.'); }
 function Box({ title, children }: { title: string; children: ReactNode }) { return <section className="rounded-2xl border bg-white p-5 shadow-sm"><h3 className="text-lg font-black text-slate-900">{title}</h3><div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">{children}</div></section>; }
+function StageOverview({ currentStep }: { currentStep: number }) { const overview = STAGE_OVERVIEWS[currentStep]; return overview ? <V39StepHero {...overview} /> : null; }
 
 function EntryStep({ participant, setParticipant }: { participant: V41Participant; setParticipant: (next: V41Participant) => void }) {
   const ready = isParticipantReady(participant);
@@ -78,7 +74,7 @@ function RoleTeamIntroStep() {
   </div>;
 }
 
-function LabStep({ currentStep, children }: { currentStep: number; children: ReactNode }) { return <div className="space-y-4"><V41FlowStrip currentStep={currentStep} />{children}</div>; }
+function LabStep({ currentStep, children }: { currentStep: number; children: ReactNode }) { return <div className="space-y-4"><V41FlowStrip currentStep={currentStep} /><StageOverview currentStep={currentStep} />{children}</div>; }
 function PerformanceStep() { return <LabStep currentStep={5}><V41PerformanceCompactCascadeLab /><V41PerformanceAiExpansionLab /></LabStep>; }
 
 function V41PreviewApp() {
