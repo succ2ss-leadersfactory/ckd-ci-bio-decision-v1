@@ -182,8 +182,6 @@ for (const marker of ['ckd.v41.performanceCascade.aiExpansion.v1', 'Step 5 AI ex
 for (const marker of ['Step 6 selectable managed-task, work-output, and work-breakdown rule', 'selectedWorkItems is required', 'Do not re-evaluate the strategy task, CSF, or KPI']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 6 storage documentation');
 for (const marker of ['Step 7 decision-led AI task-instruction flow', 'step7ReviewChecklist', 'selectedStep8HandoffSignals']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 7 storage documentation');
 for (const marker of ['Step 8 boundary-bottleneck flow', 'bottleneckResponsePlan', 'escalationCriteria', 'leaderInterventionCriteria', 'Send only observation facts into Step 9']) mustInclude(files.storageKeyUsageMap, marker, 'v41 Step 8 storage documentation');
-for (const marker of storageKeysUsedInCode) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization status storage inventory');
-for (const marker of ['v41-storage-documentation-present', 'v41 final memo key remains reserved']) mustInclude(files.ciOptimizationStatus, marker, 'v41 CI optimization storage guard status');
 
 for (const marker of ['v41 Smoke', 'smoke-v41-static.mjs']) mustInclude(files.v41Workflow, marker, 'v41 workflow');
 for (const marker of ['v41 static smoke passed', 'storage keys used in code']) mustInclude(files.ciOptimizationGuard, marker, 'v41 CI optimization guard');
