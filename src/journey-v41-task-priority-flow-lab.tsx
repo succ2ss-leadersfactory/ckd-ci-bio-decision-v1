@@ -3,6 +3,7 @@ import { useStored } from './journey-storage';
 
 const V41_TASK_PRIORITY_FLOW_MARKERS = [
   'V41TaskPriorityFlowLab',
+  '할 일·줄일 일',
   '7단계: 업무 순서와 업무지시 만들기',
   '6단계 실행계획 확인',
   '6단계 요약 입력값',
