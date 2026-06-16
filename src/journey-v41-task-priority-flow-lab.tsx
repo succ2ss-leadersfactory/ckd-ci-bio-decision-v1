@@ -6,6 +6,7 @@ const V41_TASK_PRIORITY_FLOW_MARKERS = [
   '할 일·줄일 일',
   '7단계: 업무 순서와 업무지시 만들기',
   '7단계: 실행방식 결정하기',
+  '업무지시 초안 최적화 프롬프트',
   '6단계 실행계획 확인',
   '6단계 요약 입력값',
   '긴 원문 표시 금지',
@@ -213,6 +214,55 @@ function defaultRoleDecision(): RoleDecision {
   };
 }
 
+function normalizeCriterionLine(line: string, item?: string) {
+  let text = line.replace(/^[-•]\s*/, '').trim();
+  if (item && text.startsWith(`${item}:`)) text = text.slice(item.length + 1).trim();
+  return text || '완료 기준을 확인할 수 있음';
+}
+
+function criterionForWorkItem(item: string, criteria: string[], index: number) {
+  const exact = criteria.find((criterion) => criterion.startsWith(`${item}:`) || criterion.includes(`${item}:`));
+  if (exact) return normalizeCriterionLine(exact, item);
+  const contains = criteria.find((criterion) => criterion.includes(item));
+  if (contains) return normalizeCriterionLine(contains, item);
+  return normalizeCriterionLine(criteria[index] || '완료 기준을 확인할 수 있음', item);
+}
+
+function buildWorkItemCriteriaPrompt(items: string[], criteria: string[]) {
+  const source = items.length ? items : ['최종 선택 업무 단위'];
+  return source.map((item, index) => `${index + 1}. ${item}\n- 완료 기준: ${criterionForWorkItem(item, criteria, index)}`).join('\n\n');
+}
+
+function instructionOutputName(output: string, managementTask: string, items: string[]) {
+  const raw = compact(output);
+  const basis = `${raw} ${managementTask} ${items.join(' ')}`;
+  if (raw === '미작성') return '업무지시 산출물';
+  if (/산출물$/.test(raw) || raw.length > 38) {
+    if (basis.includes('선택 기준')) return '핵심 고객별 선택 기준 확인 현황표';
+    if (basis.includes('고객 반응') || basis.includes('다음 행동')) return '고객 반응 및 다음 행동 확인표';
+    if (basis.includes('기록')) return '업무 기록 정리 현황표';
+    if (basis.includes('누락')) return '누락 항목 점검표';
+    return '업무 실행 현황표';
+  }
+  return raw;
+}
+
+function locationInstruction(location?: string) {
+  const raw = compact(location);
+  if (raw === '미작성') return '정해진 기록 위치 1곳';
+  if (raw.includes('중 하나') || raw.includes(',')) {
+    return `${raw}\n※ 업무지시 초안에서는 임의로 특정 위치를 선택하지 말고, “팀장이 정한 기록 위치 1곳에 등록한다”는 실행 문장으로 정리하세요.`;
+  }
+  return raw;
+}
+
+function finalCheckTiming(cycle: string, checkpointTitle: string) {
+  if (cycle === '1주' && checkpointTitle === '1주차 종료') {
+    return '중간 확인: 마감 전 2일 / 최종 확인: 1주차 종료';
+  }
+  return `중간 확인: ${checkpointTitle} / 최종 확인: 실행관리 주기 종료 시점`;
+}
+
 function Card({ title, children, tone = 'slate' }: { title: string; children: ReactNode; tone?: 'slate' | 'amber' | 'cyan' | 'emerald' | 'violet' }) {
   const border = tone === 'amber' ? 'border-amber-100' : tone === 'cyan' ? 'border-cyan-100' : tone === 'emerald' ? 'border-emerald-100' : tone === 'violet' ? 'border-violet-100' : 'border-slate-200';
   return <section className={`rounded-3xl border ${border} bg-white p-4 shadow-sm md:p-5`}><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-3">{children}</div></section>;
@@ -254,7 +304,7 @@ function buildSequenceDraft(items: string[], criteria: string[], optionId?: stri
     `선택 이유: ${option.description}`,
     '',
     ...source.map((item, index) => {
-      const criterion = criteria[index] || '완료 기준까지 확인한다.';
+      const criterion = criterionForWorkItem(item, criteria, index);
       return `${index + 1}. ${item}\n- 시작 조건: 이전 단계 입력값과 기존 기록을 확인할 수 있음\n- 완료 기준: ${criterion}`;
     }),
   ].join('\n');
@@ -274,7 +324,7 @@ function buildCheckpointDraft(params: { cycle: string; output: string; location:
   const evidence = params.selectedEvidence?.length ? params.selectedEvidence : EVIDENCE_CHECKS.slice(0, 3);
   return [
     `실행관리 주기: ${params.cycle}`,
-    `중간 확인 시점: ${checkpoint.title} · ${checkpoint.description}`,
+    `점검 시점: ${finalCheckTiming(params.cycle, checkpoint.title)}`,
     `확인할 산출물: ${params.output}`,
     `기록 위치: ${params.location}`,
     `완료 기준: ${params.completion}`,
@@ -324,12 +374,14 @@ export function V41TaskPriorityFlowLab() {
 
   const executionCycle = state.executionCycle ?? '2주';
   const workItems = splitLines(state.selectedWorkItems, 5);
-  const criteria = splitLines(state.workItemCompletionCriteria, 5);
-  const excluded = splitLines(state.excludedWorkItems, 4);
+  const criteria = splitLines(state.workItemCompletionCriteria, 8);
+  const excluded = splitLines(state.excludedWorkItems, 8);
   const reduceTasks = state.selectedReduceTasks ?? [];
   const displayOutput = displayOutputName(state.selectedOutput, state.managementTask);
   const displayCompletion = displayCompletionStandard(state.completionStandard, state.managementTask);
-  const evidence = `${displayOutput} / ${compact(state.outputLocation)} / 누락·다음 행동 확인 흔적`;
+  const outputForInstruction = instructionOutputName(displayOutput, compact(state.managementTask), workItems);
+  const locationForInstruction = locationInstruction(state.outputLocation);
+  const evidence = `${outputForInstruction} / ${compact(state.outputLocation)} / 누락·다음 행동 확인 흔적`;
   const roleMatrix = state.roleDecisionMatrix ?? {};
   const selectedQuestions = state.selectedCheckpointQuestions ?? [];
   const selectedEvidence = state.selectedEvidenceChecks ?? [];
@@ -340,8 +392,9 @@ export function V41TaskPriorityFlowLab() {
 
   const sequenceDraft = buildSequenceDraft(workItems, criteria, state.selectedSequenceOption);
   const roleDraft = buildRoleDraft(workItems, roleMatrix);
-  const checkpointDraft = buildCheckpointDraft({ cycle: executionCycle, output: displayOutput, location: compact(state.outputLocation), completion: displayCompletion, checkpointId: state.checkpointDecisionType, selectedQuestions, selectedEvidence });
+  const checkpointDraft = buildCheckpointDraft({ cycle: executionCycle, output: outputForInstruction, location: locationForInstruction, completion: displayCompletion, checkpointId: state.checkpointDecisionType, selectedQuestions, selectedEvidence });
   const workloadDraft = buildWorkloadDraft(reduceTasks, state.selectedWorkloadReductionReasons ?? []);
+  const workItemCriteriaPrompt = buildWorkItemCriteriaPrompt(workItems, criteria);
 
   const applyAiDecisionRecommendation = () => update({
     sequenceDecisionType: 'AI 추천안 중 선택',
@@ -354,11 +407,12 @@ export function V41TaskPriorityFlowLab() {
       '이번 단계의 목적은 산출물 완성과 완료 기준 확인에 집중하는 것이기 때문입니다.',
       '역할과 일정이 정해지기 전에 모든 업무를 동시에 시작하면 중복과 누락이 커질 수 있기 때문입니다.',
     ],
+    step7AiPrompt: '',
   });
 
   const updateRoleDecision = (item: string, patch: RoleDecision) => {
     const current = { ...defaultRoleDecision(), ...(roleMatrix[item] ?? {}) };
-    update({ roleDecisionMatrix: { ...roleMatrix, [item]: { ...current, ...patch } } });
+    update({ roleDecisionMatrix: { ...roleMatrix, [item]: { ...current, ...patch } }, step7AiPrompt: '' });
   };
 
   const buildDecisionDrafts = () => update({
@@ -366,6 +420,7 @@ export function V41TaskPriorityFlowLab() {
     roleResponsibilityMap: roleDraft,
     scheduleCheckpoints: checkpointDraft,
     workloadAdjustments: workloadDraft,
+    step7AiPrompt: '',
   });
 
   const buildAiPrompt = () => update({
@@ -374,28 +429,64 @@ export function V41TaskPriorityFlowLab() {
     scheduleCheckpoints: state.scheduleCheckpoints || checkpointDraft,
     workloadAdjustments: state.workloadAdjustments || workloadDraft,
     step7AiPrompt: [
-      '역할: 당신은 제약영업팀장의 업무관리 실행지시 초안을 돕는 전문가입니다.',
+      '역할: 당신은 제약영업팀장의 업무관리 실행지시 초안을 작성하는 전문가입니다.',
       '',
-      '[6단계 요약 입력값]',
-      `관리할 업무과제: ${compact(state.managementTask)}`,
-      `업무산출물: ${displayOutput}`,
-      `기록 위치: ${compact(state.outputLocation)}`,
-      `완료 기준: ${displayCompletion}`,
-      `최종 선택 업무 단위:\n${compact(state.selectedWorkItems)}`,
-      `업무별 완료 기준:\n${compact(state.workItemCompletionCriteria)}`,
-      `6단계에서 제외한 업무:\n${compact(state.excludedWorkItems)}`,
+      '[최종 결과물]',
+      '팀원이 바로 이해하고 실행할 수 있는 업무지시 초안을 작성해 주세요.',
+      '결과물은 설명문, 분석문, 조언문이 아니라 “팀장 업무지시 초안”이어야 합니다.',
       '',
-      '[7단계에서 팀장이 선택한 실행방식 결정]',
-      `실행 순서 결정: ${sequenceOption.title} - ${sequenceOption.description}`,
-      `업무 순서:\n${state.orderedWorkSteps || sequenceDraft}`,
-      `역할과 책임:\n${state.roleResponsibilityMap || roleDraft}`,
-      `일정과 체크포인트:\n${state.scheduleCheckpoints || checkpointDraft}`,
-      `잠시 줄일 일:\n${state.workloadAdjustments || workloadDraft}`,
-      `희망 말투: ${state.step7InstructionTone || '간결한 업무지시'}`,
+      '[작성 원칙]',
+      '1. 아래 선택값만 사용해 업무지시 초안을 작성합니다.',
+      '2. 어색한 원문 표현은 업무지시용 문장으로 자연스럽게 다듬되, 의미를 바꾸지 않습니다.',
+      '3. 산출물명은 명사형으로 짧고 분명하게 씁니다.',
+      '4. 최종 업무 단위와 완료 기준은 아래 1:1 매칭만 사용합니다.',
+      '5. 지시는 짧고 구체적으로 씁니다. 팀원이 “무엇을, 어디에, 언제까지, 어떤 기준으로” 해야 하는지 보여야 합니다.',
       '',
-      '[요청]',
-      '위 선택값만 사용해서 팀원에게 전달할 업무지시 초안을 작성해 주세요.',
-      '새 KPI, 새 CSF, 새 전략과제, 새 사람관리 판단은 만들지 마세요.',
+      '[업무 배경]',
+      `이번 주기에는 ${compact(state.managementTask)} 업무를 실행합니다.`,
+      '',
+      '[관리할 업무과제]',
+      compact(state.managementTask),
+      '',
+      '[업무산출물]',
+      outputForInstruction,
+      '',
+      '[기록 위치]',
+      locationForInstruction,
+      '',
+      '[완료 기준]',
+      displayCompletion,
+      '',
+      '[최종 업무 단위와 완료 기준]',
+      workItemCriteriaPrompt,
+      '',
+      '[실행 순서 결정]',
+      `기준: ${sequenceOption.title}`,
+      `이유: ${sequenceOption.description}`,
+      `실행 순서:\n${state.orderedWorkSteps || sequenceDraft}`,
+      '',
+      '[역할과 책임]',
+      '아래 선택값을 “업무지시 문장”으로 바꾸어 작성하세요.',
+      state.roleResponsibilityMap || roleDraft,
+      '',
+      '[일정과 점검]',
+      `실행관리 주기: ${executionCycle}`,
+      `점검 시점: ${finalCheckTiming(executionCycle, checkpointOption.title)}`,
+      `확인 증거: ${(selectedEvidence.length ? selectedEvidence : EVIDENCE_CHECKS.slice(0, 3)).join(', ')}`,
+      '중간 확인 질문:',
+      ...(selectedQuestions.length ? selectedQuestions : CHECKPOINT_QUESTIONS.slice(0, 2)).map((question) => `- ${question}`),
+      '',
+      '[이번 주기에 잠시 줄일 일]',
+      ...(reduceTasks.length ? reduceTasks : ['업무산출물과 직접 연결되지 않는 활동은 줄입니다.']).map((task) => `- ${task}`),
+      '',
+      '[이번 업무지시에 포함하지 말 것]',
+      ...(excluded.length ? excluded : ['신규 조사, 고객 인터뷰, 대응 계획 수립, 성과목표 배분, 병목 원인 분석']).map((item) => `- ${item}`),
+      '- KPI, CSF, 전략과제 재해석',
+      '- 팀원의 역량, 태도, 동기, 코칭 필요 여부 판단',
+      '- 병목 원인 분석이나 에스컬레이션 기준 확정',
+      '',
+      '[말투]',
+      `${state.step7InstructionTone || '간결한 업무지시'} 방식으로 작성합니다.`,
       '',
       '[출력 형식]',
       '1. 업무 배경',
@@ -407,12 +498,11 @@ export function V41TaskPriorityFlowLab() {
       '7. 이번 주기에 잠시 줄일 일',
       '8. 팀장 확인 문장',
       '',
-      '[반드시 지킬 원칙]',
-      '1. KPI, CSF, 전략과제를 다시 만들거나 재해석하지 마세요.',
-      '2. 팀원의 역량, 태도, 동기, 코칭 필요 여부를 판단하지 마세요.',
-      '3. 병목 원인 분석이나 에스컬레이션 기준은 만들지 마세요. 이것은 8단계에서 다룹니다.',
-      '4. 업무 배경, 해야 할 일, 산출물, 완료 기준, 역할, 일정, 중간 확인, 줄일 일만 포함하세요.',
-      '5. 참여자가 선택한 실행방식 결정을 임의로 바꾸지 마세요.',
+      '[출력 제한]',
+      '- 위 8개 항목만 작성하세요.',
+      '- 새로운 업무, 새로운 기준, 새로운 사람 판단을 만들지 마세요.',
+      '- 각 항목은 팀원이 바로 실행할 수 있는 문장으로 작성하세요.',
+      '- 필요 이상으로 길게 설명하지 마세요.',
     ].join('\n'),
   });
 
@@ -425,7 +515,7 @@ export function V41TaskPriorityFlowLab() {
   const makeInstructionDraft = () => {
     const baseDraft = compact(state.step7AiResult) !== '미작성'
       ? state.step7AiResult
-      : buildInstructionFromFields({ ...state, orderedWorkSteps: state.orderedWorkSteps || sequenceDraft, roleResponsibilityMap: state.roleResponsibilityMap || roleDraft, scheduleCheckpoints: state.scheduleCheckpoints || checkpointDraft, workloadAdjustments: state.workloadAdjustments || workloadDraft }, displayOutput, displayCompletion);
+      : buildInstructionFromFields({ ...state, orderedWorkSteps: state.orderedWorkSteps || sequenceDraft, roleResponsibilityMap: state.roleResponsibilityMap || roleDraft, scheduleCheckpoints: state.scheduleCheckpoints || checkpointDraft, workloadAdjustments: state.workloadAdjustments || workloadDraft }, outputForInstruction, displayCompletion);
     const reviewNote = reviewChecklist.length ? `\n\n[팀장 검토 통과 항목]\n${reviewChecklist.map((item) => `- ${item}`).join('\n')}` : '';
     const humanReview = state.step7HumanReview ? `\n\n[사람 검토 보완]\n${state.step7HumanReview}` : '';
     const draft = [baseDraft, reviewNote, humanReview].filter(Boolean).join('');
@@ -448,8 +538,8 @@ export function V41TaskPriorityFlowLab() {
     <section className="rounded-3xl border border-amber-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-amber-700">업무 순서와 업무지시</p>
       <h3 className="mt-1 text-xl font-black text-slate-950">7단계: 업무 순서와 업무지시 만들기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">6단계 실행계획을 다시 쓰지 않고, 실행 순서·역할·점검방식·줄일 일을 선택해 의사결정합니다. 중요한 실행계획과 업무지시 문장은 AI가 초안으로 만들고 팀장이 최종 확정합니다.</p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-amber-800"><span className="rounded-full bg-amber-50 px-3 py-1">선택형 의사결정</span><span className="rounded-full bg-amber-50 px-3 py-1">성과기준 재해석 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">AI 업무지시 초안</span><span className="rounded-full bg-amber-50 px-3 py-1">8단계 전달</span></div>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">6단계 실행계획을 다시 쓰지 않고, 실행 순서·역할·점검방식·줄일 일을 선택해 의사결정합니다. 최종 결과물은 팀원이 바로 실행할 수 있는 업무지시 초안입니다.</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-amber-800"><span className="rounded-full bg-amber-50 px-3 py-1">업무지시 초안 최적화</span><span className="rounded-full bg-amber-50 px-3 py-1">선택형 의사결정</span><span className="rounded-full bg-amber-50 px-3 py-1">성과기준 재해석 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">8단계 전달</span></div>
     </section>
 
     <Card title="1. 6단계 실행계획 확인" tone="amber">
@@ -458,14 +548,14 @@ export function V41TaskPriorityFlowLab() {
         <SummaryLine label="실행관리 주기" value={executionCycle} />
         <SummaryLine label="업무과제 유형" value={state.managementTaskType} />
         <SummaryLine label="관리할 업무과제" value={state.managementTask} />
-        <SummaryLine label="업무산출물" value={displayOutput} />
+        <SummaryLine label="업무산출물" value={outputForInstruction} />
         <SummaryLine label="기록 위치" value={state.outputLocation} />
         <SummaryLine label="완료 기준" value={displayCompletion} />
         <SummaryLine label="확인 증거" value={evidence} />
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950"><p className="font-black">최종 선택 업무 단위</p><ul className="mt-2 list-disc space-y-1 pl-4">{workItems.length ? workItems.map((item) => <li key={item}>{item}</li>) : <li>미작성</li>}</ul></div>
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700"><p className="font-black text-slate-900">업무별 완료 기준</p><ul className="mt-2 list-disc space-y-1 pl-4">{criteria.length ? criteria.map((item) => <li key={item}>{item}</li>) : <li>미작성</li>}</ul></div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700"><p className="font-black text-slate-900">업무별 완료 기준</p><ul className="mt-2 list-disc space-y-1 pl-4">{workItems.length ? workItems.map((item, index) => <li key={item}>{criterionForWorkItem(item, criteria, index)}</li>) : <li>미작성</li>}</ul></div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700"><p className="font-black text-slate-900">6단계에서 제외한 업무</p><ul className="mt-2 list-disc space-y-1 pl-4">{excluded.length ? excluded.map((item) => <li key={item}>{item}</li>) : <li>미작성</li>}</ul></div>
       </div>
       <button type="button" className={`rounded-xl px-4 py-2 text-sm font-black ${state.step7ExecutionPlanConfirmed ? 'bg-emerald-700 text-white' : 'bg-amber-700 text-white'}`} onClick={() => update({ step7ExecutionPlanConfirmed: true })}>{state.step7ExecutionPlanConfirmed ? '이 실행계획으로 진행 중' : '이 실행계획으로 7단계 진행하기'}</button>
@@ -475,7 +565,7 @@ export function V41TaskPriorityFlowLab() {
       <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">직접 순서표를 쓰지 말고 먼저 실행 순서의 기준을 고릅니다. 필요하면 AI 추천안을 적용한 뒤 팀장이 최종 선택합니다.</div>
       <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={applyAiDecisionRecommendation}>AI로 실행방식 3안 추천받기</button><button type="button" className="rounded-xl border border-cyan-200 bg-white px-4 py-2 text-sm font-black text-cyan-800" onClick={buildDecisionDrafts}>선택한 결정으로 실행 초안 만들기</button></div>
       <div className="grid gap-3 md:grid-cols-2">
-        {SEQUENCE_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={sequenceOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ selectedSequenceOption: option.id, sequenceDecisionType: '팀장 선택' })} />)}
+        {SEQUENCE_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={sequenceOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ selectedSequenceOption: option.id, sequenceDecisionType: '팀장 선택', step7AiPrompt: '' })} />)}
       </div>
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.orderedWorkSteps || sequenceDraft}</div>
     </Card>
@@ -500,16 +590,16 @@ export function V41TaskPriorityFlowLab() {
 
     <Card title="4. 일정과 점검방식 결정하기" tone="cyan">
       <div className="grid gap-3 md:grid-cols-2">
-        {CHECKPOINT_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={checkpointOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ checkpointDecisionType: option.id })} />)}
+        {CHECKPOINT_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={checkpointOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ checkpointDecisionType: option.id, step7AiPrompt: '' })} />)}
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <p className="text-sm font-black text-slate-950">확인할 증거 선택</p>
-          <div className="mt-3 grid gap-2">{EVIDENCE_CHECKS.map((item) => <MultiCheck key={item} checked={selectedEvidence.includes(item)} label={item} onChange={() => update({ selectedEvidenceChecks: toggle(selectedEvidence, item, 4) })} />)}</div>
+          <div className="mt-3 grid gap-2">{EVIDENCE_CHECKS.map((item) => <MultiCheck key={item} checked={selectedEvidence.includes(item)} label={item} onChange={() => update({ selectedEvidenceChecks: toggle(selectedEvidence, item, 4), step7AiPrompt: '' })} />)}</div>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <p className="text-sm font-black text-slate-950">중간 확인 질문 선택</p>
-          <div className="mt-3 grid gap-2">{CHECKPOINT_QUESTIONS.map((item) => <MultiCheck key={item} checked={selectedQuestions.includes(item)} label={item} onChange={() => update({ selectedCheckpointQuestions: toggle(selectedQuestions, item, 3) })} />)}</div>
+          <div className="mt-3 grid gap-2">{CHECKPOINT_QUESTIONS.map((item) => <MultiCheck key={item} checked={selectedQuestions.includes(item)} label={item} onChange={() => update({ selectedCheckpointQuestions: toggle(selectedQuestions, item, 3), step7AiPrompt: '' })} />)}</div>
         </div>
       </div>
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.scheduleCheckpoints || checkpointDraft}</div>
@@ -518,17 +608,18 @@ export function V41TaskPriorityFlowLab() {
     <Card title="5. 업무량 조정: 이번 주기에는 잠시 줄일 일" tone="amber">
       <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">새 일을 추가하는 만큼 줄일 일을 정합니다. 최대 3개까지 선택할 수 있습니다.</div>
       <div className="grid gap-2 md:grid-cols-2">
-        {REDUCE_TASKS.map((task) => <MultiCheck key={task} checked={reduceTasks.includes(task)} label={task} onChange={() => update({ selectedReduceTasks: toggle(reduceTasks, task, 3) })} />)}
+        {REDUCE_TASKS.map((task) => <MultiCheck key={task} checked={reduceTasks.includes(task)} label={task} onChange={() => update({ selectedReduceTasks: toggle(reduceTasks, task, 3), step7AiPrompt: '' })} />)}
       </div>
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.workloadAdjustments || workloadDraft}</div>
     </Card>
 
     <Card title="6. AI로 업무지시 초안 만들기" tone="violet">
       <div className="grid gap-3 md:grid-cols-4">
-        {INSTRUCTION_TONES.map((tone) => <ChoiceCard key={tone} selected={(state.step7InstructionTone || INSTRUCTION_TONES[0]) === tone} title={tone} description="AI 초안의 표현 방식을 선택합니다." onClick={() => update({ step7InstructionTone: tone })} />)}
+        {INSTRUCTION_TONES.map((tone) => <ChoiceCard key={tone} selected={(state.step7InstructionTone || INSTRUCTION_TONES[0]) === tone} title={tone} description="AI 초안의 표현 방식을 선택합니다." onClick={() => update({ step7InstructionTone: tone, step7AiPrompt: '' })} />)}
       </div>
-      <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>선택한 결정으로 업무지시 프롬프트 만들기</button><button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800" onClick={copyAiPrompt}>프롬프트 복사하기</button></div>
-      <div className="grid gap-3 md:grid-cols-2"><Field label="AI에게 입력할 프롬프트" value={state.step7AiPrompt ?? ''} onChange={(value) => update({ step7AiPrompt: value })} placeholder="프롬프트 만들기 버튼을 누르면 생성됩니다." minHeight="min-h-64" /><Field label="AI 업무지시 초안 붙여넣기" value={state.step7AiResult ?? ''} onChange={(value) => update({ step7AiResult: value })} placeholder="AI가 작성한 업무지시 초안을 붙여넣습니다." minHeight="min-h-64" /></div>
+      <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-xs font-bold leading-5 text-violet-950">현재 말투 선택: {state.step7InstructionTone || INSTRUCTION_TONES[0]} · 선택값을 바꾸면 프롬프트를 다시 만들어 주세요.</div>
+      <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>업무지시 초안 최적화 프롬프트 만들기</button><button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800" onClick={copyAiPrompt}>프롬프트 복사하기</button></div>
+      <div className="grid gap-3 md:grid-cols-2"><Field label="AI에게 입력할 프롬프트" value={state.step7AiPrompt ?? ''} onChange={(value) => update({ step7AiPrompt: value })} placeholder="프롬프트 만들기 버튼을 누르면 업무지시 초안 생성에 최적화된 프롬프트가 생성됩니다." minHeight="min-h-64" /><Field label="AI 업무지시 초안 붙여넣기" value={state.step7AiResult ?? ''} onChange={(value) => update({ step7AiResult: value })} placeholder="AI가 작성한 업무지시 초안을 붙여넣습니다." minHeight="min-h-64" /></div>
     </Card>
 
     <Card title="7. 사람 검토 후 최종 업무지시 확정" tone="emerald">
