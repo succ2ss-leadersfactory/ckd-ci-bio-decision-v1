@@ -7,6 +7,7 @@ const V41_TASK_BOUNDARY_MARKERS = [
   '업무 경계·병목 대응',
   '7단계 실행 흐름 확인',
   '7단계 전달 메모 확인',
+  '7단계 전달 메모 정제',
   '업무 경계 정하기',
   '병목 신호 확인',
   '에스컬레이션 기준 정하기',
@@ -72,10 +73,82 @@ function compact(value?: string | string[]) {
   return value?.trim() || '미작성';
 }
 
-function short(value?: string | string[], max = 220) {
+function short(value?: string | string[], max = 180) {
   const text = compact(value).replace(/\s+/g, ' ');
   if (text === '미작성') return text;
   return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function lines(value?: string | string[]) {
+  return compact(value)
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[-•]\s*/, '').trim())
+    .filter(Boolean)
+    .filter((line) => line !== '[8단계 전달 메모]')
+    .filter((line) => line !== '[8단계 확정 메모]');
+}
+
+function firstLine(value?: string | string[], fallback = '미작성') {
+  return lines(value)[0] || fallback;
+}
+
+function extractAfterColon(source: string, labels: string[]) {
+  const candidates = lines(source);
+  const found = candidates.find((line) => labels.some((label) => line.startsWith(label)));
+  if (!found) return '';
+  const index = found.indexOf(':');
+  return index >= 0 ? found.slice(index + 1).trim() : found.trim();
+}
+
+function cleanListText(value: string, fallback: string) {
+  const text = value
+    .replace(/\s+/g, ' ')
+    .replace(/원문 후보:.*$/g, '')
+    .replace(/주의:.*$/g, '')
+    .trim();
+  if (!text) return fallback;
+  return text.length > 150 ? `${text.slice(0, 150)}…` : text;
+}
+
+function buildCleanHandoff(state: BoundaryState) {
+  const raw = compact(state.step7HandoffToStep8);
+  const boundary = cleanListText(
+    extractAfterColon(raw, ['업무 경계가 필요한 부분', '업무 경계', '선택한 경계·병목 후보']) || firstLine(state.selectedWorkItems, '업무 범위와 제외 업무의 경계'),
+    '업무 범위와 제외 업무의 경계',
+  );
+  const bottleneck = cleanListText(
+    extractAfterColon(raw, ['병목이 예상되는 부분', '병목 후보', '병목']) || '중간 확인 시점까지 산출물 등록, 누락 표시, 다음 행동 입력이 확인되지 않는 경우',
+    '산출물 등록·누락 표시·다음 행동 입력 지연',
+  );
+  const authority = cleanListText(
+    extractAfterColon(raw, ['담당자 권한 밖 이슈', '권한 밖·협조 이슈', '권한 밖 이슈']) || '시스템 권한, 데이터 접근, 부서 협조, 기록 위치 변경',
+    '시스템 권한, 데이터 접근, 부서 협조, 기록 위치 변경',
+  );
+  const escalation = cleanListText(
+    extractAfterColon(raw, ['에스컬레이션 후보', '에스컬레이션 기준']) || '반복 지연, 산출물 미등록, 필수 기록 누락, 역할 충돌',
+    '반복 지연, 산출물 미등록, 필수 기록 누락, 역할 충돌',
+  );
+  const observation = cleanListText(
+    extractAfterColon(raw, ['9단계로 넘길 관찰 사실 후보', '관찰 사실 후보']) || '반복 지연, 산출물 미등록, 필수 기록 누락, 지원 요청 미표시',
+    '반복 지연, 산출물 미등록, 필수 기록 누락, 지원 요청 미표시',
+  );
+
+  return {
+    boundary,
+    bottleneck,
+    authority,
+    escalation,
+    observation,
+    memo: [
+      '[8단계 전달 메모]',
+      `업무 경계 후보: ${boundary}`,
+      `병목 후보: ${bottleneck}`,
+      `권한 밖·협조 이슈: ${authority}`,
+      `에스컬레이션 후보: ${escalation}`,
+      `9단계 관찰 사실 후보: ${observation}`,
+      '주의: 이 메모는 사람 평가가 아니라 업무 경계와 프로세스 병목 후보입니다.',
+    ].join('\n'),
+  };
 }
 
 function Card({ title, children, tone = 'slate' }: { title: string; children: ReactNode; tone?: 'slate' | 'cyan' | 'amber' | 'rose' | 'emerald' }) {
@@ -104,23 +177,24 @@ export function V41TaskBoundaryCoordinationLab() {
   const [state, setState] = useStored<BoundaryState>(STORAGE_KEY, DEFAULT_STATE);
   const update = (patch: Partial<BoundaryState>) => setState({ ...state, ...patch });
   const executionCycle = state.executionCycle || '선택한 실행관리 주기';
-  const handoff = compact(state.step7HandoffToStep8);
+  const cleanedHandoff = buildCleanHandoff(state);
 
   const makeBoundary = () => {
     const memberTasks = state.memberTasks || MEMBER_TASK_OPTIONS.slice(0, 3).map((item) => `- ${item}`).join('\n');
     const leaderCheckTasks = state.leaderCheckTasks || LEADER_CHECK_OPTIONS.slice(0, 3).map((item) => `- ${item}`).join('\n');
     const coordinationTasks = state.coordinationTasks || COORDINATION_OPTIONS.slice(0, 2).map((item) => `- ${item}`).join('\n');
-    const riskBoundary = state.riskBoundary || '고객 의도 단정, 승인자료 범위 밖 표현, 내부 수치 공유, 권한 없는 데이터 접근은 팀원이 단독으로 처리하지 않습니다.';
-    const bottleneckSignal = state.bottleneckSignal || '산출물 미등록, 완료 기준 불명확, 역할 충돌, 일정 지연, 시스템 권한 부족이 반복되면 병목 신호로 봅니다.';
+    const riskBoundary = state.riskBoundary || `팀원 단독으로 처리하지 않을 경계: ${cleanedHandoff.boundary}. 승인자료 범위 밖 표현, 내부 수치 공유, 권한 없는 데이터 접근은 팀장이 확인합니다.`;
+    const bottleneckSignal = state.bottleneckSignal || `병목 신호: ${cleanedHandoff.bottleneck}. 같은 신호가 반복되면 업무 흐름 문제로 확인합니다.`;
     const bottleneckResponsePlan = state.bottleneckResponsePlan || '중간 확인일에 병목 신호를 확인하고, 팀원이 해결할 수 있는 일은 즉시 조정하며 권한·자료·부서 협조 이슈는 팀장이 연결합니다.';
-    const escalationCriteria = state.escalationCriteria || '동일 병목이 2회 이상 반복되거나 마감 전까지 산출물 위치·완료 기준·담당이 확정되지 않으면 팀장에게 에스컬레이션합니다.';
-    const leaderInterventionCriteria = state.leaderInterventionCriteria || '팀장은 업무 기준이 흔들리거나 승인자료·권한·일정 충돌이 생길 때 개입합니다. 개인 태도 판단은 하지 않습니다.';
+    const escalationCriteria = state.escalationCriteria || `에스컬레이션 후보: ${cleanedHandoff.escalation}. 동일 병목이 반복되거나 마감 전까지 산출물 위치·완료 기준·담당이 확정되지 않으면 팀장에게 올립니다.`;
+    const leaderInterventionCriteria = state.leaderInterventionCriteria || `팀장은 ${cleanedHandoff.authority}처럼 담당자 권한 밖 이슈가 생길 때 개입합니다. 개인 태도 판단은 하지 않습니다.`;
     const taskIssueSeparation = state.taskIssueSeparation || '역할 불명확, 권한 부족, 시스템 접근, 산출물 위치 미정, 일정 충돌은 사람 문제가 아니라 업무관리 이슈로 남깁니다.';
     const midCheckQuestion = state.midCheckQuestion || '중간 확인일에 산출물 위치, 누락 여부, 다음 행동 여부, 권한 밖 이슈를 확인합니다.';
-    const peopleSignal = state.peopleSignal || '9단계에는 평가가 아니라 관찰 사실만 넘깁니다. 예: 반복 지연, 산출물 미등록, 필수 기록 누락, 지원 요청 미표시.';
+    const peopleSignal = state.peopleSignal || `9단계에는 평가가 아니라 관찰 사실만 넘깁니다. 후보: ${cleanedHandoff.observation}.`;
     const boundaryDeclaration = state.boundaryDeclaration || `${executionCycle} 동안 팀원은 정해진 순서대로 실행과 기록을 남기고, 팀장은 중간 확인에서 병목과 권한 밖 이슈를 연결합니다. 사람 판단은 9단계에서 관찰 사실과 해석을 분리해 다룹니다.`;
 
     update({
+      step7HandoffToStep8: cleanedHandoff.memo,
       memberTasks,
       leaderCheckTasks,
       coordinationTasks,
@@ -160,16 +234,19 @@ export function V41TaskBoundaryCoordinationLab() {
 
     <Card title="1. 7단계 전달 메모 확인" tone="cyan">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        <p className="mb-2 text-xs font-black text-cyan-700">8단계 의사결정용 정제 요약 · 7단계 원문 숨김</p>
         <SummaryLine label="실행관리 주기" value={executionCycle} />
-        <SummaryLine label="관리할 업무과제" value={state.managementTask} />
-        <SummaryLine label="최종 선택 업무 단위" value={state.selectedWorkItems} />
-        <SummaryLine label="업무 순서" value={state.orderedWorkSteps} />
-        <SummaryLine label="역할과 책임" value={state.roleResponsibilityMap} />
-        <SummaryLine label="일정과 체크포인트" value={state.scheduleCheckpoints} />
-        <SummaryLine label="잠시 줄일 일" value={state.workloadAdjustments || state.selectedReduceTasks} />
-        <SummaryLine label="최종 업무지시" value={state.finalTaskInstruction} />
+        <SummaryLine label="8단계로 넘길 업무" value={state.managementTask} />
+        <SummaryLine label="업무 경계 후보" value={cleanedHandoff.boundary} />
+        <SummaryLine label="병목 후보" value={cleanedHandoff.bottleneck} />
+        <SummaryLine label="권한 밖·협조 이슈" value={cleanedHandoff.authority} />
+        <SummaryLine label="에스컬레이션 후보" value={cleanedHandoff.escalation} />
+        <SummaryLine label="9단계 관찰 사실 후보" value={cleanedHandoff.observation} />
       </div>
-      <Field label="7단계에서 넘어온 8단계 전달 메모" help="업무 경계, 병목 예상, 권한 밖 이슈, 에스컬레이션 후보만 확인합니다. 원문을 다시 성과기준이나 사람평가로 확장하지 않습니다." value={handoff === '미작성' ? '' : handoff} onChange={(value) => update({ step7HandoffToStep8: value })} placeholder="7단계에서 만든 전달 메모가 여기에 남습니다." minHeight="min-h-32" />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={() => update({ step7HandoffToStep8: cleanedHandoff.memo })}>7단계 전달 메모 정제하기</button>
+      </div>
+      <Field label="정제된 8단계 전달 메모" help="업무 경계, 병목 후보, 권한 밖 이슈, 에스컬레이션 후보, 9단계 관찰 사실만 남깁니다. 7단계 업무지시 원문은 다시 보여주지 않습니다." value={cleanedHandoff.memo} onChange={(value) => update({ step7HandoffToStep8: value })} placeholder="7단계에서 만든 전달 메모가 정제되어 여기에 남습니다." minHeight="min-h-32" />
     </Card>
 
     <Card title="2. 업무 경계 정하기" tone="cyan">
