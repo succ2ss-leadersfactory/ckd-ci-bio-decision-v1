@@ -17,6 +17,8 @@ const V41_UX_COMPONENT_MARKERS = [
   '업무관리 실행계획',
   '업무 순서·업무지시',
   '업무 경계·병목 대응',
+  '사람관리 1: 대상 선택',
+  '사람관리 2: 1on1 실천',
   '1on1 대상 고르기',
   '1on1 첫 문장',
   '업무지시 만들기',
@@ -44,8 +46,8 @@ const v41FlowItems = [
   { step: 6, label: '업무관리 실행계획', shortLabel: '실행계획', icon: '🧩' },
   { step: 7, label: '업무 순서·업무지시', shortLabel: '업무지시', icon: '🧭' },
   { step: 8, label: '업무 경계·병목 대응', shortLabel: '경계·병목', icon: '🧱' },
-  { step: 9, label: '1on1 대상 고르기', shortLabel: '1on1 대상', icon: '👤' },
-  { step: 10, label: '1on1 첫 문장', shortLabel: '첫 문장', icon: '💬' },
+  { step: 9, label: '사람관리 1: 대상 선택', shortLabel: '사람관리 1', icon: '👤' },
+  { step: 10, label: '사람관리 2: 1on1 실천', shortLabel: '사람관리 2', icon: '💬' },
 ];
 
 function v41ParticipantIdentityReady() {
