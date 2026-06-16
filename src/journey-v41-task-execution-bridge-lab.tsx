@@ -5,7 +5,13 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   'V41TaskExecutionBridgeLab',
   '업무관리 실행계획 만들기',
   '6단계: 관리할 업무과제와 산출물 정하기',
+  '성과기준이 업무로 전환되는 방식',
   '업무과제 유형 선택',
+  '기준 정렬형',
+  '산출물 작성형',
+  '기록·현황 정리형',
+  '누락·품질 보완형',
+  '다음 행동 연결형',
   '추천 업무과제 후보 선택',
   '추천 관리 기간',
   '이번 주기 관리할 업무과제',
@@ -40,7 +46,7 @@ type AiExpansionState = {
 };
 
 type ExecutionCycle = '1주' | '2주' | '4주' | '월간' | '분기';
-type ManagedTaskType = '산출물 작성형' | '기준 통일형' | '누락 보완형' | '기록 정리형' | '확인 체계형';
+type ManagedTaskType = '기준 정렬형' | '산출물 작성형' | '기록·현황 정리형' | '누락·품질 보완형' | '다음 행동 연결형';
 
 type TaskExecutionState = {
   confirmedTeamStandard: string;
@@ -87,12 +93,12 @@ const TASK_STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const DEFAULT_PERFORMANCE_STATE: PerformanceState = {};
 const DEFAULT_AI_EXPANSION_STATE: AiExpansionState = { prompt: '', result: '', review: '' };
 const EXECUTION_CYCLES: ExecutionCycle[] = ['1주', '2주', '4주', '월간', '분기'];
-const MANAGED_TASK_TYPES: Array<{ type: ManagedTaskType; description: string; recommendedCycle: ExecutionCycle }> = [
-  { type: '산출물 작성형', description: '새 결과물을 만들거나 기존 결과물을 한 화면으로 정리합니다.', recommendedCycle: '2주' },
-  { type: '기준 통일형', description: '기록 기준, 분류 기준, 입력 기준처럼 업무 기준을 맞춥니다.', recommendedCycle: '2주' },
-  { type: '누락 보완형', description: '빠진 항목을 찾아 보완합니다.', recommendedCycle: '1주' },
-  { type: '기록 정리형', description: '흩어진 기록을 정해진 기준에 맞게 정리합니다.', recommendedCycle: '1주' },
-  { type: '확인 체계형', description: '작성 여부와 누락 여부를 볼 수 있는 확인 체계를 만듭니다.', recommendedCycle: '4주' },
+const MANAGED_TASK_TYPES: Array<{ type: ManagedTaskType; description: string; recommendedCycle: ExecutionCycle; logic: string }> = [
+  { type: '기준 정렬형', description: 'CSF를 업무 기준, 입력 기준, 분류 기준으로 바꿉니다.', recommendedCycle: '2주', logic: 'CSF → 업무 기준' },
+  { type: '산출물 작성형', description: 'KPI 확인에 필요한 새 결과물이나 관리표를 만듭니다.', recommendedCycle: '2주', logic: 'KPI → 확인 증거물' },
+  { type: '기록·현황 정리형', description: '흩어진 CRM·고객·활동 기록을 KPI 확인 가능한 형태로 정리합니다.', recommendedCycle: '1주', logic: '실행 흔적 → 확인 가능한 현황' },
+  { type: '누락·품질 보완형', description: '빠진 항목, 불명확한 기록, 품질이 낮은 산출물을 보완합니다.', recommendedCycle: '1주', logic: '성과 저해 요인 → 보완 업무' },
+  { type: '다음 행동 연결형', description: '기록과 산출물을 다음 행동, Follow-up, 후속 확인 업무로 연결합니다.', recommendedCycle: '2주', logic: '기록 → 다음 행동' },
 ];
 const DEFAULT_TASK_STATE: TaskExecutionState = {
   confirmedTeamStandard: '',
@@ -166,8 +172,8 @@ function Field({ label, help, value, onChange, placeholder, minHeight = 'min-h-2
 
 function cycleHelp(cycle: ExecutionCycle) {
   const map: Record<ExecutionCycle, string> = {
-    '1주': '기존 기록 정리, 누락 확인, 짧은 보완 업무에 적합합니다.',
-    '2주': '새 산출물 작성, 기준 통일, 첫 실행 확인에 적합한 기본 실습 주기입니다.',
+    '1주': '기록·현황 정리, 누락·품질 보완처럼 짧게 확인하고 바로 정리할 업무에 적합합니다.',
+    '2주': '기준 정렬, 산출물 작성, 다음 행동 연결처럼 만들고 1차 적용까지 확인할 업무에 적합합니다.',
     '4주': '반복 운영, 패턴 확인, 누적 기록 관리에 적합합니다.',
     '월간': '월간 보고, 정기 점검, 팀 단위 현황 정리에 적합합니다.',
     '분기': '큰 과제의 중간 정리, 전략 과제 단위 산출물 정의에 적합합니다.',
@@ -175,40 +181,48 @@ function cycleHelp(cycle: ExecutionCycle) {
   return map[cycle];
 }
 
-function taskTypeHelp(type: ManagedTaskType) {
+function normalizeTaskType(value: string): ManagedTaskType | '' {
+  if (value === '기준 통일형') return '기준 정렬형';
+  if (value === '기록 정리형') return '기록·현황 정리형';
+  if (value === '누락 보완형') return '누락·품질 보완형';
+  if (value === '확인 체계형') return '';
+  return MANAGED_TASK_TYPES.some((item) => item.type === value) ? value as ManagedTaskType : '';
+}
+
+function taskTypeHelp(type: ManagedTaskType | '') {
   return MANAGED_TASK_TYPES.find((item) => item.type === type);
 }
 
 function taskCandidates(type: ManagedTaskType | '', kpi: string, csf: string, initiative: string) {
   const base = textOrEmpty(initiative) || `${kpi} 확인`;
   const candidates: Record<ManagedTaskType, string[]> = {
+    '기준 정렬형': [
+      `${csf}를 놓치지 않도록 입력·분류·작성 기준을 정리한다.`,
+      `${base}를 진행하기 위한 필수 항목과 판단 기준을 맞춘다.`,
+      `${kpi} 확인에 필요한 기록 기준을 팀 내에서 통일한다.`,
+    ],
     '산출물 작성형': [
       `${base}에 필요한 업무산출물을 작성하고 확인한다.`,
       `${kpi} 확인에 필요한 관리표를 작성한다.`,
-      `${base} 관련 기록을 한 화면에서 볼 수 있는 확인표로 정리한다.`,
+      `${base} 관련 기록을 한 화면에서 볼 수 있는 산출물로 정리한다.`,
     ],
-    '기준 통일형': [
-      `${csf}를 놓치지 않도록 입력·분류 기준을 정리한다.`,
-      `${base}를 진행하기 위한 필수 항목과 작성 기준을 맞춘다.`,
-      `${kpi} 확인에 필요한 기록 기준을 팀 내에서 통일한다.`,
-    ],
-    '누락 보완형': [
-      `${kpi} 확인에 필요한 누락 항목을 찾아 보완한다.`,
-      `${base} 진행 과정에서 빠진 필수 기록을 정리한다.`,
-      `${csf}와 연결된 필수 항목의 누락 여부를 확인하고 보완한다.`,
-    ],
-    '기록 정리형': [
+    '기록·현황 정리형': [
       `기존 기록을 ${kpi} 확인 기준에 맞게 정리한다.`,
       `${base}와 관련된 기존 CRM·공유 시트 기록을 정리한다.`,
-      `${csf}를 반영할 수 있도록 기존 기록 항목을 다시 정리한다.`,
+      `담당자별 현황을 ${csf} 기준에 맞게 한 화면으로 정리한다.`,
     ],
-    '확인 체계형': [
-      `${kpi} 작성·누락 여부를 확인할 수 있는 관리체계를 만든다.`,
-      `${base}의 진행 여부를 확인할 수 있는 체크표를 만든다.`,
-      `${csf}가 업무산출물에 반영되는지 확인할 수 있는 점검표를 만든다.`,
+    '누락·품질 보완형': [
+      `${kpi} 확인에 필요한 누락 항목과 불명확한 기록을 보완한다.`,
+      `${base} 진행 과정에서 빠진 필수 기록과 품질이 낮은 메모를 정리한다.`,
+      `${csf}와 연결된 필수 항목의 누락 여부를 확인하고 보완한다.`,
+    ],
+    '다음 행동 연결형': [
+      `${base} 결과를 다음 행동과 Follow-up 예정일로 연결한다.`,
+      `${kpi} 확인에 필요한 기록을 후속 확인 업무로 연결한다.`,
+      `${csf}를 놓치지 않도록 고객 반응·다음 행동·후속 확인을 한 흐름으로 정리한다.`,
     ],
   };
-  return type ? candidates[type] : [];
+  return type ? candidates[type] ?? [] : [];
 }
 
 export function V41TaskExecutionBridgeLab() {
@@ -226,8 +240,8 @@ export function V41TaskExecutionBridgeLab() {
   const selectedCsf = rawCsf || '5단계에서 선택한 팀 CSF';
   const selectedKpi = rawKpi || '5단계에서 선택한 팀 KPI';
   const selectedInitiative = rawInitiative || '5단계에서 선택한 세부 추진과제 후보';
-  const selectedType = state.managementTaskType;
-  const selectedTypeMeta = selectedType ? taskTypeHelp(selectedType) : undefined;
+  const selectedType = normalizeTaskType(state.managementTaskType);
+  const selectedTypeMeta = taskTypeHelp(selectedType);
   const candidates = taskCandidates(selectedType, selectedKpi, selectedCsf, selectedInitiative);
   const hasBaseCriteria = Boolean(rawTeamTask && rawCsf && rawKpi);
   const hasManagementTask = Boolean(textOrEmpty(state.managementTask));
@@ -246,13 +260,15 @@ export function V41TaskExecutionBridgeLab() {
   const suggestedManagementTask = candidates[0] || (rawInitiative
     ? `${rawInitiative}를 이번 주기에서 관리 가능한 업무과제로 구체화한다.`
     : `${selectedKpi} 확인에 필요한 업무과제를 하나 정한다.`);
-  const suggestedManagementReason = `${selectedKpi}를 확인할 수 있는 업무산출물을 만들기 위해 이번 관리 대상을 먼저 좁힌다.`;
-  const suggestedIncludedScope = '이번 관리 범위에 실제로 작성·정리·확인할 업무를 씁니다. 예: 필수 항목 정리, 기존 자료 확인, 산출물 작성, 누락 확인.';
-  const suggestedExcludedScope = '이번 관리 범위에서 제외할 내용을 씁니다. 예: 개인별 코칭, 고객 설득 전략, 역할 배정, 세부 일정표, 병목 대응.';
+  const suggestedManagementReason = selectedTypeMeta
+    ? `${selectedTypeMeta.logic} 관점에서 ${selectedKpi}를 확인할 수 있는 업무산출물로 전환하기 위해 이 과제를 관리한다.`
+    : `${selectedKpi}를 확인할 수 있는 업무산출물을 만들기 위해 이번 관리 대상을 먼저 좁힌다.`;
+  const suggestedIncludedScope = '이번 관리 범위에 실제로 작성·정리·확인·연결할 업무를 씁니다. 예: 기준 정리, 기존 자료 확인, 산출물 작성, 누락 보완, 다음 행동 연결.';
+  const suggestedExcludedScope = '이번 관리 범위에서 제외할 내용을 씁니다. 예: 개인별 코칭, 고객 설득 전략, 역할 배정, 세부 일정표, 병목 대응, 체크포인트 설계.';
   const managementTask = textOrEmpty(state.managementTask) || suggestedManagementTask;
   const suggestedOutput = `${managementTask}의 결과로 남길 업무산출물`;
   const suggestedLocation = 'CRM 기록, 팀 공유 시트, 주간 업무관리 메모 중 하나로 통일';
-  const suggestedCompletion = `${managementTask}와 관련된 기록 또는 결과물이 정해진 위치에 남아 있고, 누락 여부를 확인할 수 있어야 한다.`;
+  const suggestedCompletion = `${managementTask}와 관련된 기록 또는 결과물이 정해진 위치에 남아 있고, 누락 여부와 다음 행동 여부를 확인할 수 있어야 한다.`;
   const suggestedKpiConnection = `이 산출물은 ${selectedKpi} 확인에 필요한 기록 또는 결과물이어야 한다.`;
   const suggestedCsfConnection = `업무분해 과정에서 ${selectedCsf}를 놓치지 않도록 필수 항목과 완료 기준을 정한다.`;
 
@@ -260,14 +276,15 @@ export function V41TaskExecutionBridgeLab() {
     '업무산출물에 반드시 들어갈 항목을 정한다.',
     '기존 기록·자료 중 활용할 수 있는 것을 확인한다.',
     '산출물을 남길 위치와 입력 기준을 정한다.',
-    '실행 후 산출물을 작성한다.',
-    '완료 기준에 맞게 누락 여부를 확인한다.',
+    '실행 후 산출물을 작성하거나 기존 기록을 보완한다.',
+    '완료 기준에 맞게 누락 여부와 다음 행동 연결 여부를 확인한다.',
   ].join('\n');
 
   const defaultWorkCriteria = [
     '필수 항목이 빠지지 않았다.',
     '정해진 위치에 산출물이 남았다.',
     '5단계 KPI 확인에 필요한 흔적이 보인다.',
+    'CSF를 놓치지 않도록 기준·기록·산출물·다음 행동이 연결되어 있다.',
     '7단계에서 순서·역할·일정으로 바꿀 수 있을 만큼 업무 단위가 분명하다.',
   ].join('\n');
 
@@ -329,6 +346,7 @@ export function V41TaskExecutionBridgeLab() {
         criteriaMaterial,
         '',
         `[업무과제 유형]\n${selectedType || '미선택'}`,
+        `[성과기준이 업무로 전환되는 방식]\n${selectedTypeMeta?.logic || '미선택'}`,
         `[추천 관리 기간]\n${state.executionCycle} - ${cycleHelp(state.executionCycle)}\n실제 일정과 체크포인트는 7단계에서 확정합니다.`,
         `[이번 관리할 업무과제]\n${textOrEmpty(state.managementTask)}`,
         `[이 과제를 선택한 이유]\n${textOrEmpty(state.managementTaskReason) || suggestedManagementReason}`,
@@ -363,7 +381,7 @@ export function V41TaskExecutionBridgeLab() {
   };
 
   const makeWorkBreakdownHandoff = () => {
-    const managementTaskType = state.managementTaskType;
+    const managementTaskType = selectedType;
     const managementTaskValue = textOrEmpty(state.managementTask) || suggestedManagementTask;
     const managementTaskReason = textOrEmpty(state.managementTaskReason) || suggestedManagementReason;
     const includedWorkScope = textOrEmpty(state.includedWorkScope) || suggestedIncludedScope;
@@ -375,12 +393,13 @@ export function V41TaskExecutionBridgeLab() {
     const outputCsfConnection = textOrEmpty(state.outputCsfConnection) || suggestedCsfConnection;
     const selectedWorkItems = textOrEmpty(state.selectedWorkItems) || textOrEmpty(state.workBreakdownDraft) || defaultWorkItems;
     const workItemCompletionCriteria = textOrEmpty(state.workItemCompletionCriteria) || defaultWorkCriteria;
-    const excludedWorkItems = textOrEmpty(state.excludedWorkItems) || '7단계에서 다룰 업무 순서·역할·일정, 8단계에서 다룰 병목·에스컬레이션, 9단계 이후 사람관리 판단은 6단계 업무분해에서 제외한다.';
+    const excludedWorkItems = textOrEmpty(state.excludedWorkItems) || '7단계에서 다룰 업무 순서·역할·일정, 8단계에서 다룰 병목·에스컬레이션, 9단계 이후 사람관리 판단은 6단계 업무분해에서 제외한다. 확인 체계의 세부 체크포인트 설계는 7단계에서 다룬다.';
     const aiReview = [textOrEmpty(state.aiResult), textOrEmpty(state.humanReview)].filter(Boolean).join('\n\n[사람 검토 보완]\n');
     const workItems = firstLines(selectedWorkItems, 3);
     const step6HandoffToStep7 = [
       '[6단계 전달 메모]',
       `업무과제 유형: ${managementTaskType || '미선택'}`,
+      `성과기준이 업무로 전환되는 방식: ${selectedTypeMeta?.logic || '미선택'}`,
       `추천 관리 기간: ${state.executionCycle} - ${cycleHelp(state.executionCycle)} (실제 일정과 체크포인트는 7단계에서 확정)`,
       `이번 관리할 업무과제: ${managementTaskValue}`,
       `선택 이유: ${managementTaskReason}`,
@@ -406,6 +425,7 @@ export function V41TaskExecutionBridgeLab() {
       '',
       '[이번 관리할 업무과제]',
       `업무과제 유형: ${managementTaskType || '미선택'}`,
+      `성과기준이 업무로 전환되는 방식: ${selectedTypeMeta?.logic || '미선택'}`,
       `추천 관리 기간: ${state.executionCycle} - ${cycleHelp(state.executionCycle)}`,
       managementTaskValue,
       `선택 이유: ${managementTaskReason}`,
@@ -436,6 +456,7 @@ export function V41TaskExecutionBridgeLab() {
     ].filter(Boolean).join('\n');
     update({
       confirmedTeamStandard: criteriaMaterial,
+      managementTaskType: managementTaskType || '',
       managementTask: managementTaskValue,
       managementTaskReason,
       includedWorkScope,
@@ -464,8 +485,8 @@ export function V41TaskExecutionBridgeLab() {
     <section className="rounded-3xl border border-cyan-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-cyan-700">업무관리 실행계획 만들기</p>
       <h3 className="mt-1 text-xl font-black text-slate-950">6단계: 관리할 업무과제와 산출물 정하기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계 기준을 빈칸에 바로 쓰지 않습니다. 업무과제 유형과 추천 후보를 먼저 고른 뒤, 짧게 수정해 이번 관리할 업무과제를 정하고 업무산출물과 업무 단위로 바꿉니다.</p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-cyan-800"><span className="rounded-full bg-cyan-50 px-3 py-1">후보 선택형</span><span className="rounded-full bg-cyan-50 px-3 py-1">추천 관리 기간</span><span className="rounded-full bg-cyan-50 px-3 py-1">성과기준 재평가 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">업무분해</span><span className="rounded-full bg-cyan-50 px-3 py-1">7단계 전달</span></div>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">5단계 기준을 빈칸에 바로 쓰지 않습니다. 성과기준이 업무로 전환되는 방식을 먼저 고른 뒤, 추천 후보를 짧게 수정해 이번 관리할 업무과제를 정하고 업무산출물과 업무 단위로 바꿉니다.</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-cyan-800"><span className="rounded-full bg-cyan-50 px-3 py-1">후보 선택형</span><span className="rounded-full bg-cyan-50 px-3 py-1">성과기준→업무전환</span><span className="rounded-full bg-cyan-50 px-3 py-1">추천 관리 기간</span><span className="rounded-full bg-cyan-50 px-3 py-1">성과기준 재평가 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-cyan-50 px-3 py-1">7단계 전달</span></div>
     </section>
 
     <Card title="5단계 기준 확인" tone="cyan">
@@ -487,9 +508,9 @@ export function V41TaskExecutionBridgeLab() {
     </Card>
 
     <Card title="업무과제 유형 선택" tone="emerald">
-      <p className="text-sm font-bold leading-6 text-slate-600">자유롭게 쓰기 전에, 이번 관리할 업무가 어떤 유형인지 먼저 고릅니다. 유형을 선택하면 추천 업무과제 후보와 추천 관리 기간이 제안됩니다.</p>
+      <p className="text-sm font-bold leading-6 text-slate-600">이번 유형은 업무의 겉모양이 아니라, 5단계 성과기준이 업무로 전환되는 방식을 기준으로 나눕니다. 유형을 선택하면 추천 업무과제 후보와 추천 관리 기간이 제안됩니다.</p>
       <div className="grid gap-3 md:grid-cols-5">
-        {MANAGED_TASK_TYPES.map((item) => <button key={item.type} type="button" className={`rounded-2xl border p-3 text-left text-sm font-black ${state.managementTaskType === item.type ? 'border-emerald-300 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50 text-slate-700'}`} onClick={() => selectTaskType(item.type)}><span>{item.type}</span><span className="mt-2 block text-xs font-bold leading-5 text-slate-500">{item.description}</span><span className="mt-2 inline-block rounded-full bg-white px-2 py-1 text-xs font-black text-emerald-800">추천 {item.recommendedCycle}</span></button>)}
+        {MANAGED_TASK_TYPES.map((item) => <button key={item.type} type="button" className={`rounded-2xl border p-3 text-left text-sm font-black ${selectedType === item.type ? 'border-emerald-300 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50 text-slate-700'}`} onClick={() => selectTaskType(item.type)}><span>{item.type}</span><span className="mt-2 block text-xs font-bold leading-5 text-slate-500">{item.description}</span><span className="mt-2 block text-xs font-bold leading-5 text-emerald-700">{item.logic}</span><span className="mt-2 inline-block rounded-full bg-white px-2 py-1 text-xs font-black text-emerald-800">추천 {item.recommendedCycle}</span></button>)}
       </div>
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-xs font-bold leading-5 text-emerald-900">
         <p className="font-black">추천 관리 기간</p>
@@ -500,14 +521,14 @@ export function V41TaskExecutionBridgeLab() {
 
     <Card title="추천 업무과제 후보 선택" tone="emerald">
       <p className="text-sm font-bold leading-6 text-slate-600">후보 중 하나를 선택하면 아래 최종 문장에 자동 입력됩니다. 필요하면 현장 언어로 짧게 수정하세요.</p>
-      {!selectedType ? <p className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-900">먼저 업무과제 유형을 선택하세요.</p> : null}
+      {!selectedType ? <p className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-900">먼저 업무과제 유형을 선택하세요. 예전 저장값인 확인 체계형은 7단계 체크포인트 설계 영역으로 이동했으므로 다시 선택해야 합니다.</p> : null}
       <div className="grid gap-3 md:grid-cols-3">
         {candidates.map((candidate) => <button key={candidate} type="button" className={`rounded-2xl border p-3 text-left text-sm font-bold leading-6 ${state.selectedTaskCandidate === candidate ? 'border-emerald-300 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50 text-slate-700'}`} onClick={() => selectCandidate(candidate)}>{candidate}</button>)}
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="최종 관리할 업무과제 문장" help="선택한 후보가 자동 입력됩니다. 필요하면 한 문장으로 수정합니다." value={state.managementTask} onChange={(value) => update({ managementTask: value })} placeholder={suggestedManagementTask} minHeight="min-h-32" />
         <Field label="이 과제를 선택한 이유" help="KPI 확인과 CSF 누락 방지 관점에서 왜 이 과제를 관리하는지 씁니다." value={state.managementTaskReason} onChange={(value) => update({ managementTaskReason: value })} placeholder={suggestedManagementReason} minHeight="min-h-32" />
-        <Field label="이번 관리 범위에 포함할 업무" help="이번 범위에서 실제로 작성·정리·확인할 업무만 씁니다." value={state.includedWorkScope} onChange={(value) => update({ includedWorkScope: value })} placeholder={suggestedIncludedScope} minHeight="min-h-32" />
+        <Field label="이번 관리 범위에 포함할 업무" help="이번 범위에서 실제로 작성·정리·확인·연결할 업무만 씁니다." value={state.includedWorkScope} onChange={(value) => update({ includedWorkScope: value })} placeholder={suggestedIncludedScope} minHeight="min-h-32" />
         <Field label="이번 관리 범위에서 제외할 업무" help="7~8단계나 사람관리에서 다룰 내용은 여기서 제외합니다." value={state.excludedWorkScope} onChange={(value) => update({ excludedWorkScope: value })} placeholder={suggestedExcludedScope} minHeight="min-h-32" />
       </div>
       {!hasManagementTask ? <p className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-900">추천 후보를 선택하거나 최종 관리할 업무과제 문장을 직접 작성해야 AI 업무분해 프롬프트를 만들 수 있습니다.</p> : null}
@@ -558,7 +579,7 @@ export function V41TaskExecutionBridgeLab() {
         <Field label="AI 업무분해 초안" help="AI 결과 중 업무 단위 후보만 옮겨 적거나 수정합니다." value={state.workBreakdownDraft} onChange={(value) => update({ workBreakdownDraft: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
         <Field label="최종 선택한 업무 단위 3~5개" help="7단계에서 순서·역할·일정으로 바꿀 업무 단위만 남깁니다." value={state.selectedWorkItems} onChange={(value) => update({ selectedWorkItems: value })} placeholder={defaultWorkItems} minHeight="min-h-48" />
         <Field label="업무별 완료 기준" help="각 업무가 어디까지 되면 완료인지 정합니다." value={state.workItemCompletionCriteria} onChange={(value) => update({ workItemCompletionCriteria: value })} placeholder={defaultWorkCriteria} minHeight="min-h-48" />
-        <Field label="6단계에서 제외한 업무" help="7~8단계나 사람관리에서 다룰 내용은 여기서 제외했다고 명시합니다." value={state.excludedWorkItems} onChange={(value) => update({ excludedWorkItems: value })} placeholder="업무 순서·역할·일정, 병목·에스컬레이션, 사람관리 판단은 6단계에서 제외한다." minHeight="min-h-48" />
+        <Field label="6단계에서 제외한 업무" help="7~8단계나 사람관리에서 다룰 내용은 여기서 제외했다고 명시합니다." value={state.excludedWorkItems} onChange={(value) => update({ excludedWorkItems: value })} placeholder="업무 순서·역할·일정, 병목·에스컬레이션, 사람관리 판단은 6단계에서 제외한다. 체크포인트 세부 설계는 7단계에서 다룬다." minHeight="min-h-48" />
       </div>
       <button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={makeWorkBreakdownHandoff}>관리할 업무과제와 업무분해 확정하기</button>
     </Card>
