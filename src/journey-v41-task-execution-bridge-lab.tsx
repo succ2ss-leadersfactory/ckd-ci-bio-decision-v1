@@ -20,6 +20,7 @@ const V41_TASK_EXECUTION_BRIDGE_MARKERS = [
   '사람관리 판단 금지',
   '업무산출물 정의',
   '업무분해 후보 만들기',
+  '선택 사항 · 5단계 AI 검토 요약 참고하기',
   '산출물-KPI 연결 확인',
   'CSF 반영 확인',
   '7단계 업무지시로 넘기기',
@@ -545,26 +546,28 @@ export function V41TaskExecutionBridgeLab() {
       </div>
     </Card>
 
-    <Card title="선택 참고자료 · 5단계 AI 검토 요약" tone="violet">
-      <p className="text-sm font-bold leading-6 text-slate-600">5단계에서 AI 확장 실습을 했다면, 사람이 검토한 요약만 업무분해 참고자료로 사용할 수 있습니다. AI 확장 실습을 하지 않았다면 이 영역은 건너뛰어도 됩니다.</p>
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-xs font-bold leading-5 text-violet-950">
-          <p className="font-black">5단계 사람 검토 요약</p>
-          <p className="mt-2 whitespace-pre-wrap rounded-xl bg-white px-3 py-2 text-slate-600">{compact(aiExpansion.review)}</p>
-          {!hasAiExpansionReview ? <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-amber-900">검토 요약이 없으면 이 선택 참고자료는 사용하지 않습니다.</p> : null}
-        </div>
-        <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600">
-          <p className="font-black text-violet-800">반영 원칙</p>
-          <p className="mt-2">1. 관리할 업무과제·업무산출물·업무 단위로 바꿀 수 있는 내용만 참고합니다.</p>
-          <p>2. 성과기준을 새로 만들거나 KPI를 다시 해석하지 않습니다.</p>
-          <p>3. 사람관리, 코칭, 1on1 판단은 만들지 않습니다.</p>
-          <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50" onClick={bringAiExpansionReview} disabled={!hasAiExpansionReview}>5단계 검토 요약 가져오기</button>
-        </div>
-      </div>
-      <Field label="업무분해에 참고할 5단계 AI 후보" help="선택 사항입니다. 5단계에서 사람이 검토한 내용 중 업무과제·산출물·업무 단위로 바꿀 수 있는 내용만 남깁니다." value={state.aiExpansionAppliedNote} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[5단계 사람 검토 요약 중 업무분해에 참고할 내용]\n\n[6단계 적용 원칙]'} minHeight="min-h-40" />
-    </Card>
-
     <Card title="AI로 업무산출물과 업무분해 후보 만들기" tone="violet">
+      <p className="text-sm font-bold leading-6 text-slate-600">6단계의 AI 활용은 업무분해 후보 생성에 집중합니다. 5단계 AI 검토 요약은 필요한 경우에만 펼쳐서 선택 참고자료로 추가하세요.</p>
+      <details className="rounded-2xl border border-violet-100 bg-violet-50 p-4 text-sm leading-6 text-slate-700">
+        <summary className="cursor-pointer text-sm font-black text-violet-900">선택 사항 · 5단계 AI 검토 요약 참고하기</summary>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-violet-950">
+            <p className="font-black">5단계 사람 검토 요약</p>
+            <p className="mt-2 whitespace-pre-wrap rounded-xl bg-violet-50 px-3 py-2 text-slate-600">{compact(aiExpansion.review)}</p>
+            {!hasAiExpansionReview ? <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-amber-900">검토 요약이 없으면 이 선택 참고자료는 사용하지 않습니다.</p> : null}
+          </div>
+          <div className="rounded-2xl border border-violet-100 bg-white p-4 text-xs font-bold leading-5 text-slate-600">
+            <p className="font-black text-violet-800">반영 원칙</p>
+            <p className="mt-2">1. 관리할 업무과제·업무산출물·업무 단위로 바꿀 수 있는 내용만 참고합니다.</p>
+            <p>2. 성과기준을 새로 만들거나 KPI를 다시 해석하지 않습니다.</p>
+            <p>3. 사람관리, 코칭, 1on1 판단은 만들지 않습니다.</p>
+            <button type="button" className="mt-4 rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50" onClick={bringAiExpansionReview} disabled={!hasAiExpansionReview}>선택 참고자료로 추가</button>
+          </div>
+        </div>
+        <div className="mt-3">
+          <Field label="업무분해에 참고할 5단계 AI 후보" help="선택 사항입니다. 5단계에서 사람이 검토한 내용 중 업무과제·산출물·업무 단위로 바꿀 수 있는 내용만 남깁니다." value={state.aiExpansionAppliedNote} onChange={(value) => update({ aiExpansionAppliedNote: value })} placeholder={'[5단계 사람 검토 요약 중 업무분해에 참고할 내용]\n\n[6단계 적용 원칙]'} minHeight="min-h-32" />
+        </div>
+      </details>
       <button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무분해 프롬프트 만들기</button>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="AI에게 입력할 프롬프트" value={state.aiPrompt} onChange={(value) => update({ aiPrompt: value })} placeholder="버튼을 누르면 관리할 업무과제와 업무산출물 기반 업무분해 프롬프트가 생성됩니다." minHeight="min-h-64" />
