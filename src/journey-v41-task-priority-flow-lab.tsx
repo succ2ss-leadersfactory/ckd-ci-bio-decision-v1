@@ -1,19 +1,25 @@
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useStored } from './journey-storage';
 
 const V41_TASK_PRIORITY_FLOW_MARKERS = [
   'V41TaskPriorityFlowLab',
   '할 일·줄일 일',
   '7단계: 업무 순서와 업무지시 만들기',
+  '7단계: 실행방식 결정하기',
   '6단계 실행계획 확인',
   '6단계 요약 입력값',
   '긴 원문 표시 금지',
   '업무 순서 정하기',
+  '실행 순서 결정하기',
   '역할과 책임 정하기',
+  '역할과 책임 결정하기',
   '일정과 체크포인트 정하기',
+  '일정과 점검방식 결정하기',
   '업무량 조정: 이번 주기에는 잠시 줄일 일',
+  'AI로 실행방식 3안 추천받기',
   'AI로 업무지시 초안 만들기',
   '사람 검토 후 최종 업무지시 확정',
+  '검토 체크리스트',
   '8단계 업무 경계·병목 대응으로 넘기기',
   '성과기준 재해석 금지',
   '사람관리 판단 금지',
@@ -22,6 +28,18 @@ const V41_TASK_PRIORITY_FLOW_MARKERS = [
 void V41_TASK_PRIORITY_FLOW_MARKERS;
 
 type ExecutionCycle = '1주' | '2주' | '4주' | '월간' | '분기';
+
+type RoleDecision = {
+  owner?: string;
+  leaderCheck?: string;
+  collaboration?: string;
+};
+
+type DecisionOption = {
+  id: string;
+  title: string;
+  description: string;
+};
 
 type TaskState = Record<string, any> & {
   executionCycle?: ExecutionCycle;
@@ -34,21 +52,68 @@ type TaskState = Record<string, any> & {
   selectedWorkItems?: string;
   workItemCompletionCriteria?: string;
   excludedWorkItems?: string;
+  step7ExecutionPlanConfirmed?: boolean;
+  sequenceDecisionType?: string;
+  selectedSequenceOption?: string;
   orderedWorkSteps?: string;
+  roleDecisionMatrix?: Record<string, RoleDecision>;
   roleResponsibilityMap?: string;
+  checkpointDecisionType?: string;
+  selectedCheckpointQuestions?: string[];
+  selectedEvidenceChecks?: string[];
   scheduleCheckpoints?: string;
   selectedReduceTasks?: string[];
+  selectedWorkloadReductionReasons?: string[];
   workloadAdjustments?: string;
   step7AiPrompt?: string;
   step7AiResult?: string;
   step7HumanReview?: string;
+  step7ReviewChecklist?: string[];
+  step7InstructionTone?: string;
+  step7AiRevisionMode?: string;
   taskInstructionDraft?: string;
   finalTaskInstruction?: string;
+  selectedStep8HandoffSignals?: string[];
   step7HandoffToStep8?: string;
 };
 
 const STORAGE_KEY = 'ckd.v41.taskManagement.v10';
 const DEFAULT_TASK_STATE: TaskState = {};
+
+const SEQUENCE_OPTIONS: DecisionOption[] = [
+  { id: 'output-first', title: '산출물 구조 먼저', description: '먼저 표·양식·기록 위치를 고정한 뒤 세부 내용을 채웁니다.' },
+  { id: 'risk-first', title: '누락 위험 먼저', description: '누락·오류가 생기면 영향이 큰 업무부터 먼저 처리합니다.' },
+  { id: 'impact-first', title: '고객 영향 먼저', description: '고객 반응, 다음 행동, 현장 실행에 직접 영향을 주는 항목부터 정리합니다.' },
+  { id: 'quick-win', title: '빠른 완료 먼저', description: '짧게 끝낼 수 있는 항목을 먼저 완료해 실행 속도를 만듭니다.' },
+  { id: 'leader-check-first', title: '팀장 확인 필요 먼저', description: '팀장 확인이 필요한 기준·표현·권한 이슈부터 먼저 정리합니다.' },
+];
+
+const OWNER_OPTIONS = ['담당자 개인', '담당자 + 동료', '팀 공통', '팀장 주도'];
+const LEADER_CHECK_OPTIONS = ['산출물만 확인', '중간 과정 확인', '고객 반응까지 확인', '위험 표현만 확인'];
+const COLLABORATION_OPTIONS = ['협업 없음', '동료 확인 필요', '내부 담당자 확인 필요', '팀장 연결 필요'];
+
+const CHECKPOINT_OPTIONS: DecisionOption[] = [
+  { id: 'two-days', title: '시작 후 2일', description: '초기 방향이 맞는지 빠르게 확인합니다.' },
+  { id: 'week-one', title: '1주차 종료', description: '실행관리 주기 중간에 누락·지연을 확인합니다.' },
+  { id: 'before-meeting', title: '중간 회의 전', description: '회의에서 말로 설명하기 전에 산출물로 확인합니다.' },
+  { id: 'three-days-before', title: '마감 3일 전', description: '마감 직전 수정이 몰리지 않도록 미리 점검합니다.' },
+];
+
+const CHECKPOINT_QUESTIONS = [
+  '현재까지 기록된 내용 중 다음 행동이 비어 있는 항목은 무엇인가요?',
+  '정해진 기록 위치에 산출물이 남아 있나요?',
+  '누락 여부와 다음 행동 여부를 확인할 수 있나요?',
+  '팀원 단독으로 판단하기 어려운 고객 요청이나 표현이 있나요?',
+  '마감 전 팀장 확인이 필요한 항목은 무엇인가요?',
+];
+
+const EVIDENCE_CHECKS = [
+  '산출물 등록 여부',
+  '누락 항목 표시 여부',
+  '다음 행동 입력 여부',
+  '담당자 표시 여부',
+  '고객 반응 요약 여부',
+];
 
 const REDUCE_TASKS = [
   '6단계 업무산출물과 연결되지 않는 추가 자료 만들기',
@@ -58,6 +123,21 @@ const REDUCE_TASKS = [
   '담당자별 성과목표 배분이나 KPI 변경 논의하기',
   '병목 원인 분석과 에스컬레이션 설계를 7단계에서 깊게 다루기',
 ];
+
+const REVIEW_CHECKLIST = [
+  '업무 배경이 너무 길지 않다',
+  '해야 할 일이 3~5개로 보인다',
+  '최종 산출물이 분명하다',
+  '완료 기준이 확인 가능하다',
+  '역할과 책임이 모호하지 않다',
+  '중간 확인 시점이 있다',
+  '잠시 줄일 일이 포함되어 있다',
+  '팀원 역량·태도·동기 판단 표현이 없다',
+  '병목·에스컬레이션은 8단계로 넘겼다',
+];
+
+const INSTRUCTION_TONES = ['간결한 업무지시', '현장 말투', '회의 공유용', '메신저 전달용'];
+const STEP8_HANDOFF_SIGNALS = ['업무 경계 필요', '병목 예상', '담당자 권한 밖 이슈', '에스컬레이션 후보', '팀장 개입 후보'];
 
 function compact(value?: string) {
   return value?.trim() || '미작성';
@@ -117,6 +197,22 @@ function toggle(list: string[] = [], value: string, max = 3) {
   return [...list, value];
 }
 
+function getSequenceOption(id?: string) {
+  return SEQUENCE_OPTIONS.find((option) => option.id === id) ?? SEQUENCE_OPTIONS[1];
+}
+
+function getCheckpointOption(id?: string) {
+  return CHECKPOINT_OPTIONS.find((option) => option.id === id) ?? CHECKPOINT_OPTIONS[1];
+}
+
+function defaultRoleDecision(): RoleDecision {
+  return {
+    owner: OWNER_OPTIONS[0],
+    leaderCheck: LEADER_CHECK_OPTIONS[0],
+    collaboration: COLLABORATION_OPTIONS[0],
+  };
+}
+
 function Card({ title, children, tone = 'slate' }: { title: string; children: ReactNode; tone?: 'slate' | 'amber' | 'cyan' | 'emerald' | 'violet' }) {
   const border = tone === 'amber' ? 'border-amber-100' : tone === 'cyan' ? 'border-cyan-100' : tone === 'emerald' ? 'border-emerald-100' : tone === 'violet' ? 'border-violet-100' : 'border-slate-200';
   return <section className={`rounded-3xl border ${border} bg-white p-4 shadow-sm md:p-5`}><h3 className="text-lg font-black text-slate-950">{title}</h3><div className="mt-4 space-y-3">{children}</div></section>;
@@ -126,37 +222,81 @@ function Field({ label, help, value, onChange, placeholder, minHeight = 'min-h-2
   return <label className="block rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-black text-slate-950">{label}</span>{help ? <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{help}</p> : null}<textarea className={`${minHeight} mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 outline-none focus:border-amber-700 focus:ring-2 focus:ring-amber-100`} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
 }
 
+function ChoiceCard({ selected, title, description, onClick }: { selected: boolean; title: string; description: string; onClick: () => void }) {
+  return <button type="button" onClick={onClick} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-amber-300 bg-amber-50 shadow-sm' : 'border-slate-200 bg-slate-50 hover:border-amber-200'}`}>
+    <p className="text-sm font-black text-slate-950">{title}</p>
+    <p className="mt-1 text-xs font-bold leading-5 text-slate-500">{description}</p>
+  </button>;
+}
+
+function MultiCheck({ checked, label, onChange }: { checked: boolean; label: string; onChange: () => void }) {
+  return <label className={`flex gap-2 rounded-2xl border p-3 text-sm font-bold ${checked ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+    <input type="checkbox" checked={checked} onChange={onChange} />
+    <span>{label}</span>
+  </label>;
+}
+
+function SelectBox({ value, options, onChange }: { value: string; options: string[]; onChange: (value: string) => void }) {
+  return <select className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-amber-700 focus:ring-2 focus:ring-amber-100" value={value} onChange={(event) => onChange(event.target.value)}>
+    {options.map((option) => <option key={option} value={option}>{option}</option>)}
+  </select>;
+}
+
 function SummaryLine({ label, value }: { label: string; value?: string }) {
   return <p><span className="font-black text-slate-700">{label}: </span><span>{short(value)}</span></p>;
 }
 
-function buildSequenceDraft(items: string[], criteria: string[]) {
+function buildSequenceDraft(items: string[], criteria: string[], optionId?: string) {
   const source = items.length ? items : ['최종 선택 업무 단위를 먼저 확인한다.'];
+  const option = getSequenceOption(optionId);
+  return [
+    `결정 기준: ${option.title}`,
+    `선택 이유: ${option.description}`,
+    '',
+    ...source.map((item, index) => {
+      const criterion = criteria[index] || '완료 기준까지 확인한다.';
+      return `${index + 1}. ${item}\n- 시작 조건: 이전 단계 입력값과 기존 기록을 확인할 수 있음\n- 완료 기준: ${criterion}`;
+    }),
+  ].join('\n');
+}
+
+function buildRoleDraft(items: string[], matrix?: Record<string, RoleDecision>) {
+  const source = items.length ? items : ['최종 선택 업무 단위'];
   return source.map((item, index) => {
-    const criterion = criteria[index] || '완료 기준까지 확인한다.';
-    return `${index + 1}. ${item}\n- 시작 조건: 이전 단계 입력값과 기존 기록을 확인할 수 있음\n- 완료 기준: ${criterion}`;
+    const role = { ...defaultRoleDecision(), ...(matrix?.[item] ?? {}) };
+    return `${index + 1}. ${item}\n- 주 실행: ${role.owner}\n- 팀장 확인: ${role.leaderCheck}\n- 협업 방식: ${role.collaboration}`;
   }).join('\n\n');
 }
 
-function buildRoleDraft(items: string[]) {
-  const source = items.length ? items : ['최종 선택 업무 단위'];
-  return source.map((item) => `${item}\n- 담당: 담당자 지정\n- 팀장 확인: 산출물 위치와 완료 기준 확인\n- 협업 필요: 필요 시 관련 부서 또는 동료 확인`).join('\n\n');
+function buildCheckpointDraft(params: { cycle: string; output: string; location: string; completion: string; checkpointId?: string; selectedQuestions?: string[]; selectedEvidence?: string[] }) {
+  const checkpoint = getCheckpointOption(params.checkpointId);
+  const questions = params.selectedQuestions?.length ? params.selectedQuestions : CHECKPOINT_QUESTIONS.slice(0, 2);
+  const evidence = params.selectedEvidence?.length ? params.selectedEvidence : EVIDENCE_CHECKS.slice(0, 3);
+  return [
+    `실행관리 주기: ${params.cycle}`,
+    `중간 확인 시점: ${checkpoint.title} · ${checkpoint.description}`,
+    `확인할 산출물: ${params.output}`,
+    `기록 위치: ${params.location}`,
+    `완료 기준: ${params.completion}`,
+    `확인 증거: ${evidence.join(', ')}`,
+    '중간 확인 질문:',
+    ...questions.map((question) => `- ${question}`),
+  ].join('\n');
 }
 
-function buildCheckpointDraft(cycle: string, output: string, location: string, completion: string) {
+function buildWorkloadDraft(reduceTasks: string[], reasons: string[]) {
+  const selected = reduceTasks.length ? reduceTasks : ['업무산출물과 직접 연결되지 않는 활동은 줄입니다.'];
+  const reasonText = reasons.length ? reasons : ['이번 단계는 실행방식 결정과 업무지시 초안 작성에 집중해야 하기 때문입니다.'];
   return [
-    `실행관리 주기: ${cycle}`,
-    '시작일: 교육생이 실제 일정에 맞게 입력',
-    '중간 확인일: 시작 후 중간 시점으로 입력',
-    '마감일: 실행관리 주기 종료일로 입력',
-    `확인할 산출물: ${output}`,
-    `기록 위치: ${location}`,
-    `중간 확인 질문: ${completion}`,
+    '이번 주기에 잠시 줄일 일:',
+    ...selected.map((task) => `- ${task}`),
+    '',
+    '선택 이유:',
+    ...reasonText.map((reason) => `- ${reason}`),
   ].join('\n');
 }
 
 function buildInstructionFromFields(state: TaskState, output: string, completion: string) {
-  const workItems = splitLines(state.selectedWorkItems, 5);
   const reduce = splitLines(state.workloadAdjustments || (state.selectedReduceTasks ?? []).join('\n'), 4);
   return [
     `이번 주기에는 ${compact(state.managementTask)} 업무를 진행합니다.`,
@@ -165,7 +305,7 @@ function buildInstructionFromFields(state: TaskState, output: string, completion
     `완료 기준은 ${completion}`,
     '',
     '진행 순서는 다음과 같습니다.',
-    ...(workItems.length ? workItems.map((item, index) => `${index + 1}. ${item}`) : ['1. 최종 선택 업무 단위를 먼저 확정합니다.']),
+    compact(state.orderedWorkSteps),
     '',
     '역할과 책임은 아래 기준으로 정합니다.',
     compact(state.roleResponsibilityMap),
@@ -190,19 +330,49 @@ export function V41TaskPriorityFlowLab() {
   const displayOutput = displayOutputName(state.selectedOutput, state.managementTask);
   const displayCompletion = displayCompletionStandard(state.completionStandard, state.managementTask);
   const evidence = `${displayOutput} / ${compact(state.outputLocation)} / 누락·다음 행동 확인 흔적`;
+  const roleMatrix = state.roleDecisionMatrix ?? {};
+  const selectedQuestions = state.selectedCheckpointQuestions ?? [];
+  const selectedEvidence = state.selectedEvidenceChecks ?? [];
+  const reviewChecklist = state.step7ReviewChecklist ?? [];
+  const sequenceOption = getSequenceOption(state.selectedSequenceOption);
+  const checkpointOption = getCheckpointOption(state.checkpointDecisionType);
+  const selectedStep8Signals = state.selectedStep8HandoffSignals ?? [];
 
-  const sequencePlaceholder = buildSequenceDraft(workItems, criteria);
-  const rolePlaceholder = buildRoleDraft(workItems);
-  const checkpointPlaceholder = buildCheckpointDraft(executionCycle, displayOutput, compact(state.outputLocation), displayCompletion);
+  const sequenceDraft = buildSequenceDraft(workItems, criteria, state.selectedSequenceOption);
+  const roleDraft = buildRoleDraft(workItems, roleMatrix);
+  const checkpointDraft = buildCheckpointDraft({ cycle: executionCycle, output: displayOutput, location: compact(state.outputLocation), completion: displayCompletion, checkpointId: state.checkpointDecisionType, selectedQuestions, selectedEvidence });
+  const workloadDraft = buildWorkloadDraft(reduceTasks, state.selectedWorkloadReductionReasons ?? []);
 
-  const buildAllDrafts = () => update({
-    orderedWorkSteps: state.orderedWorkSteps || sequencePlaceholder,
-    roleResponsibilityMap: state.roleResponsibilityMap || rolePlaceholder,
-    scheduleCheckpoints: state.scheduleCheckpoints || checkpointPlaceholder,
-    workloadAdjustments: state.workloadAdjustments || reduceTasks.join('\n'),
+  const applyAiDecisionRecommendation = () => update({
+    sequenceDecisionType: 'AI 추천안 중 선택',
+    selectedSequenceOption: state.selectedSequenceOption || 'risk-first',
+    checkpointDecisionType: state.checkpointDecisionType || 'week-one',
+    selectedCheckpointQuestions: selectedQuestions.length ? selectedQuestions : CHECKPOINT_QUESTIONS.slice(0, 2),
+    selectedEvidenceChecks: selectedEvidence.length ? selectedEvidence : EVIDENCE_CHECKS.slice(0, 3),
+    selectedReduceTasks: reduceTasks.length ? reduceTasks : REDUCE_TASKS.slice(0, 2),
+    selectedWorkloadReductionReasons: state.selectedWorkloadReductionReasons?.length ? state.selectedWorkloadReductionReasons : [
+      '이번 단계의 목적은 산출물 완성과 완료 기준 확인에 집중하는 것이기 때문입니다.',
+      '역할과 일정이 정해지기 전에 모든 업무를 동시에 시작하면 중복과 누락이 커질 수 있기 때문입니다.',
+    ],
+  });
+
+  const updateRoleDecision = (item: string, patch: RoleDecision) => {
+    const current = { ...defaultRoleDecision(), ...(roleMatrix[item] ?? {}) };
+    update({ roleDecisionMatrix: { ...roleMatrix, [item]: { ...current, ...patch } } });
+  };
+
+  const buildDecisionDrafts = () => update({
+    orderedWorkSteps: sequenceDraft,
+    roleResponsibilityMap: roleDraft,
+    scheduleCheckpoints: checkpointDraft,
+    workloadAdjustments: workloadDraft,
   });
 
   const buildAiPrompt = () => update({
+    orderedWorkSteps: state.orderedWorkSteps || sequenceDraft,
+    roleResponsibilityMap: state.roleResponsibilityMap || roleDraft,
+    scheduleCheckpoints: state.scheduleCheckpoints || checkpointDraft,
+    workloadAdjustments: state.workloadAdjustments || workloadDraft,
     step7AiPrompt: [
       '역할: 당신은 제약영업팀장의 업무관리 실행지시 초안을 돕는 전문가입니다.',
       '',
@@ -215,20 +385,34 @@ export function V41TaskPriorityFlowLab() {
       `업무별 완료 기준:\n${compact(state.workItemCompletionCriteria)}`,
       `6단계에서 제외한 업무:\n${compact(state.excludedWorkItems)}`,
       '',
-      '[7단계 실행 설계]',
-      `업무 순서:\n${compact(state.orderedWorkSteps || sequencePlaceholder)}`,
-      `역할과 책임:\n${compact(state.roleResponsibilityMap || rolePlaceholder)}`,
-      `일정과 체크포인트:\n${compact(state.scheduleCheckpoints || checkpointPlaceholder)}`,
-      `잠시 줄일 일:\n${compact(state.workloadAdjustments || reduceTasks.join('\n'))}`,
+      '[7단계에서 팀장이 선택한 실행방식 결정]',
+      `실행 순서 결정: ${sequenceOption.title} - ${sequenceOption.description}`,
+      `업무 순서:\n${state.orderedWorkSteps || sequenceDraft}`,
+      `역할과 책임:\n${state.roleResponsibilityMap || roleDraft}`,
+      `일정과 체크포인트:\n${state.scheduleCheckpoints || checkpointDraft}`,
+      `잠시 줄일 일:\n${state.workloadAdjustments || workloadDraft}`,
+      `희망 말투: ${state.step7InstructionTone || '간결한 업무지시'}`,
       '',
       '[요청]',
-      '팀원에게 전달할 업무지시 초안을 작성해 주세요.',
+      '위 선택값만 사용해서 팀원에게 전달할 업무지시 초안을 작성해 주세요.',
+      '새 KPI, 새 CSF, 새 전략과제, 새 사람관리 판단은 만들지 마세요.',
+      '',
+      '[출력 형식]',
+      '1. 업무 배경',
+      '2. 이번 주기에 해야 할 일',
+      '3. 최종 산출물',
+      '4. 완료 기준',
+      '5. 역할과 책임',
+      '6. 일정과 중간 확인',
+      '7. 이번 주기에 잠시 줄일 일',
+      '8. 팀장 확인 문장',
       '',
       '[반드시 지킬 원칙]',
       '1. KPI, CSF, 전략과제를 다시 만들거나 재해석하지 마세요.',
       '2. 팀원의 역량, 태도, 동기, 코칭 필요 여부를 판단하지 마세요.',
       '3. 병목 원인 분석이나 에스컬레이션 기준은 만들지 마세요. 이것은 8단계에서 다룹니다.',
       '4. 업무 배경, 해야 할 일, 산출물, 완료 기준, 역할, 일정, 중간 확인, 줄일 일만 포함하세요.',
+      '5. 참여자가 선택한 실행방식 결정을 임의로 바꾸지 마세요.',
     ].join('\n'),
   });
 
@@ -239,19 +423,24 @@ export function V41TaskPriorityFlowLab() {
   };
 
   const makeInstructionDraft = () => {
-    const draft = compact(state.step7AiResult) !== '미작성'
-      ? [state.step7AiResult, state.step7HumanReview ? `\n[사람 검토 보완]\n${state.step7HumanReview}` : ''].filter(Boolean).join('\n')
-      : buildInstructionFromFields(state, displayOutput, displayCompletion);
+    const baseDraft = compact(state.step7AiResult) !== '미작성'
+      ? state.step7AiResult
+      : buildInstructionFromFields({ ...state, orderedWorkSteps: state.orderedWorkSteps || sequenceDraft, roleResponsibilityMap: state.roleResponsibilityMap || roleDraft, scheduleCheckpoints: state.scheduleCheckpoints || checkpointDraft, workloadAdjustments: state.workloadAdjustments || workloadDraft }, displayOutput, displayCompletion);
+    const reviewNote = reviewChecklist.length ? `\n\n[팀장 검토 통과 항목]\n${reviewChecklist.map((item) => `- ${item}`).join('\n')}` : '';
+    const humanReview = state.step7HumanReview ? `\n\n[사람 검토 보완]\n${state.step7HumanReview}` : '';
+    const draft = [baseDraft, reviewNote, humanReview].filter(Boolean).join('');
     update({ taskInstructionDraft: draft, finalTaskInstruction: draft });
   };
 
   const makeStep8Handoff = () => update({
     step7HandoffToStep8: [
       '[8단계 전달 메모]',
-      `업무 경계가 필요한 부분: ${compact(state.excludedWorkItems)}`,
-      '병목이 예상되는 부분: 최종 선택 업무 단위가 일정 내 완료되지 않거나 기록 위치·완료 기준이 불명확한 경우',
-      '담당자 권한 밖 이슈: 고객 데이터 접근, 부서 협조, 시스템 입력 권한 등',
+      `선택한 경계·병목 후보: ${selectedStep8Signals.length ? selectedStep8Signals.join(', ') : '업무 경계 필요, 병목 예상'}`,
+      `업무 경계가 필요한 부분: ${excluded.length ? excluded.join(', ') : '6단계에서 제외한 업무와 최종 선택 업무 단위의 경계'}`,
+      `병목이 예상되는 부분: ${checkpointOption.title}까지 산출물 등록, 누락 표시, 다음 행동 입력이 확인되지 않는 경우`,
+      '담당자 권한 밖 이슈: 고객 데이터 접근, 부서 협조, 시스템 입력 권한, 기록 위치 변경 등',
       '에스컬레이션 후보: 반복 지연, 산출물 미등록, 필수 기록 누락, 역할 충돌',
+      '주의: 이 메모는 사람 판단이 아니라 업무 경계와 프로세스 병목 후보입니다.',
     ].join('\n'),
   });
 
@@ -259,8 +448,8 @@ export function V41TaskPriorityFlowLab() {
     <section className="rounded-3xl border border-amber-100 bg-white p-4 shadow-sm md:p-5">
       <p className="text-xs font-black uppercase tracking-wide text-amber-700">업무 순서와 업무지시</p>
       <h3 className="mt-1 text-xl font-black text-slate-950">7단계: 업무 순서와 업무지시 만들기</h3>
-      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">6단계 실행계획을 확인한 뒤 업무 순서, 역할과 책임, 일정과 체크포인트, 잠시 줄일 일을 정하고 AI로 업무지시 초안을 만듭니다.</p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-amber-800"><span className="rounded-full bg-amber-50 px-3 py-1">성과기준 재해석 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">업무지시 초안</span><span className="rounded-full bg-amber-50 px-3 py-1">8단계 전달</span></div>
+      <p className="mt-2 text-sm font-bold leading-6 text-slate-600">6단계 실행계획을 다시 쓰지 않고, 실행 순서·역할·점검방식·줄일 일을 선택해 의사결정합니다. 중요한 실행계획과 업무지시 문장은 AI가 초안으로 만들고 팀장이 최종 확정합니다.</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-amber-800"><span className="rounded-full bg-amber-50 px-3 py-1">선택형 의사결정</span><span className="rounded-full bg-amber-50 px-3 py-1">성과기준 재해석 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">사람관리 판단 금지</span><span className="rounded-full bg-amber-50 px-3 py-1">AI 업무지시 초안</span><span className="rounded-full bg-amber-50 px-3 py-1">8단계 전달</span></div>
     </section>
 
     <Card title="1. 6단계 실행계획 확인" tone="amber">
@@ -279,41 +468,84 @@ export function V41TaskPriorityFlowLab() {
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700"><p className="font-black text-slate-900">업무별 완료 기준</p><ul className="mt-2 list-disc space-y-1 pl-4">{criteria.length ? criteria.map((item) => <li key={item}>{item}</li>) : <li>미작성</li>}</ul></div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700"><p className="font-black text-slate-900">6단계에서 제외한 업무</p><ul className="mt-2 list-disc space-y-1 pl-4">{excluded.length ? excluded.map((item) => <li key={item}>{item}</li>) : <li>미작성</li>}</ul></div>
       </div>
+      <button type="button" className={`rounded-xl px-4 py-2 text-sm font-black ${state.step7ExecutionPlanConfirmed ? 'bg-emerald-700 text-white' : 'bg-amber-700 text-white'}`} onClick={() => update({ step7ExecutionPlanConfirmed: true })}>{state.step7ExecutionPlanConfirmed ? '이 실행계획으로 진행 중' : '이 실행계획으로 7단계 진행하기'}</button>
     </Card>
 
-    <Card title="2. 업무 순서 정하기" tone="cyan">
-      <Field label="업무 순서표" help="6단계 최종 업무 단위 3~5개를 실행 순서로 배열합니다." value={state.orderedWorkSteps ?? ''} onChange={(value) => update({ orderedWorkSteps: value })} placeholder={sequencePlaceholder} minHeight="min-h-48" />
+    <Card title="2. 실행 순서 결정하기" tone="cyan">
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3 text-xs font-bold leading-5 text-cyan-950">직접 순서표를 쓰지 말고 먼저 실행 순서의 기준을 고릅니다. 필요하면 AI 추천안을 적용한 뒤 팀장이 최종 선택합니다.</div>
+      <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-black text-white" onClick={applyAiDecisionRecommendation}>AI로 실행방식 3안 추천받기</button><button type="button" className="rounded-xl border border-cyan-200 bg-white px-4 py-2 text-sm font-black text-cyan-800" onClick={buildDecisionDrafts}>선택한 결정으로 실행 초안 만들기</button></div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {SEQUENCE_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={sequenceOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ selectedSequenceOption: option.id, sequenceDecisionType: '팀장 선택' })} />)}
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.orderedWorkSteps || sequenceDraft}</div>
     </Card>
 
-    <Card title="3. 역할과 책임 정하기" tone="cyan">
-      <Field label="역할과 책임표" help="업무 단위별 담당, 팀장 확인 항목, 협업 필요 여부를 정합니다. 사람 평가가 아니라 업무 책임 명확화입니다." value={state.roleResponsibilityMap ?? ''} onChange={(value) => update({ roleResponsibilityMap: value })} placeholder={rolePlaceholder} minHeight="min-h-48" />
+    <Card title="3. 역할과 책임 결정하기" tone="cyan">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">이 단계는 사람 평가가 아니라 업무 책임 명확화입니다. 업무 단위별로 주 실행, 팀장 확인, 협업 방식만 선택합니다.</div>
+      <div className="space-y-3">
+        {(workItems.length ? workItems : ['최종 선택 업무 단위']).map((item, index) => {
+          const role = { ...defaultRoleDecision(), ...(roleMatrix[item] ?? {}) };
+          return <div key={`${item}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-black text-slate-950">{index + 1}. {item}</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <label className="text-xs font-black text-slate-600">주 실행<SelectBox value={role.owner ?? OWNER_OPTIONS[0]} options={OWNER_OPTIONS} onChange={(value) => updateRoleDecision(item, { owner: value })} /></label>
+              <label className="text-xs font-black text-slate-600">팀장 확인<SelectBox value={role.leaderCheck ?? LEADER_CHECK_OPTIONS[0]} options={LEADER_CHECK_OPTIONS} onChange={(value) => updateRoleDecision(item, { leaderCheck: value })} /></label>
+              <label className="text-xs font-black text-slate-600">협업 방식<SelectBox value={role.collaboration ?? COLLABORATION_OPTIONS[0]} options={COLLABORATION_OPTIONS} onChange={(value) => updateRoleDecision(item, { collaboration: value })} /></label>
+            </div>
+          </div>;
+        })}
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.roleResponsibilityMap || roleDraft}</div>
     </Card>
 
-    <Card title="4. 일정과 체크포인트 정하기" tone="cyan">
-      <Field label="일정과 체크포인트" help="시작일, 중간 확인일, 마감일, 확인할 산출물, 중간 확인 질문을 정합니다." value={state.scheduleCheckpoints ?? ''} onChange={(value) => update({ scheduleCheckpoints: value })} placeholder={checkpointPlaceholder} minHeight="min-h-48" />
+    <Card title="4. 일정과 점검방식 결정하기" tone="cyan">
+      <div className="grid gap-3 md:grid-cols-2">
+        {CHECKPOINT_OPTIONS.map((option) => <ChoiceCard key={option.id} selected={checkpointOption.id === option.id} title={option.title} description={option.description} onClick={() => update({ checkpointDecisionType: option.id })} />)}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-sm font-black text-slate-950">확인할 증거 선택</p>
+          <div className="mt-3 grid gap-2">{EVIDENCE_CHECKS.map((item) => <MultiCheck key={item} checked={selectedEvidence.includes(item)} label={item} onChange={() => update({ selectedEvidenceChecks: toggle(selectedEvidence, item, 4) })} />)}</div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-sm font-black text-slate-950">중간 확인 질문 선택</p>
+          <div className="mt-3 grid gap-2">{CHECKPOINT_QUESTIONS.map((item) => <MultiCheck key={item} checked={selectedQuestions.includes(item)} label={item} onChange={() => update({ selectedCheckpointQuestions: toggle(selectedQuestions, item, 3) })} />)}</div>
+        </div>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.scheduleCheckpoints || checkpointDraft}</div>
     </Card>
 
     <Card title="5. 업무량 조정: 이번 주기에는 잠시 줄일 일" tone="amber">
+      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">새 일을 추가하는 만큼 줄일 일을 정합니다. 최대 3개까지 선택할 수 있습니다.</div>
       <div className="grid gap-2 md:grid-cols-2">
-        {REDUCE_TASKS.map((task) => <label key={task} className="flex gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm font-bold"><input type="checkbox" checked={reduceTasks.includes(task)} onChange={() => update({ selectedReduceTasks: toggle(reduceTasks, task) })} />{task}</label>)}
+        {REDUCE_TASKS.map((task) => <MultiCheck key={task} checked={reduceTasks.includes(task)} label={task} onChange={() => update({ selectedReduceTasks: toggle(reduceTasks, task, 3) })} />)}
       </div>
-      <Field label="실제로 줄일 일" value={state.workloadAdjustments ?? reduceTasks.join('\n')} onChange={(value) => update({ workloadAdjustments: value })} placeholder="이번 업무를 위해 잠시 줄일 일을 씁니다." />
-      <button type="button" className="rounded-xl bg-amber-700 px-4 py-2 text-sm font-black text-white" onClick={buildAllDrafts}>업무 순서·역할·일정 초안 채우기</button>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap">{state.workloadAdjustments || workloadDraft}</div>
     </Card>
 
     <Card title="6. AI로 업무지시 초안 만들기" tone="violet">
-      <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>AI 업무지시 프롬프트 만들기</button><button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800" onClick={copyAiPrompt}>프롬프트 복사하기</button></div>
+      <div className="grid gap-3 md:grid-cols-4">
+        {INSTRUCTION_TONES.map((tone) => <ChoiceCard key={tone} selected={(state.step7InstructionTone || INSTRUCTION_TONES[0]) === tone} title={tone} description="AI 초안의 표현 방식을 선택합니다." onClick={() => update({ step7InstructionTone: tone })} />)}
+      </div>
+      <div className="flex flex-wrap gap-2"><button type="button" className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white" onClick={buildAiPrompt}>선택한 결정으로 업무지시 프롬프트 만들기</button><button type="button" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-800" onClick={copyAiPrompt}>프롬프트 복사하기</button></div>
       <div className="grid gap-3 md:grid-cols-2"><Field label="AI에게 입력할 프롬프트" value={state.step7AiPrompt ?? ''} onChange={(value) => update({ step7AiPrompt: value })} placeholder="프롬프트 만들기 버튼을 누르면 생성됩니다." minHeight="min-h-64" /><Field label="AI 업무지시 초안 붙여넣기" value={state.step7AiResult ?? ''} onChange={(value) => update({ step7AiResult: value })} placeholder="AI가 작성한 업무지시 초안을 붙여넣습니다." minHeight="min-h-64" /></div>
-      <Field label="사람 검토 보완" help="현장 언어로 수정할 내용, 제외할 내용, 팀장 확인 문장을 보완합니다." value={state.step7HumanReview ?? ''} onChange={(value) => update({ step7HumanReview: value })} placeholder="AI 초안을 그대로 쓰지 않고 사람이 보완할 내용을 씁니다." />
     </Card>
 
     <Card title="7. 사람 검토 후 최종 업무지시 확정" tone="emerald">
+      <div className="grid gap-2 md:grid-cols-3">
+        {REVIEW_CHECKLIST.map((item) => <MultiCheck key={item} checked={reviewChecklist.includes(item)} label={item} onChange={() => update({ step7ReviewChecklist: toggle(reviewChecklist, item, REVIEW_CHECKLIST.length) })} />)}
+      </div>
+      <Field label="사람 검토 보완" help="필요할 때만 짧게 씁니다. 현장 말투 수정, 제외할 문장, 팀장 확인 문장 정도만 보완합니다." value={state.step7HumanReview ?? ''} onChange={(value) => update({ step7HumanReview: value })} placeholder="예: 지시문을 더 짧게 줄이고, 마감 전 확인 질문을 한 문장으로 바꾼다." minHeight="min-h-20" />
       <button type="button" className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white" onClick={makeInstructionDraft}>최종 업무지시 확정하기</button>
       <Field label="최종 업무지시" value={state.finalTaskInstruction ?? state.taskInstructionDraft ?? ''} onChange={(value) => update({ finalTaskInstruction: value, taskInstructionDraft: value })} placeholder="확정 버튼을 누르면 업무지시 초안이 생성됩니다." minHeight="min-h-64" />
     </Card>
 
     <Card title="8. 8단계 업무 경계·병목 대응으로 넘기기" tone="slate">
-      <button type="button" className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-black text-white" onClick={makeStep8Handoff}>8단계 전달 메모 만들기</button>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold leading-5 text-slate-700">7단계에서는 경계·병목을 확정하지 않습니다. 8단계로 넘길 후보만 선택합니다.</div>
+      <div className="grid gap-2 md:grid-cols-3">
+        {STEP8_HANDOFF_SIGNALS.map((signal) => <MultiCheck key={signal} checked={selectedStep8Signals.includes(signal)} label={signal} onChange={() => update({ selectedStep8HandoffSignals: toggle(selectedStep8Signals, signal, STEP8_HANDOFF_SIGNALS.length) })} />)}
+      </div>
+      <button type="button" className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-black text-white" onClick={makeStep8Handoff}>경계·병목 후보 자동 추출하기</button>
       <Field label="8단계 전달 메모" value={state.step7HandoffToStep8 ?? ''} onChange={(value) => update({ step7HandoffToStep8: value })} placeholder="업무 경계, 병목 예상, 권한 밖 이슈, 에스컬레이션 후보를 정리합니다." minHeight="min-h-40" />
     </Card>
   </section>;
