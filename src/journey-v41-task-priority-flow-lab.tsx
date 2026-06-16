@@ -7,6 +7,7 @@ const V41_TASK_PRIORITY_FLOW_MARKERS = [
   '6단계 실행계획 확인',
   '6단계 요약 입력값',
   '긴 원문 표시 금지',
+  '중복 문장 정리 표시',
   '먼저 할 일 고르기',
   '잠시 줄일 일 고르기',
   '업무 흐름 3단계 만들기',
@@ -84,6 +85,53 @@ function short(value?: string, max = 180) {
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
+function stripSentenceEnd(value: string) {
+  return value
+    .replace(/\s+/g, ' ')
+    .replace(/[.。]\s*$/g, '')
+    .replace(/(을|를)\s*(작성|정리|확인|등록|표시|구분|보완)한다$/g, '')
+    .replace(/(작성|정리|확인|등록|표시|구분|보완)한다$/g, '')
+    .trim();
+}
+
+function displayOutputName(output?: string, managementTask?: string) {
+  const raw = compact(output);
+  const task = compact(managementTask);
+  if (raw === '미작성') return '미작성';
+  const generatedSuffix = '의 결과로 남길 업무산출물';
+  if (raw.includes(generatedSuffix)) {
+    const base = stripSentenceEnd(raw.replace(generatedSuffix, '').replace(task, task));
+    if (base.includes('관리표')) return `${base.replace(/관리표.*$/g, '관리표')}`;
+    if (base.includes('현황')) return `${base.replace(/현황.*$/g, '현황표')}`;
+    if (base.includes('리스트')) return `${base.replace(/리스트.*$/g, '리스트')}`;
+    return `${base} 산출물`;
+  }
+  return short(raw, 120);
+}
+
+function displayCompletionStandard(completion?: string, managementTask?: string) {
+  const raw = compact(completion);
+  const task = compact(managementTask);
+  if (raw === '미작성') return '미작성';
+  if (task !== '미작성' && raw.includes(task)) {
+    return '정해진 위치에 산출물이 남고, 누락 여부와 다음 행동 여부가 확인 가능해야 한다.';
+  }
+  return short(raw, 150);
+}
+
+function displayEvidenceSummary(state: TaskState, outputName: string, completionText: string) {
+  const location = compact(state.outputLocation);
+  const raw = compact(state.evidenceToCheck);
+  const evidenceParts = [
+    outputName !== '미작성' ? outputName : '업무산출물',
+    location !== '미작성' ? location : '지정 기록 위치',
+    completionText !== '미작성' ? '누락·다음 행동 확인 흔적' : '완료 기준 확인 흔적',
+  ];
+  if (raw === '미작성') return evidenceParts.join(' / ');
+  if (raw.includes('의 결과로 남길 업무산출물') || raw.includes('와 관련된 기록 또는 결과물')) return evidenceParts.join(' / ');
+  return short(raw, 150);
+}
+
 function lines(value?: string, max = 5) {
   return compact(value)
     .split(/\r?\n/)
@@ -113,6 +161,9 @@ export function V41TaskPriorityFlowLab() {
   const selectedWorkItems = lines(state.selectedWorkItems, 5);
   const completionCriteria = lines(state.workItemCompletionCriteria, 5);
   const excludedItems = lines(state.excludedWorkItems, 4);
+  const displayOutput = displayOutputName(state.selectedOutput, state.managementTask);
+  const displayCompletion = displayCompletionStandard(state.completionStandard, state.managementTask);
+  const displayEvidence = displayEvidenceSummary(state, displayOutput, displayCompletion);
 
   const suggestedFlow = useMemo(() => {
     const first = selectedPriority[0] || selectedWorkItems[0] || '최종 선택한 업무 단위 중 가장 먼저 시작할 업무를 정한다.';
@@ -139,14 +190,14 @@ export function V41TaskPriorityFlowLab() {
 
     <Card title="6단계 실행계획 확인">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-        <p className="mb-2 text-xs font-black text-amber-700">6단계 요약 입력값 · 긴 원문 표시 금지</p>
+        <p className="mb-2 text-xs font-black text-amber-700">6단계 요약 입력값 · 긴 원문 표시 금지 · 중복 문장 정리 표시</p>
         <SummaryLine label="실행관리 주기" value={executionCycle} />
         <SummaryLine label="업무과제 유형" value={state.managementTaskType} />
         <SummaryLine label="관리할 업무과제" value={state.managementTask} />
-        <SummaryLine label="업무산출물" value={state.selectedOutput} />
+        <SummaryLine label="업무산출물" value={displayOutput} />
         <SummaryLine label="기록 위치" value={state.outputLocation} />
-        <SummaryLine label="완료 기준" value={state.completionStandard} />
-        <SummaryLine label="확인 증거" value={state.evidenceToCheck} />
+        <SummaryLine label="완료 기준" value={displayCompletion} />
+        <SummaryLine label="확인 증거" value={displayEvidence} />
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-950">
