@@ -13,7 +13,9 @@ const V41_CONFIG_SMOKE_MARKERS = [
   '팀 기준 만들기',
   '업무관리 실행계획 만들기',
   '할 일·줄일 일',
+  '업무 순서·업무지시',
   '업무 경계 나누기',
+  '업무 경계·병목 대응',
   '1on1 대상 고르기',
   '1on1 첫 문장',
 ].join('|');
@@ -52,13 +54,13 @@ export const V41_VISIBLE_APP_STEPS: JourneyStep[] = [
   },
   {
     id: 'task-priority-flow',
-    title: '할 일·줄일 일',
-    description: '먼저 할 일과 잠시 줄일 일을 정합니다.',
+    title: '업무 순서·업무지시',
+    description: '업무 순서, 역할과 책임, 일정, 줄일 일, 업무지시 초안을 정합니다.',
   },
   {
     id: 'task-boundary-coordination',
-    title: '업무 경계 나누기',
-    description: '혼자 할 일, 팀장 확인, 협조 요청을 나눕니다.',
+    title: '업무 경계·병목 대응',
+    description: '업무 경계, 병목 신호, 에스컬레이션 기준, 팀장 개입 기준을 정합니다.',
   },
   {
     id: 'member-role',
