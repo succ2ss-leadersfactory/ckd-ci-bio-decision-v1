@@ -54,8 +54,7 @@ function ProcessOverview() {
   ];
   return <section className="rounded-3xl border border-cyan-100 bg-white p-5 shadow-sm md:p-6">
     <p className="text-xs font-black uppercase tracking-wide text-cyan-700">진행 흐름</p>
-    <h2 className="mt-2 text-xl font-black text-slate-950">이 단계 안에서는 ‘활동’ 단위로 진행합니다</h2>
-    <p className="mt-3 max-w-5xl text-sm font-bold leading-7 text-slate-600">전체 Journey의 1~10만 단계로 부릅니다. 이 화면 안에서는 활동 ①~④ 흐름으로 전략과제 선정, 자료 수집, CSF·KPI 정리, 추진계획 수립을 진행합니다.</p>
+    <h2 className="mt-2 text-xl font-black text-slate-950">전사 전략과제 선정부터 추진계획 수립까지 진행합니다</h2>
     <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => <div key={item.title} className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3"><p className="text-sm font-black text-cyan-950">{item.title}</p><p className="mt-1 text-xs font-bold leading-5 text-cyan-900">{item.text}</p></div>)}
     </div>
