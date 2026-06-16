@@ -19,6 +19,7 @@ const V41_ONE_ON_ONE_MARKERS = [
   '피해야 할 표현 고르기',
   'AI에게 1on1 대화 스크립트 초안 요청',
   'AI 역할극 리허설 1 · 내가 팀장 역할',
+  '상대 팀원 반응 성향 선택',
   'AI 역할극 리허설 2 · AI가 코칭 팀장 역할',
   '역할극 후 비교 성찰',
   '3분 역할극 리허설',
@@ -43,6 +44,7 @@ type PeopleState = Record<string, any> & {
   aiScriptPrompt?: string;
   aiScriptDraft?: string;
   revisedOneOnOneScript?: string;
+  roleplayOneReactionStyle?: string;
   roleplayOnePrompt?: string;
   roleplayOneLog?: string;
   roleplayTwoPushback?: string;
@@ -73,6 +75,17 @@ const EXPECTED_RESPONSES = [
   '기록은 했는데 다음 행동으로 어떻게 바꿔야 할지 몰랐습니다',
   '제가 부족해서 그런 것 같습니다',
   '그럼 기존에 하던 고객군은 줄여도 되는 건가요?',
+];
+
+const ROLEPLAY_ONE_REACTION_STYLES = [
+  '방어형: 지적받는다고 느끼면 먼저 이유를 설명하고 자기 방어를 합니다',
+  '침묵형: 바로 반응하지 않고 짧게 대답하며 속마음을 잘 드러내지 않습니다',
+  '논리 반박형: 팀장의 말에 근거와 현실 조건을 들어 반박합니다',
+  '불안형: 평가나 신뢰 문제로 받아들이며 조심스럽게 확인합니다',
+  '수동 동의형: 겉으로는 “네”라고 하지만 실제 생각이나 어려움은 숨깁니다',
+  '현실 제약 호소형: 시간, 고객 상황, 업무량 등 현실 조건을 먼저 말합니다',
+  '감정 누적형: 그동안 쌓인 부담이나 서운함이 대화 중 조금씩 드러납니다',
+  '해결 의존형: 스스로 판단하기보다 팀장이 정답을 정해주길 기대합니다',
 ];
 
 const PUSHBACK_TYPES = [
@@ -147,12 +160,17 @@ function defaultFollowUpQuestion() {
   return '다음 주 금요일 기준으로 실제로 어디서 막혔고, 제가 추가로 정리해줘야 할 기준은 무엇인지 다시 확인하겠습니다.';
 }
 
+function selectedReactionStyle(state: PeopleState) {
+  return state.roleplayOneReactionStyle || ROLEPLAY_ONE_REACTION_STYLES[0];
+}
+
 function buildAiScriptPrompt(state: PeopleState, member: TeamMemberProfile) {
   return `당신은 제약영업 팀장의 1on1 코칭 대화 리허설을 돕는 코치입니다.\n\n[선택한 팀원]\n${member.label} · ${member.role}\n\n[팀원 신호]\n${member.currentSignal}\n\n[관찰한 행동]\n${asList(state.observedBehaviors)}\n\n[확인 없이 말하지 않을 위험한 해석]\n${asList(state.riskyInterpretations)}\n\n[1on1 초점]\n${state.oneOnOneFocus || member.defaultCoachingPurpose}\n\n[첫 문장]\n${state.firstSentence || defaultFirstSentence(member, state)}\n\n[확인 질문 2개]\n1. ${state.checkQuestionOne || defaultQuestionOne(member, state)}\n2. ${state.checkQuestionTwo || defaultQuestionTwo()}\n\n[팀원 예상 반응]\n${state.expectedResponse || '미선택'}\n\n[리더의 재질문]\n${state.leaderFollowUpQuestion || defaultFollowUp(state)}\n\n[2주 행동 합의]\n${state.twoWeekAgreement || defaultAgreement()}\n\n[피해야 할 표현]\n${asList(state.avoidedExpressions)}\n\n[요청]\n실제 1on1 대화 스크립트 초안을 작성해 주세요. 지적이 아니라 확인으로 시작하고, 마지막에는 작은 행동 합의와 후속 확인 질문을 포함해 주세요.\n\n[출력 형식]\n1. 1on1 대화 스크립트\n2. 팀원 반응 예상\n3. 리더 재질문 개선안\n4. 피해야 할 표현\n5. 2주 행동 합의 문장\n6. 후속 확인 질문\n\n[주의]\n개인평가, 단정, 압박, 실제 고객·병원·제품·매출 정보는 쓰지 마세요.`;
 }
 
 function buildTeamMemberRoleplayPrompt(state: PeopleState, member: TeamMemberProfile) {
-  return `당신은 지금부터 제약영업팀의 팀원 역할을 맡아 1on1 코칭 대화 역할극을 진행합니다.\n\n[팀원 페르소나]\n이름/직급: ${member.label}\n역할 특성: ${member.role}\n현재 보이는 신호: ${member.currentSignal}\n관찰된 행동: ${asList(state.observedBehaviors)}\n리더가 조심해야 할 해석: ${asList(state.riskyInterpretations)}\n이번 1on1 초점: ${state.oneOnOneFocus || member.defaultCoachingPurpose}\n\n[팀장 첫 문장]\n${state.firstSentence || defaultFirstSentence(member, state)}\n\n[진행 방식]\n처음에는 실제 팀원처럼 반응하세요. 너무 쉽게 수긍하지 말고, 팀장이 관찰과 질문으로 확인하면 조금씩 구체적으로 설명하세요. 대화는 6~8턴 정도 이어가고, 내가 “역할극 종료”라고 입력하면 피드백을 주세요.\n\n[피드백 기준]\n리더의 좋은 점, 단정처럼 들린 표현, 질문 개선안, 행동 합의의 구체성, 다음 대화 개선 문장을 알려 주세요.`;
+  const reactionStyle = selectedReactionStyle(state);
+  return `당신은 지금부터 제약영업팀의 팀원 역할을 맡아 1on1 코칭 대화 역할극을 진행합니다.\n\n[팀원 페르소나]\n이름/직급: ${member.label}\n역할 특성: ${member.role}\n현재 보이는 신호: ${member.currentSignal}\n관찰된 행동: ${asList(state.observedBehaviors)}\n리더가 조심해야 할 해석: ${asList(state.riskyInterpretations)}\n이번 1on1 초점: ${state.oneOnOneFocus || member.defaultCoachingPurpose}\n\n[면담·코칭 시 보일 반응 성향]\n${reactionStyle}\n\n[팀장 첫 문장]\n${state.firstSentence || defaultFirstSentence(member, state)}\n\n[진행 방식]\n처음에는 위 반응 성향을 가진 실제 팀원처럼 반응하세요. 너무 쉽게 수긍하지 말고, 팀장이 관찰과 질문으로 확인하면 조금씩 더 구체적으로 설명하세요. 대화는 6~8턴 정도 이어가고, 내가 “역할극 종료”라고 입력하면 피드백을 주세요.\n\n[피드백 기준]\n리더의 좋은 점, 단정처럼 들린 표현, 반응 성향을 고려한 질문 개선안, 행동 합의의 구체성, 다음 대화 개선 문장을 알려 주세요.`;
 }
 
 function buildCoachManagerRoleplayPrompt(state: PeopleState, member: TeamMemberProfile) {
@@ -173,6 +191,7 @@ function buildPeopleMemo(state: PeopleState, member: TeamMemberProfile) {
     `- 확인 질문 1: ${state.checkQuestionOne || defaultQuestionOne(member, state)}`,
     `- 확인 질문 2: ${state.checkQuestionTwo || defaultQuestionTwo()}`,
     `- 팀원 예상 반응: ${state.expectedResponse || '미작성'}`,
+    `- 역할극 1 반응 성향: ${selectedReactionStyle(state)}`,
     `- 리더 재질문: ${state.leaderFollowUpQuestion || defaultFollowUp(state)}`,
     `- 2주 행동 합의: ${state.revisedAgreementAfterRoleplay || state.twoWeekAgreement || defaultAgreement()}`,
     `- 피해야 할 표현: ${asList(state.avoidedExpressions)}`,
@@ -226,7 +245,7 @@ export function V41OneOnOnePracticeLab() {
     <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI에게 1on1 대화 스크립트 초안 요청</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">우리 조가 먼저 만든 첫 문장, 확인 질문, 예상 반응, 재질문, 행동 합의를 넣어 대화 초안을 받습니다.</p></div><CopyButton label="AI 질문 복사" copiedLabel="복사됨" text={prompt} onCopied={() => update({ aiScriptPrompt: prompt })} /></div><details className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">AI에게 붙여넣을 질문 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-white p-4 text-xs leading-6 text-slate-700">{prompt}</pre></details></section>
     <Field label="AI 초안 붙여넣기" help="AI가 만든 1on1 스크립트 초안을 붙여넣습니다." placeholder="AI 1on1 대화 스크립트 초안을 붙여넣습니다." value={state.aiScriptDraft} onChange={(aiScriptDraft) => update({ aiScriptDraft })} minHeight="min-h-32" />
     <Field label="우리 조 언어로 수정" help="AI 문장을 그대로 쓰지 말고 실제 리더가 말할 수 있는 대화문으로 고칩니다." placeholder="리더: ...\n팀원: ...\n리더: ..." value={state.revisedOneOnOneScript} onChange={(revisedOneOnOneScript) => update({ revisedOneOnOneScript })} minHeight="min-h-40" />
-    <PracticePanel title="AI 역할극 리허설 1 · 내가 팀장 역할" subtitle="AI는 선택한 팀원 페르소나로 반응합니다. 먼저 내가 팀장으로 말해보고 피드백을 받습니다." tone="emerald"><section className="rounded-2xl border border-emerald-200 bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">선택한 팀원에게 첫 대화를 시작하세요</p><p className="mt-1 text-sm font-bold leading-6 text-emerald-900">프롬프트를 복사해 외부 AI에 붙여넣으면 1on1 역할극이 시작됩니다.</p></div><CopyButton label="역할극 1 프롬프트 복사" copiedLabel="복사됨" text={roleplayOnePrompt} onCopied={() => update({ roleplayOnePrompt })} /></div><details className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 1 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayOnePrompt}</pre></details></section><Field label="AI 역할극 1 대화 기록 붙여넣기" help="내가 팀장으로 말하고 AI가 팀원으로 반응한 대화 기록과 피드백을 붙여넣습니다." placeholder="AI 팀원과 진행한 1on1 역할극 기록을 붙여넣습니다." value={state.roleplayOneLog} onChange={(roleplayOneLog) => update({ roleplayOneLog })} minHeight="min-h-36" /></PracticePanel>
+    <PracticePanel title="AI 역할극 리허설 1 · 내가 팀장 역할" subtitle="AI는 선택한 팀원과 선택한 반응 성향으로 반응합니다. 먼저 내가 팀장으로 말해보고 피드백을 받습니다." tone="emerald"><section className="rounded-2xl border border-emerald-200 bg-white p-4"><p className="text-sm font-black text-slate-950">상대 팀원 반응 성향 선택</p><p className="mt-1 text-sm font-bold leading-6 text-emerald-900">면담·코칭 상황에서 팀원이 보일 수 있는 반응을 고릅니다. 선택한 성향은 역할극 1 프롬프트에 반영됩니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2">{ROLEPLAY_ONE_REACTION_STYLES.map((style) => <ChoiceButton key={style} selected={selectedReactionStyle(state) === style} onClick={() => update({ roleplayOneReactionStyle: style })}>{style}</ChoiceButton>)}</div></section><section className="rounded-2xl border border-emerald-200 bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">선택한 팀원에게 첫 대화를 시작하세요</p><p className="mt-1 text-sm font-bold leading-6 text-emerald-900">프롬프트를 복사해 외부 AI에 붙여넣으면 선택한 반응 성향을 가진 팀원과 1on1 역할극이 시작됩니다.</p></div><CopyButton label="역할극 1 프롬프트 복사" copiedLabel="복사됨" text={roleplayOnePrompt} onCopied={() => update({ roleplayOnePrompt })} /></div><details className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 1 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayOnePrompt}</pre></details></section><Field label="AI 역할극 1 대화 기록 붙여넣기" help="내가 팀장으로 말하고 AI가 선택한 성향의 팀원으로 반응한 대화 기록과 피드백을 붙여넣습니다." placeholder="AI 팀원과 진행한 1on1 역할극 기록을 붙여넣습니다." value={state.roleplayOneLog} onChange={(roleplayOneLog) => update({ roleplayOneLog })} minHeight="min-h-36" /></PracticePanel>
     <PracticePanel title="AI 역할극 리허설 2 · AI가 코칭 팀장 역할" subtitle="이번에는 참여자가 딴지 거는 팀원이 되고, AI의 코칭 팀장 대응을 관찰합니다." tone="indigo"><section className="rounded-2xl border bg-white p-4"><p className="text-sm font-black text-slate-950">딴지 유형 선택</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">참여자는 딴지 거는 팀원 역할을 맡습니다. AI가 코칭을 잘하는 팀장 역할을 맡습니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">{PUSHBACK_TYPES.map((pushback) => <ChoiceButton key={pushback} selected={state.roleplayTwoPushback === pushback} onClick={() => update({ roleplayTwoPushback: pushback })}>{pushback}</ChoiceButton>)}</div></section><section className="rounded-2xl border border-indigo-200 bg-white p-4"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-sm font-black text-slate-950">AI가 좋은 팀장으로 대응하는 장면 보기</p><p className="mt-1 text-sm font-bold leading-6 text-indigo-900">AI가 좋은 팀장으로 어떻게 대응하는지 체험하고, 쓸 만한 코칭 문장을 가져옵니다.</p></div><CopyButton label="역할극 2 프롬프트 복사" copiedLabel="복사됨" text={roleplayTwoPrompt} onCopied={() => update({ roleplayTwoPrompt })} /></div><details className="mt-4 rounded-2xl border border-indigo-200 bg-white p-4"><summary className="cursor-pointer text-sm font-black text-slate-950">역할극 2 프롬프트 보기</summary><pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-700">{roleplayTwoPrompt}</pre></details></section><Field label="AI 역할극 2 대화 기록 붙여넣기" help="내가 딴지 거는 팀원으로 말하고 AI가 코칭 팀장으로 대응한 대화 기록을 붙여넣습니다." placeholder="AI 코칭 팀장의 대응 기록을 붙여넣습니다." value={state.roleplayTwoLog} onChange={(roleplayTwoLog) => update({ roleplayTwoLog })} minHeight="min-h-36" /></PracticePanel>
     <PracticePanel title="역할극 후 비교 성찰" subtitle="내가 팀장으로 말했을 때와 AI 팀장이 대응했을 때의 차이를 비교합니다." tone="slate"><div className="grid gap-4 lg:grid-cols-2"><Field label="AI 팀장의 대응에서 배울 점 1가지" help="공감, 질문, 기준 확인, 행동 합의 중 가져갈 점을 적습니다." placeholder="예: 딴지를 바로 반박하지 않고 먼저 우선순위 혼란을 인정했다." value={state.aiCoachLearning} onChange={(aiCoachLearning) => update({ aiCoachLearning })} /><Field label="우리 조가 최종 적용할 코칭 문장 1개" help="실제 1on1에서 그대로 쓸 수 있는 문장을 하나 남깁니다." placeholder="예: 그렇게 느낄 수 있습니다. 오늘은 이번 2주 동안 어디에 힘을 더 줄지 함께 정리하려는 것입니다." value={state.finalCoachingSentence} onChange={(finalCoachingSentence) => update({ finalCoachingSentence })} /><Field label="역할극 후 수정한 첫 문장" help="역할극을 거친 뒤 첫 문장을 더 자연스럽게 고칩니다." placeholder={defaultFirstSentence(member, state)} value={state.revisedFirstSentenceAfterRoleplay} onChange={(revisedFirstSentenceAfterRoleplay) => update({ revisedFirstSentenceAfterRoleplay })} /><Field label="역할극 후 수정한 2주 행동 합의" help="역할극을 거친 뒤 더 작고 실행 가능한 합의로 고칩니다." placeholder={defaultAgreement()} value={state.revisedAgreementAfterRoleplay} onChange={(revisedAgreementAfterRoleplay) => update({ revisedAgreementAfterRoleplay })} /></div></PracticePanel>
     <section className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"><p className="text-sm font-black text-slate-950">3분 역할극 리허설</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">AI 역할극에서 얻은 문장을 바탕으로 조 안에서 마지막 3분 리허설을 진행합니다.</p><div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">{REHEARSAL_CHECKS.map((check) => <ChoiceButton key={check} selected={safeArray(state.rehearsalChecks).includes(check)} onClick={() => update({ rehearsalChecks: toggleList(state.rehearsalChecks, check) })}>{check}</ChoiceButton>)}</div></section>
