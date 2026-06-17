@@ -82,3 +82,196 @@
 #journey-root textarea:focus {
   box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12), inset 0 1px 2px rgba(15, 23, 42, 0.035);
 }
+
+/* v41 hero redesign based on selected banner direction */
+#journey-root main > div > header {
+  position: relative;
+  min-height: 17.8rem;
+  overflow: hidden;
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 78% 48%, rgba(8, 145, 178, 0.35), transparent 23rem),
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.12), transparent 18rem),
+    linear-gradient(115deg, #07142f 0%, #081a3a 43%, #073f51 100%) !important;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.16);
+}
+
+#journey-root main > div > header::before {
+  content: "시작        분석        결정        성과";
+  position: absolute;
+  right: 3.5rem;
+  bottom: 3.2rem;
+  width: 28rem;
+  max-width: 45%;
+  height: 5.8rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 1.55rem;
+  text-align: right;
+  padding-top: 4.8rem;
+  background:
+    radial-gradient(circle at 5% 23%, rgba(255,255,255,0.18) 0 1.45rem, rgba(255,255,255,0.38) 1.5rem 1.55rem, transparent 1.6rem),
+    radial-gradient(circle at 36% 12%, rgba(255,255,255,0.18) 0 1.35rem, rgba(255,255,255,0.36) 1.4rem 1.45rem, transparent 1.5rem),
+    radial-gradient(circle at 67% 2%, rgba(255,255,255,0.18) 0 1.35rem, rgba(255,255,255,0.36) 1.4rem 1.45rem, transparent 1.5rem),
+    radial-gradient(circle at 97% -8%, rgba(37, 99, 235, 0.92) 0 1.7rem, rgba(125, 211, 252, 0.28) 1.8rem 2.35rem, transparent 2.4rem),
+    linear-gradient(20deg, transparent 10%, rgba(125, 211, 252, 0.0) 25%, rgba(125, 211, 252, 0.48) 26%, rgba(125, 211, 252, 0.0) 28%, transparent 100%);
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+#journey-root main > div > header::after {
+  content: "";
+  position: absolute;
+  right: -1rem;
+  bottom: -1rem;
+  width: 19rem;
+  height: 12rem;
+  opacity: 0.36;
+  background:
+    repeating-radial-gradient(ellipse at bottom right, transparent 0 1.25rem, rgba(125, 211, 252, 0.23) 1.32rem 1.36rem, transparent 1.42rem 2.35rem);
+  pointer-events: none;
+}
+
+#journey-root main > div > header > div {
+  position: relative;
+  z-index: 1;
+  min-height: 17.8rem;
+  padding: 2rem 2.2rem !important;
+  background: transparent !important;
+}
+
+#journey-root main > div > header > div > div:first-child {
+  gap: 0.85rem;
+}
+
+#journey-root main > div > header > div > div:first-child span {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  background: rgba(30, 41, 59, 0.46) !important;
+  color: rgba(219, 234, 254, 0.95) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-transform: none;
+  letter-spacing: -0.02em;
+}
+
+#journey-root main > div > header > div > div:first-child span:first-child::before {
+  content: "✦ ";
+  color: #93c5fd;
+}
+
+#journey-root main > div > header > div > div:first-child span:nth-child(2) {
+  border-color: rgba(45, 212, 191, 0.25);
+  background: rgba(20, 184, 166, 0.18) !important;
+}
+
+#journey-root main > div > header > div > div:first-child span:nth-child(2)::before {
+  content: "☑ ";
+  color: #99f6e4;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  align-items: center;
+  gap: 2.4rem !important;
+  margin-top: 2.55rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 4.5rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"]:is(img) {
+  filter: saturate(1.08);
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 16.5rem;
+  justify-content: center;
+  border-radius: 1.1rem !important;
+  padding: 1.05rem 1.55rem !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 18px 36px rgba(2, 6, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  position: relative;
+  padding-left: 2.3rem;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1px;
+  height: 7.5rem;
+  background: linear-gradient(180deg, transparent, rgba(226, 232, 240, 0.6), transparent);
+}
+
+#journey-root main > div > header h1 {
+  font-size: 0 !important;
+  line-height: 1 !important;
+}
+
+#journey-root main > div > header h1::before {
+  content: "김박사의";
+  display: block;
+  margin-bottom: 0.32rem;
+  color: #67e8f9;
+  font-size: clamp(1.35rem, 2.3vw, 2.25rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  transform: rotate(-2deg);
+}
+
+#journey-root main > div > header h1::after {
+  content: "Leadership Decision Journey";
+  display: block;
+  color: #f8fafc;
+  font-size: clamp(2.15rem, 4.3vw, 4.35rem);
+  font-weight: 880;
+  letter-spacing: -0.065em;
+  line-height: 1.03;
+  text-shadow: 0 6px 22px rgba(15, 23, 42, 0.4);
+}
+
+#journey-root main > div > header h1 + p {
+  display: block !important;
+  font-size: 0 !important;
+  margin-top: 0.9rem !important;
+  max-width: none !important;
+}
+
+#journey-root main > div > header h1 + p::after {
+  content: "C1바이오 영업팀장 AI 리더십 Lab";
+  color: rgba(226, 232, 240, 0.78);
+  font-size: clamp(1.05rem, 1.75vw, 1.65rem);
+  font-weight: 780;
+  letter-spacing: -0.05em;
+  line-height: 1.3;
+}
+
+@media (max-width: 900px) {
+  #journey-root main > div > header {
+    min-height: auto;
+  }
+
+  #journey-root main > div > header::before,
+  #journey-root main > div > header::after {
+    display: none;
+  }
+
+  #journey-root main > div > header > div {
+    min-height: auto;
+    padding: 1.35rem !important;
+  }
+
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+    padding-left: 0;
+  }
+
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+    display: none;
+  }
+}
