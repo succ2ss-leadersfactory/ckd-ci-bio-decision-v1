@@ -1,7 +1,7 @@
 /* v41 phase2 UX overrides: compact prompts and clearer action buttons */
 
 #journey-root pre {
-  max-height: 12rem !important;
+  max-height: 10rem !important;
   overflow: auto;
 }
 
