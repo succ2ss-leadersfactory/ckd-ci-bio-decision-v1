@@ -17,3 +17,17 @@
 #journey-root button:hover {
   transform: translateY(-1px);
 }
+
+#journey-root button.border-emerald-700.bg-emerald-700 {
+  box-shadow: 0 14px 30px rgba(5, 150, 105, 0.18);
+}
+
+#journey-root details.border-indigo-200,
+#journey-root details.border-emerald-200 {
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.075);
+}
+
+#journey-root details.border-indigo-200 summary span,
+#journey-root details.border-emerald-200 summary span {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
