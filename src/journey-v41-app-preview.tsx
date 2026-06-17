@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import './journey-v41-design.css';
+import './journey-v41-design-overrides.css';
 import { JourneyShell } from './journey-shell';
 import { removeStoredPrefix, useStored } from './journey-storage';
 import { V39StepHero, type V39InfoBadge } from './journey-v39-ux-components';
@@ -29,7 +30,7 @@ type V41DomainFlowSpec = { eyebrow: string; title: string; description: string; 
 type V41HandoffSpec = { title: string; items: string[] };
 
 const rootElement = document.getElementById('journey-root') ?? document.getElementById('root');
-const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','v41 preview-only design css','v41 업무관리 흐름 인포그래픽','v41 사람관리 흐름 인포그래픽','v41 domain flow active highlight','v41 next-step handoff card','다음 단계로 넘길 것','전략과제 → CSF → KPI → 업무과제 → 산출물 → 업무지시 → 경계·병목','관찰 사실 → 해석 분리 → 대화 초점 → 첫 문장 → 확인 질문 → 행동 합의 → 후속 확인','Pretendard','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
+const V41_PREVIEW_APP_MARKERS = ['V41PreviewApp','journey-v41-preview.html','v41 stage overview hero after flow strip','v41 preview-only design css','v41 compact prompt override css','v41 action label refinement','v41 업무관리 흐름 인포그래픽','v41 사람관리 흐름 인포그래픽','v41 domain flow active highlight','v41 next-step handoff card','다음 단계로 넘길 것','전략과제 → CSF → KPI → 업무과제 → 산출물 → 업무지시 → 경계·병목','관찰 사실 → 해석 분리 → 대화 초점 → 첫 문장 → 확인 질문 → 행동 합의 → 후속 확인','Pretendard','전체 Journey만 단계라고 부른다','내부 진행 단위는 활동·결정·작업으로 표현한다','v41 step 2 basic leader profile','v41 step 2 basic member profiles','v41 step 2 profile source aligned with TEAM_MEMBER_PROFILES','v41 step 2 and step 9 member consistency','경력/연차','주요 역할','업무스타일','소통스타일','강점','아쉬운 점','비고','문교원','V41PerformanceAiExpansionLab','AI 실행계획 흐름 안정화'].join('|');
 void V41_PREVIEW_APP_MARKERS;
 
 const V41_STORAGE_KEYS = { participant: 'ckd.v41.participant.v1', progress: 'ckd.v41.progress.v1' };
@@ -88,6 +89,17 @@ const STEP_HANDOFFS: Record<number, V41HandoffSpec> = {
   10: { title: '현업 실행으로 가져갈 것', items: ['첫 문장', '확인 질문', '2주 행동 합의', '후속 확인 질문'] },
 };
 
+const ACTION_LABEL_REFINEMENTS: Record<string, string> = {
+  'Perplexity 프롬프트 복사': '자료 찾기 프롬프트 복사',
+  'NotebookLM 프롬프트 복사': '자료 정리 프롬프트 복사',
+  '보고서형 프롬프트 복사': '보고서 초안 프롬프트 복사',
+  '슬라이드형 프롬프트 복사': '슬라이드 구성 프롬프트 복사',
+  '인포그래픽형 프롬프트 복사': '인포그래픽 초안 프롬프트 복사',
+  '보고서형 추진계획 프롬프트 복사': '보고서 초안 프롬프트 복사',
+  '슬라이드형 추진계획 프롬프트 복사': '슬라이드 구성 프롬프트 복사',
+  '인포그래픽형 추진계획 프롬프트 복사': '인포그래픽 초안 프롬프트 복사',
+};
+
 function splitMemberLabel(label: string) { const [name, ...titleParts] = label.split(' '); return { name: name || label, title: titleParts.join(' ') }; }
 const MEMBERS: Member[] = TEAM_MEMBER_PROFILES.map((profile) => { const { name, title } = splitMemberLabel(profile.label); return { id: profile.id, name, title, career: MEMBER_CAREERS[profile.id] ?? '제약영업 구성원', role: profile.role, workStyle: profile.workStyle, communicationStyle: profile.customerStyle, strength: profile.strength, weakness: profile.risk, note: `${profile.misreadRisk} ${profile.oneOnOneReason}` }; });
 
@@ -99,6 +111,7 @@ function StageOverview({ currentStep }: { currentStep: number }) { const overvie
 function domainFlowOf(step: number) { if (step >= 6 && step <= 8) return DOMAIN_FLOWS.work; if (step >= 9 && step <= 10) return DOMAIN_FLOWS.people; return null; }
 function V41DomainFlowInfographic({ currentStep }: { currentStep: number }) { const flow = domainFlowOf(currentStep); if (!flow) return null; const activeTitles = flow.activeByStep[currentStep] ?? []; return <section className="v41-domain-flow"><div className="v41-domain-flow-header"><p className="v41-domain-flow-eyebrow">{flow.eyebrow}</p><h3 className="v41-domain-flow-title">{flow.title}</h3><p className="v41-domain-flow-description">{flow.description}</p></div><div className="v41-domain-flow-grid">{flow.items.map((item) => <div key={item.title} className={`v41-domain-node ${flow.kind} ${activeTitles.includes(item.title) ? 'active' : ''}`}><div className="v41-domain-node-icon" aria-hidden="true">{item.icon}</div><p className="v41-domain-node-title">{item.title}</p><p className="v41-domain-node-text">{item.text}</p></div>)}</div></section>; }
 function V41StepHandoffCard({ currentStep }: { currentStep: number }) { const spec = STEP_HANDOFFS[currentStep]; if (!spec) return null; return <section className="v41-handoff-card"><p className="v41-handoff-eyebrow">다음 단계로 넘길 것</p><h3 className="v41-handoff-title">{spec.title}</h3><div className="v41-handoff-list">{spec.items.map((item) => <div key={item} className="v41-handoff-item">{item}</div>)}</div></section>; }
+function useV41ActionLabelRefinement(currentStep: number) { useEffect(() => { const timer = window.setTimeout(() => { document.querySelectorAll<HTMLButtonElement>('#journey-root button').forEach((button) => { const label = button.textContent?.trim(); const refined = label ? ACTION_LABEL_REFINEMENTS[label] : undefined; if (refined) { button.textContent = refined; button.setAttribute('data-v41-action-label', 'refined'); } }); }, 0); return () => window.clearTimeout(timer); }, [currentStep]); }
 
 function EntryStep({ participant, setParticipant }: { participant: V41Participant; setParticipant: (next: V41Participant) => void }) {
   const ready = isParticipantReady(participant);
@@ -119,6 +132,7 @@ function V41PreviewApp() {
   const [participant, setParticipant] = useStored<V41Participant>(V41_STORAGE_KEYS.participant, DEFAULT_PARTICIPANT);
   const [progress, setProgress] = useStored<V41Progress>(V41_STORAGE_KEYS.progress, DEFAULT_PROGRESS);
   const currentStep = clampV41Step(progress.step);
+  useV41ActionLabelRefinement(currentStep);
   const selectStep = (stepIndex: number) => { setProgress({ step: clampV41Step(stepIndex) }); scrollV41ToTop(); };
   const goPrev = () => selectStep(currentStep - 1);
   const goNext = () => { if (currentStep === 0 && !isParticipantReady(participant)) { showV41EntryGateMessage(); return; } selectStep(currentStep + 1); };
