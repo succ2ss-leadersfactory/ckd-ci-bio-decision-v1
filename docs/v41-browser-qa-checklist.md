@@ -8,6 +8,65 @@ Use a cache-busting query when checking a new commit:
 /journey-v41-preview.html?v=<short-sha>
 ```
 
+## v41 ownership guardrails
+
+The v41 preview lane is intentionally isolated. QA and stabilization work should stay inside the v41-specific files unless a separate review explicitly approves a shared dependency change.
+
+Primary v41-owned runtime files:
+
+- `journey-v41-preview.html`
+- `src/journey-v41-app-preview.tsx`
+- `src/journey-v41-preview-config.ts`
+- `src/journey-v41-ux-components.tsx`
+- `src/journey-v41-progress-coach-panel.tsx`
+- `src/journey-v41-*.tsx`
+- `src/journey-v41-*.ts`
+- `src/journey-v41-*.css`
+
+Protected operating and previous-preview routes:
+
+- `/journey.html`
+- `/ckd-ai-lab.html`
+- `/journey-v39-preview.html`
+- `/journey-v40-vnext-preview.html`
+
+Do not change protected routes or their app entry files while stabilizing v41.
+
+## v41 CSS ownership
+
+The v41 preview currently uses three v41-scoped CSS layers. Browser QA should confirm that the visible result is stable before any CSS cleanup or consolidation.
+
+| File | Ownership | QA focus |
+| --- | --- | --- |
+| `src/journey-v41-design.css` | Base v41 visual refinement under `#journey-root` | Card rhythm, form readability, v41 infographic/domain flow styling |
+| `src/journey-v41-design-overrides.css` | Later v41 UX and hero override layer | Hero appearance, compact prompt boxes, button/card polish |
+| `src/journey-v41-hero-horizontal-fix.css` | Final v41 hero horizontal alignment patch loaded by the preview HTML | Hero title alignment, horizontal spacing, no regression in top section |
+
+CSS stabilization rule:
+
+- [ ] Do not consolidate or rewrite hero CSS before browser QA confirms the current hero layout is stable.
+- [ ] Do not move v41 CSS into shared/global files.
+- [ ] Any v41 CSS change must trigger `v41 Smoke` through the workflow path filter.
+- [ ] Confirm CSS selectors remain scoped to `#journey-root` or v41-specific classes whenever possible.
+
+## Protected route guardrails
+
+Before accepting a v41 change, confirm that the following routes still load their intended experiences and do not show v41-only copy, v41-only CSS changes, or v41 storage behavior.
+
+| Route | Expected guardrail |
+| --- | --- |
+| `/journey.html` | Existing operating journey remains unchanged. |
+| `/ckd-ai-lab.html` | Existing pilot entry remains unchanged. |
+| `/journey-v39-preview.html` | v39 preview remains unchanged. |
+| `/journey-v40-vnext-preview.html` | v40-vNext preview remains unchanged. |
+| `/journey-v41-preview.html` | Only this route receives v41 preview changes. |
+
+Storage guardrail:
+
+- [ ] Local storage keys remain in the v41 namespace for the v41 preview path.
+- [ ] Reset actions clear v41 input only.
+- [ ] Do not introduce broad prefixes such as `ckd.` reset behavior in v41 work.
+
 ## Global checks
 
 - [ ] No development/version banner is visible above the app.
