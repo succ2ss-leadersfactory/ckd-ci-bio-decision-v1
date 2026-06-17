@@ -275,3 +275,109 @@
     display: none;
   }
 }
+
+/* v41 hero fine tuning to match the uploaded banner more closely */
+#journey-root main > div > header {
+  min-height: 15.8rem;
+}
+
+#journey-root main > div > header > div {
+  min-height: 15.8rem;
+  padding: 1.9rem 2.15rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  gap: 1.95rem !important;
+  margin-top: 2.15rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 14.7rem;
+  padding: 0.95rem 1.35rem !important;
+  border-radius: 1rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 4.05rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 2rem;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+  top: 0.25rem;
+  height: 6.8rem;
+}
+
+#journey-root main > div > header h1::before {
+  margin-bottom: 0.18rem;
+  font-size: clamp(1.08rem, 1.7vw, 1.65rem);
+  line-height: 1;
+}
+
+#journey-root main > div > header h1::after {
+  font-size: clamp(2.1rem, 3.52vw, 3.55rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.99;
+  white-space: nowrap;
+}
+
+#journey-root main > div > header h1 + p::after {
+  font-size: clamp(1.02rem, 1.45vw, 1.35rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+}
+
+#journey-root main > div > header::before {
+  right: 2.65rem;
+  bottom: 2.15rem;
+  width: 24.5rem;
+  max-width: 36%;
+  height: 4.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 1.06rem;
+  padding-top: 4.05rem;
+  color: rgba(255, 255, 255, 0.78);
+  opacity: 0.88;
+}
+
+#journey-root main > div > header::after {
+  right: -0.5rem;
+  bottom: -0.5rem;
+  width: 15rem;
+  height: 9rem;
+  opacity: 0.24;
+}
+
+#journey-root main > div > header > div > div:first-child span {
+  font-size: 0.78rem;
+  padding: 0.42rem 0.9rem;
+}
+
+@media (max-width: 1200px) {
+  #journey-root main > div > header h1::after {
+    font-size: clamp(1.85rem, 3.18vw, 3.15rem);
+  }
+
+  #journey-root main > div > header::before {
+    max-width: 32%;
+    right: 1.75rem;
+  }
+}
+
+@media (max-width: 980px) {
+  #journey-root main > div > header h1::after {
+    white-space: normal;
+    font-size: clamp(2.1rem, 5vw, 3.25rem);
+    line-height: 1.02;
+  }
+
+  #journey-root main > div > header h1 + p::after {
+    font-size: 1rem;
+  }
+}
