@@ -2,7 +2,7 @@ import { V41_VISIBLE_APP_STEPS } from './journey-v41-preview-config';
 
 const V41_PROGRESS_COACH_MARKERS = [
   'V41ProgressCoachPanel',
-  '지금 할 일',
+  '오늘의 여정',
   '현재 단계에서 하나만 확인하세요',
   'v41 progress coach copy refined',
   'v41 start whole journey overview',
@@ -96,7 +96,7 @@ export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }
     <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
       <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">지금 할 일</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">오늘의 여정</p>
           <h2 className="mt-1 text-lg font-black leading-tight text-slate-950 md:text-xl">{guide.action}</h2>
           <p className="mt-1 text-sm font-bold leading-6 text-slate-500">{stepGuideDescription(currentStep)}</p>
         </div>
