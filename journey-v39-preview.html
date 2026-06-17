@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C1바이오 영업팀장 AI 리더십 Lab Journey</title>
+  <style>
+    .v39-action-details,
+    .v39-card-support-details {
+      margin-top: 0.75rem;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 0.9rem;
+      background: rgba(236, 253, 245, 0.72);
+      padding: 0.65rem 0.8rem;
+    }
+    .v39-card-support-details {
+      border-color: rgba(124, 58, 237, 0.14);
+      background: rgba(245, 243, 255, 0.72);
+    }
+    .v39-action-details > summary,
+    .v39-card-support-details > summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 900;
+      font-size: 0.75rem;
+      color: #047857;
+      user-select: none;
+    }
+    .v39-card-support-details > summary { color: #6d28d9; }
+    .v39-action-details > summary::-webkit-details-marker,
+    .v39-card-support-details > summary::-webkit-details-marker { display: none; }
+    .v39-action-details > summary::before,
+    .v39-card-support-details > summary::before { content: '＋ '; font-weight: 900; }
+    .v39-action-details[open] > summary::before,
+    .v39-card-support-details[open] > summary::before { content: '－ '; }
+    .v39-action-details > div,
+    .v39-card-support-details > div { margin-top: 0.55rem !important; }
+  </style>
+</head>
+<body>
+  <div id="journey-root"></div>
+  <script>
+    window.__V39_STEP7_VISIBLE_DECISION_MARKERS = 'AI 결과 전체 붙여넣기|고객군별 AI 결과 전체 보기|AI 초안을 아래 실행 행동에 반영하기|AI 결과에서 읽어온 2주 행동 초안|팀원 연결 기준 숨김|노란 경고 박스 안전 삭제|7단계는 고객군별 대응 방향 정리|빈 화면 방지';
+
+    function textOf(element) {
+      return (element && element.textContent ? element.textContent : '').trim();
+    }
+
+    function hideStep7WarningBoxes() {
+      Array.from(document.querySelectorAll('div.rounded-2xl, p')).forEach(function (element) {
+        var text = textOf(element);
+        var isWarningText = text.includes('AI 초안은 그대로 확정하지 않습니다') && text.includes('집중 공략');
+        var isSmallWarningBlock = text.length < 260;
+        if (isWarningText && isSmallWarningBlock) {
+          element.style.display = 'none';
+          element.setAttribute('data-v39-hidden-warning', 'true');
+        }
+      });
+    }
+
+    function hideStep7MemberConnectionFields() {
+      Array.from(document.querySelectorAll('label')).forEach(function (label) {
+        var text = textOf(label);
+        if (text.includes('팀원 연결 기준 / 실제 연결 후보')) {
+          label.style.display = 'none';
+          label.setAttribute('data-v39-hidden-member-connection', 'true');
+        }
+      });
+    }
+
+    function rewriteStep7AiCopy() {
+      Array.from(document.querySelectorAll('button')).forEach(function (button) {
+        var text = textOf(button);
+        if (text === 'AI 결과 핵심 내용 가져오기') {
+          button.textContent = 'AI 초안을 아래 실행 행동에 반영하기';
+        }
+        if (text === '이 내용을 2주 대응 방향에 반영하기') {
+          button.textContent = 'AI 초안을 아래 실행 행동에 반영하기';
+        }
+      });
+
+      Array.from(document.querySelectorAll('p')).forEach(function (paragraph) {
+        var text = textOf(paragraph);
+        if (text === 'AI 결과에서 가져온 핵심 행동') {
+          paragraph.textContent = 'AI 결과에서 읽어온 2주 행동 초안';
+        }
+        if (text.includes('최종 2주 대응 방향은 아래 입력칸에서 팀장 판단으로 다시 줄이고 고쳐 씁니다.')) {
+          paragraph.textContent = '이 영역은 AI 초안을 읽는 곳입니다. 아래 입력칸에서는 팀장이 현장 상황에 맞게 2주 대응 방식과 실행 행동, 위험·보완 조건만 줄이고 고쳐 씁니다.';
+        }
+      });
+
+      Array.from(document.querySelectorAll('span')).forEach(function (span) {
+        if (textOf(span) === '이번 2주 실행 행동') {
+          span.textContent = '팀장이 수정할 이번 2주 실행 행동';
+        }
+      });
+    }
+
+    function simplifyV39Step7VisibleFields() {
+      hideStep7WarningBoxes();
+      hideStep7MemberConnectionFields();
+      rewriteStep7AiCopy();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      simplifyV39Step7VisibleFields();
+      var observer = new MutationObserver(function () {
+        window.requestAnimationFrame(simplifyV39Step7VisibleFields);
+      });
+      var root = document.getElementById('journey-root');
+      if (root) observer.observe(root, { childList: true, subtree: true });
+    });
+  </script>
+  <script type="module" src="/src/journey-v39-app-preview.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+/* v41 phase2 UX overrides: compact prompts and clearer action buttons */
+
+#journey-root pre {
+  max-height: 10rem !important;
+  overflow: auto;
+}
+
+#journey-root pre::selection,
+#journey-root textarea::selection {
+  background: rgba(6, 182, 212, 0.25);
+}
+
+#journey-root button {
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+#journey-root button:hover {
+  transform: translateY(-1px);
+}
+
+#journey-root button.border-emerald-700.bg-emerald-700 {
+  box-shadow: 0 14px 30px rgba(5, 150, 105, 0.18);
+}
+
+#journey-root details.border-indigo-200,
+#journey-root details.border-emerald-200 {
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.075);
+}
+
+#journey-root details.border-indigo-200 summary span,
+#journey-root details.border-emerald-200 summary span {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+#journey-root article.rounded-2xl.border.border-slate-200.bg-white.p-4.shadow-sm {
+  position: relative;
+  overflow: hidden;
+}
+
+#journey-root article.rounded-2xl.border.border-slate-200.bg-white.p-4.shadow-sm::before {
+  content: "9단계에서 다시 볼 신호";
+  display: inline-flex;
+  margin-bottom: 0.55rem;
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(238, 242, 255, 0.95);
+  color: #4338ca;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+#journey-root article.rounded-2xl.border.border-slate-200.bg-white.p-4.shadow-sm p:has(b) {
+  border-radius: 14px;
+  padding: 0.25rem 0.4rem;
+}
+
+#journey-root article.rounded-2xl.border.border-slate-200.bg-white.p-4.shadow-sm p:has(b):nth-of-type(n+5) {
+  background: rgba(248, 250, 252, 0.78);
+}
+
+#journey-root details:has(pre),
+#journey-root details:has(textarea) {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+#journey-root details:has(pre) summary,
+#journey-root details:has(textarea) summary {
+  border-radius: 18px;
+}
+
+#journey-root pre {
+  border-left: 4px solid rgba(6, 182, 212, 0.52) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+#journey-root textarea[min-height],
+#journey-root textarea {
+  scroll-margin-top: 7rem;
+}
+
+#journey-root textarea:focus {
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12), inset 0 1px 2px rgba(15, 23, 42, 0.035);
+}
+
+/* v41 hero redesign based on selected banner direction */
+#journey-root main > div > header {
+  position: relative;
+  min-height: 17.8rem;
+  overflow: hidden;
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 78% 48%, rgba(8, 145, 178, 0.35), transparent 23rem),
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.12), transparent 18rem),
+    linear-gradient(115deg, #07142f 0%, #081a3a 43%, #073f51 100%) !important;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.16);
+}
+
+#journey-root main > div > header::before {
+  content: "시작        분석        결정        성과";
+  position: absolute;
+  right: 3.5rem;
+  bottom: 3.2rem;
+  width: 28rem;
+  max-width: 45%;
+  height: 5.8rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 1.55rem;
+  text-align: right;
+  padding-top: 4.8rem;
+  background:
+    radial-gradient(circle at 5% 23%, rgba(255,255,255,0.18) 0 1.45rem, rgba(255,255,255,0.38) 1.5rem 1.55rem, transparent 1.6rem),
+    radial-gradient(circle at 36% 12%, rgba(255,255,255,0.18) 0 1.35rem, rgba(255,255,255,0.36) 1.4rem 1.45rem, transparent 1.5rem),
+    radial-gradient(circle at 67% 2%, rgba(255,255,255,0.18) 0 1.35rem, rgba(255,255,255,0.36) 1.4rem 1.45rem, transparent 1.5rem),
+    radial-gradient(circle at 97% -8%, rgba(37, 99, 235, 0.92) 0 1.7rem, rgba(125, 211, 252, 0.28) 1.8rem 2.35rem, transparent 2.4rem),
+    linear-gradient(20deg, transparent 10%, rgba(125, 211, 252, 0.0) 25%, rgba(125, 211, 252, 0.48) 26%, rgba(125, 211, 252, 0.0) 28%, transparent 100%);
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+#journey-root main > div > header::after {
+  content: "";
+  position: absolute;
+  right: -1rem;
+  bottom: -1rem;
+  width: 19rem;
+  height: 12rem;
+  opacity: 0.36;
+  background:
+    repeating-radial-gradient(ellipse at bottom right, transparent 0 1.25rem, rgba(125, 211, 252, 0.23) 1.32rem 1.36rem, transparent 1.42rem 2.35rem);
+  pointer-events: none;
+}
+
+#journey-root main > div > header > div {
+  position: relative;
+  z-index: 1;
+  min-height: 17.8rem;
+  padding: 2rem 2.2rem !important;
+  background: transparent !important;
+}
+
+#journey-root main > div > header > div > div:first-child {
+  gap: 0.85rem;
+}
+
+#journey-root main > div > header > div > div:first-child span {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  background: rgba(30, 41, 59, 0.46) !important;
+  color: rgba(219, 234, 254, 0.95) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-transform: none;
+  letter-spacing: -0.02em;
+}
+
+#journey-root main > div > header > div > div:first-child span:first-child::before {
+  content: "✦ ";
+  color: #93c5fd;
+}
+
+#journey-root main > div > header > div > div:first-child span:nth-child(2) {
+  border-color: rgba(45, 212, 191, 0.25);
+  background: rgba(20, 184, 166, 0.18) !important;
+}
+
+#journey-root main > div > header > div > div:first-child span:nth-child(2)::before {
+  content: "☑ ";
+  color: #99f6e4;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  align-items: center;
+  gap: 2.4rem !important;
+  margin-top: 2.55rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 4.5rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"]:is(img) {
+  filter: saturate(1.08);
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 16.5rem;
+  justify-content: center;
+  border-radius: 1.1rem !important;
+  padding: 1.05rem 1.55rem !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 18px 36px rgba(2, 6, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  position: relative;
+  padding-left: 2.3rem;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1px;
+  height: 7.5rem;
+  background: linear-gradient(180deg, transparent, rgba(226, 232, 240, 0.6), transparent);
+}
+
+#journey-root main > div > header h1 {
+  font-size: 0 !important;
+  line-height: 1 !important;
+}
+
+#journey-root main > div > header h1::before {
+  content: "김박사의";
+  display: block;
+  margin-bottom: 0.32rem;
+  color: #67e8f9;
+  font-size: clamp(1.35rem, 2.3vw, 2.25rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  transform: rotate(-2deg);
+}
+
+#journey-root main > div > header h1::after {
+  content: "Leadership Decision Journey";
+  display: block;
+  color: #f8fafc;
+  font-size: clamp(2.15rem, 4.3vw, 4.35rem);
+  font-weight: 880;
+  letter-spacing: -0.065em;
+  line-height: 1.03;
+  text-shadow: 0 6px 22px rgba(15, 23, 42, 0.4);
+}
+
+#journey-root main > div > header h1 + p {
+  display: block !important;
+  font-size: 0 !important;
+  margin-top: 0.9rem !important;
+  max-width: none !important;
+}
+
+#journey-root main > div > header h1 + p::after {
+  content: "C1바이오 영업팀장 AI 리더십 Lab";
+  color: rgba(226, 232, 240, 0.78);
+  font-size: clamp(1.05rem, 1.75vw, 1.65rem);
+  font-weight: 780;
+  letter-spacing: -0.05em;
+  line-height: 1.3;
+}
+
+@media (max-width: 900px) {
+  #journey-root main > div > header {
+    min-height: auto;
+  }
+
+  #journey-root main > div > header::before,
+  #journey-root main > div > header::after {
+    display: none;
+  }
+
+  #journey-root main > div > header > div {
+    min-height: auto;
+    padding: 1.35rem !important;
+  }
+
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+    padding-left: 0;
+  }
+
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+    display: none;
+  }
+}
+
+/* v41 hero fine tuning to match the uploaded banner more closely */
+#journey-root main > div > header {
+  min-height: 15.8rem;
+}
+
+#journey-root main > div > header > div {
+  min-height: 15.8rem;
+  padding: 1.9rem 2.15rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  gap: 1.95rem !important;
+  margin-top: 2.15rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 14.7rem;
+  padding: 0.95rem 1.35rem !important;
+  border-radius: 1rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 4.05rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 2rem;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2)::before {
+  top: 0.25rem;
+  height: 6.8rem;
+}
+
+#journey-root main > div > header h1::before {
+  margin-bottom: 0.18rem;
+  font-size: clamp(1.08rem, 1.7vw, 1.65rem);
+  line-height: 1;
+}
+
+#journey-root main > div > header h1::after {
+  font-size: clamp(2.1rem, 3.52vw, 3.55rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.99;
+  white-space: nowrap;
+}
+
+#journey-root main > div > header h1 + p::after {
+  font-size: clamp(1.02rem, 1.45vw, 1.35rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+}
+
+#journey-root main > div > header::before {
+  right: 2.65rem;
+  bottom: 2.15rem;
+  width: 24.5rem;
+  max-width: 36%;
+  height: 4.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 1.06rem;
+  padding-top: 4.05rem;
+  color: rgba(255, 255, 255, 0.78);
+  opacity: 0.88;
+}
+
+#journey-root main > div > header::after {
+  right: -0.5rem;
+  bottom: -0.5rem;
+  width: 15rem;
+  height: 9rem;
+  opacity: 0.24;
+}
+
+#journey-root main > div > header > div > div:first-child span {
+  font-size: 0.78rem;
+  padding: 0.42rem 0.9rem;
+}
+
+@media (max-width: 1200px) {
+  #journey-root main > div > header h1::after {
+    font-size: clamp(1.85rem, 3.18vw, 3.15rem);
+  }
+
+  #journey-root main > div > header::before {
+    max-width: 32%;
+    right: 1.75rem;
+  }
+}
+
+@media (max-width: 980px) {
+  #journey-root main > div > header h1::after {
+    white-space: normal;
+    font-size: clamp(2.1rem, 5vw, 3.25rem);
+    line-height: 1.02;
+  }
+
+  #journey-root main > div > header h1 + p::after {
+    font-size: 1rem;
+  }
+}
+
+/* v41 hero final stabilization: separate title from journey motif */
+#journey-root main > div > header {
+  min-height: 16.25rem;
+}
+
+#journey-root main > div > header > div {
+  min-height: 16.25rem;
+  padding: 1.9rem 2rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  gap: 1.65rem !important;
+  margin-top: 2.35rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 13.8rem;
+  padding: 0.9rem 1.2rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 3.75rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  flex: 0 1 41rem;
+  max-width: 41rem;
+  padding-left: 1.85rem;
+}
+
+#journey-root main > div > header h1::before {
+  margin-bottom: 0.64rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.48rem);
+}
+
+#journey-root main > div > header h1::after {
+  font-size: clamp(2rem, 3.15vw, 3.15rem);
+  letter-spacing: -0.066em;
+  line-height: 1.02;
+}
+
+#journey-root main > div > header h1 + p {
+  margin-top: 0.72rem !important;
+}
+
+#journey-root main > div > header h1 + p::after {
+  font-size: clamp(0.98rem, 1.32vw, 1.2rem);
+}
+
+#journey-root main > div > header::before {
+  right: 2.3rem;
+  bottom: 2.35rem;
+  width: 26.5rem;
+  max-width: 39%;
+  height: 5.65rem;
+  padding-top: 4.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 1.22rem;
+  opacity: 0.95;
+}
+
+#journey-root main > div > header::after {
+  width: 18rem;
+  height: 11rem;
+  opacity: 0.28;
+}
+
+@media (max-width: 1240px) {
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+    flex-basis: 36rem;
+    max-width: 36rem;
+  }
+
+  #journey-root main > div > header h1::after {
+    font-size: clamp(1.82rem, 2.9vw, 2.8rem);
+  }
+
+  #journey-root main > div > header::before {
+    max-width: 38%;
+    right: 1.65rem;
+  }
+}

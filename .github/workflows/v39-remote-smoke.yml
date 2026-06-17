@@ -1,0 +1,128 @@
+name: v39 Remote Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to check, for example https://ckd-ci-bio-decision-v1.vercel.app'
+        required: false
+        default: 'https://ckd-ci-bio-decision-v1.vercel.app'
+
+jobs:
+  remote-smoke-v39:
+    name: Run v39 remote smoke check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v39 remote smoke check
+        env:
+          V39_REMOTE_BASE_URL: ${{ inputs.base_url }}
+          V39_REMOTE_REPORT_PATH: artifacts/v39-remote-smoke-result.json
+        run: npm run smoke:v39:remote
+
+      - name: Upload v39 remote smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v39-remote-smoke-result
+          path: artifacts/v39-remote-smoke-result.json
+          if-no-files-found: warn
+
+      - name: Write v39 remote smoke summary
+        if: always()
+        run: |
+          REPORT_PATH="artifacts/v39-remote-smoke-result.json"
+          {
+            echo "# v39 Remote Smoke Summary"
+            echo ""
+            echo "## Checked base URL"
+            echo ""
+            echo "- ${{ inputs.base_url }}"
+            echo ""
+            echo "## JSON report path"
+            echo ""
+            echo "- ${REPORT_PATH}"
+            echo ""
+            echo "## Artifact"
+            echo ""
+            echo "- v39-remote-smoke-result"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f "$REPORT_PATH" ]; then
+            node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('fs');
+          const reportPath = 'artifacts/v39-remote-smoke-result.json';
+          const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          const routeRows = (report.routeResults || []).map((route) => {
+            const missingAssets = (route.missingAssetMarkers || []).length;
+            const forbiddenAssets = (route.forbiddenAssetMarkersFound || []).length;
+            const errors = (route.errors || []).length;
+            return `| ${route.name} | ${route.status ?? ''} | ${route.finalPath ?? ''} | ${route.moduleScriptCount ?? 0} | ${route.assetChunkCount ?? 0} | ${missingAssets} | ${forbiddenAssets} | ${errors} |`;
+          });
+          console.log('## Result');
+          console.log('');
+          console.log(`- checkedAt: ${report.checkedAt}`);
+          console.log(`- pass: ${report.pass}`);
+          console.log(`- failureCount: ${(report.failures || []).length}`);
+          console.log('');
+          console.log('## Route details');
+          console.log('');
+          console.log('| route | status | finalPath | moduleScripts | assetChunks | missingMarkers | forbiddenMarkers | errors |');
+          console.log('|---|---:|---|---:|---:|---:|---:|---:|');
+          if (routeRows.length > 0) console.log(routeRows.join('\n'));
+          else console.log('| none |  |  |  |  |  |  |  |');
+          console.log('');
+          if ((report.failures || []).length > 0) {
+            console.log('## Failures');
+            console.log('');
+            for (const failure of report.failures) console.log(`- ${failure}`);
+            console.log('');
+          }
+          NODE
+          else
+            {
+              echo "## Result"
+              echo ""
+              echo "- JSON report was not created. Check the Run v39 remote smoke check logs."
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          {
+            echo "## Paths covered"
+            echo ""
+            echo "- /"
+            echo "- /journey.html"
+            echo "- /journey-v39-preview.html"
+            echo ""
+            echo "## What this verifies"
+            echo ""
+            echo "- Root redirect reaches /journey.html"
+            echo "- Operating journey HTML is served"
+            echo "- v39 preview HTML is served"
+            echo "- Production HTML uses /assets/*.js"
+            echo "- Production HTML does not directly reference /src/... dev entries"
+            echo "- v39 preview asset graph contains 5~13 flow markers"
+            echo "- v39 preview asset graph does not contain key forbidden customer-ranking or CRM-only terms"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Confirm Vercel deployment is complete."
+            echo "2. Review the JSON summary above."
+            echo "3. Open /journey.html in a browser and confirm v34 operating screen works."
+            echo "4. Open /journey-v39-preview.html and complete 5~13 browser QA."
+            echo "5. Run docs/v39-browser-qa-console-snippet.md in browser Console."
+            echo "6. Record results in docs/v39-browser-qa-result.md and docs/v39-remote-smoke-result.md."
+          } >> "$GITHUB_STEP_SUMMARY"

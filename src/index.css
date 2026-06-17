@@ -1,5 +1,111 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root{font-family:Inter,system-ui,'Noto Sans KR',sans-serif;color:#0f172a;background:#f5f7fb}.preline{white-space:pre-line}textarea,input{font:inherit}.safe{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75}.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}
+:root {
+  font-family:
+    'Pretendard Variable',
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Apple SD Gothic Neo',
+    'Malgun Gothic',
+    'Noto Sans KR',
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  color: #0f172a;
+  background: #f5f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+button:not(:disabled) {
+  transition:
+    transform 120ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.96);
+}
+
+button:not(:disabled):focus {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(14, 165, 233, 0.22),
+    0 0 0 1px rgba(14, 165, 233, 0.42);
+}
+
+button:not(:disabled):focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.45);
+  outline-offset: 2px;
+}
+
+textarea,
+input,
+select {
+  line-height: 1.55;
+}
+
+pre,
+code,
+kbd,
+samp {
+  font-family:
+    'SFMono-Regular',
+    Consolas,
+    'Liberation Mono',
+    Menlo,
+    monospace;
+  letter-spacing: 0;
+}
+
+.preline {
+  white-space: pre-line;
+}
+
+.safe {
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  color: #155e75;
+}
+
+.warn {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+}

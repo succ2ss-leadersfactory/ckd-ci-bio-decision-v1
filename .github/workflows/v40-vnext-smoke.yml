@@ -1,0 +1,68 @@
+name: v40-vNext Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/v37-preview-shell
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v40-vnext:
+    name: Run v40-vNext smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v40-vNext static smoke check
+        run: npm run smoke:v40-vnext:static
+
+      - name: Run v40-vNext scoped TypeScript check
+        run: npm run typecheck:v40-vnext
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Write v40-vNext smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v40-vNext Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v40-vnext:static"
+            echo "- npm run typecheck:v40-vnext"
+            echo "- npm run build"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains the operating route and must not load v40-vNext."
+            echo "- /journey-v39-preview.html remains the v39 reference route and must not load v40-vNext."
+            echo "- /journey-v40-lite-preview.html remains separate and must not load v40-vNext."
+            echo "- /journey-v40-vnext-preview.html is the only v40-vNext preview route."
+            echo ""
+            echo "## v40-vNext scope"
+            echo ""
+            echo "- v39 successor route"
+            echo "- group-practice language"
+            echo "- Step 4 Perplexity/NotebookLM/Studio deliverable continuity"
+            echo "- Step 6 task-management lab"
+            echo "- v39 character continuity"
+          } >> "$GITHUB_STEP_SUMMARY"

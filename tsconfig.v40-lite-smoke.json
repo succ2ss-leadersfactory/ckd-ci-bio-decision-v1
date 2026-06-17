@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/journey-v40-lite-app-preview.tsx",
+    "src/journey-v40-lite-store.ts",
+    "src/journey-v40-lite-ai-workflow.tsx",
+    "src/journey-v40-lite-step5-decision-flow.tsx",
+    "src/journey-shell.tsx",
+    "src/journey-storage.ts"
+  ]
+}

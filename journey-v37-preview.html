@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C1바이오 v37 Preview 복구 화면</title>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #0f172a; }
+    main { min-height: 100vh; padding: 24px 16px; box-sizing: border-box; }
+    .wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+    .hero { border-radius: 28px; background: #020617; color: white; padding: 28px; box-shadow: 0 12px 32px rgba(15, 23, 42, .16); }
+    .eyebrow { margin: 0; color: #a5f3fc; font-size: 13px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    h1 { margin: 12px 0 0; font-size: 28px; line-height: 1.25; }
+    .hero p:last-child { margin: 14px 0 0; color: #cbd5e1; line-height: 1.7; font-size: 15px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 24px; background: white; padding: 22px; box-shadow: 0 8px 24px rgba(15, 23, 42, .06); }
+    h2 { margin: 0; font-size: 20px; }
+    .buttons { display: grid; gap: 10px; margin-top: 16px; }
+    a { display: block; border-radius: 18px; padding: 16px; text-align: center; font-weight: 900; text-decoration: none; }
+    .primary { background: #0e7490; color: white; }
+    .secondary { border: 1px solid #cbd5e1; color: #0f172a; background: white; }
+    .warn { border-color: #fde68a; background: #fffbeb; color: #78350f; }
+    ul { margin: 14px 0 0; padding-left: 20px; line-height: 1.75; font-size: 14px; }
+    code { background: rgba(15,23,42,.08); padding: 2px 6px; border-radius: 6px; }
+    @media (min-width: 720px) { .buttons { grid-template-columns: 1fr 1fr; } main { padding: 40px 24px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <section class="hero">
+        <p class="eyebrow">C1Bio AI Leadership Lab</p>
+        <h1>v37 Preview 복구 화면</h1>
+        <p>v37 고객군 판단 개선 화면은 모바일 브라우저에서 로딩 문제가 확인되어 안정화 중입니다. 교육 진행은 아래 안정 경로를 사용해 주세요.</p>
+      </section>
+      <section class="card">
+        <h2>바로 이동</h2>
+        <div class="buttons">
+          <a class="primary" href="/journey.html">운영 안정 버전으로 이동</a>
+          <a class="secondary" href="/journey-v36-preview.html">v36 Preview로 이동</a>
+        </div>
+      </section>
+      <section class="card warn">
+        <h2>현재 상태</h2>
+        <ul>
+          <li><code>/journey-v37-preview.html</code>은 React 번들을 불러오지 않는 정적 복구 페이지로 전환했습니다.</li>
+          <li>v34 운영 화면은 보호합니다.</li>
+          <li>v37 고객군 판단 개선안은 정식 React 컴포넌트 방식으로 다시 안정화할 예정입니다.</li>
+          <li>기존 브라우저 저장값 때문에 문제가 반복되면 사이트 데이터 삭제 또는 시크릿 탭 접속을 권장합니다.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

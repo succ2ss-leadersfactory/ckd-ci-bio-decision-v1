@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/journey-v38-app-preview.tsx",
+    "src/journey-v38-preview-config.ts",
+    "src/journey-v38-customer-judgment-lab.tsx",
+    "src/journey-v38-customer-priority-lab.tsx",
+    "src/journey-v38-member-role-lab.tsx",
+    "src/journey-v38-ai-call-plan-lab.tsx",
+    "src/journey-v38-compliance-cleanup-lab.tsx",
+    "src/journey-v38-final-call-plan-card.tsx",
+    "src/journey-v38-instructor-discussion-lab.tsx",
+    "src/journey-v36-ai-safety-lab.tsx",
+    "src/journey-v36-prompt-practice-lab.tsx",
+    "src/journey-v36-research-strategy-lab.tsx",
+    "src/journey-v36-dashboard-analysis-lab.tsx",
+    "src/journey-shell.tsx",
+    "src/journey-storage.ts"
+  ]
+}

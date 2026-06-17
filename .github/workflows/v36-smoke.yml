@@ -1,0 +1,83 @@
+name: v36 Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke-v36:
+    name: Run v36 smoke checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run v36 static smoke check
+        run: npm run smoke:v36:static
+
+      - name: Run v36 scoped TypeScript check
+        run: npm run typecheck:v36
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Run v36 dist smoke check
+        run: npm run smoke:v36:dist
+
+      - name: Run integrated v36 smoke check
+        run: npm run smoke:v36
+
+      - name: Write v36 smoke summary
+        if: always()
+        run: |
+          {
+            echo "# v36 Smoke Summary"
+            echo ""
+            echo "## Commands covered"
+            echo ""
+            echo "- npm install"
+            echo "- npm run smoke:v36:static"
+            echo "- npm run typecheck:v36"
+            echo "- npm run build"
+            echo "- npm run smoke:v36:dist"
+            echo "- npm run smoke:v36"
+            echo ""
+            echo "## Protected route policy"
+            echo ""
+            echo "- /journey.html remains the v34 operating route through journey-active.tsx."
+            echo "- /journey-v35-preview.html remains the frozen v35 preview route."
+            echo "- /journey-v36-preview.html is the only v36 preview route."
+            echo ""
+            echo "## v36 scope"
+            echo ""
+            echo "- 13-step flow shell"
+            echo "- CustomerCallPlanLab Full Lab"
+            echo "- localStorage preview save"
+            echo "- compliance risk expression review"
+            echo "- facilitator discussion summary text"
+            echo "- dist bundle includes v36 route and CustomerCallPlanLab markers"
+            echo ""
+            echo "## Next required checks"
+            echo ""
+            echo "1. Open /journey-v36-preview.html in the browser."
+            echo "2. Confirm Step 1 entry fields save and restore."
+            echo "3. Move to Step 7 고객군 판단."
+            echo "4. Confirm customer A-D data cards, team member cards, prompt copy, AI paste area, review checklist, risk expression checklist, final call plan fields, and facilitator summary."
+            echo "5. Confirm /journey.html and /journey-v35-preview.html are unchanged."
+          } >> "$GITHUB_STEP_SUMMARY"

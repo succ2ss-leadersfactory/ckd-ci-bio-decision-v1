@@ -13,8 +13,29 @@ export type JourneyShellProps = {
   currentStep: number;
   onPrev: () => void;
   onNext: () => void;
+  onStepSelect?: (step: number) => void;
+  hideStepOverview?: boolean;
   children: React.ReactNode;
 };
+
+function isV40VNextEntryBlocked(title: string, currentStep: number) {
+  if (title !== 'C1바이오 영업팀장 AI 리더십 Lab Journey') return false;
+  if (currentStep !== 0) return false;
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const raw = window.localStorage.getItem('ckd.v40-vnext.participant.v1');
+    if (!raw) return true;
+    const participant = JSON.parse(raw) as { groupName?: string; tableName?: string };
+    return !String(participant.groupName ?? '').trim() || !String(participant.tableName ?? '').trim();
+  } catch {
+    return true;
+  }
+}
+
+function showV40VNextEntryGateMessage() {
+  window.alert('먼저 팀과 이름/닉네임을 입력해 주세요. 그다음부터는 필요한 단계로 바로 이동할 수 있습니다.');
+}
 
 export function JourneyShell({
   title,
@@ -23,65 +44,154 @@ export function JourneyShell({
   currentStep,
   onPrev,
   onNext,
+  onStepSelect,
+  hideStepOverview = false,
   children,
 }: JourneyShellProps) {
   const safeStep = Math.min(Math.max(currentStep, 0), Math.max(steps.length - 1, 0));
   const activeStep = steps[safeStep];
+  const nextStep = steps[safeStep + 1];
   const progress = steps.length <= 1 ? 100 : Math.round(((safeStep + 1) / steps.length) * 100);
+  const stepScrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const activeChipRef = React.useRef<HTMLElement | null>(null);
+  const entryGateBlocked = isV40VNextEntryBlocked(title, safeStep);
+
+  const handleNext = () => {
+    if (entryGateBlocked) {
+      showV40VNextEntryGateMessage();
+      return;
+    }
+    onNext();
+  };
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [safeStep]);
+
+  React.useEffect(() => {
+    if (hideStepOverview) return;
+    const scroller = stepScrollerRef.current;
+    const activeChip = activeChipRef.current;
+    if (!scroller || !activeChip) return;
+
+    const chipLeft = activeChip.offsetLeft;
+    const chipWidth = activeChip.offsetWidth;
+    const targetLeft = Math.max(chipLeft - scroller.clientWidth / 2 + chipWidth / 2, 0);
+    scroller.scrollTo({ left: targetLeft, behavior: 'smooth' });
+  }, [hideStepOverview, safeStep]);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-4">
-        <header className="rounded-2xl bg-slate-900 p-5 text-white shadow-sm">
-          <p className="text-sm text-cyan-100">AI Leadership Lab Journey</p>
-          <h1 className="mt-1 text-2xl font-bold">{title}</h1>
-          {subtitle ? <p className="mt-2 text-sm text-slate-200">{subtitle}</p> : null}
+    <main className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 md:px-8 md:py-8">
+      <div className="mx-auto max-w-6xl space-y-4 pb-28 md:pb-32">
+        <header className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-sm">
+          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-5 md:p-7">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100">
+              <span className="rounded-full bg-white/10 px-3 py-1">AI 리더십 실습</span>
+              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-50">입력 내용 저장</span>
+            </div>
+            <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="flex w-fit shrink-0 items-center rounded-2xl bg-white px-4 py-3 shadow-md">
+                <img src="/brand/ckd-ci.svg" alt="종근당 CKD CI" className="h-12 w-auto md:h-14" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-black leading-tight md:text-3xl">{title}</h1>
+                {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200 md:text-base">{subtitle}</p> : null}
+              </div>
+            </div>
+          </div>
         </header>
 
-        <section className="rounded-2xl border bg-white p-4 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm text-slate-500">Step {safeStep + 1} / {steps.length}</p>
-              <h2 className="text-lg font-bold">{activeStep?.title || '-'}</h2>
-              {activeStep?.description ? <p className="mt-1 text-sm text-slate-600">{activeStep.description}</p> : null}
+        {hideStepOverview ? null : (
+          <section className="sticky top-2 z-20 rounded-3xl border bg-white/95 p-4 shadow-sm backdrop-blur md:p-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">{safeStep + 1} / {steps.length}</span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">진행 {progress}%</span>
+                </div>
+                <h2 className="mt-2 text-xl font-black leading-tight text-slate-950">{activeStep?.title || '-'}</h2>
+                {activeStep?.description ? <p className="mt-1 text-sm leading-6 text-slate-600">{activeStep.description}</p> : null}
+                {nextStep ? <p className="mt-2 text-xs font-semibold text-slate-500">다음에 볼 화면: {nextStep.title}</p> : <p className="mt-2 text-xs font-semibold text-emerald-700">파일럿 과정의 마지막 화면입니다. 여기까지 정리한 내용을 바탕으로 토의합니다.</p>}
+              </div>
+              <div className="w-full md:w-56">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                  <span>진행</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-3 rounded-full bg-cyan-700 transition-all" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
             </div>
-            <div className="min-w-24 text-right text-sm font-semibold text-cyan-700">{progress}%</div>
-          </div>
-          <div className="mt-3 h-2 rounded-full bg-slate-100">
-            <div className="h-2 rounded-full bg-cyan-700" style={{ width: `${progress}%` }} />
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {steps.map((step, index) => (
-              <span
-                key={step.id}
-                className={
-                  'rounded-full px-3 py-1 text-xs ' +
-                  (index === safeStep ? 'bg-cyan-700 text-white' : index < safeStep ? 'bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-600')
-                }
-              >
-                {index + 1}. {step.title}
-              </span>
-            ))}
-          </div>
-        </section>
+
+            <div ref={stepScrollerRef} className="mt-4 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-max gap-2">
+                {steps.map((step, index) => {
+                  const isActive = index === safeStep;
+                  const isDone = index < safeStep;
+                  const setActiveChip = (node: HTMLElement | null) => {
+                    if (isActive) activeChipRef.current = node;
+                  };
+                  const className =
+                    'rounded-full border px-3 py-2 text-xs font-bold transition ' +
+                    (isActive
+                      ? 'border-cyan-700 bg-cyan-700 text-white shadow-sm'
+                      : isDone
+                        ? 'border-cyan-100 bg-cyan-50 text-cyan-800 hover:border-cyan-300'
+                        : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300');
+
+                  if (!onStepSelect) {
+                    return (
+                      <span key={step.id} ref={setActiveChip} className={className} aria-current={isActive ? 'step' : undefined} title={`${index + 1}. ${step.title}`}>
+                        {index + 1}. {step.title}
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={step.id}
+                      ref={setActiveChip}
+                      type="button"
+                      className={className}
+                      aria-current={isActive ? 'step' : undefined}
+                      aria-label={`${index + 1}단계 ${step.title}로 이동`}
+                      title={`${index + 1}. ${step.title}`}
+                      onClick={() => onStepSelect(index)}
+                    >
+                      {index + 1}. {step.title}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section>{children}</section>
 
-        <nav className="flex items-center justify-between rounded-2xl border bg-white p-4 shadow-sm">
-          <button
-            className="rounded-xl border px-4 py-2 disabled:opacity-40"
-            disabled={safeStep <= 0}
-            onClick={onPrev}
-          >
-            Previous
-          </button>
-          <button
-            className="rounded-xl bg-cyan-700 px-4 py-2 text-white disabled:opacity-40"
-            disabled={safeStep >= steps.length - 1}
-            onClick={onNext}
-          >
-            Next
-          </button>
+        <nav className="sticky bottom-3 z-30 rounded-3xl border bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-lg backdrop-blur md:p-4 md:pb-4">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              className="min-h-12 flex-1 rounded-2xl border px-4 py-3 text-sm font-black text-slate-700 disabled:opacity-40 md:flex-none md:min-w-32"
+              disabled={safeStep <= 0}
+              onClick={onPrev}
+            >
+              이전
+            </button>
+            <div className="hidden min-w-0 flex-1 text-center md:block">
+              <p className="truncate text-sm font-bold text-slate-900">{activeStep?.title || '-'}</p>
+              <p className="text-xs text-slate-500">입력한 내용은 이 브라우저에 저장됩니다.</p>
+              {entryGateBlocked ? <p className="mt-1 text-xs font-black text-amber-700">팀과 이름/닉네임을 입력하면 다음으로 넘어갈 수 있습니다.</p> : null}
+            </div>
+            <button
+              className="min-h-12 flex-1 rounded-2xl bg-cyan-700 px-4 py-3 text-sm font-black text-white disabled:opacity-40 md:flex-none md:min-w-32"
+              disabled={safeStep >= steps.length - 1}
+              onClick={handleNext}
+            >
+              다음
+            </button>
+          </div>
         </nav>
       </div>
     </main>

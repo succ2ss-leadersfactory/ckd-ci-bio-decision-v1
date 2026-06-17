@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.v40-vnext-smoke.json",
+  "compilerOptions": { "noEmit": true },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/journey-v41-*.ts",
+    "src/journey-v41-*.tsx",
+    "src/journey-v36-ai-safety-lab.tsx",
+    "src/journey-shell.tsx",
+    "src/journey-storage.ts",
+    "src/journey-v39-ux-components.tsx"
+  ]
+}
