@@ -5,6 +5,8 @@ const V41_PROGRESS_COACH_MARKERS = [
   '지금 할 일',
   '현재 단계에서 하나만 확인하세요',
   'v41 progress coach copy refined',
+  'v41 start whole journey overview',
+  'v41 start progress card only team name',
   'v41 파일럿 10단계 기준',
   '3단계 질문 다듬기 고정',
   'AI 입력 기준 별도 단계 표시 금지',
@@ -46,7 +48,7 @@ const PHASES: Phase[] = [
 ];
 
 const STEP_GUIDES = [
-  { action: '팀과 이름을 입력합니다.', output: '팀 / 이름' },
+  { action: 'AI와 함께 성과관리·업무관리·사람관리를 연결해 실습합니다.', output: '전체 흐름 / 시작 입력' },
   { action: '이대호 팀장과 팀원 7명을 확인합니다.', output: '팀원 기본 정보' },
   { action: '제약영업 상황을 골라 질문을 다듬어 봅니다.', output: '질문 비교와 모범 프롬프트' },
   { action: '시장 변화에서 우리 팀 질문을 뽑습니다.', output: '성과 질문' },
@@ -68,18 +70,20 @@ function currentPhase(currentStep: number) {
   return PHASES.find((phase) => currentStep >= phase.range[0] && currentStep <= phase.range[1]) ?? PHASES[0];
 }
 
-function shortSituation(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return '선택 입력';
-  return trimmed.length > 42 ? `${trimmed.slice(0, 42)}…` : trimmed;
-}
-
 function participantIdentityReady(participant: ParticipantSummary) {
   return Boolean(participant.groupName.trim() && participant.tableName.trim());
 }
 
 function showEntryGateMessage() {
   window.alert('1단계에서 팀과 이름/닉네임을 먼저 입력해 주세요. 2단계부터는 자유롭게 이동할 수 있습니다.');
+}
+
+function stepGuideDescription(currentStep: number) {
+  if (currentStep === 0) {
+    return '이 웹앱은 전사 전략을 팀 기준으로 바꾸고, 업무지시와 병목 대응을 정리한 뒤, 사람관리 1on1 실천까지 이어가는 Leadership Decision Journey입니다.';
+  }
+
+  return '현재 단계에서 하나만 확인하세요. 필요한 영역은 오른쪽 카드로 바로 이동할 수 있습니다.';
 }
 
 export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }: ProgressCoachPanelProps) {
@@ -94,7 +98,7 @@ export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">지금 할 일</p>
           <h2 className="mt-1 text-lg font-black leading-tight text-slate-950 md:text-xl">{guide.action}</h2>
-          <p className="mt-1 text-sm font-bold leading-6 text-slate-500">현재 단계에서 하나만 확인하세요. 필요한 영역은 오른쪽 카드로 바로 이동할 수 있습니다.</p>
+          <p className="mt-1 text-sm font-bold leading-6 text-slate-500">{stepGuideDescription(currentStep)}</p>
         </div>
         <div className="w-fit rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700">
           {currentStep + 1} / {V41_VISIBLE_APP_STEPS.length} · {phase.label}
@@ -109,7 +113,6 @@ export function V41ProgressCoachPanel({ currentStep, participant, onStepSelect }
           <div className="mt-3 space-y-1.5 text-sm font-bold leading-6 text-slate-700">
             <p><span className="font-black text-slate-950">팀:</span> {participant.groupName || '미선택'}</p>
             <p><span className="font-black text-slate-950">이름:</span> {participant.tableName || '미입력'}</p>
-            <p><span className="font-black text-slate-950">상황:</span> {shortSituation(participant.representativeSituation)}</p>
           </div>
         </div>
 
