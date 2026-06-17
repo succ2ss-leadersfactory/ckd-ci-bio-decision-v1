@@ -1,0 +1,19 @@
+/* v41 phase2 UX overrides: compact prompts and clearer action buttons */
+
+#journey-root pre {
+  max-height: 12rem !important;
+  overflow: auto;
+}
+
+#journey-root pre::selection,
+#journey-root textarea::selection {
+  background: rgba(6, 182, 212, 0.25);
+}
+
+#journey-root button {
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+#journey-root button:hover {
+  transform: translateY(-1px);
+}
