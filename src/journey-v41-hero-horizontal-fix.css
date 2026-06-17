@@ -1,0 +1,20 @@
+/* v41 preview-only hero horizontal alignment fix */
+
+html body #journey-root main > div > header h1::before {
+  transform: none !important;
+  margin-bottom: 0.88rem !important;
+  letter-spacing: -0.04em !important;
+  text-align: left !important;
+  transform-origin: left center !important;
+}
+
+html body #journey-root main > div > header h1::after {
+  font-size: clamp(1.86rem, 2.72vw, 2.86rem) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+html body #journey-root main > div > header::before {
+  bottom: 0.65rem !important;
+  opacity: 0.9 !important;
+}
