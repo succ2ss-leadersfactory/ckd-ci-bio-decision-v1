@@ -23,6 +23,9 @@ const files = {
   app: read('src/journey-v41-app-preview.tsx'),
   config: read('src/journey-v41-preview-config.ts'),
   ux: read('src/journey-v41-ux-components.tsx'),
+  designCss: read('src/journey-v41-design.css'),
+  designOverridesCss: read('src/journey-v41-design-overrides.css'),
+  heroHorizontalFixCss: read('src/journey-v41-hero-horizontal-fix.css'),
   storageScope: read('src/journey-v41-lab-storage-scope.tsx'),
   promptLab: read('src/journey-v41-prompt-practice-review-lab.tsx'),
   researchWrapper: read('src/journey-v41-research-strategy-trimmed-lab.tsx'),
@@ -37,13 +40,14 @@ const files = {
   storageKeyUsageMap: read('docs/v41-storage-key-usage-map.md'),
   storageScopeAudit: read('docs/v41-storage-scope-audit.md'),
   stepComponentMap: read('docs/v41-step-component-map.md'),
+  browserQaChecklist: read('docs/v41-browser-qa-checklist.md'),
   viteConfig: read('vite.config.ts'),
   v41Workflow: read('.github/workflows/v41-smoke.yml'),
   pilotEntry: read('ckd-ai-lab.html'),
   v40Html: read('journey-v40-vnext-preview.html'),
 };
 
-for (const marker of ['<title>C1 Bio Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', 'v41 preview']) {
+for (const marker of ['<title>C1 Bio Journey v41 Preview</title>', '/src/journey-v41-app-preview.tsx', '/src/journey-v41-hero-horizontal-fix.css', 'v41 preview']) {
   mustInclude(files.html, marker, 'v41 html');
 }
 for (const marker of ['journeyV41Preview', "resolve(__dirname, 'journey-v41-preview.html')"]) {
@@ -61,6 +65,16 @@ for (const marker of ['시작하기', '팀원 보기', '질문 다듬기', '시�
 }
 for (const marker of ['업무관리 실행계획', '업무 순서·업무지시', '업무 경계·병목 대응', '사람관리 1: 대상 선택', '사람관리 2: 1on1 실천']) {
   mustInclude(files.ux, marker, 'v41 flow strip label');
+}
+
+for (const marker of ['v41 preview-only design refinement', '#journey-root', 'v41-domain-flow']) {
+  mustInclude(files.designCss, marker, 'v41 base design css');
+}
+for (const marker of ['v41 phase2 UX overrides', 'v41 hero redesign', 'v41 hero final stabilization']) {
+  mustInclude(files.designOverridesCss, marker, 'v41 design override css');
+}
+for (const marker of ['v41 preview-only hero horizontal alignment fix', 'html body #journey-root main > div > header h1::after']) {
+  mustInclude(files.heroHorizontalFixCss, marker, 'v41 hero horizontal fix css');
 }
 
 for (const marker of ['V41PromptPracticeReviewLab', 'ckd.v41.promptPracticeReview.v2']) mustInclude(files.promptLab, marker, 'v41 prompt lab');
@@ -96,7 +110,10 @@ for (const marker of ["removeStoredPrefix('ckd.v40-vnext.')", "removeStoredPrefi
   mustNotInclude(files.app, marker, 'unsafe v41 reset scope');
 }
 
-for (const marker of ['Run v41 static smoke check', 'Run v41 typecheck', 'Run v41 build check']) {
+for (const marker of ['Target route: `/journey-v41-preview.html`', '/journey-v41-preview.html?v=<short-sha>', 'Protected routes are not affected', 'Local storage keys remain in the v41 namespace']) {
+  mustInclude(files.browserQaChecklist, marker, 'v41 browser QA checklist');
+}
+for (const marker of ['src/journey-v41-*.css', 'docs/v41-browser-qa-checklist.md', 'Run v41 static smoke check', 'Run v41 typecheck', 'Run v41 build check']) {
   mustInclude(files.v41Workflow, marker, 'v41 split smoke workflow');
 }
 for (const marker of ['v41 Smoke', 'smoke-v41-static.mjs']) {
