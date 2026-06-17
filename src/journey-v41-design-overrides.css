@@ -381,3 +381,86 @@
     font-size: 1rem;
   }
 }
+
+/* v41 hero final stabilization: separate title from journey motif */
+#journey-root main > div > header {
+  min-height: 16.25rem;
+}
+
+#journey-root main > div > header > div {
+  min-height: 16.25rem;
+  padding: 1.9rem 2rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) {
+  gap: 1.65rem !important;
+  margin-top: 2.35rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:first-child {
+  min-width: 13.8rem;
+  padding: 0.9rem 1.2rem !important;
+}
+
+#journey-root main > div > header img[src="/brand/ckd-ci.svg"] {
+  height: 3.75rem !important;
+}
+
+#journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+  flex: 0 1 41rem;
+  max-width: 41rem;
+  padding-left: 1.85rem;
+}
+
+#journey-root main > div > header h1::before {
+  margin-bottom: 0.64rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.48rem);
+}
+
+#journey-root main > div > header h1::after {
+  font-size: clamp(2rem, 3.15vw, 3.15rem);
+  letter-spacing: -0.066em;
+  line-height: 1.02;
+}
+
+#journey-root main > div > header h1 + p {
+  margin-top: 0.72rem !important;
+}
+
+#journey-root main > div > header h1 + p::after {
+  font-size: clamp(0.98rem, 1.32vw, 1.2rem);
+}
+
+#journey-root main > div > header::before {
+  right: 2.3rem;
+  bottom: 2.35rem;
+  width: 26.5rem;
+  max-width: 39%;
+  height: 5.65rem;
+  padding-top: 4.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 1.22rem;
+  opacity: 0.95;
+}
+
+#journey-root main > div > header::after {
+  width: 18rem;
+  height: 11rem;
+  opacity: 0.28;
+}
+
+@media (max-width: 1240px) {
+  #journey-root main > div > header > div > div:nth-child(2) > div:nth-child(2) {
+    flex-basis: 36rem;
+    max-width: 36rem;
+  }
+
+  #journey-root main > div > header h1::after {
+    font-size: clamp(1.82rem, 2.9vw, 2.8rem);
+  }
+
+  #journey-root main > div > header::before {
+    max-width: 38%;
+    right: 1.65rem;
+  }
+}
